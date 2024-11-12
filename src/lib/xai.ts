@@ -80,7 +80,7 @@ export class XAIClient {
 
 export const createSystemMessage = (): XAIMessage => ({
   role: 'system',
-  content: `You are Agent One, an AI assistant powered by Grok. You have access to:
+  content: `You are Monkey One, an AI assistant powered by Grok. You have access to:
   - Memory storage and retrieval
   - Code execution
   - File operations
