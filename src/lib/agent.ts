@@ -2,27 +2,58 @@ import type { Agent, Message, MemoryItem } from '../types';
 import { tools } from './tools';
 import { memoryManager } from './memory';
 import { XAIClient, createSystemMessage } from './xai';
-import { config } from './config';
+import { configStore } from './config/store';
+import { createAgent, AgentType } from './agents';
 
 class AgentManager {
   private agents: Map<string, Agent> = new Map();
   private xai: XAIClient;
 
   constructor() {
-    this.xai = new XAIClient(config.xai.apiKey);
+    this.xai = new XAIClient(configStore.xai.apiKey);
+    this.initializeAgents();
   }
 
-  createAgent(name: string, role: string, superiorId?: string): Agent {
-    const agent: Agent = {
+  private initializeAgents() {
+    // Create orchestrator agent
+    const orchestrator = createAgent(AgentType.Orchestrator, {
+      id: crypto.randomUUID(),
+      name: 'Orchestrator'
+    });
+    this.agents.set(orchestrator.id, orchestrator);
+
+    // Create specialized agents
+    const webSurfer = createAgent(AgentType.WebSurfer, {
+      id: crypto.randomUUID(),
+      name: 'WebSurfer',
+      superiorId: orchestrator.id
+    });
+    this.agents.set(webSurfer.id, webSurfer);
+
+    const fileSurfer = createAgent(AgentType.FileSurfer, {
+      id: crypto.randomUUID(),
+      name: 'FileSurfer',
+      superiorId: orchestrator.id
+    });
+    this.agents.set(fileSurfer.id, fileSurfer);
+
+    const coder = createAgent(AgentType.Coder, {
+      id: crypto.randomUUID(),
+      name: 'Coder',
+      superiorId: orchestrator.id
+    });
+    this.agents.set(coder.id, coder);
+  }
+
+  createAgent(name: string, type: string, superiorId?: string): Agent {
+    const agent = createAgent(type, {
       id: crypto.randomUUID(),
       name,
-      role,
-      superiorId,
-      subordinates: []
-    };
+      superiorId
+    });
 
     this.agents.set(agent.id, agent);
-    
+
     if (superiorId) {
       const superior = this.agents.get(superiorId);
       if (superior) {
@@ -57,8 +88,8 @@ class AgentManager {
       // Process with xAI including memory context
       const response = await this.xai.chat([
         createSystemMessage(),
-        { 
-          role: 'system', 
+        {
+          role: 'system',
           content: `Relevant context from memory:\n${context}\n\nUse this context if relevant to the user's query.`
         },
         { role: 'user', content: message.content }
@@ -79,7 +110,7 @@ class AgentManager {
       };
     } catch (error) {
       const errorMessage = `Error processing message: ${(error as Error).message}`;
-      
+
       await memoryManager.add({
         type: 'error',
         content: errorMessage,
@@ -113,7 +144,7 @@ class AgentManager {
           response = JSON.stringify(results, null, 2);
           break;
         }
-        
+
         case 'memory': {
           const recent = memoryManager.getRecent(5);
           response = JSON.stringify(recent, null, 2);
@@ -144,7 +175,7 @@ class AgentManager {
       };
     } catch (error) {
       const errorMessage = `Error executing command: ${(error as Error).message}`;
-      
+
       await memoryManager.add({
         type: 'error',
         content: errorMessage,
@@ -158,6 +189,14 @@ class AgentManager {
         timestamp: Date.now()
       };
     }
+  }
+
+  getAgent(id: string): Agent | undefined {
+    return this.agents.get(id);
+  }
+
+  getAllAgents(): Agent[] {
+    return Array.from(this.agents.values());
   }
 }
 
