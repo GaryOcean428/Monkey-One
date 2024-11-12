@@ -1,19 +1,77 @@
 import { BaseAgent } from './base';
 import type { Message } from '../../types';
 import { memoryManager } from '../memory';
-import { XAIClient } from '../xai';
+import { AgentRuntime } from '../runtime/AgentRuntime';
+import { AgentRegistry } from '../registry/AgentRegistry';
+import { MessageHandler, TaskMessage, MessageContext } from '../../decorators/MessageHandlers';
+import { FunctionTool } from '../tools/FunctionTool';
+import { CodeExecutor } from '../executors/CodeExecutor';
+import { DockerCodeExecutor } from '../executors/DockerCodeExecutor';
+import { ToolAgent } from './ToolAgent';
+import { CalculatorTool } from '../tools/CalculatorTool';
+import { ToolPipeline } from '../tools/ToolPipeline';
+import { ToolMonitor } from '../monitoring/ToolMonitor';
+import { HostAgentRuntime } from '../runtime/HostAgentRuntime';
+import { WorkerAgentRuntime } from '../runtime/WorkerAgentRuntime';
+import { MessageBroker } from '../communication/MessageBroker';
+import { AgentSession } from '../sessions/AgentSession';
+import { WorkerManager } from '../workers/WorkerManager';
+import { AgentMixture } from '../patterns/AgentMixture';
+import { DebateCoordinator } from '../patterns/DebateCoordinator';
 
+/**
+ * OrchestratorAgent manages task planning, delegation, progress tracking,
+ * and coordination among multiple agents.
+ */
 export class OrchestratorAgent extends BaseAgent {
+  private toolMonitor: ToolMonitor = new ToolMonitor();
+  private toolAgent: ToolAgent;
+  private messageBroker: MessageBroker = new MessageBroker();
+  private workerManager: WorkerManager = new WorkerManager();
+  private agentMixture: AgentMixture;
+  private debateCoordinator: DebateCoordinator;
 
   constructor(id: string, name: string) {
     super(id, name, 'Orchestrator', [
       'task_planning',
       'task_delegation',
-      'progress_tracking'
+      'progress_tracking',
+      'distributed_execution',
+      'multi_agent_interaction'
     ]);
+    AgentRegistry.register('Orchestrator', () => this);
+
+    const calculator = new CalculatorTool();
+    const dockerExecutor: CodeExecutor = new DockerCodeExecutor();
+    const tools = [calculator];
+    this.toolAgent = new ToolAgent(tools, this.modelClient);
+
+    this.agentMixture = new AgentMixture({
+      // Initialize with relevant agents
+    });
+    
+    this.debateCoordinator = new DebateCoordinator({
+      // Initialize with relevant agents
+    });
   }
 
+  /**
+   * Processes an incoming message by delegating it to the appropriate handler.
+   * @param message The message to process.
+   * @returns A response message after processing.
+   */
   async processMessage(message: Message): Promise<Message> {
+    return this.handleTask(message as TaskMessage, {} as MessageContext);
+  }
+
+  /**
+   * Handles task messages by planning, executing, and tracking task progress.
+   * @param message The task message to handle.
+   * @param context The context of the message.
+   * @returns A response message after handling the task.
+   */
+  @MessageHandler(TaskMessage)
+  async handleTask(message: TaskMessage, context: MessageContext): Promise<Message> {
     try {
       // Store the original task
       await memoryManager.add({
@@ -73,7 +131,7 @@ export class OrchestratorAgent extends BaseAgent {
 
       // Create final response
       const summary = `Task completed. Steps executed:\n${this.progressLedger.completedSteps.map((step, i) => `${i + 1}. ${step}`).join('\n')}`;
-      
+
       await memoryManager.add({
         type: 'summary',
         content: summary,
@@ -83,17 +141,30 @@ export class OrchestratorAgent extends BaseAgent {
       return this.createResponse(summary);
     } catch (error) {
       const errorMessage = `Error executing task: ${(error as Error).message}`;
-      
+
       await memoryManager.add({
         type: 'error',
         content: errorMessage,
         tags: ['error', 'task-failure']
       });
 
-      return this.createResponse(errorMessage);
+      throw new AgentError(`Error executing task: ${(error as Error).message}`, error);
     }
   }
 
+  async handleToolCall(call: ToolCall): Promise<ToolResult> {
+    const result = await this.toolAgent.handleToolCall(call);
+    const tool = this.toolAgent.tools.find(t => t.schema.name === call.toolName);
+    if (tool) {
+      this.toolMonitor.logExecution(tool, call.args, result);
+    }
+    return result;
+  }
+
+  /**
+   * Plans the given task by breaking it down into actionable steps.
+   * @param task The task to plan.
+   */
   private async planTask(task: string) {
     const systemPrompt = `You are a task planning assistant. Break down the following task into concrete, actionable steps. Consider:
 - What information needs to be gathered
@@ -127,6 +198,11 @@ export class OrchestratorAgent extends BaseAgent {
     });
   }
 
+  /**
+   * Delegates the given task to the appropriate agent based on analysis.
+   * @param task The task to delegate.
+   * @returns The response from the delegated agent.
+   */
   private async delegateTask(task: string): Promise<Message> {
     const systemPrompt = `Analyze the following task and determine which type of agent would be best suited to handle it. Consider:
 - Web interaction needs (WebSurfer)
@@ -153,6 +229,9 @@ export class OrchestratorAgent extends BaseAgent {
     };
   }
 
+  /**
+   * Revises the current task plan in case of failures.
+   */
   private async revisePlan() {
     const currentState = {
       completed: this.progressLedger.completedSteps,
