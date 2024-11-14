@@ -1,168 +1,140 @@
-import type { Message, TaskLedger, ProgressLedger, Tool } from '../../types';
-import { XAIClient } from '../xai';
-import { configStore } from '../config/store';
-import { ToolPipeline } from '../tools/ToolPipeline';
-import { SecurityMiddleware } from '../middleware/SecurityMiddleware';
+import { 
+  AgentInterface, 
+  Message, 
+  Tool, 
+  TaskLedger, 
+  ProgressLedger,
+  AgentConfig,
+  AgentState,
+  ExecutionContext,
+  AgentMetadata,
+  MessageType,
+  ErrorDetails
+} from '../../types';
+import { AgentExecutionError } from '../errors/AgentErrors';
+import { randomUUID } from 'crypto';
 
-export interface AgentCapability {
-  name: string;
-  description: string;
-  requiredTools?: string[];
-}
+export abstract class BaseAgent implements AgentInterface {
+  protected name: string;
+  protected tools: Tool[];
+  protected taskLedger?: TaskLedger;
+  protected progressLedger?: ProgressLedger;
+  protected state: AgentState;
+  protected metadata: Record<string, unknown>;
 
-export abstract class BaseAgent {
-  protected xai: XAIClient;
-  protected taskLedger: TaskLedger;
-  protected progressLedger: ProgressLedger;
-  protected conversationContext: Message[] = [];
-  protected toolPipeline: ToolPipeline;
-  protected securityMiddleware: SecurityMiddleware;
-
-  public readonly subordinates: string[] = [];
-  private registeredCapabilities: Map<string, AgentCapability> = new Map();
-
-  constructor(
-    public readonly id: string,
-    public readonly agentName: string,
-    public readonly role: string,
-    public readonly initialCapabilities: string[] = []
-  ) {
-    this.xai = new XAIClient(configStore.xai?.apiKey || '');
-    this.toolPipeline = new ToolPipeline();
-    this.securityMiddleware = new SecurityMiddleware();
-
-    this.taskLedger = {
-      facts: [],
-      assumptions: [],
-      currentPlan: []
+  constructor(config: AgentConfig) {
+    this.name = config.name;
+    this.tools = config.tools || [];
+    this.taskLedger = config.taskLedger;
+    this.progressLedger = config.progressLedger;
+    this.metadata = config.metadata || {};
+    this.state = {
+      isInitialized: false,
+      isProcessing: false,
+      metadata: {}
     };
-
-    this.progressLedger = {
-      completedSteps: [],
-      currentStep: null,
-      remainingSteps: [],
-      status: 'idle'
-    };
-
-    // Register initial capabilities
-    initialCapabilities.forEach(cap => this.registerCapability({
-      name: cap,
-      description: `Default capability: ${cap}`
-    }));
   }
 
-  // Enhanced capability management
-  registerCapability(capability: AgentCapability) {
-    this.registeredCapabilities.set(capability.name, capability);
-    
-    // Automatically register required tools
-    capability.requiredTools?.forEach(toolName => {
-      const tool = this.findToolByName(toolName);
-      if (tool) {
-        this.toolPipeline.registerTool(tool);
-      }
-    });
-  }
+  async initialize(): Promise<void> {
+    if (this.state.isInitialized) {
+      return;
+    }
 
-  getCapabilities(): AgentCapability[] {
-    return Array.from(this.registeredCapabilities.values());
-  }
-
-  hasCapability(capabilityName: string): boolean {
-    return this.registeredCapabilities.has(capabilityName);
-  }
-
-  // Conversation context management
-  addToConversationContext(message: Message) {
-    this.conversationContext.push(message);
-    // Optionally, limit context size
-    if (this.conversationContext.length > 10) {
-      this.conversationContext.shift();
+    try {
+      await this.onInitialize();
+      this.state.isInitialized = true;
+    } catch (error) {
+      const details: ErrorDetails = {
+        originalError: error instanceof Error ? error.message : String(error)
+      };
+      throw new AgentExecutionError(
+        `Failed to initialize agent ${this.name}`,
+        details
+      );
     }
   }
 
-  getConversationContext(): Message[] {
-    return [...this.conversationContext];
+  async cleanup(): Promise<void> {
+    try {
+      await this.onCleanup();
+      this.state.isInitialized = false;
+    } catch (error) {
+      const details: ErrorDetails = {
+        originalError: error instanceof Error ? error.message : String(error)
+      };
+      throw new AgentExecutionError(
+        `Failed to cleanup agent ${this.name}`,
+        details
+      );
+    }
   }
 
-  clearConversationContext() {
-    this.conversationContext = [];
+  async handleMessage(message: Message): Promise<void> {
+    if (!this.state.isInitialized) {
+      throw new AgentExecutionError('Agent not initialized');
+    }
+
+    this.state.isProcessing = true;
+    try {
+      await this.validateMessage(message);
+      const context = this.createExecutionContext(message);
+      await this.processMessage(context);
+    } finally {
+      this.state.isProcessing = false;
+    }
   }
 
-  // Tool management
-  protected findToolByName(toolName: string): Tool | undefined {
-    // Implement tool discovery mechanism
-    // This could be expanded to search registered tools or a global tool registry
-    return undefined;
+  protected async validateMessage(message: Message): Promise<void> {
+    if (!message.id || !message.type) {
+      throw new AgentExecutionError('Invalid message format');
+    }
   }
 
-  abstract processMessage(message: Message): Promise<Message>;
-  
-  protected async updateTaskLedger(update: Partial<TaskLedger>) {
-    this.taskLedger = {
-      ...this.taskLedger,
-      ...update
+  protected createExecutionContext(message: Message): ExecutionContext {
+    return {
+      agent: this,
+      message,
+      tools: this.tools,
+      state: this.state
     };
   }
 
-  protected async updateProgressLedger(update: Partial<ProgressLedger>) {
-    this.progressLedger = {
-      ...this.progressLedger,
-      ...update
+  protected getMetadata(): AgentMetadata {
+    return {
+      id: randomUUID(),
+      name: this.name,
+      version: '1.0.0',
+      capabilities: {
+        tools: this.tools.map(t => t.name),
+        messageTypes: this.getSupportedMessageTypes(),
+        supportedTasks: this.getSupportedTasks()
+      },
+      status: this.state.isProcessing ? 'busy' : 'idle'
     };
   }
 
-  protected createResponse(content: string): Message {
-    const response: Message = {
-      id: crypto.randomUUID(),
-      role: 'assistant',
+  protected createMessage(
+    type: MessageType,
+    content: unknown,
+    metadata?: Record<string, unknown>
+  ): Message {
+    return {
+      id: randomUUID(),
+      type,
       content,
       timestamp: Date.now(),
       metadata: {
-        agentId: this.id,
-        agentName: this.agentName,
-        taskProgress: this.progressLedger,
-        capabilities: this.getCapabilities().map(c => c.name).join(', ')
+        ...metadata,
+        agentId: this.getMetadata().id,
+        agentName: this.name
       }
     };
-
-    // Add response to conversation context
-    this.addToConversationContext(response);
-
-    return response;
   }
 
-  // Enhanced subordinate management with capability checks
-  addSubordinate(agentId: string, requiredCapabilities?: string[]) {
-    if (!this.subordinates.includes(agentId)) {
-      // Optional capability validation
-      if (requiredCapabilities) {
-        const missingCapabilities = requiredCapabilities.filter(
-          cap => !this.hasCapability(cap)
-        );
-        
-        if (missingCapabilities.length > 0) {
-          throw new Error(`Missing capabilities: ${missingCapabilities.join(', ')}`);
-        }
-      }
-      
-      this.subordinates.push(agentId);
-    }
-  }
-
-  removeSubordinate(agentId: string) {
-    const index = this.subordinates.indexOf(agentId);
-    if (index !== -1) {
-      this.subordinates.splice(index, 1);
-    }
-  }
-
-  // Error recovery mechanism
-  protected async handleError(error: Error): Promise<Message> {
-    // Log error
-    console.error(`Agent ${this.id} encountered error:`, error);
-
-    // Attempt to recover or generate an error response
-    return this.createResponse(`Error occurred: ${error.message}`);
-  }
+  // Abstract methods to be implemented by specific agents
+  protected abstract onInitialize(): Promise<void>;
+  protected abstract onCleanup(): Promise<void>;
+  protected abstract processMessage(context: ExecutionContext): Promise<void>;
+  protected abstract getSupportedMessageTypes(): MessageType[];
+  protected abstract getSupportedTasks(): string[];
 }

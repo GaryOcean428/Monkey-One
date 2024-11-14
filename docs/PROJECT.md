@@ -1,6 +1,41 @@
 # Monkey One System Documentation
 
-[Previous content remains unchanged until Testing section]
+## Overview
+- Advanced AI agent system with hierarchical organization
+- Multi-agent communication and task delegation
+- Tool-based capability management
+- Secure and monitored execution environment
+
+## System Architecture
+
+### Core Components
+1. **Agent System**
+   - BaseAgent implementation
+   - Specialized agent types (Orchestrator, WebSurfer, FileSurfer)
+   - Hierarchical agent relationships
+   - Capability management
+
+2. **Communication Layer**
+   - Message handling and routing
+   - Context management
+   - Event system
+   - State synchronization
+
+3. **Tool Infrastructure**
+   - ToolPipeline
+   - Tool discovery and registration
+   - Security middleware
+   - Execution monitoring
+
+4. **Memory Management**
+   - Conversation context
+   - Task ledger
+   - Progress tracking
+   - State persistence
+
+## Configuration
+
+### Environment Setup
 
 ### Testing
 
@@ -56,4 +91,10 @@ npm run test:watch
 npm run test:coverage
 ```
 
-[Rest of the content remains unchanged]
+### System Requirements
+- Node.js 16+
+- TypeScript 4.5+
+- React 18+
+- Jest for testing
+
+### Environment Setup
