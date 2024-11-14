@@ -1,17 +1,30 @@
-
-import { AgentMixture } from '../patterns/AgentMixture';
-// ...existing imports...
+import type { Tool } from '../../types';
 
 export class ToolPipeline {
-  private agentMixture: AgentMixture;
+  private tools: Tool[] = [];
 
-  constructor(layers: BaseAgent[][], aggregator: BaseAgent) {
-    this.agentMixture = new AgentMixture(layers, aggregator);
+  registerTool(tool: Tool) {
+    // Check for duplicate tools
+    if (!this.tools.some(existingTool => existingTool.name === tool.name)) {
+      this.tools.push(tool);
+    }
   }
 
-  async execute(input: string): Promise<string> {
-    return this.agentMixture.process(input);
+  unregisterTool(toolName: string) {
+    this.tools = this.tools.filter(tool => tool.name !== toolName);
   }
 
-  // ...existing pipeline methods...
+  async executeTool(toolName: string, args: Record<string, unknown>): Promise<unknown> {
+    const tool = this.tools.find(t => t.name === toolName);
+    
+    if (!tool) {
+      throw new Error(`Tool not found: ${toolName}`);
+    }
+
+    return tool.execute(args);
+  }
+
+  getRegisteredTools(): Tool[] {
+    return [...this.tools];
+  }
 }
