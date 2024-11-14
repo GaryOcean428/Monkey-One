@@ -1,141 +1,51 @@
-# Monkey One
+# Monkey One Project
 
-A TypeScript-based AI agent system inspired by Microsoft's Magentic-One and AutoGen frameworks. This system implements a multi-agent architecture for solving complex tasks through specialized agents working together.
+## Test Coverage
 
-## Architecture
+### Current Status
+- **MessageHandlers Decorator**: 100% coverage
+- **BaseAgent**: Comprehensive test suite covering initialization, message handling, and lifecycle management
+- **OrchestratorAgent**: Initial test coverage for core functionality
+- **Communication Layer**: 
+  - MessageBroker: Basic test coverage
+  - MessageQueue: Comprehensive test suite
 
-The system is built around several specialized agents that work together to accomplish tasks:
+### Test Coverage Gaps
+1. **Runtime Components**
+   - Incomplete coverage for WorkerAgentRuntime
+   - Partial coverage for HostAgentRuntime
 
-- **Orchestrator**: The lead agent responsible for task planning, delegation, and progress tracking. It maintains a task ledger and progress ledger to coordinate work between agents.
+2. **Agent Implementations**
+   - Limited test coverage for:
+     - WebSurfer Agent
+     - FileSurfer Agent
+     - Coder Agent
 
-- **WebSurfer**: Handles web-based interactions including navigation, clicking, typing, and content extraction from web pages.
+3. **Tools and Utilities**
+   - Minimal test coverage for:
+     - ToolPipeline
+     - SecurityMiddleware
+     - AgentRegistry
+     - AgentMonitor
 
-- **FileSurfer**: Manages file system operations including reading, writing, listing directories, and searching file contents.
+### Recommended Next Steps
+1. Expand test coverage for remaining runtime components
+2. Create comprehensive test suites for each agent implementation
+3. Add tests for utility classes and tools
+4. Implement integration tests to verify cross-component interactions
 
-- **Coder**: Specializes in writing, analyzing, and executing code across multiple programming languages.
-
-Each agent has specific capabilities and can be composed into teams to solve complex tasks. The system uses a memory manager to maintain context and a tool system for executing actions.
-
-## Features
-
-- **Task Planning & Tracking**: The Orchestrator agent breaks down complex tasks into steps and tracks progress
-- **Web Interaction**: WebSurfer agent can navigate and interact with web pages
-- **File Operations**: FileSurfer agent handles file system tasks
-- **Code Generation**: Coder agent can write and execute code in multiple languages
-- **Memory Management**: Persistent memory system for maintaining context
-- **Tool Integration**: Extensible tool system for executing actions
-- **Progress Monitoring**: Built-in progress tracking and plan revision capabilities
-
-## Getting Started
-
-1. Install dependencies:
-
+## Running Tests
 ```bash
-npm install
+npm test
 ```
 
-2. Set up environment variables:
-
+## Generating Coverage Report
 ```bash
-cp .env.example .env
-# Edit .env with your API keys
+npm run test:coverage
 ```
-
-3. Start the development server:
-
-```bash
-npm run dev
-```
-
-## Usage
-
-The system can be used through the AgentManager class:
-
-```typescript
-import { agentManager } from './lib/agent';
-
-// Process a message
-const response = await agentManager.processMessage({
-  id: '123',
-  role: 'user',
-  content: 'Create a simple web page',
-  timestamp: Date.now()
-});
-
-// Create a custom agent
-const agent = agentManager.createAgent('CustomAgent', 'coder');
-```
-
-## Architecture Details
-
-### Task Ledger
-
-The task ledger maintains:
-
-- Facts: Known information about the task
-- Assumptions: Educated guesses about requirements
-- Current Plan: Steps to accomplish the task
-
-### Progress Ledger
-
-The progress ledger tracks:
-
-- Completed Steps
-- Current Step
-- Remaining Steps
-- Overall Status
-
-### Memory System
-
-The memory system stores:
-
-- User Instructions
-- Agent Responses
-- Task Plans
-- Execution Results
 
 ## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
-
-## License
-
-MIT
-
-# Monkey One
-
-- Lightweight and fast
-- Easy to configure
-- Built-in testing support
-- TypeScript support
-
-## System Architecture
-
-Monkey One is designed with a modular, scalable architecture consisting of:
-
-- **Agent System**: Manages task delegation and communication.
-- **Memory System**: Handles context management and long-term storage.
-- **Model Router**: Dynamically selects models and balances load.
-- **Tools Registry**: Provides utilities like web search and data processing.
-- **Document System**: Manages document processing and vector-based search.
-
-The framework integrates with various AI models and services:
-
-- **Groq Models**: Supports a range of models for different complexity levels.
-- **Perplexity Models**: Integrates advanced reasoning models.
-
-When contributing, please follow these best practices:
-
-- **Code Style**: Use TypeScript, maintain consistent formatting, and adhere to linting rules.
-- **Component Structure**: Create small, focused components with clear interfaces.
-- **Error Handling**: Implement comprehensive error handling with user-friendly messages.
-
-## Environment Configuration
-
-Create a `.env` file in the root directory and add the following environment variables:
-
-1. set SERVICE_ENDPOINT=your_service_endpoint_here
+When adding new features or modifying existing code, please ensure:
+- 100% unit test coverage
+- All existing tests pass
+- New tests cover edge cases and potential failure modes

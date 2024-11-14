@@ -8,6 +8,11 @@ node_modules/
 dist/
 build/
 
+# Testing
+coverage/
+.jest/
+__snapshots__/
+
 # Logs
 logs/
 *.log
