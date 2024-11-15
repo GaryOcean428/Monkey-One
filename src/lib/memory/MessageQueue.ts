@@ -1,81 +1,137 @@
-import { Message, MessageQueueInterface } from '../../types';
-import { MemoryError } from '../errors/AgentErrors';
+import { Message } from '@/types'
+import { ValidationError } from '../errors/AgentErrors'
 
-interface QueueOptions {
-  maxSize?: number;
-  messageTimeout?: number;
-  persistenceEnabled?: boolean;
-  priorityLevels?: number;
+export interface MessageQueueOptions {
+  maxSize?: number
+  retentionPeriod?: number // in milliseconds
 }
 
-interface QueueMetrics {
-  size: number;
-  processedCount: number;
-  errorCount: number;
-  avgProcessingTime: number;
-}
+export class MessageQueue {
+  private queue: Message[]
+  private readonly maxSize: number
+  private readonly retentionPeriod: number
 
-interface QueuedMessage {
-  message: Message;
-  priority: number;
-  timestamp: number;
-  expiresAt?: number;
-}
-
-const DEFAULT_OPTIONS: Required<QueueOptions> = {
-  maxSize: 1000,
-  messageTimeout: 30000, // 30 seconds
-  persistenceEnabled: false,
-  priorityLevels: 3
-};
-
-export class MessageQueue implements MessageQueueInterface {
-  private queue: QueuedMessage[][] = [];
-  private options: Required<QueueOptions>;
-  private metrics: QueueMetrics = {
-    size: 0,
-    processedCount: 0,
-    errorCount: 0,
-    avgProcessingTime: 0
-  };
-  private processing: boolean = false;
-
-  constructor(options: QueueOptions = {}) {
-    this.options = { ...DEFAULT_OPTIONS, ...options };
-    this.initializePriorityQueues();
+  constructor(options: MessageQueueOptions = {}) {
+    this.queue = []
+    this.maxSize = options.maxSize || 1000
+    this.retentionPeriod = options.retentionPeriod || 24 * 60 * 60 * 1000 // 24 hours default
   }
 
-  private initializePriorityQueues(): void {
-    for (let i = 0; i < this.options.priorityLevels; i++) {
-      this.queue[i] = [];
+  public enqueue(message: Message): void {
+    this.validateMessage(message)
+    this.cleanExpiredMessages()
+
+    if (this.queue.length >= this.maxSize) {
+      throw new ValidationError(
+        'Message queue is full',
+        { maxSize: this.maxSize }
+      )
+    }
+
+    // Ensure timestamp is set
+    const messageWithTimestamp: Message = {
+      ...message,
+      timestamp: message.timestamp || Date.now()
+    }
+
+    this.queue.push(messageWithTimestamp)
+  }
+
+  public dequeue(): Message | undefined {
+    this.cleanExpiredMessages()
+    return this.queue.shift()
+  }
+
+  public peek(): Message | undefined {
+    this.cleanExpiredMessages()
+    return this.queue[0]
+  }
+
+  public clear(): void {
+    this.queue = []
+  }
+
+  public size(): number {
+    this.cleanExpiredMessages()
+    return this.queue.length
+  }
+
+  public isEmpty(): boolean {
+    this.cleanExpiredMessages()
+    return this.queue.length === 0
+  }
+
+  public getMessages(): Message[] {
+    this.cleanExpiredMessages()
+    return [...this.queue]
+  }
+
+  public findById(id: string): Message | undefined {
+    return this.queue.find(message => message.id === id)
+  }
+
+  public findByType(type: string): Message[] {
+    return this.queue.filter(message => message.type === type)
+  }
+
+  public findBySender(sender: string): Message[] {
+    return this.queue.filter(message => message.sender === sender)
+  }
+
+  public findByRecipient(recipient: string): Message[] {
+    return this.queue.filter(message => message.recipient === recipient)
+  }
+
+  public removeById(id: string): boolean {
+    const initialLength = this.queue.length
+    this.queue = this.queue.filter(message => message.id !== id)
+    return this.queue.length !== initialLength
+  }
+
+  private validateMessage(message: Message): void {
+    if (!message.id || !message.type || !message.sender || !message.recipient) {
+      throw new ValidationError(
+        'Invalid message format',
+        { message }
+      )
     }
   }
 
-  async add(message: Message, priority: number = 1): Promise<void> {
-    this.validatePriority(priority);
-    this.checkQueueSize();
+  private cleanExpiredMessages(): void {
+    const now = Date.now()
+    this.queue = this.queue.filter(message => 
+      message.timestamp && now - message.timestamp <= this.retentionPeriod
+    )
+  }
 
-    const queuedMessage: QueuedMessage = {
-      message,
-      priority,
-      timestamp: Date.now(),
-      expiresAt: this.options.messageTimeout > 0 
-        ? Date.now() + this.options.messageTimeout 
-        : undefined
-    };
+  public getStats(): MessageQueueStats {
+    const now = Date.now()
+    const messages = this.getMessages()
+    const messageTypes = new Map<string, number>()
+    let oldestTimestamp = now
+    let newestTimestamp = 0
 
-    try {
-      this.queue[priority].push(queuedMessage);
-      this.metrics.size++;
-      
-      if (this.options.persistenceEnabled) {
-        await this.persistQueue();
+    messages.forEach(message => {
+      // Count message types
+      messageTypes.set(
+        message.type,
+        (messageTypes.get(message.type) || 0) + 1
+      )
+
+      // Track timestamps
+      if (message.timestamp) {
+        oldestTimestamp = Math.min(oldestTimestamp, message.timestamp)
+        newestTimestamp = Math.max(newestTimestamp, message.timestamp)
       }
-    } catch (error) {
-      throw new MemoryError(
-        'Failed to add message to queue',
-        { originalError: error instanceof Error ? error.message : String(error) }
-      );
+    })
+
+    return {
+      totalMessages: messages.length,
+      messageTypes: Object.fromEntries(messageTypes),
+      oldestMessageAge: now - oldestTimestamp,
+      newestMessageAge: now - newestTimestamp,
+      queueCapacity: this.maxSize,
+      queueUtilization: (messages.length / this.maxSize) * 100
     }
   }
 
@@ -102,6 +158,8 @@ export class MessageQueue implements MessageQueueInterface {
         }
 
         if (batch.length === size) {
+          break;
+        }
       }
 
       // Update processing time metrics
@@ -178,4 +236,13 @@ export class MessageQueue implements MessageQueueInterface {
       await this.persistQueue();
     }
   }
+}
+
+export interface MessageQueueStats {
+  totalMessages: number
+  messageTypes: Record<string, number>
+  oldestMessageAge: number
+  newestMessageAge: number
+  queueCapacity: number
+  queueUtilization: number
 }

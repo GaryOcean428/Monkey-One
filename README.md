@@ -26,7 +26,24 @@ An advanced AI agent system featuring hierarchical organization, multi-agent com
   - Task state persistence
   - Progress monitoring
 
-## Installation
+## Tech Stack
+
+- React 18+ with TypeScript
+- Vite for fast development and optimized builds
+- TailwindCSS for styling
+- Firebase for backend services
+- Jest and React Testing Library for testing
+- ESLint and Prettier for code quality
+- Husky and lint-staged for git hooks
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 16+
+- npm or yarn
+
+### Installation
 
 ```bash
 # Clone the repository
@@ -39,24 +56,44 @@ npm install
 cp .env.example .env
 ```
 
-## System Requirements
+### Development
 
-- Node.js 16+
-- TypeScript 4.5+
-- React 18+
-- Jest for testing
-
-## Quick Start
-
-1. Configure your environment variables in `.env`
-2. Start the development server:
 ```bash
+# Start development server
 npm run dev
+
+# Run tests
+npm test
+
+# Run tests with coverage
+npm run test:coverage
+
+# Type checking
+npm run typecheck
+
+# Lint code
+npm run lint
+
+# Format code
+npm run format
 ```
 
-3. Run tests:
-```bash
-npm test
+## Project Structure
+
+```
+monkey-one/
+├── src/
+│   ├── components/     # React components
+│   ├── lib/           # Core library code
+│   │   ├── agents/    # Agent implementations
+│   │   ├── tools/     # Tool implementations
+│   │   ├── memory/    # Memory management
+│   │   └── runtime/   # Runtime environment
+│   ├── hooks/         # Custom React hooks
+│   ├── types/         # TypeScript type definitions
+│   └── __tests__/     # Test files
+├── docs/              # Documentation
+└── public/            # Static assets
 ```
 
 ## Architecture
@@ -71,39 +108,16 @@ The system is built on several key components:
 
 For detailed architecture documentation, see [PROJECT.md](docs/PROJECT.md).
 
-## API Documentation
+## Testing
 
-Comprehensive API documentation is available in [API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md).
+The project maintains high test coverage with comprehensive unit and integration tests:
 
-## Test Coverage
+- Unit tests for individual components and utilities
+- Integration tests for agent communication
+- End-to-end tests for critical workflows
+- Performance benchmarks
 
-### Current Status
-- **MessageHandlers Decorator**: 100% coverage
-- **BaseAgent**: Comprehensive test suite covering initialization, message handling, and lifecycle management
-- **OrchestratorAgent**: Initial test coverage for core functionality
-- **Communication Layer**: 
-  - MessageBroker: Basic test coverage
-  - MessageQueue: Comprehensive test suite
-
-### Test Coverage Gaps
-1. **Runtime Components**
-   - Incomplete coverage for WorkerAgentRuntime
-   - Partial coverage for HostAgentRuntime
-
-2. **Agent Implementations**
-   - Limited test coverage for:
-     - WebSurfer Agent
-     - FileSurfer Agent
-     - Coder Agent
-
-3. **Tools and Utilities**
-   - Minimal test coverage for:
-     - ToolPipeline
-     - SecurityMiddleware
-     - AgentRegistry
-     - AgentMonitor
-
-### Running Tests
+Run tests with:
 ```bash
 # Run all tests
 npm test
@@ -123,11 +137,12 @@ npm run test:coverage
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-When contributing, please ensure:
-- 100% unit test coverage for new code
-- All existing tests pass
-- New tests cover edge cases and potential failure modes
-- Documentation is updated as needed
+### Development Guidelines
+
+- Follow the TypeScript + ESLint + Prettier configuration
+- Maintain test coverage above 80%
+- Update documentation as needed
+- Follow conventional commits specification
 
 ## Error Handling
 

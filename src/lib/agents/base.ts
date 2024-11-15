@@ -1,140 +1,180 @@
-import { 
-  AgentInterface, 
-  Message, 
-  Tool, 
-  TaskLedger, 
-  ProgressLedger,
-  AgentConfig,
-  AgentState,
-  ExecutionContext,
-  AgentMetadata,
+import { v4 as uuidv4 } from 'uuid'
+import {
+  Agent,
+  AgentType,
+  AgentStatus,
+  Message,
   MessageType,
-  ErrorDetails
-} from '../../types';
-import { AgentExecutionError } from '../errors/AgentErrors';
-import { randomUUID } from 'crypto';
+  Tool,
+  ToolResult
+} from '@/types'
+import {
+  AgentError,
+  InitializationError,
+  MessageError,
+  ToolError,
+  ValidationError
+} from '../errors/AgentErrors'
 
-export abstract class BaseAgent implements AgentInterface {
-  protected name: string;
-  protected tools: Tool[];
-  protected taskLedger?: TaskLedger;
-  protected progressLedger?: ProgressLedger;
-  protected state: AgentState;
-  protected metadata: Record<string, unknown>;
+export abstract class BaseAgent implements Agent {
+  public readonly id: string
+  public status: AgentStatus
+  public abstract readonly type: AgentType
+  public abstract readonly capabilities: string[]
 
-  constructor(config: AgentConfig) {
-    this.name = config.name;
-    this.tools = config.tools || [];
-    this.taskLedger = config.taskLedger;
-    this.progressLedger = config.progressLedger;
-    this.metadata = config.metadata || {};
-    this.state = {
-      isInitialized: false,
-      isProcessing: false,
-      metadata: {}
-    };
+  protected tools: Map<string, Tool>
+  protected messageQueue: Message[]
+
+  constructor() {
+    this.id = uuidv4()
+    this.status = AgentStatus.IDLE
+    this.tools = new Map()
+    this.messageQueue = []
   }
 
-  async initialize(): Promise<void> {
-    if (this.state.isInitialized) {
-      return;
-    }
-
+  public async initialize(): Promise<void> {
     try {
-      await this.onInitialize();
-      this.state.isInitialized = true;
+      await this.registerTools()
+      this.status = AgentStatus.IDLE
     } catch (error) {
-      const details: ErrorDetails = {
-        originalError: error instanceof Error ? error.message : String(error)
-      };
-      throw new AgentExecutionError(
-        `Failed to initialize agent ${this.name}`,
-        details
-      );
+      this.status = AgentStatus.ERROR
+      throw new InitializationError(
+        'Failed to initialize agent',
+        { agentId: this.id, error }
+      )
     }
   }
 
-  async cleanup(): Promise<void> {
+  public async handleMessage(message: Message): Promise<Message> {
     try {
-      await this.onCleanup();
-      this.state.isInitialized = false;
+      this.validateMessage(message)
+      this.messageQueue.push(message)
+      
+      switch (message.type) {
+        case MessageType.COMMAND:
+          return await this.handleCommand(message)
+        case MessageType.TASK:
+          return await this.handleTask(message)
+        case MessageType.STATUS:
+          return this.handleStatus(message)
+        default:
+          throw new MessageError(
+            'Unsupported message type',
+            { messageType: message.type }
+          )
+      }
     } catch (error) {
-      const details: ErrorDetails = {
-        originalError: error instanceof Error ? error.message : String(error)
-      };
-      throw new AgentExecutionError(
-        `Failed to cleanup agent ${this.name}`,
-        details
-      );
+      return this.createErrorResponse(message, error as Error)
     }
   }
 
-  async handleMessage(message: Message): Promise<void> {
-    if (!this.state.isInitialized) {
-      throw new AgentExecutionError('Agent not initialized');
+  protected abstract registerTools(): Promise<void>
+
+  protected async executeTool(toolId: string, params: unknown): Promise<ToolResult> {
+    const tool = this.tools.get(toolId)
+    if (!tool) {
+      throw new ToolError(
+        'Tool not found',
+        { toolId }
+      )
     }
 
-    this.state.isProcessing = true;
+    if (!tool.validate(params)) {
+      throw new ValidationError(
+        'Invalid tool parameters',
+        { toolId, params }
+      )
+    }
+
     try {
-      await this.validateMessage(message);
-      const context = this.createExecutionContext(message);
-      await this.processMessage(context);
-    } finally {
-      this.state.isProcessing = false;
+      const result = await tool.execute(params)
+      return { success: true, data: result }
+    } catch (error) {
+      return {
+        success: false,
+        error: error as Error
+      }
     }
   }
 
-  protected async validateMessage(message: Message): Promise<void> {
-    if (!message.id || !message.type) {
-      throw new AgentExecutionError('Invalid message format');
-    }
-  }
-
-  protected createExecutionContext(message: Message): ExecutionContext {
-    return {
-      agent: this,
-      message,
-      tools: this.tools,
-      state: this.state
-    };
-  }
-
-  protected getMetadata(): AgentMetadata {
-    return {
-      id: randomUUID(),
-      name: this.name,
-      version: '1.0.0',
-      capabilities: {
-        tools: this.tools.map(t => t.name),
-        messageTypes: this.getSupportedMessageTypes(),
-        supportedTasks: this.getSupportedTasks()
-      },
-      status: this.state.isProcessing ? 'busy' : 'idle'
-    };
-  }
-
-  protected createMessage(
-    type: MessageType,
+  protected createResponse(
+    originalMessage: Message,
     content: unknown,
-    metadata?: Record<string, unknown>
+    type: MessageType = MessageType.RESPONSE
   ): Message {
     return {
-      id: randomUUID(),
+      id: uuidv4(),
       type,
+      sender: this.id,
+      recipient: originalMessage.sender,
       content,
       timestamp: Date.now(),
       metadata: {
-        ...metadata,
-        agentId: this.getMetadata().id,
-        agentName: this.name
+        originalMessageId: originalMessage.id
       }
-    };
+    }
   }
 
-  // Abstract methods to be implemented by specific agents
-  protected abstract onInitialize(): Promise<void>;
-  protected abstract onCleanup(): Promise<void>;
-  protected abstract processMessage(context: ExecutionContext): Promise<void>;
-  protected abstract getSupportedMessageTypes(): MessageType[];
-  protected abstract getSupportedTasks(): string[];
+  protected createErrorResponse(originalMessage: Message, error: Error): Message {
+    return this.createResponse(
+      originalMessage,
+      {
+        message: error.message,
+        name: error.name,
+        stack: error.stack
+      },
+      MessageType.ERROR
+    )
+  }
+
+  private validateMessage(message: Message): void {
+    if (!message.id || !message.type || !message.sender || !message.recipient) {
+      throw new ValidationError(
+        'Invalid message format',
+        { message }
+      )
+    }
+
+    if (message.recipient !== this.id) {
+      throw new ValidationError(
+        'Message recipient mismatch',
+        { expected: this.id, received: message.recipient }
+      )
+    }
+  }
+
+  private async handleCommand(message: Message): Promise<Message> {
+    this.status = AgentStatus.BUSY
+    try {
+      const result = await this.executeCommand(message.content)
+      this.status = AgentStatus.IDLE
+      return this.createResponse(message, result)
+    } catch (error) {
+      this.status = AgentStatus.ERROR
+      throw error
+    }
+  }
+
+  private async handleTask(message: Message): Promise<Message> {
+    this.status = AgentStatus.BUSY
+    try {
+      const result = await this.executeTask(message.content)
+      this.status = AgentStatus.IDLE
+      return this.createResponse(message, result)
+    } catch (error) {
+      this.status = AgentStatus.ERROR
+      throw error
+    }
+  }
+
+  private handleStatus(message: Message): Message {
+    return this.createResponse(message, {
+      status: this.status,
+      messageQueueLength: this.messageQueue.length,
+      capabilities: this.capabilities
+    })
+  }
+
+  protected abstract executeCommand(command: unknown): Promise<unknown>
+  protected abstract executeTask(task: unknown): Promise<unknown>
 }

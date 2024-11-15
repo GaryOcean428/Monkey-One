@@ -1,204 +1,233 @@
-import { AgentRuntime } from '../../lib/runtime/AgentRuntime';
-import { BaseAgent } from '../../lib/agents/base';
-import { MessageQueue } from '../../lib/memory/MessageQueue';
-import type { Message } from '../../types';
+import { AgentRuntime } from '@/lib/runtime/AgentRuntime'
+import { Agent, AgentStatus, AgentType, Message, MessageType, RuntimeConfig, Tool, LogLevel } from '@/types'
+import { RuntimeError } from '@/lib/errors/AgentErrors'
 
-// Mock dependencies
-jest.mock('../../lib/memory/MessageQueue');
+class MockAgent implements Agent {
+  id: string
+  type: AgentType
+  status: AgentStatus
+  capabilities: string[]
 
-// Create concrete test agent class
-class TestAgent extends BaseAgent {
-  async processMessage(message: Message): Promise<Message> {
+  constructor(id: string, type: AgentType, status: AgentStatus, capabilities: string[]) {
+    this.id = id
+    this.type = type
+    this.status = status
+    this.capabilities = capabilities
+  }
+
+  async initialize(): Promise<void> {
+    // Mock implementation
+  }
+
+  async handleMessage(message: Message): Promise<Message> {
     return {
-      id: 'response-1',
-      role: 'assistant',
-      content: `Processed: ${message.content}`,
+      id: 'response-' + message.id,
+      type: MessageType.RESPONSE,
+      sender: this.id,
+      recipient: message.sender,
+      content: 'mock response',
       timestamp: Date.now()
-    };
+    }
   }
 }
 
-// Custom type for accessing private members with type safety
-type AgentRuntimeTestContext = {
-  agent: BaseAgent;
-  queue: MessageQueue;
-  isProcessing: boolean;
-  startProcessing: () => void;
-  handleError: (error: Error) => void;
-  shutdown: () => Promise<void>;
-  start: () => Promise<void>;
-};
-
 describe('AgentRuntime', () => {
-  let runtime: AgentRuntime;
-  let mockAgent: jest.Mocked<TestAgent>;
-  let mockQueue: jest.Mocked<MessageQueue>;
-  let runtimeContext: AgentRuntimeTestContext;
+  let runtime: AgentRuntime
+  let mockAgent: Agent
+  let mockTool: Tool
+  let defaultConfig: RuntimeConfig
 
   beforeEach(() => {
-    // Clear all mocks
-    jest.clearAllMocks();
+    defaultConfig = {
+      maxConcurrentAgents: 5,
+      rateLimit: {
+        requests: 100,
+        windowMs: 60000
+      },
+      monitoring: {
+        enablePerformance: true,
+        enableErrorReporting: true,
+        logLevel: LogLevel.INFO
+      }
+    }
 
-    // Setup mock agent
-    mockAgent = {
-      ...new TestAgent('test-id', 'Test Agent', 'test', []),
-      processMessage: jest.fn().mockResolvedValue({
-        id: 'response-1',
-        role: 'assistant',
-        content: 'test response',
-        timestamp: Date.now()
-      })
-    } as unknown as jest.Mocked<TestAgent>;
+    runtime = new AgentRuntime(defaultConfig)
+    mockAgent = new MockAgent(
+      'test-agent',
+      AgentType.BASE,
+      AgentStatus.IDLE,
+      ['test']
+    )
+    mockTool = {
+      id: 'test-tool',
+      name: 'Test Tool',
+      description: 'A tool for testing',
+      execute: jest.fn().mockResolvedValue('tool result'),
+      validate: jest.fn().mockReturnValue(true)
+    }
+  })
 
-    // Setup mock queue
-    mockQueue = new MessageQueue() as jest.Mocked<MessageQueue>;
-    mockQueue.add = jest.fn();
+  describe('agent management', () => {
+    it('should register agent successfully', async () => {
+      await runtime.registerAgent(mockAgent)
+      const agent = runtime.getAgent(mockAgent.id)
+      expect(agent).toBe(mockAgent)
+    })
 
-    // Create runtime instance
-    runtime = new AgentRuntime(mockAgent);
-    
-    // Create test context with type-safe private member access
-    runtimeContext = {
-      agent: mockAgent,
-      queue: mockQueue,
-      isProcessing: true,
-      startProcessing: () => {},
-      handleError: jest.fn(),
-      shutdown: jest.fn().mockResolvedValue(undefined),
-      start: jest.fn().mockResolvedValue(undefined)
-    };
+    it('should throw error when registering duplicate agent', async () => {
+      await runtime.registerAgent(mockAgent)
+      await expect(runtime.registerAgent(mockAgent)).rejects.toThrow(RuntimeError)
+    })
 
-    // Inject mock queue and context
-    Object.defineProperties(runtime, {
-      queue: { value: mockQueue, writable: true },
-      agent: { value: mockAgent, writable: true }
-    });
-  });
+    it('should throw error when max concurrent agents reached', async () => {
+      const config: RuntimeConfig = { ...defaultConfig, maxConcurrentAgents: 1 }
+      runtime = new AgentRuntime(config)
 
-  describe('initialization', () => {
-    it('should initialize with an agent', () => {
-      expect(runtimeContext.agent).toBe(mockAgent);
-    });
+      await runtime.registerAgent(mockAgent)
+      const anotherAgent = new MockAgent(
+        'another-agent',
+        AgentType.BASE,
+        AgentStatus.BUSY,
+        ['test']
+      )
 
-    it('should create a message queue', () => {
-      expect(MessageQueue).toHaveBeenCalled();
-    });
+      await expect(runtime.registerAgent(anotherAgent)).rejects.toThrow(RuntimeError)
+    })
 
-    it('should start message processing', () => {
-      const startProcessingSpy = jest.spyOn(runtime as unknown as { startProcessing: () => void }, 'startProcessing');
-      new AgentRuntime(mockAgent);
-      expect(startProcessingSpy).toHaveBeenCalled();
-    });
-  });
+    it('should unregister agent successfully', async () => {
+      await runtime.registerAgent(mockAgent)
+      runtime.unregisterAgent(mockAgent.id)
+      expect(runtime.getAgent(mockAgent.id)).toBeUndefined()
+    })
+  })
+
+  describe('tool management', () => {
+    it('should register tool successfully', () => {
+      runtime.registerTool(mockTool)
+      const tool = runtime.getTool(mockTool.id)
+      expect(tool).toBe(mockTool)
+    })
+
+    it('should throw error when registering duplicate tool', () => {
+      runtime.registerTool(mockTool)
+      expect(() => runtime.registerTool(mockTool)).toThrow(RuntimeError)
+    })
+
+    it('should execute tool successfully', async () => {
+      runtime.registerTool(mockTool)
+      const result = await runtime.executeTool(mockTool.id, { test: true })
+      expect(result).toBe('tool result')
+      expect(mockTool.validate).toHaveBeenCalledWith({ test: true })
+      expect(mockTool.execute).toHaveBeenCalledWith({ test: true })
+    })
+
+    it('should throw error when executing unregistered tool', async () => {
+      await expect(runtime.executeTool('unknown-tool', {})).rejects.toThrow(RuntimeError)
+    })
+  })
 
   describe('message handling', () => {
-    const testMessage: Message = {
-      id: 'test-1',
-      role: 'user',
-      content: 'test message',
-      timestamp: Date.now()
-    };
+    let message: Message
 
-    it('should enqueue messages', () => {
-      runtime.enqueueMessage(testMessage);
-      expect(mockQueue.add).toHaveBeenCalledWith(testMessage);
-    });
+    beforeEach(async () => {
+      await runtime.registerAgent(mockAgent)
+      const recipient = new MockAgent(
+        'recipient-agent',
+        AgentType.BASE,
+        AgentStatus.IDLE,
+        ['test']
+      )
+      await runtime.registerAgent(recipient)
 
-    it('should process messages through the agent', async () => {
-      await runtime.enqueueMessage(testMessage);
-      // Wait for async processing
-      await new Promise<void>(resolve => setTimeout(resolve, 0));
-      expect(mockAgent.processMessage).toHaveBeenCalledWith(testMessage);
-    });
-
-    it('should handle agent processing errors', async () => {
-      const error = new Error('Processing failed');
-      mockAgent.processMessage.mockRejectedValueOnce(error);
-
-      const handleErrorSpy = jest.spyOn(runtimeContext, 'handleError');
-      await runtime.enqueueMessage(testMessage);
-      // Wait for async processing
-      await new Promise<void>(resolve => setTimeout(resolve, 0));
-
-      expect(handleErrorSpy).toHaveBeenCalledWith(error);
-    });
-  });
-
-  describe('lifecycle management', () => {
-    it('should stop processing on shutdown', async () => {
-      await runtimeContext.shutdown();
-      expect(runtimeContext.isProcessing).toBe(true);
-    });
-
-    it('should process remaining messages before shutdown', async () => {
-      const message1: Message = {
-        id: '1',
-        role: 'user',
-        content: 'first',
+      message = {
+        id: 'test-message',
+        type: MessageType.COMMAND,
+        sender: mockAgent.id,
+        recipient: recipient.id,
+        content: 'test content',
         timestamp: Date.now()
-      };
-      const message2: Message = {
-        id: '2',
-        role: 'user',
-        content: 'second',
-        timestamp: Date.now()
-      };
+      }
+    })
 
-      await runtime.enqueueMessage(message1);
-      await runtime.enqueueMessage(message2);
-      await runtimeContext.shutdown();
+    it('should send message successfully', async () => {
+      const response = await runtime.sendMessage(message)
+      expect(response.type).toBe(MessageType.RESPONSE)
+      expect(response.sender).toBe(message.recipient)
+      expect(response.recipient).toBe(message.sender)
+    })
 
-      expect(mockAgent.processMessage).toHaveBeenCalledWith(message1);
-      expect(mockAgent.processMessage).toHaveBeenCalledWith(message2);
-    });
+    it('should throw error when sending message to unregistered agent', async () => {
+      const invalidMessage = { ...message, recipient: 'unknown-agent' }
+      await expect(runtime.sendMessage(invalidMessage)).rejects.toThrow(RuntimeError)
+    })
 
-    it('should handle new messages after restart', async () => {
-      await runtimeContext.shutdown();
-      await runtimeContext.start();
+    it('should handle rate limiting', async () => {
+      const config: RuntimeConfig = {
+        ...defaultConfig,
+        rateLimit: { requests: 1, windowMs: 1000 }
+      }
+      runtime = new AgentRuntime(config)
+      await runtime.registerAgent(mockAgent)
+      await runtime.registerAgent(new MockAgent(
+        'recipient-agent',
+        AgentType.BASE,
+        AgentStatus.IDLE,
+        ['test']
+      ))
 
-      const message: Message = {
-        id: 'new',
-        role: 'user',
-        content: 'new message',
-        timestamp: Date.now()
-      };
+      await runtime.sendMessage(message)
+      await expect(runtime.sendMessage(message)).rejects.toThrow(RuntimeError)
+    })
+  })
 
-      await runtime.enqueueMessage(message);
-      // Wait for async processing
-      await new Promise<void>(resolve => setTimeout(resolve, 0));
+  describe('agent queries', () => {
+    beforeEach(async () => {
+      await runtime.registerAgent(mockAgent)
+    })
 
-      expect(mockAgent.processMessage).toHaveBeenCalledWith(message);
-    });
-  });
+    it('should get agents by type', () => {
+      const agents = runtime.getAgentsByType(AgentType.BASE)
+      expect(agents).toHaveLength(1)
+      expect(agents[0]).toBe(mockAgent)
+    })
 
-  describe('error handling', () => {
-    const testMessage: Message = {
-      id: 'test-1',
-      role: 'user',
-      content: 'test message',
-      timestamp: Date.now()
-    };
+    it('should get agents by capability', () => {
+      const agents = runtime.getAgentsByCapability('test')
+      expect(agents).toHaveLength(1)
+      expect(agents[0]).toBe(mockAgent)
+    })
 
-    it('should handle queue errors', () => {
-      const error = new Error('Queue error');
-      mockQueue.add.mockImplementationOnce(() => {
-        throw error;
-      });
+    it('should get active agents', () => {
+      mockAgent.status = AgentStatus.BUSY
+      const agents = runtime.getActiveAgents()
+      expect(agents).toHaveLength(1)
+      expect(agents[0]).toBe(mockAgent)
+    })
 
-      expect(() => runtime.enqueueMessage(testMessage))
-        .toThrow('Queue error');
-    });
+    it('should get idle agents', () => {
+      const agents = runtime.getIdleAgents()
+      expect(agents).toHaveLength(1)
+      expect(agents[0]).toBe(mockAgent)
+    })
+  })
 
-    it('should handle agent initialization errors', () => {
-      const error = new Error('Agent initialization failed');
-      jest.spyOn(TestAgent.prototype, 'processMessage')
-        .mockImplementationOnce(() => {
-          throw error;
-        });
+  describe('shutdown', () => {
+    it('should shutdown runtime gracefully', async () => {
+      await runtime.registerAgent(mockAgent)
+      await runtime.shutdown()
+      expect(runtime.getAgent(mockAgent.id)).toBeUndefined()
+    })
 
-      const testAgent = new TestAgent('test', 'test', 'test', []);
-      expect(() => new AgentRuntime(testAgent))
-        .toThrow('Agent initialization failed');
-    });
-  });
-});
+    it('should continue shutdown despite errors', async () => {
+      const errorAgent = new MockAgent(
+        'error-agent',
+        AgentType.BASE,
+        AgentStatus.ERROR,
+        ['test']
+      )
+      await runtime.registerAgent(errorAgent)
+      await runtime.shutdown()
+      expect(runtime.getAgent(errorAgent.id)).toBeUndefined()
+    })
+  })
+})

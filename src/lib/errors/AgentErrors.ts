@@ -1,179 +1,78 @@
-/**
- * Type definition for error details
- */
-export interface ErrorDetails {
-  [key: string]: string | number | boolean | null | undefined | ErrorDetails;
-}
-
-/**
- * Base class for all agent-related errors
- */
 export class AgentError extends Error {
   constructor(
     message: string,
-    public readonly code: string,
-    public readonly details?: ErrorDetails
+    public code: string,
+    public details?: Record<string, unknown>
   ) {
-    super(message);
-    this.name = this.constructor.name;
-    
-    // Preserve stack trace
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, this.constructor);
-    }
-  }
-
-  /**
-   * Creates a structured error object for logging/serialization
-   */
-  toJSON(): ErrorDetails {
-    return {
-      name: this.name,
-      message: this.message,
-      code: this.code,
-      details: this.details,
-      stack: this.stack || ''
-    };
+    super(message)
+    this.name = 'AgentError'
   }
 }
 
-/**
- * Error thrown during agent execution
- */
-export class AgentExecutionError extends AgentError {
-  constructor(
-    message: string,
-    details?: ErrorDetails
-  ) {
-    super(message, 'AGENT_EXECUTION_ERROR', details);
+export class InitializationError extends AgentError {
+  constructor(message: string, details?: Record<string, unknown>) {
+    super(message, 'INIT_ERROR', details)
+    this.name = 'InitializationError'
   }
 }
 
-/**
- * Error thrown during message routing
- */
-export class MessageRoutingError extends AgentError {
-  constructor(
-    message: string,
-    details?: ErrorDetails
-  ) {
-    super(message, 'MESSAGE_ROUTING_ERROR', details);
+export class MessageError extends AgentError {
+  constructor(message: string, details?: Record<string, unknown>) {
+    super(message, 'MESSAGE_ERROR', details)
+    this.name = 'MessageError'
   }
 }
 
-/**
- * Error thrown when agent initialization fails
- */
-export class AgentInitializationError extends AgentError {
-  constructor(
-    message: string,
-    details?: ErrorDetails
-  ) {
-    super(message, 'AGENT_INIT_ERROR', details);
+export class ToolError extends AgentError {
+  constructor(message: string, details?: Record<string, unknown>) {
+    super(message, 'TOOL_ERROR', details)
+    this.name = 'ToolError'
   }
 }
 
-/**
- * Error thrown when tool execution fails
- */
-export class ToolExecutionError extends AgentError {
-  constructor(
-    message: string,
-    details?: ErrorDetails
-  ) {
-    super(message, 'TOOL_EXECUTION_ERROR', details);
-  }
-}
-
-/**
- * Error thrown when validation fails
- */
 export class ValidationError extends AgentError {
-  constructor(
-    message: string,
-    details?: ErrorDetails
-  ) {
-    super(message, 'VALIDATION_ERROR', details);
+  constructor(message: string, details?: Record<string, unknown>) {
+    super(message, 'VALIDATION_ERROR', details)
+    this.name = 'ValidationError'
   }
 }
 
-/**
- * Error thrown when a security check fails
- */
+export class RuntimeError extends AgentError {
+  constructor(message: string, details?: Record<string, unknown>) {
+    super(message, 'RUNTIME_ERROR', details)
+    this.name = 'RuntimeError'
+  }
+}
+
 export class SecurityError extends AgentError {
-  constructor(
-    message: string,
-    details?: ErrorDetails
-  ) {
-    super(message, 'SECURITY_ERROR', details);
+  constructor(message: string, details?: Record<string, unknown>) {
+    super(message, 'SECURITY_ERROR', details)
+    this.name = 'SecurityError'
   }
 }
 
-/**
- * Error thrown when state management fails
- */
-export class StateError extends AgentError {
-  constructor(
-    message: string,
-    details?: ErrorDetails
-  ) {
-    super(message, 'STATE_ERROR', details);
-  }
+export const isAgentError = (error: unknown): error is AgentError => {
+  return error instanceof AgentError
 }
 
-/**
- * Error thrown when memory operations fail
- */
-export class MemoryError extends AgentError {
-  constructor(
-    message: string,
-    details?: ErrorDetails
-  ) {
-    super(message, 'MEMORY_ERROR', details);
-  }
-}
-
-/**
- * Error thrown when configuration is invalid
- */
-export class ConfigurationError extends AgentError {
-  constructor(
-    message: string,
-    details?: ErrorDetails
-  ) {
-    super(message, 'CONFIG_ERROR', details);
-  }
-}
-
-/**
- * Error thrown when a timeout occurs
- */
-export class TimeoutError extends AgentError {
-  constructor(
-    message: string,
-    details?: ErrorDetails
-  ) {
-    super(message, 'TIMEOUT_ERROR', details);
-  }
-}
-
-/**
- * Helper function to determine if an error is an AgentError
- */
-export function isAgentError(error: unknown): error is AgentError {
-  return error instanceof AgentError;
-}
-
-/**
- * Helper function to wrap unknown errors as AgentErrors
- */
-export function wrapError(error: unknown, code = 'UNKNOWN_ERROR'): AgentError {
+export const handleError = (error: unknown): AgentError => {
   if (isAgentError(error)) {
-    return error;
+    return error
   }
 
-  const message = error instanceof Error ? error.message : String(error);
-  return new AgentError(message, code, {
-    originalError: typeof error === 'object' ? JSON.stringify(error) : String(error)
-  });
+  if (error instanceof Error) {
+    return new AgentError(error.message, 'UNKNOWN_ERROR', {
+      originalError: {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      }
+    })
+  }
+
+  return new AgentError(
+    'An unknown error occurred',
+    'UNKNOWN_ERROR',
+    { originalError: error }
+  )
 }

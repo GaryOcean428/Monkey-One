@@ -1,131 +1,121 @@
 import {
   AgentError,
-  AgentExecutionError,
-  MessageRoutingError,
+  InitializationError,
+  MessageError,
+  ToolError,
   ValidationError,
+  RuntimeError,
   SecurityError,
   isAgentError,
-  wrapError,
-  ErrorDetails
-} from '../../lib/errors/AgentErrors';
+  handleError
+} from '@/lib/errors/AgentErrors'
 
 describe('AgentErrors', () => {
   describe('AgentError', () => {
     it('should create base error with correct properties', () => {
-      const details: ErrorDetails = { foo: 'bar' };
-      const error = new AgentError('test message', 'TEST_CODE', details);
+      const error = new AgentError('Test error', 'TEST_ERROR', { foo: 'bar' })
+      expect(error.message).toBe('Test error')
+      expect(error.code).toBe('TEST_ERROR')
+      expect(error.details).toEqual({ foo: 'bar' })
+      expect(error.name).toBe('AgentError')
+    })
+  })
 
-      expect(error.message).toBe('test message');
-      expect(error.code).toBe('TEST_CODE');
-      expect(error.details).toEqual(details);
-      expect(error.name).toBe('AgentError');
-      expect(error.stack).toBeDefined();
-    });
+  describe('Specialized Error Types', () => {
+    it('should create InitializationError with correct properties', () => {
+      const error = new InitializationError('Init failed', { reason: 'test' })
+      expect(error.message).toBe('Init failed')
+      expect(error.code).toBe('INIT_ERROR')
+      expect(error.details).toEqual({ reason: 'test' })
+      expect(error.name).toBe('InitializationError')
+    })
 
-    it('should serialize to JSON correctly', () => {
-      const error = new AgentError('test message', 'TEST_CODE');
-      const json = error.toJSON();
+    it('should create MessageError with correct properties', () => {
+      const error = new MessageError('Invalid message', { id: '123' })
+      expect(error.message).toBe('Invalid message')
+      expect(error.code).toBe('MESSAGE_ERROR')
+      expect(error.details).toEqual({ id: '123' })
+      expect(error.name).toBe('MessageError')
+    })
 
-      expect(json).toEqual({
-        name: 'AgentError',
-        message: 'test message',
-        code: 'TEST_CODE',
-        details: undefined,
-        stack: error.stack
-      });
-    });
-  });
+    it('should create ToolError with correct properties', () => {
+      const error = new ToolError('Tool failed', { toolId: 'test' })
+      expect(error.message).toBe('Tool failed')
+      expect(error.code).toBe('TOOL_ERROR')
+      expect(error.details).toEqual({ toolId: 'test' })
+      expect(error.name).toBe('ToolError')
+    })
 
-  describe('Specific Error Types', () => {
-    it('should create AgentExecutionError correctly', () => {
-      const error = new AgentExecutionError('execution failed');
-      expect(error.code).toBe('AGENT_EXECUTION_ERROR');
-      expect(error instanceof AgentError).toBe(true);
-    });
+    it('should create ValidationError with correct properties', () => {
+      const error = new ValidationError('Invalid input', { field: 'name' })
+      expect(error.message).toBe('Invalid input')
+      expect(error.code).toBe('VALIDATION_ERROR')
+      expect(error.details).toEqual({ field: 'name' })
+      expect(error.name).toBe('ValidationError')
+    })
 
-    it('should create MessageRoutingError correctly', () => {
-      const error = new MessageRoutingError('routing failed');
-      expect(error.code).toBe('MESSAGE_ROUTING_ERROR');
-      expect(error instanceof AgentError).toBe(true);
-    });
+    it('should create RuntimeError with correct properties', () => {
+      const error = new RuntimeError('Runtime error', { operation: 'test' })
+      expect(error.message).toBe('Runtime error')
+      expect(error.code).toBe('RUNTIME_ERROR')
+      expect(error.details).toEqual({ operation: 'test' })
+      expect(error.name).toBe('RuntimeError')
+    })
 
-    it('should create ValidationError correctly', () => {
-      const error = new ValidationError('validation failed');
-      expect(error.code).toBe('VALIDATION_ERROR');
-      expect(error instanceof AgentError).toBe(true);
-    });
-
-    it('should create SecurityError correctly', () => {
-      const error = new SecurityError('security check failed');
-      expect(error.code).toBe('SECURITY_ERROR');
-      expect(error instanceof AgentError).toBe(true);
-    });
-  });
+    it('should create SecurityError with correct properties', () => {
+      const error = new SecurityError('Access denied', { userId: '123' })
+      expect(error.message).toBe('Access denied')
+      expect(error.code).toBe('SECURITY_ERROR')
+      expect(error.details).toEqual({ userId: '123' })
+      expect(error.name).toBe('SecurityError')
+    })
+  })
 
   describe('isAgentError', () => {
     it('should return true for AgentError instances', () => {
-      expect(isAgentError(new AgentError('test', 'TEST'))).toBe(true);
-      expect(isAgentError(new AgentExecutionError('test'))).toBe(true);
-    });
+      const error = new AgentError('Test', 'TEST')
+      expect(isAgentError(error)).toBe(true)
+    })
 
-    it('should return false for non-AgentError instances', () => {
-      expect(isAgentError(new Error('test'))).toBe(false);
-      expect(isAgentError('string')).toBe(false);
-      expect(isAgentError(null)).toBe(false);
-      expect(isAgentError(undefined)).toBe(false);
-    });
-  });
+    it('should return true for specialized error instances', () => {
+      const error = new InitializationError('Test')
+      expect(isAgentError(error)).toBe(true)
+    })
 
-  describe('wrapError', () => {
-    it('should return original error if already AgentError', () => {
-      const original = new AgentExecutionError('test');
-      expect(wrapError(original)).toBe(original);
-    });
+    it('should return false for standard Error', () => {
+      const error = new Error('Test')
+      expect(isAgentError(error)).toBe(false)
+    })
 
-    it('should wrap Error instance', () => {
-      const error = new Error('test');
-      const wrapped = wrapError(error);
+    it('should return false for non-error values', () => {
+      expect(isAgentError('string')).toBe(false)
+      expect(isAgentError(123)).toBe(false)
+      expect(isAgentError({})).toBe(false)
+      expect(isAgentError(null)).toBe(false)
+      expect(isAgentError(undefined)).toBe(false)
+    })
+  })
 
-      expect(wrapped instanceof AgentError).toBe(true);
-      expect(wrapped.message).toBe('test');
-      expect(wrapped.code).toBe('UNKNOWN_ERROR');
-    });
+  describe('handleError', () => {
+    it('should return original error if it is an AgentError', () => {
+      const originalError = new AgentError('Test', 'TEST')
+      const handledError = handleError(originalError)
+      expect(handledError).toBe(originalError)
+    })
 
-    it('should wrap non-Error values', () => {
-      const wrapped1 = wrapError('string error');
-      expect(wrapped1.message).toBe('string error');
+    it('should wrap standard Error in AgentError', () => {
+      const originalError = new Error('Test')
+      const handledError = handleError(originalError)
+      expect(handledError).toBeInstanceOf(AgentError)
+      expect(handledError.code).toBe('UNKNOWN_ERROR')
+      expect(handledError.details?.originalError).toBeDefined()
+    })
 
-      const wrapped2 = wrapError({ custom: 'error' });
-      expect(wrapped2.message).toBe('[object Object]');
-      expect(wrapped2.details?.originalError).toBe('{"custom":"error"}');
-    });
-
-    it('should use custom error code', () => {
-      const wrapped = wrapError(new Error('test'), 'CUSTOM_ERROR');
-      expect(wrapped.code).toBe('CUSTOM_ERROR');
-    });
-
-    it('should handle null and undefined', () => {
-      const wrapped1 = wrapError(null);
-      expect(wrapped1.message).toBe('null');
-
-      const wrapped2 = wrapError(undefined);
-      expect(wrapped2.message).toBe('undefined');
-    });
-  });
-
-  describe('Error inheritance', () => {
-    it('should maintain proper inheritance chain', () => {
-      const error = new AgentExecutionError('test');
-      expect(error instanceof Error).toBe(true);
-      expect(error instanceof AgentError).toBe(true);
-      expect(error instanceof AgentExecutionError).toBe(true);
-    });
-
-    it('should preserve stack trace', () => {
-      const error = new AgentExecutionError('test');
-      expect(error.stack).toBeDefined();
-      expect(error.stack?.includes('AgentExecutionError')).toBe(true);
-    });
-  });
-});
+    it('should handle non-error values', () => {
+      const handledError = handleError('not an error')
+      expect(handledError).toBeInstanceOf(AgentError)
+      expect(handledError.code).toBe('UNKNOWN_ERROR')
+      expect(handledError.details?.originalError).toBe('not an error')
+    })
+  })
+})
