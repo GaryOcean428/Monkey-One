@@ -1,218 +1,215 @@
-import { AgentMonitor } from '../../lib/monitoring/AgentMonitor';
-import { MonitoringMetrics } from '../../types';
+import { AgentMonitor } from '@/lib/monitoring/AgentMonitor'
+import { Agent, AgentStatus, AgentType, Message, MessageType } from '@/types'
+import { RuntimeError } from '@/lib/errors/AgentErrors'
+
+class MockAgent implements Agent {
+  id: string
+  type: AgentType
+  status: AgentStatus
+  capabilities: string[]
+
+  constructor(id: string, type: AgentType, status: AgentStatus, capabilities: string[]) {
+    this.id = id
+    this.type = type
+    this.status = status
+    this.capabilities = capabilities
+  }
+
+  async initialize(): Promise<void> {
+    // Mock implementation
+  }
+
+  async handleMessage(message: Message): Promise<Message> {
+    // Mock implementation
+    return {
+      id: 'response-' + message.id,
+      type: MessageType.RESPONSE,
+      sender: this.id,
+      recipient: message.sender,
+      content: 'mock response',
+      timestamp: Date.now()
+    }
+  }
+}
 
 describe('AgentMonitor', () => {
-  let monitor: AgentMonitor;
+  let monitor: AgentMonitor
+  let mockAgent: Agent
+  let mockMessage: Message
 
   beforeEach(() => {
-    monitor = new AgentMonitor();
-    jest.useFakeTimers();
-  });
+    monitor = new AgentMonitor()
+    mockAgent = new MockAgent(
+      'test-agent',
+      AgentType.BASE,
+      AgentStatus.IDLE,
+      ['test']
+    )
+    mockMessage = {
+      id: 'msg-1',
+      type: MessageType.COMMAND,
+      sender: 'test-agent',
+      recipient: 'other-agent',
+      content: 'test content',
+      timestamp: Date.now()
+    }
+  })
 
-  afterEach(() => {
-    jest.useRealTimers();
-  });
-
-  describe('operation tracking', () => {
-    it('should track operation duration', () => {
-      monitor.startOperation('test');
-      jest.advanceTimersByTime(100);
-      monitor.endOperation('test');
-
-      const metrics = monitor.getOperationMetrics('test') as Record<string, number>;
-      expect(metrics.lastDuration).toBeGreaterThanOrEqual(100);
-      expect(metrics.count).toBe(1);
-    });
-
-    it('should calculate average duration correctly', () => {
-      // First operation
-      monitor.startOperation('test');
-      jest.advanceTimersByTime(100);
-      monitor.endOperation('test');
-
-      // Second operation
-      monitor.startOperation('test');
-      jest.advanceTimersByTime(200);
-      monitor.endOperation('test');
-
-      const metrics = monitor.getOperationMetrics('test') as Record<string, number>;
-      expect(metrics.avgDuration).toBe(150); // (100 + 200) / 2
-      expect(metrics.count).toBe(2);
-    });
-
-    it('should ignore end operation without start', () => {
-      monitor.endOperation('nonexistent');
-      const metrics = monitor.getOperationMetrics('nonexistent');
-      expect(metrics).toEqual({});
-    });
-
-    it('should track multiple operations independently', () => {
-      monitor.startOperation('op1');
-      monitor.startOperation('op2');
-      jest.advanceTimersByTime(100);
-      monitor.endOperation('op1');
-      jest.advanceTimersByTime(100);
-      monitor.endOperation('op2');
-
-      const metrics = monitor.getMetrics() as unknown as MonitoringMetrics;
-      expect(metrics.operations).toHaveLength(2);
+  describe('agent registration', () => {
+    it('should register new agent', () => {
+      monitor.registerAgent(mockAgent)
+      const metrics = monitor.getAgentMetrics(mockAgent.id)
       
-      const op1Metrics = monitor.getOperationMetrics('op1') as Record<string, number>;
-      const op2Metrics = monitor.getOperationMetrics('op2') as Record<string, number>;
-      expect(op1Metrics.lastDuration).toBeLessThan(op2Metrics.lastDuration);
-    });
-  });
+      expect(metrics).toBeDefined()
+      expect(metrics.messageCount).toBe(0)
+      expect(metrics.status).toBe(AgentStatus.IDLE)
+    })
 
-  describe('error handling', () => {
-    it('should track error count', () => {
-      monitor.logError(new Error('test error'));
-      const metrics = monitor.getMetrics() as unknown as MonitoringMetrics;
-      expect(metrics.errorCount).toBe(1);
-    });
+    it('should throw error when registering duplicate agent', () => {
+      monitor.registerAgent(mockAgent)
+      expect(() => monitor.registerAgent(mockAgent)).toThrow(RuntimeError)
+    })
 
-    it('should store last error', () => {
-      const error1 = new Error('first error');
-      const error2 = new Error('second error');
+    it('should unregister agent', () => {
+      monitor.registerAgent(mockAgent)
+      monitor.unregisterAgent(mockAgent.id)
+      expect(() => monitor.getAgentMetrics(mockAgent.id)).toThrow(RuntimeError)
+    })
+  })
+
+  describe('message tracking', () => {
+    beforeEach(() => {
+      monitor.registerAgent(mockAgent)
+    })
+
+    it('should track command message', () => {
+      monitor.trackMessage(mockMessage)
+      const metrics = monitor.getAgentMetrics(mockAgent.id)
       
-      monitor.logError(error1);
-      monitor.logError(error2);
+      expect(metrics.messageCount).toBe(1)
+      expect(metrics.errorCount).toBe(0)
+    })
+
+    it('should track error message', () => {
+      const errorMessage = { ...mockMessage, type: MessageType.ERROR }
+      monitor.trackMessage(errorMessage)
+      const metrics = monitor.getAgentMetrics(mockAgent.id)
       
-      const metrics = monitor.getMetrics() as unknown as MonitoringMetrics;
-      expect(metrics.lastError).toBe(error2);
-      expect(metrics.errorCount).toBe(2);
-    });
+      expect(metrics.messageCount).toBe(1)
+      expect(metrics.errorCount).toBe(1)
+    })
 
-    it('should not track errors when inactive', () => {
-      monitor.shutdown();
-      monitor.logError(new Error('test error'));
-      const metrics = monitor.getMetrics() as unknown as MonitoringMetrics;
-      expect(metrics.errorCount).toBe(0);
-    });
-  });
+    it('should calculate response time', () => {
+      // Send command
+      monitor.trackMessage(mockMessage)
 
-  describe('custom metrics', () => {
-    it('should store and retrieve custom metrics', () => {
-      monitor.addMetric('customMetric', 42);
-      const metrics = monitor.getMetrics() as Record<string, unknown>;
-      expect((metrics.customMetrics as Record<string, number>).customMetric).toBe(42);
-    });
+      // Simulate delay
+      jest.advanceTimersByTime(100)
 
-    it('should update existing custom metrics', () => {
-      monitor.addMetric('metric', 1);
-      monitor.addMetric('metric', 2);
-      const metrics = monitor.getMetrics() as Record<string, unknown>;
-      expect((metrics.customMetrics as Record<string, number>).metric).toBe(2);
-    });
-
-    it('should handle multiple custom metrics', () => {
-      monitor.addMetric('metric1', 1);
-      monitor.addMetric('metric2', 2);
-      const metrics = monitor.getMetrics() as Record<string, unknown>;
-      expect(metrics.customMetrics).toEqual({
-        metric1: 1,
-        metric2: 2
-      });
-    });
-  });
-
-  describe('lifecycle management', () => {
-    it('should stop tracking after shutdown', () => {
-      monitor.startOperation('test');
-      monitor.shutdown();
-      monitor.endOperation('test');
-      
-      const metrics = monitor.getMetrics() as unknown as MonitoringMetrics;
-      expect(metrics.operations).toHaveLength(0);
-      expect(metrics.successCount).toBe(0);
-    });
-
-    it('should clear all metrics on reset', () => {
-      // Add various metrics
-      monitor.startOperation('test');
-      monitor.endOperation('test');
-      monitor.logError(new Error('test'));
-      monitor.addMetric('custom', 1);
-
-      // Reset
-      monitor.reset();
-      
-      const metrics = monitor.getMetrics() as unknown as MonitoringMetrics;
-      expect(metrics.operations).toHaveLength(0);
-      expect(metrics.errorCount).toBe(0);
-      expect((metrics as unknown as Record<string, unknown>).customMetrics).toEqual({});
-      expect(metrics.successCount).toBe(0);
-    });
-
-    it('should maintain active state after reset', () => {
-      monitor.reset();
-      monitor.startOperation('test');
-      monitor.endOperation('test');
-      
-      const metrics = monitor.getMetrics() as unknown as MonitoringMetrics;
-      expect(metrics.operations).toHaveLength(1);
-    });
-  });
-
-  describe('performance metrics', () => {
-    it('should calculate success rate correctly', () => {
-      // Successful operation
-      monitor.startOperation('test');
-      monitor.endOperation('test');
-
-      // Error operation
-      monitor.startOperation('test.error');
-      monitor.endOperation('test.error');
-
-      const metrics = monitor.getOperationMetrics('test') as Record<string, number>;
-      expect(metrics.successRate).toBe(0.5);
-    });
-
-    it('should calculate throughput', () => {
-      // Perform 10 operations over 1 second
-      for (let i = 0; i < 10; i++) {
-        monitor.startOperation('test');
-        jest.advanceTimersByTime(100);
-        monitor.endOperation('test');
+      // Send response
+      const responseMessage: Message = {
+        id: 'msg-2',
+        type: MessageType.RESPONSE,
+        sender: 'test-agent',
+        recipient: 'other-agent',
+        content: 'response',
+        timestamp: Date.now(),
+        metadata: {
+          originalMessageId: mockMessage.id
+        }
       }
+      monitor.trackMessage(responseMessage)
 
-      const metrics = monitor.getOperationMetrics('test') as Record<string, number>;
-      expect(metrics.throughput).toBe(10); // 10 operations per second
-    });
+      const metrics = monitor.getAgentMetrics(mockAgent.id)
+      expect(metrics.averageResponseTime).toBeGreaterThan(0)
+    })
 
-    it('should handle zero duration operations', () => {
-      monitor.startOperation('test');
-      monitor.endOperation('test');
+    it('should throw error when tracking message from unregistered agent', () => {
+      const unregisteredMessage = { ...mockMessage, sender: 'unknown-agent' }
+      expect(() => monitor.trackMessage(unregisteredMessage)).toThrow(RuntimeError)
+    })
+  })
+
+  describe('status management', () => {
+    beforeEach(() => {
+      monitor.registerAgent(mockAgent)
+    })
+
+    it('should update agent status', () => {
+      monitor.updateAgentStatus(mockAgent.id, AgentStatus.BUSY)
+      const metrics = monitor.getAgentMetrics(mockAgent.id)
+      expect(metrics.status).toBe(AgentStatus.BUSY)
+    })
+
+    it('should throw error when updating status of unregistered agent', () => {
+      expect(() => 
+        monitor.updateAgentStatus('unknown-agent', AgentStatus.BUSY)
+      ).toThrow(RuntimeError)
+    })
+  })
+
+  describe('metrics and statistics', () => {
+    beforeEach(() => {
+      monitor.registerAgent(mockAgent)
+      monitor.trackMessage(mockMessage)
+    })
+
+    it('should provide monitoring stats', () => {
+      const stats = monitor.getMonitoringStats()
       
-      const metrics = monitor.getOperationMetrics('test') as Record<string, number>;
-      expect(metrics.throughput).toBeDefined();
-      expect(Number.isFinite(metrics.throughput)).toBe(true);
-    });
-  });
+      expect(stats.totalMessages).toBe(1)
+      expect(stats.totalErrors).toBe(0)
+      expect(stats.agentMetrics[mockAgent.id]).toBeDefined()
+    })
 
-  describe('resource utilization', () => {
-    it('should include system metrics', () => {
-      const metrics = monitor.getMetrics() as Record<string, unknown>;
-      expect(metrics.memoryUsage).toBeDefined();
-      expect(metrics.resourceUtilization).toBeDefined();
-      expect(metrics.uptime).toBeDefined();
-    });
-
-    it('should track active operations', () => {
-      monitor.startOperation('test1');
-      monitor.startOperation('test2');
+    it('should get active agents', () => {
+      monitor.updateAgentStatus(mockAgent.id, AgentStatus.BUSY)
+      const activeAgents = monitor.getActiveAgents()
       
-      const metrics = monitor.getMetrics() as Record<string, unknown>;
-      expect((metrics.activeOperations as string[]).includes('test1')).toBe(true);
-      expect((metrics.activeOperations as string[]).includes('test2')).toBe(true);
-      expect((metrics.resourceUtilization as Record<string, number>).activeOperationsCount).toBe(2);
-    });
+      expect(activeAgents).toHaveLength(1)
+      expect(activeAgents[0].id).toBe(mockAgent.id)
+    })
 
-    it('should clear active operations on shutdown', () => {
-      monitor.startOperation('test');
-      monitor.shutdown();
+    it('should get idle agents', () => {
+      const idleAgents = monitor.getIdleAgents()
+      expect(idleAgents).toHaveLength(1)
+      expect(idleAgents[0].id).toBe(mockAgent.id)
+    })
+
+    it('should get errored agents', () => {
+      monitor.updateAgentStatus(mockAgent.id, AgentStatus.ERROR)
+      const erroredAgents = monitor.getErroredAgents()
       
-      const metrics = monitor.getMetrics() as Record<string, unknown>;
-      expect((metrics.activeOperations as string[]).length).toBe(0);
-    });
-  });
-});
+      expect(erroredAgents).toHaveLength(1)
+      expect(erroredAgents[0].id).toBe(mockAgent.id)
+    })
+  })
+
+  describe('metrics clearing', () => {
+    beforeEach(() => {
+      monitor.registerAgent(mockAgent)
+      monitor.trackMessage(mockMessage)
+    })
+
+    it('should clear metrics for specific agent', () => {
+      monitor.clearMetrics(mockAgent.id)
+      const metrics = monitor.getAgentMetrics(mockAgent.id)
+      
+      expect(metrics.messageCount).toBe(0)
+      expect(metrics.errorCount).toBe(0)
+      expect(metrics.averageResponseTime).toBe(0)
+    })
+
+    it('should clear all metrics', () => {
+      monitor.clearAllMetrics()
+      const stats = monitor.getMonitoringStats()
+      
+      expect(stats.totalMessages).toBe(0)
+      expect(stats.totalErrors).toBe(0)
+    })
+
+    it('should throw error when clearing metrics for unregistered agent', () => {
+      expect(() => monitor.clearMetrics('unknown-agent')).toThrow(RuntimeError)
+    })
+  })
+})
