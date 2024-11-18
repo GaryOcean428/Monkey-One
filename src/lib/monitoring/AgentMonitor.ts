@@ -20,7 +20,7 @@ export class AgentMonitor implements IAgentMonitor {
   }
 
   startOperation(name: string): void {
-    if (!this.active) return;
+    if (!this.active) {
     
     this.operationStartTimes.set(name, Date.now());
   }
