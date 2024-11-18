@@ -101,7 +101,7 @@ export class MessageQueue implements MessageQueueInterface {
           this.metrics.processedCount++;
         }
 
-        if (batch.length === size) break;
+        if (batch.length === size) {
       }
 
       // Update processing time metrics
