@@ -205,13 +205,11 @@ export class HTTPTool {
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error));
         
-        if (error instanceof TypeError && error.message === 'Failed to fetch') {
-          // Network error, can retry
-          if (attempt < retries) {
-            await new Promise(resolve => setTimeout(resolve, HTTPTool.RETRY_DELAY * (attempt + 1)));
-            continue;
-          }
+        if (error instanceof TypeError && error.message === 'Failed to fetch' && attempt < retries) {
+              await new Promise(resolve => setTimeout(resolve, HTTPTool.RETRY_DELAY * (attempt + 1)));
+              continue;
         }
+
         
         throw lastError;
       }
