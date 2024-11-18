@@ -144,7 +144,7 @@ export class AgentMonitor implements IAgentMonitor {
 
   private calculateSuccessRate(operationName: string): number {
     const operation = this.metrics.operations.find(op => op.name === operationName);
-    if (!operation) return 0;
+    if (!operation) {
 
     const totalAttempts = operation.count;
     const errorCount = this.metrics.operations
