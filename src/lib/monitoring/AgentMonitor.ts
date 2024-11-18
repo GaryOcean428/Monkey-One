@@ -112,7 +112,7 @@ export class AgentMonitor implements IAgentMonitor {
   }
 
   addMetric(name: string, value: number): void {
-    if (!this.active) return;
+    if (!this.active) {
     this.customMetrics.set(name, value);
   }
 
