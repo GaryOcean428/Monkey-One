@@ -206,7 +206,7 @@ export class HTTPTool {
         lastError = error instanceof Error ? error : new Error(String(error));
         
         if (error instanceof TypeError && error.message === 'Failed to fetch' && attempt < retries) {
-              await new Promise(resolve => setTimeout(resolve, HTTPTool.RETRY_DELAY * (attempt + 1)));
+              await new Promise(resolve => setTimeout(resolve, HTTPTool.RETRY_DELAY * Math.pow(2, attempt) + Math.floor(Math.random() * 1000)));
               continue;
         }
 
