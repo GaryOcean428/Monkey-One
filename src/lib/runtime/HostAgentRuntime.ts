@@ -165,7 +165,7 @@ export class HostAgentRuntime extends AgentRuntime {
   }
 
   private async recoverState(): Promise<void> {
-    if (!this.persistenceEnabled || !this.autoRecover) return
+    if (!this.persistenceEnabled || !this.autoRecover) {
 
     try {
       // In a real implementation, this would read from a file or database
