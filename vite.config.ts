@@ -10,6 +10,13 @@ export default defineConfig({
     },
   },
   server: {
+    // Add explicit port configuration
+    port: 5173,
+    strictPort: true,
+    // Add WebSocket configuration
+    hmr: {
+      port: 5173
+    },
     proxy: {
       '/api': {
         target: process.env.VITE_API_ENDPOINT || 'http://localhost:3000',
