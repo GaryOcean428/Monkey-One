@@ -1,200 +1,146 @@
-import { Agent, AgentStatus, Message, MessageType } from '@/types'
-import { RuntimeError } from '../errors/AgentErrors'
-
-export interface AgentMetrics {
-  messageCount: number
-  errorCount: number
-  averageResponseTime: number
-  lastActive: number
-  status: AgentStatus
-}
-
-export interface MonitoringStats {
-  activeAgents: number
-  totalMessages: number
-  totalErrors: number
-  agentMetrics: Record<string, AgentMetrics>
-}
+import type { Message, AgentMetrics } from '../../types';
 
 export class AgentMonitor {
-  private agents: Map<string, Agent>
-  private metrics: Map<string, AgentMetrics>
-  private messageTimestamps: Map<string, number>
+  private active: boolean = true;
+  private metrics: AgentMetrics = {
+    operationDuration: {},
+    errorCount: 0,
+    successCount: 0,
+    avgProcessingTime: 0,
+    operations: []
+  };
+  private operationStartTimes: Map<string, number> = new Map();
+  private customMetrics: Map<string, number> = new Map();
 
-  constructor() {
-    this.agents = new Map()
-    this.metrics = new Map()
-    this.messageTimestamps = new Map()
+  trackMessage(): void {
+    // ...logging logic...
   }
 
-  public registerAgent(agent: Agent): void {
-    if (this.agents.has(agent.id)) {
-      throw new RuntimeError(
-        'Agent already registered',
-        { agentId: agent.id }
-      )
-    }
-
-    this.agents.set(agent.id, agent)
-    this.metrics.set(agent.id, {
-      messageCount: 0,
-      errorCount: 0,
-      averageResponseTime: 0,
-      lastActive: Date.now(),
-      status: agent.status
-    })
+  getAgentMetrics(agentId: string): AgentMetrics {
+    // ...metrics retrieval...
+    return {} as AgentMetrics;
   }
 
-  public unregisterAgent(agentId: string): void {
-    this.agents.delete(agentId)
-    this.metrics.delete(agentId)
+  endOperation(name: string, metrics?: Record<string, unknown>): void {
+    if (!this.active) return;
+
+    const startTime = this.operationStartTimes.get(name);
+    if (!startTime) return;
+
+    const duration = Date.now() - startTime;
+    this.operationStartTimes.delete(name);
+
+    // Update operation metrics
+    let operation = this.metrics.operations.find(op => op.name === name);
+    if (!operation) {
+      operation = {
+        name,
+        count: 0,
+        avgDuration: 0,
+        lastDuration: 0
+      };
+      this.metrics.operations.push(operation);
+    }
+
+    operation.count++;
+    operation.lastDuration = duration;
+    operation.avgDuration = 
+      (operation.avgDuration * (operation.count - 1) + duration) / operation.count;
+
+    // Update overall metrics
+    this.metrics.operationDuration[name] = 
+      (this.metrics.operationDuration[name] || 0) + duration;
+    this.metrics.successCount++;
+    this.updateAverageProcessingTime(duration);
+
+    // Store additional metrics if provided
+    if (metrics) {
+      Object.entries(metrics).forEach(([key, value]) => {
+        if (typeof value === 'number') {
+          this.addMetric(`${name}.${key}`, value);
+        }
+      });
+    }
   }
 
-  public trackMessage(message: Message): void {
-    const agentId = message.sender
-    const metrics = this.metrics.get(agentId)
+  logError(error: Error): void {
+    if (!this.active) return;
 
-    if (!metrics) {
-      throw new RuntimeError(
-        'Agent not registered',
-        { agentId }
-      )
-    }
-
-    // Update message count
-    metrics.messageCount++
-    metrics.lastActive = Date.now()
-
-    // Track message timestamp for response time calculation
-    if (message.type === MessageType.COMMAND || message.type === MessageType.TASK) {
-      this.messageTimestamps.set(message.id, Date.now())
-    }
-
-    // Update error count
-    if (message.type === MessageType.ERROR) {
-      metrics.errorCount++
-    }
-
-    // Calculate response time for responses
-    if (message.type === MessageType.RESPONSE && message.metadata?.originalMessageId) {
-      const startTime = this.messageTimestamps.get(message.metadata.originalMessageId as string)
-      if (startTime) {
-        const responseTime = Date.now() - startTime
-        metrics.averageResponseTime = 
-          (metrics.averageResponseTime * (metrics.messageCount - 1) + responseTime) / 
-          metrics.messageCount
-        this.messageTimestamps.delete(message.metadata.originalMessageId as string)
-      }
-    }
-
-    this.metrics.set(agentId, metrics)
+    this.metrics.errorCount++;
+    this.metrics.lastError = error;
   }
 
-  public updateAgentStatus(agentId: string, status: AgentStatus): void {
-    const metrics = this.metrics.get(agentId)
-    if (!metrics) {
-      throw new RuntimeError(
-        'Agent not registered',
-        { agentId }
-      )
-    }
-
-    metrics.status = status
-    metrics.lastActive = Date.now()
-    this.metrics.set(agentId, metrics)
-  }
-
-  public getAgentMetrics(agentId: string): AgentMetrics {
-    const metrics = this.metrics.get(agentId)
-    if (!metrics) {
-      throw new RuntimeError(
-        'Agent not registered',
-        { agentId }
-      )
-    }
-    return { ...metrics }
-  }
-
-  public getMonitoringStats(): MonitoringStats {
-    let totalMessages = 0
-    let totalErrors = 0
-    const agentMetrics: Record<string, AgentMetrics> = {}
-
-    this.metrics.forEach((metrics, agentId) => {
-      totalMessages += metrics.messageCount
-      totalErrors += metrics.errorCount
-      agentMetrics[agentId] = { ...metrics }
-    })
+  getMetrics(): Record<string, unknown> {
+    const customMetricsObj: Record<string, number> = {};
+    this.customMetrics.forEach((value, key) => {
+      customMetricsObj[key] = value;
+    });
 
     return {
-      activeAgents: Array.from(this.metrics.values()).filter(
-        m => m.status === AgentStatus.BUSY
-      ).length,
-      totalMessages,
-      totalErrors,
-      agentMetrics
-    }
+      ...this.metrics,
+      customMetrics: customMetricsObj,
+      activeOperations: Array.from(this.operationStartTimes.keys()),
+      uptime: process.uptime(),
+      memoryUsage: process.memoryUsage(),
+      resourceUtilization: {
+        cpuUsage: process.cpuUsage(),
+        activeOperationsCount: this.operationStartTimes.size,
+        totalOperations: this.metrics.successCount + this.metrics.errorCount
+      }
+    };
   }
 
-  public getActiveAgents(): Agent[] {
-    return Array.from(this.agents.values()).filter(
-      agent => agent.status === AgentStatus.BUSY
-    )
+  shutdown(): void {
+    this.active = false;
+    this.operationStartTimes.clear();
   }
 
-  public getIdleAgents(): Agent[] {
-    return Array.from(this.agents.values()).filter(
-      agent => agent.status === AgentStatus.IDLE
-    )
-  }
-
-  public getErroredAgents(): Agent[] {
-    return Array.from(this.agents.values()).filter(
-      agent => agent.status === AgentStatus.ERROR
-    )
-  }
-
-  public clearMetrics(agentId: string): void {
-    const metrics = this.metrics.get(agentId)
-    if (!metrics) {
-      throw new RuntimeError(
-        'Agent not registered',
-        { agentId }
-      )
-    }
-
-    this.metrics.set(agentId, {
-      messageCount: 0,
+  reset(): void {
+    this.metrics = {
+      operationDuration: {},
       errorCount: 0,
-      averageResponseTime: 0,
-      lastActive: Date.now(),
-      status: metrics.status
-    })
+      successCount: 0,
+      avgProcessingTime: 0,
+      operations: []
+    };
+    this.operationStartTimes.clear();
+    this.customMetrics.clear();
   }
 
-  public clearAllMetrics(): void {
-    this.metrics.forEach((_, agentId) => {
-      this.clearMetrics(agentId)
-    })
+  addMetric(name: string, value: number): void {
+    if (!this.active) return;
+    this.customMetrics.set(name, value);
   }
 
-  public startOperation(name: string): void {
-    if (!this.active) {
-      this.operationStartTimes.set(name, Date.now());
-    }
+  getOperationMetrics(name: string): Record<string, unknown> {
+    const operation = this.metrics.operations.find(op => op.name === name);
+    if (!operation) return {};
+
+    return {
+      count: operation.count,
+      avgDuration: operation.avgDuration,
+      lastDuration: operation.lastDuration,
+      totalDuration: this.metrics.operationDuration[name] || 0,
+      successRate: this.calculateSuccessRate(name),
+      throughput: this.calculateThroughput(name)
+    };
   }
 
-  public addMetric(name: string, value: number): void {
-    if (!this.active) {
-      this.customMetrics.set(name, value);
-    }
+  clearMetrics(): void {
+    this.reset();
+  }
+
+  private updateAverageProcessingTime(duration: number): void {
+    const totalOperations = this.metrics.successCount + this.metrics.errorCount;
+    const oldAvg = this.metrics.avgProcessingTime;
+    
+    this.metrics.avgProcessingTime = 
+      (oldAvg * (totalOperations - 1) + duration) / totalOperations;
   }
 
   private calculateSuccessRate(operationName: string): number {
     const operation = this.metrics.operations.find(op => op.name === operationName);
-    if (!operation) {
-      return 0;
-    }
+    if (!operation) return 0;
 
     const totalAttempts = operation.count;
     const errorCount = this.metrics.operations
@@ -202,5 +148,13 @@ export class AgentMonitor {
       .reduce((sum, op) => sum + op.count, 0);
 
     return totalAttempts > 0 ? (totalAttempts - errorCount) / totalAttempts : 0;
+  }
+
+  private calculateThroughput(operationName: string): number {
+    const operation = this.metrics.operations.find(op => op.name === operationName);
+    if (!operation || operation.count === 0) return 0;
+
+    const totalDuration = this.metrics.operationDuration[operationName] || 0;
+    return totalDuration > 0 ? (operation.count * 1000) / totalDuration : 0;
   }
 }

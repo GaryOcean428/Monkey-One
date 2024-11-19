@@ -96,9 +96,9 @@ export class FunctionTool implements Tool {
       // Check parameter types
       if (options.types) {
         for (const [param, type] of Object.entries(options.types)) {
-          if (param in args && typeof args[param] !== type) {
-            throw new ToolExecutionError(
-              `Invalid type for parameter ${param}: expected ${type}, got ${typeof args[param]}`,
+          if (param in args) {
+            if (typeof args[param] !== type) {
+              throw new ToolExecutionError(
               {
                 toolName: options.name,
                 parameterName: param,
