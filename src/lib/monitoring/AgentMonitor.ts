@@ -29,7 +29,7 @@ export class AgentMonitor implements IAgentMonitor {
     if (!this.active) {
 
     const startTime = this.operationStartTimes.get(name);
-    if (!startTime) return;
+    if (!startTime) {
 
     const duration = Date.now() - startTime;
     this.operationStartTimes.delete(name);
