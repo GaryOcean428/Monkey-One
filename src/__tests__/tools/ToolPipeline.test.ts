@@ -280,4 +280,4 @@ describe('ToolPipeline', () => {
       );
     });
   });
-});
+}); // Add missing closing bracket
