@@ -68,7 +68,7 @@ export class AgentMonitor implements IAgentMonitor {
   }
 
   logError(error: Error): void {
-    if (!this.active) return;
+    if (!this.active) {
 
     this.metrics.errorCount++;
     this.metrics.lastError = error;
