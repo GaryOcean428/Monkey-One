@@ -114,7 +114,7 @@ export class AgentMonitor {
 
   getOperationMetrics(name: string): Record<string, unknown> {
     const operation = this.metrics.operations.find(op => op.name === name);
-    if (!operation) return {};
+    if (!operation) {
 
     return {
       count: operation.count,
