@@ -1,9 +1,17 @@
 import type { Tool } from '../../types';
 
+export interface ToolOptions {
+  timeout: number;
+  rateLimit?: number;
+  cache?: boolean;
+  dependencies?: string[];
+  retries?: number;
+}
+
 export class ToolPipeline {
   private tools: Tool[] = [];
 
-  registerTool(tool: Tool) {
+  registerTool(tool: Tool, options: ToolOptions) {
     // Check for duplicate tools
     if (!this.tools.some(existingTool => existingTool.name === tool.name)) {
       this.tools.push(tool);
