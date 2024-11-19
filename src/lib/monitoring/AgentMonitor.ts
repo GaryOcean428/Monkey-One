@@ -156,7 +156,7 @@ export class AgentMonitor implements IAgentMonitor {
 
   private calculateThroughput(operationName: string): number {
     const operation = this.metrics.operations.find(op => op.name === operationName);
-    if (!operation || operation.count === 0) return 0;
+    if (!operation || operation.count === 0) {
 
     const totalDuration = this.metrics.operationDuration[operationName] || 0;
     return totalDuration > 0 ? (operation.count * 1000) / totalDuration : 0;
