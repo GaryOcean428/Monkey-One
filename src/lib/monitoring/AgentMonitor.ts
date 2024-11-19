@@ -1,14 +1,26 @@
-import type { Message } from '../../types';
-// Added import for AgentMetrics
-import { AgentMetrics } from '../../types';
+import type { Message, AgentMetrics } from '../../types';
 
 export class AgentMonitor {
-  trackMessage(): void {
+  trackMessage(message: Message): void {
     // ...logging logic...
+  }
+
+  startOperation(name: string): void {
+    // ...tracking logic...
+  }
+
+  endOperation(name: string, metrics?: Record<string, unknown>): void {
+    // ...tracking logic...
   }
 
   getAgentMetrics(agentId: string): AgentMetrics {
     // ...metrics retrieval...
-    return {} as AgentMetrics;
+    return {
+      totalMessages: 0,
+      averageResponseTime: 0,
+      successRate: 0,
+      lastActive: Date.now(),
+      status: 'active'
+    };
   }
 }
