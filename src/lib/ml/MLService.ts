@@ -1,11 +1,12 @@
-import { getStorage } from 'firebase/storage';
+import { getStorage, ref } from 'firebase/storage';
 import { getFirestore, collection, addDoc, query, where, getDocs } from 'firebase/firestore';
 import { app } from '../firebase/config';
 import * as tf from '@tensorflow/tfjs';
+import type { App } from 'firebase/app';
 
 export class MLService {
-  private storage = getStorage(app);
-  private firestore = getFirestore(app);
+  private storage = getStorage(app as App);
+  private firestore = getFirestore(app as App);
   private model: tf.LayersModel | null = null;
 
   async initialize() {
@@ -44,16 +45,20 @@ export class MLService {
 
   private async loadModel(): Promise<tf.LayersModel> {
     // Try to load from Firebase Storage
-    const modelRef = this.storage.ref('ml-models/latest');
+    const modelRef = this.getModelRef('ml-models/latest');
     const modelUrl = await modelRef.getDownloadURL();
     return await tf.loadLayersModel(modelUrl);
+  }
+
+  private getModelRef(path: string) {
+    return ref(this.storage, path);
   }
 
   private async saveModel() {
     if (!this.model) return;
 
     const modelArtifacts = await this.model.save(tf.io.withSaveHandler(async (artifacts) => {
-      const modelRef = this.storage.ref('ml-models/latest');
+      const modelRef = this.getModelRef('ml-models/latest');
       await modelRef.put(new Blob([JSON.stringify(artifacts)]));
       return { modelArtifactsInfo: { dateSaved: new Date() } };
     }));
