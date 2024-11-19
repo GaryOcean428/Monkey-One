@@ -10,12 +10,10 @@ export default defineConfig({
     },
   },
   server: {
-    // Add explicit port configuration
     port: 5173,
-    strictPort: true,
-    // Add WebSocket configuration
+    host: true,
     hmr: {
-      port: 5173
+      clientPort: 24678 // Use a different port for WebSocket
     },
     proxy: {
       '/api': {
