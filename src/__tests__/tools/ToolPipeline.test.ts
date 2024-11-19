@@ -247,6 +247,8 @@ describe('ToolPipeline', () => {
       (tool.execute as jest.Mock).mockImplementation(() => {
         attempts++;
         if (attempts < 2) {
+          throw new Error('Temporary failure');
+        }
         return { success: true };
       });
 
