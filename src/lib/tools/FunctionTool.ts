@@ -75,7 +75,7 @@ export class FunctionTool implements Tool {
       types?: Record<string, string>;
     }
   ): Tool {
-    const validator = async (args: ToolArgs) => {
+    const validator = async (args: ToolArgs): Promise<void> => {
       // Check required parameters
       if (options.required) {
         for (const param of options.required) {
