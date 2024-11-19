@@ -3,16 +3,15 @@ import { Tool } from '../../types';
 import { ToolExecutionError } from '../../lib/errors/AgentErrors';
 import { AgentMonitor } from '../../lib/monitoring/AgentMonitor';
 
-// Move interfaces to top level
+// Type definitions
 interface ToolExecution {
   toolName: string;
   args: Record<string, unknown>;
 }
 
-// Augment ToolPipeline type to include executeBatch
 declare module '../../lib/tools/ToolPipeline' {
   interface ToolPipeline {
-    executeBatch(executions: ToolExecution[], parallel: boolean): Promise<unknown[]>;  
+    executeBatch(executions: ToolExecution[], parallel: boolean): Promise<unknown[]>;
   }
 }
 
