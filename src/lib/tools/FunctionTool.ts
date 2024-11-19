@@ -1,12 +1,12 @@
-import { Tool } from '../../types';
-import { ToolExecutionError } from '../errors/AgentErrors';
+import { Tool, ToolArgs } from './types';
+import { AgentExecutionError } from '../errors/AgentErrors';
 
-type ToolFunction = (args: Record<string, unknown>) => Promise<unknown>;
+type ToolFunction = (args: ToolArgs) => Promise<unknown>;
 
 interface FunctionToolOptions {
   name: string;
   description: string;
-  validate?: (args: Record<string, unknown>) => void | Promise<void>;
+  validate?: (args: ToolArgs) => void | Promise<void>;
   transform?: (result: unknown) => unknown;
 }
 
@@ -14,7 +14,7 @@ export class FunctionTool implements Tool {
   readonly name: string;
   readonly description: string;
   private fn: ToolFunction;
-  private validate?: (args: Record<string, unknown>) => void | Promise<void>;
+  private validate?: (args: ToolArgs) => void | Promise<void>;
   private transform?: (result: unknown) => unknown;
 
   constructor(fn: ToolFunction, options: FunctionToolOptions) {
@@ -25,7 +25,7 @@ export class FunctionTool implements Tool {
     this.transform = options.transform;
   }
 
-  async execute(args: Record<string, unknown>): Promise<unknown> {
+  async execute(args: ToolArgs): Promise<unknown> {
     try {
       // Validate arguments if validator provided
       if (this.validate) {
@@ -34,15 +34,14 @@ export class FunctionTool implements Tool {
 
       // Execute function
       const result = await this.fn(args);
-
-      // Transform result if transformer provided
+      
+      // Return transformed result if transformer provided
       if (this.transform) {
         return this.transform(result);
       }
-
       return result;
     } catch (error) {
-      throw new ToolExecutionError(
+      throw new AgentExecutionError(
         `Error executing tool ${this.name}: ${error instanceof Error ? error.message : String(error)}`,
         {
           toolName: this.name,
@@ -59,7 +58,7 @@ export class FunctionTool implements Tool {
 
   // Helper method to create a tool from a synchronous function
   static fromSync(
-    fn: (args: Record<string, unknown>) => unknown,
+    fn: (args: ToolArgs) => unknown,
     options: FunctionToolOptions
   ): Tool {
     return new FunctionTool(
@@ -76,12 +75,12 @@ export class FunctionTool implements Tool {
       types?: Record<string, string>;
     }
   ): Tool {
-    const validator = async (args: Record<string, unknown>) => {
+    const validator = async (args: ToolArgs) => {
       // Check required parameters
       if (options.required) {
         for (const param of options.required) {
           if (!(param in args)) {
-            throw new ToolExecutionError(
+            throw new AgentExecutionError(
               `Missing required parameter: ${param}`,
               { 
                 toolName: options.name,
@@ -97,7 +96,7 @@ export class FunctionTool implements Tool {
       if (options.types) {
         for (const [param, type] of Object.entries(options.types)) {
           if (param in args && typeof args[param] !== type) {
-            throw new ToolExecutionError(
+            throw new AgentExecutionError(
               `Invalid type for parameter ${param}: expected ${type}, got ${typeof args[param]}`,
               {
                 toolName: options.name,
@@ -116,7 +115,7 @@ export class FunctionTool implements Tool {
         try {
           await options.validate(args);
         } catch (error) {
-          throw new ToolExecutionError(
+          throw new AgentExecutionError(
             `Validation error: ${error instanceof Error ? error.message : String(error)}`,
             {
               toolName: options.name,
