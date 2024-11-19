@@ -224,3 +224,11 @@ export interface ScrapingTask {
     timeout?: number;
   };
 }
+
+export interface AgentMetrics {
+  totalMessages: number;
+  averageResponseTime: number;
+  successRate: number;
+  lastActive: number;
+  status: 'active' | 'inactive';
+}

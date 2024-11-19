@@ -1,16 +1,18 @@
 import { BaseRuntime } from './BaseRuntime';
 
 export class HostAgentRuntime extends BaseRuntime {
+  private readonly address: string;
+
   constructor(address: string) {
     super();
-    // ...initialization logic...
+    this.address = address;
   }
 
   async start(): Promise<void> {
     // ...host service logic...
   }
 
-  // ...additional runtime methods...
+  async stop(): Promise<void> {
+    // ...stop service logic...
+  }
 }
-
-export { HostAgentRuntime };
