@@ -1,18 +1,32 @@
-import { ToolPipeline } from '../../lib/tools/ToolPipeline';
+import { ToolPipeline, ToolOptions } from '../../lib/tools/ToolPipeline';
 import { Tool } from '../../types';
 import { ToolExecutionError } from '../../lib/errors/AgentErrors';
 import { AgentMonitor } from '../../lib/monitoring/AgentMonitor';
+
+// Type definitions
+interface ToolExecution {
+  toolName: string;
+  args: Record<string, unknown>;
+}
+
+declare module '../../lib/tools/ToolPipeline' {
+  interface ToolPipeline {
+    executeBatch(executions: ToolExecution[], parallel: boolean): Promise<unknown[]>;
+  }
+}
 
 jest.mock('../../lib/monitoring/AgentMonitor');
 
 describe('ToolPipeline', () => {
   let pipeline: ToolPipeline;
   let mockMonitor: jest.Mocked<AgentMonitor>;
+  
+  const DEFAULT_TIMEOUT = 30000; // Add default timeout constant
 
   beforeEach(() => {
     jest.useFakeTimers();
     mockMonitor = new AgentMonitor() as jest.Mocked<AgentMonitor>;
-    pipeline = new ToolPipeline(mockMonitor);
+    pipeline = new ToolPipeline();
   });
 
   afterEach(() => {
@@ -34,24 +48,24 @@ describe('ToolPipeline', () => {
   describe('tool registration', () => {
     it('should register tools successfully', () => {
       const tool = createMockTool('test');
-      pipeline.registerTool(tool);
+      pipeline.registerTool(tool, { timeout: DEFAULT_TIMEOUT });
       expect(pipeline.getRegisteredTools()).toContainEqual(tool);
     });
 
     it('should prevent duplicate tool registration', () => {
       const tool = createMockTool('test');
-      pipeline.registerTool(tool);
-      expect(() => pipeline.registerTool(tool)).toThrow(ToolExecutionError);
+      pipeline.registerTool(tool, { timeout: DEFAULT_TIMEOUT });
+      expect(() => pipeline.registerTool(tool, { timeout: DEFAULT_TIMEOUT })).toThrow(ToolExecutionError);
     });
 
     it('should validate tool definition', () => {
       const invalidTool = { description: 'invalid' } as unknown as Tool;
-      expect(() => pipeline.registerTool(invalidTool)).toThrow(ToolExecutionError);
+      expect(() => pipeline.registerTool(invalidTool, { timeout: DEFAULT_TIMEOUT })).toThrow(ToolExecutionError);
     });
 
     it('should unregister tools', () => {
       const tool = createMockTool('test');
-      pipeline.registerTool(tool);
+      pipeline.registerTool(tool, { timeout: DEFAULT_TIMEOUT });
       pipeline.unregisterTool('test');
       expect(pipeline.getRegisteredTools()).not.toContainEqual(tool);
     });
@@ -60,8 +74,8 @@ describe('ToolPipeline', () => {
   describe('tool execution', () => {
     it('should execute tools successfully', async () => {
       const tool = createMockTool('test');
-      pipeline.registerTool(tool);
-      
+      pipeline.registerTool(tool, { timeout: DEFAULT_TIMEOUT });
+
       const result = await pipeline.executeTool('test', { param: 'value' });
       expect(result).toEqual({
         toolName: 'test',
@@ -73,11 +87,11 @@ describe('ToolPipeline', () => {
 
     it('should handle tool timeouts', async () => {
       const tool = createMockTool('slow', 31000); // Longer than default timeout
-      pipeline.registerTool(tool);
+      pipeline.registerTool(tool, { timeout: DEFAULT_TIMEOUT });
 
       const execution = pipeline.executeTool('slow', {});
       jest.advanceTimersByTime(31000);
-      
+
       await expect(execution).rejects.toThrow(ToolExecutionError);
       expect(mockMonitor.endOperation).toHaveBeenCalledWith('tool.slow', expect.objectContaining({
         success: false
@@ -90,17 +104,17 @@ describe('ToolPipeline', () => {
 
       const execution = pipeline.executeTool('quick', {});
       jest.advanceTimersByTime(500);
-      
+
       await expect(execution).resolves.toBeDefined();
     });
 
     it('should handle rate limiting', async () => {
       const tool = createMockTool('limited');
-      pipeline.registerTool(tool, { rateLimit: 2 });
+      pipeline.registerTool(tool, { timeout: DEFAULT_TIMEOUT, rateLimit: 2 });
 
       await pipeline.executeTool('limited', {});
       await pipeline.executeTool('limited', {});
-      
+
       // Third execution should fail
       await expect(pipeline.executeTool('limited', {}))
         .rejects.toThrow(/Rate limit exceeded/);
@@ -108,11 +122,11 @@ describe('ToolPipeline', () => {
 
     it('should reset rate limit after cooldown', async () => {
       const tool = createMockTool('limited');
-      pipeline.registerTool(tool, { rateLimit: 1 });
+      pipeline.registerTool(tool, { timeout: DEFAULT_TIMEOUT, rateLimit: 1 });
 
       await pipeline.executeTool('limited', {});
       jest.advanceTimersByTime(61000); // > 1 minute
-      
+
       // Should succeed after cooldown
       await expect(pipeline.executeTool('limited', {}))
         .resolves.toBeDefined();
@@ -123,8 +137,8 @@ describe('ToolPipeline', () => {
     it('should cache tool results', async () => {
       const tool = createMockTool('cached');
       const execute = jest.spyOn(tool, 'execute');
-      
-      pipeline.registerTool(tool, { cache: true });
+
+      pipeline.registerTool(tool, { timeout: DEFAULT_TIMEOUT, cache: true });
 
       const args = { test: true };
       await pipeline.executeTool('cached', args);
@@ -136,8 +150,8 @@ describe('ToolPipeline', () => {
     it('should invalidate cache after time', async () => {
       const tool = createMockTool('cached');
       const execute = jest.spyOn(tool, 'execute');
-      
-      pipeline.registerTool(tool, { cache: true });
+
+      pipeline.registerTool(tool, { timeout: DEFAULT_TIMEOUT, cache: true });
 
       const args = { test: true };
       await pipeline.executeTool('cached', args);
@@ -150,8 +164,8 @@ describe('ToolPipeline', () => {
     it('should use different cache keys for different args', async () => {
       const tool = createMockTool('cached');
       const execute = jest.spyOn(tool, 'execute');
-      
-      pipeline.registerTool(tool, { cache: true });
+
+      pipeline.registerTool(tool, { timeout: DEFAULT_TIMEOUT, cache: true });
 
       await pipeline.executeTool('cached', { test: 1 });
       await pipeline.executeTool('cached', { test: 2 });
@@ -164,18 +178,18 @@ describe('ToolPipeline', () => {
     it('should execute tools in parallel', async () => {
       const tool1 = createMockTool('tool1', 100);
       const tool2 = createMockTool('tool2', 100);
-      
-      pipeline.registerTool(tool1);
-      pipeline.registerTool(tool2);
+
+      pipeline.registerTool(tool1, { timeout: DEFAULT_TIMEOUT });
+      pipeline.registerTool(tool2, { timeout: DEFAULT_TIMEOUT });
 
       const executions = [
         { toolName: 'tool1', args: {} },
         { toolName: 'tool2', args: {} }
       ];
 
-      const execution = pipeline.executeMany(executions, true);
+      const execution = pipeline.executeBatch(executions, true);
       jest.advanceTimersByTime(100);
-      
+
       await expect(execution).resolves.toHaveLength(2);
       expect(mockMonitor.startOperation).toHaveBeenCalledTimes(2);
     });
@@ -183,18 +197,18 @@ describe('ToolPipeline', () => {
     it('should handle errors in parallel execution', async () => {
       const tool1 = createMockTool('tool1');
       const tool2 = createMockTool('tool2');
-      
+
       (tool2.execute as jest.Mock).mockRejectedValue(new Error('Failed'));
-      
-      pipeline.registerTool(tool1);
-      pipeline.registerTool(tool2);
+
+      pipeline.registerTool(tool1, { timeout: DEFAULT_TIMEOUT });
+      pipeline.registerTool(tool2, { timeout: DEFAULT_TIMEOUT });
 
       const executions = [
         { toolName: 'tool1', args: {} },
         { toolName: 'tool2', args: {} }
       ];
 
-      await expect(pipeline.executeMany(executions, true))
+      await expect(pipeline.executeBatch(executions, true))
         .rejects.toThrow('Failed');
     });
   });
@@ -203,6 +217,7 @@ describe('ToolPipeline', () => {
     it('should validate tool dependencies', async () => {
       const tool = createMockTool('dependent');
       pipeline.registerTool(tool, {
+        timeout: DEFAULT_TIMEOUT,
         dependencies: ['missing-tool']
       });
 
@@ -213,9 +228,10 @@ describe('ToolPipeline', () => {
     it('should allow execution when dependencies are met', async () => {
       const dependency = createMockTool('dependency');
       const dependent = createMockTool('dependent');
-      
-      pipeline.registerTool(dependency);
+
+      pipeline.registerTool(dependency, { timeout: DEFAULT_TIMEOUT });
       pipeline.registerTool(dependent, {
+        timeout: DEFAULT_TIMEOUT,
         dependencies: ['dependency']
       });
 
@@ -226,9 +242,10 @@ describe('ToolPipeline', () => {
     it('should handle unregistering dependencies', async () => {
       const dependency = createMockTool('dependency');
       const dependent = createMockTool('dependent');
-      
-      pipeline.registerTool(dependency);
+
+      pipeline.registerTool(dependency, { timeout: DEFAULT_TIMEOUT });
       pipeline.registerTool(dependent, {
+        timeout: DEFAULT_TIMEOUT,
         dependencies: ['dependency']
       });
 
@@ -243,14 +260,16 @@ describe('ToolPipeline', () => {
     it('should retry failed executions', async () => {
       const tool = createMockTool('failing');
       let attempts = 0;
-      
+
       (tool.execute as jest.Mock).mockImplementation(() => {
         attempts++;
         if (attempts < 2) {
+          throw new Error('Temporary failure');
+        }
         return { success: true };
       });
 
-      pipeline.registerTool(tool, { retries: 2 });
+      pipeline.registerTool(tool, { timeout: DEFAULT_TIMEOUT, retries: 2 });
       const result = await pipeline.executeTool('failing', {});
 
       expect(result).toEqual({ success: true });
@@ -265,13 +284,13 @@ describe('ToolPipeline', () => {
       const tool = createMockTool('failing');
       (tool.execute as jest.Mock).mockRejectedValue('string error');
 
-      pipeline.registerTool(tool);
+      pipeline.registerTool(tool, { timeout: DEFAULT_TIMEOUT });
 
       await expect(pipeline.executeTool('failing', {}))
         .rejects.toThrow();
       expect(mockMonitor.endOperation).toHaveBeenCalledWith(
         'tool.failing',
-        expect.objectContaining({ 
+        expect.objectContaining({
           success: false,
           error: expect.any(String)
         })
