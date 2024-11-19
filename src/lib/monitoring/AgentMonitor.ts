@@ -26,7 +26,7 @@ export class AgentMonitor implements IAgentMonitor {
   }
 
   endOperation(name: string, metrics?: Record<string, unknown>): void {
-    if (!this.active) return;
+    if (!this.active) {
 
     const startTime = this.operationStartTimes.get(name);
     if (!startTime) return;
