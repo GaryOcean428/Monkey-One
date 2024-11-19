@@ -1,18 +1,16 @@
-export class AgentSession {
-  constructor(
-    public readonly id: string,
-    private store: SessionStore
-  ) {}
+import type { SessionStore, AgentState } from '../../types';
+
+class AgentSession {
+  constructor(private store: SessionStore) {}
 
   async saveState(state: AgentState): Promise<void> {
-    // ...state persistence logic...
+    await this.store.set('agent_state', state);
   }
 
   async loadState(): Promise<AgentState> {
-    // ...state loading logic...
+    const state = await this.store.get('agent_state');
+    return state as AgentState;
   }
-
-  // ...additional session management methods...
 }
 
 export { AgentSession };
