@@ -132,4 +132,4 @@ export class FunctionTool implements Tool {
       validate: validator
     });
   }
-} // Add missing closing brace for class
+} // Add missing closing brace
