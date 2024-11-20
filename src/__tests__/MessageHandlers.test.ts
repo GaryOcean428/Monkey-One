@@ -4,6 +4,7 @@ import type { Message } from '../types';
 // Create a concrete Message implementation
 class TestMessage implements Message {
     id: string;
+    type: 'command' | 'response' | 'error';
     role: 'user' | 'assistant' | 'system';
     content: string;
     timestamp: number;
@@ -15,6 +16,7 @@ class TestMessage implements Message {
 
     constructor(content: string = '') {
         this.id = `test-${Date.now()}`;
+        this.type = 'command';
         this.role = 'user';
         this.content = content;
         this.timestamp = Date.now();
