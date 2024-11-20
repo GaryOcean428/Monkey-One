@@ -15,6 +15,12 @@ module.exports = {
   collectCoverage: true,
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov'],
+  collectCoverageFrom: [
+    "src/**/*.{ts,tsx}",
+    "!src/**/*.d.ts",
+    "!src/**/index.{ts,tsx}",
+    "!src/**/types.{ts,tsx}"
+  ],
   globals: {
     'ts-jest': {
       tsconfig: 'tsconfig.json'
