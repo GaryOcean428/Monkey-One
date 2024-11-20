@@ -114,7 +114,16 @@ export interface StateContext {
   message?: Message;
 }
 
-export type AgentStatus = 'IDLE' | 'BUSY' | 'ERROR';
+// Remove duplicate AgentStatus type declaration
+// export type AgentStatus = 'IDLE' | 'BUSY' | 'ERROR';
+
+export interface AgentMetrics {
+  totalMessages: number;
+  averageResponseTime: number;
+  successRate: number;
+  lastActive: number;
+  status: string;
+}
 
 export type TaskMessage = Message & {
   task?: any;

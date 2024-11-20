@@ -36,6 +36,20 @@ export class ToolError extends AgentError {
   }
 }
 
+export class ToolExecutionError extends AgentError {
+  constructor(message: string, details?: Record<string, unknown>) {
+    super(message, 'TOOL_EXECUTION_ERROR', details);
+    this.name = 'ToolExecutionError';
+  }
+}
+
+export class AgentExecutionError extends AgentError {
+  constructor(message: string, details?: Record<string, unknown>) {
+    super(message, 'AGENT_EXECUTION_ERROR', details);
+    this.name = 'AgentExecutionError';
+  }
+}
+
 export class ValidationError extends AgentError {
   constructor(message: string, details?: Record<string, unknown>) {
     super(message, 'VALIDATION_ERROR', details);
