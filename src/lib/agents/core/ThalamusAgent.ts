@@ -1,6 +1,6 @@
 import { BaseAgent } from '../base';
-import type { Message } from '@/types';
-import { memoryManager } from '@/lib/memory';
+import { Message, MessageType } from '../../../types';
+import { memoryManager } from '../../memory';
 
 interface SignalRoute {
   sourceId: string;
@@ -21,6 +21,8 @@ export class ThalamusAgent extends BaseAgent {
   private metrics: Map<string, SignalMetrics> = new Map();
   private readonly DEFAULT_PRIORITY = 0.5;
   private readonly HIGH_LOAD_THRESHOLD = 0.8;
+  private readonly METRICS_UPDATE_INTERVAL = 5000; // 5 seconds
+  private metricsTimer: NodeJS.Timeout;
 
   constructor(id: string, name: string) {
     super(id, name, 'thalamus', [
@@ -55,35 +57,39 @@ export class ThalamusAgent extends BaseAgent {
   }
 
   private startMetricsCollection() {
-    setInterval(() => {
+    this.metricsTimer = setInterval(() => {
       this.updateMetrics();
-    }, 5000); // Update every 5 seconds
+    }, this.METRICS_UPDATE_INTERVAL);
   }
 
   async processMessage(message: Message): Promise<Message> {
+    const startTime = Date.now();
     try {
       // Route determination
       const route = this.determineRoute(message);
       
       if (!route) {
-        return this.createResponse('No suitable route found for message');
+        return super.createResponse('No suitable route found for message');
       }
 
       // Apply filtering
       if (!route.filter(message)) {
-        return this.createResponse('Message filtered out by routing rules');
+        return super.createResponse('Message filtered out by routing rules');
       }
 
       // Process and forward message
       const processedMessage = await this.processAndForward(message, route);
       
-      // Update metrics
-      this.updateRouteMetrics(route.sourceId, route.targetId);
+      // Update metrics including latency
+      const latency = Date.now() - startTime;
+      this.updateRouteMetrics(route.sourceId, route.targetId, latency);
 
       return processedMessage;
     } catch (error) {
       console.error('Error in ThalamusAgent:', error);
-      return this.createResponse(
+      const latency = Date.now() - startTime;
+      this.updateErrorMetrics(message, latency);
+      return super.createResponse(
         'Error processing message routing'
       );
     }
@@ -111,22 +117,29 @@ export class ThalamusAgent extends BaseAgent {
       const processedContent = this.processSignal(message.content);
 
       // Forward to target
-      await this.forwardToTarget(route.targetId, {
-        ...message,
+      const forwardedMessage: Message = {
+        id: crypto.randomUUID(),
+        type: MessageType.TASK,
         content: processedContent,
-        metadata: {
-          ...message.metadata,
-          routedBy: this.id,
-          routeId: `${route.sourceId}-${route.targetId}`,
+        sender: this.id,
+        recipient: route.targetId,
+        timestamp: Date.now(),
+        status: 'sent',
+        role: 'system'
+      };
+
+      await this.forwardToTarget(route.targetId, forwardedMessage);
+
+      return super.createResponse(
+        `Message successfully routed from ${route.sourceId} to ${route.targetId}`,
+        {
+          routeInfo: `${route.sourceId}-${route.targetId}`,
           processingTime: Date.now() - startTime
         }
-      });
-
-      return this.createResponse(
-        `Message successfully routed from ${route.sourceId} to ${route.targetId}`
       );
     } catch (error) {
-      this.updateErrorMetrics(route.sourceId, route.targetId);
+      const latency = Date.now() - startTime;
+      this.updateErrorMetrics(message, latency);
       throw error;
     }
   }
@@ -144,7 +157,7 @@ export class ThalamusAgent extends BaseAgent {
     });
   }
 
-  private updateRouteMetrics(sourceId: string, targetId: string) {
+  private updateRouteMetrics(sourceId: string, targetId: string, latency: number) {
     const routeKey = `${sourceId}-${targetId}`;
     const currentMetrics = this.metrics.get(routeKey) || {
       throughput: 0,
@@ -153,15 +166,22 @@ export class ThalamusAgent extends BaseAgent {
       lastUpdated: Date.now()
     };
 
+    const newThroughput = currentMetrics.throughput + 1;
+    const newLatency = (currentMetrics.latency * currentMetrics.throughput + latency) / newThroughput;
+
     this.metrics.set(routeKey, {
       ...currentMetrics,
-      throughput: currentMetrics.throughput + 1,
+      throughput: newThroughput,
+      latency: newLatency,
       lastUpdated: Date.now()
     });
   }
 
-  private updateErrorMetrics(sourceId: string, targetId: string) {
-    const routeKey = `${sourceId}-${targetId}`;
+  private updateErrorMetrics(message: Message, latency: number) {
+    const route = this.determineRoute(message);
+    if (!route) return;
+
+    const routeKey = `${route.sourceId}-${route.targetId}`;
     const currentMetrics = this.metrics.get(routeKey) || {
       throughput: 0,
       latency: 0,
@@ -169,10 +189,14 @@ export class ThalamusAgent extends BaseAgent {
       lastUpdated: Date.now()
     };
 
+    const newThroughput = currentMetrics.throughput + 1;
+    const newErrorRate = (currentMetrics.errorRate * currentMetrics.throughput + 1) / newThroughput;
+    const newLatency = (currentMetrics.latency * currentMetrics.throughput + latency) / newThroughput;
+
     this.metrics.set(routeKey, {
-      ...currentMetrics,
-      errorRate: (currentMetrics.errorRate * currentMetrics.throughput + 1) / 
-                (currentMetrics.throughput + 1),
+      throughput: newThroughput,
+      latency: newLatency,
+      errorRate: newErrorRate,
       lastUpdated: Date.now()
     });
   }
@@ -181,13 +205,18 @@ export class ThalamusAgent extends BaseAgent {
     this.metrics.forEach((metrics, routeKey) => {
       const timeSinceUpdate = (Date.now() - metrics.lastUpdated) / 1000;
       
-      // Decay throughput over time
-      metrics.throughput *= Math.exp(-timeSinceUpdate / 60);
+      // Decay metrics over time
+      const decayFactor = Math.exp(-timeSinceUpdate / 60);
+      metrics.throughput *= decayFactor;
+      metrics.errorRate *= decayFactor;
       
       // Check for high load
       if (metrics.throughput > this.HIGH_LOAD_THRESHOLD) {
         this.handleHighLoad(routeKey);
       }
+
+      // Update timestamp
+      metrics.lastUpdated = Date.now();
     });
   }
 
@@ -226,10 +255,10 @@ export class ThalamusAgent extends BaseAgent {
   }
 
   private isSensoryInput(message: Message): boolean {
-    return message.metadata?.type === 'sensory' ||
-           message.content.includes('see') ||
-           message.content.includes('hear') ||
-           message.content.includes('feel');
+    return message.type === MessageType.TASK &&
+           (message.content.includes('see') ||
+            message.content.includes('hear') ||
+            message.content.includes('feel'));
   }
 
   private isEmotionalContent(message: Message): boolean {
@@ -245,5 +274,11 @@ export class ThalamusAgent extends BaseAgent {
 
   getRouteMetrics(sourceId: string, targetId: string): SignalMetrics | null {
     return this.metrics.get(`${sourceId}-${targetId}`) || null;
+  }
+
+  cleanup(): void {
+    if (this.metricsTimer) {
+      clearInterval(this.metricsTimer);
+    }
   }
 }
