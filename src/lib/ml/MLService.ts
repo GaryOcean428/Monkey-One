@@ -1,12 +1,12 @@
-import { getStorage, ref } from 'firebase/storage';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { getFirestore, collection, addDoc, query, where, getDocs } from 'firebase/firestore';
 import { app } from '../firebase/config';
 import * as tf from '@tensorflow/tfjs';
-import type { App } from 'firebase/app';
+import type { ModelArtifacts } from '@tensorflow/tfjs-core/dist/io/types';
 
 export class MLService {
-  private storage = getStorage(app as App);
-  private firestore = getFirestore(app as App);
+  private storage = getStorage(app);
+  private firestore = getFirestore(app);
   private model: tf.LayersModel | null = null;
 
   async initialize() {
@@ -46,7 +46,7 @@ export class MLService {
   private async loadModel(): Promise<tf.LayersModel> {
     // Try to load from Firebase Storage
     const modelRef = this.getModelRef('ml-models/latest');
-    const modelUrl = await modelRef.getDownloadURL();
+    const modelUrl = await getDownloadURL(modelRef);
     return await tf.loadLayersModel(modelUrl);
   }
 
@@ -57,10 +57,29 @@ export class MLService {
   private async saveModel() {
     if (!this.model) return;
 
-    const modelArtifacts = await this.model.save(tf.io.withSaveHandler(async (artifacts) => {
+    const modelArtifacts = await this.model.save(tf.io.withSaveHandler(async (artifacts: ModelArtifacts) => {
       const modelRef = this.getModelRef('ml-models/latest');
-      await modelRef.put(new Blob([JSON.stringify(artifacts)]));
-      return { modelArtifactsInfo: { dateSaved: new Date() } };
+      await uploadBytes(modelRef, new Blob([JSON.stringify(artifacts)]));
+      
+      // Calculate size for weight data considering it might be an array
+      let weightDataBytes = 0;
+      if (artifacts.weightData) {
+        if (artifacts.weightData instanceof ArrayBuffer) {
+          weightDataBytes = artifacts.weightData.byteLength;
+        } else if (Array.isArray(artifacts.weightData)) {
+          weightDataBytes = artifacts.weightData.reduce((total, buffer) => total + buffer.byteLength, 0);
+        }
+      }
+
+      return {
+        modelArtifactsInfo: {
+          dateSaved: new Date(),
+          modelTopologyType: 'JSON',
+          modelTopologyBytes: artifacts.modelTopology ? JSON.stringify(artifacts.modelTopology).length : 0,
+          weightSpecsBytes: artifacts.weightSpecs ? JSON.stringify(artifacts.weightSpecs).length : 0,
+          weightDataBytes
+        }
+      };
     }));
 
     // Save metadata to Firestore

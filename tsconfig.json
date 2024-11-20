@@ -21,7 +21,7 @@
     "allowSyntheticDefaultImports": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "*": ["./src/*"]
     },
     "types": ["jest", "node", "@testing-library/jest-dom"],
     "experimentalDecorators": true,
