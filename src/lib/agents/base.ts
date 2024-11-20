@@ -1,7 +1,5 @@
-import type { Message } from '../../types';
+import { Message, MessageType } from '../../types';
 import { GitHubClient } from '../github/GitHubClient';
-import { tools } from '../tools';
-import { memoryManager } from '../memory';
 
 export abstract class BaseAgent {
   protected github: GitHubClient;
@@ -61,13 +59,19 @@ export abstract class BaseAgent {
     }
   }
 
-  protected createResponse(content: string): Message {
-    return {
+  protected createResponse(content: string, additionalData?: Record<string, unknown>): Message {
+    const message: Message = {
       id: crypto.randomUUID(),
-      role: 'assistant',
+      type: MessageType.RESPONSE,
       content,
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      status: 'sent',
+      role: 'assistant',
+      sender: this.id,
+      ...(additionalData || {})
     };
+
+    return message;
   }
 
   getCapabilities(): string[] {

@@ -1,23 +1,22 @@
 import { MessageHandler } from '../decorators/MessageHandlers';
 import type { Message } from '../types';
+import { MessageType } from '../types';
 
 // Create a concrete Message implementation
 class TestMessage implements Message {
     id: string;
-    role: 'user' | 'assistant' | 'system';
+    type: MessageType;
     content: string;
+    sender?: string;
+    recipient?: string;
     timestamp: number;
-    metadata?: {
-        agentId?: string;
-        agentName?: string;
-        status?: 'completed' | 'failed';
-    };
+    status?: string;
+    role?: string;
 
-    constructor(...args: unknown[]) {
-        const [content = ''] = args;
+    constructor(content?: string) {
         this.id = `test-${Date.now()}`;
-        this.role = 'user';
-        this.content = String(content);
+        this.type = MessageType.COMMAND;
+        this.content = content || '';
         this.timestamp = Date.now();
     }
 }
@@ -45,6 +44,7 @@ describe('MessageHandler Decorator', () => {
     it('should throw error for invalid message type', async () => {
         const invalidMessage = {
             id: 'test',
+            type: MessageType.COMMAND,
             role: 'user' as const,
             content: 'invalid',
             timestamp: Date.now()
