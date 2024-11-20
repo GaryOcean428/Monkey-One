@@ -9,18 +9,18 @@ export class AgentMonitor {
     // ...tracking logic...
   }
 
-  endOperation(name: string, metrics?: Record<string, unknown>): void {
+  endOperation(name: string, metrics: Record<string, unknown> = {}): void {
     // ...tracking logic...
   }
 
   getAgentMetrics(agentId: string): AgentMetrics {
-    // ...metrics retrieval...
-    return {
+    const metrics: AgentMetrics = {
       totalMessages: 0,
       averageResponseTime: 0,
       successRate: 0,
       lastActive: Date.now(),
       status: 'active'
     };
+    return metrics;
   }
 }

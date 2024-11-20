@@ -13,11 +13,10 @@ class TestMessage implements Message {
         status?: 'completed' | 'failed';
     };
 
-    constructor(...args: unknown[]) {
-        const [content = ''] = args;
+    constructor(content: string = '') {
         this.id = `test-${Date.now()}`;
         this.role = 'user';
-        this.content = String(content);
+        this.content = content;
         this.timestamp = Date.now();
     }
 }
