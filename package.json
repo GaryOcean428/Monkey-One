@@ -11,7 +11,8 @@
     "test": "jest --config jest.config.js",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "clean": "rimraf node_modules/.vite"
+    "clean": "rimraf node_modules/.vite",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css}\""
   },
   "dependencies": {
     "@google-cloud/storage": "^7.7.0",
@@ -87,6 +88,7 @@
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3",
-    "vite": "^5.1.4"
+    "vite": "^5.1.4",
+    "prettier": "^3.0.0"
   }
 }
