@@ -230,5 +230,5 @@ export interface AgentMetrics {
   averageResponseTime: number;
   successRate: number;
   lastActive: number;
-  status: 'active' | 'inactive';
+  status: string;
 }

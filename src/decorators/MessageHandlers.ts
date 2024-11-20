@@ -1,7 +1,8 @@
 import type { Message } from '../types';
+import { MessageType } from '../types';
 
 type Constructor<T> = {
-    new (...args: unknown[]): T;
+    new (content?: string): T;
     name: string;
 };
 
@@ -25,7 +26,7 @@ export function MessageHandler(messageType: Constructor<Message>) {
 }
 
 export interface TaskMessage extends Message {
-    type: 'task';
+    type: MessageType.TASK;
     content: string;
 }
 

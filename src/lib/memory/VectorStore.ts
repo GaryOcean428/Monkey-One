@@ -1,11 +1,11 @@
 import { LLMProvider } from '../llm/providers';
-import { useThrottledCallback } from '@/hooks/useThrottledCallback';
 
 interface Document {
   id: string;
   content: string;
   metadata?: Record<string, unknown>;
   embedding?: number[];
+  similarity?: number;
 }
 
 export class VectorStore {
@@ -75,7 +75,7 @@ export class VectorStore {
         ...doc,
         similarity: this.cosineSimilarity(queryEmbedding, doc.embedding || [])
       }))
-      .filter(doc => doc.similarity >= this.SIMILARITY_THRESHOLD)
+      .filter(doc => doc.similarity !== undefined && doc.similarity >= this.SIMILARITY_THRESHOLD)
       .sort((a, b) => (b.similarity || 0) - (a.similarity || 0))
       .slice(0, limit);
 
@@ -102,8 +102,11 @@ export class VectorStore {
   private updateEmbeddingCache(content: string, embedding: number[]): void {
     if (this.embeddingCache.size >= this.MAX_CACHE_SIZE) {
       // Remove oldest entries (FIFO)
-      const oldestKey = this.embeddingCache.keys().next().value;
-      this.embeddingCache.delete(oldestKey);
+      const entries = Array.from(this.embeddingCache.entries());
+      if (entries.length > 0) {
+        const [oldestKey] = entries[0];
+        this.embeddingCache.delete(oldestKey);
+      }
     }
     this.embeddingCache.set(content, embedding);
   }
@@ -123,5 +126,9 @@ export class VectorStore {
 
   getCacheSize(): number {
     return this.embeddingCache.size;
+  }
+
+  getDocument(id: string): Document | undefined {
+    return this.documents.get(id);
   }
 }

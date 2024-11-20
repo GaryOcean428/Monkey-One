@@ -10,14 +10,28 @@ interface MemoryItem {
   metadata?: Record<string, unknown>;
 }
 
+interface MemoryMetrics {
+  totalItems: number;
+  averageAge: number;
+  typeDistribution: Record<string, number>;
+  storageUsage: number;
+}
+
 class MemoryManager {
   private items: Map<string, MemoryItem> = new Map();
   private vectorStore: VectorStore;
   private readonly CLEANUP_INTERVAL = 60000; // 1 minute
-  private cleanupTimer: NodeJS.Timer;
+  private cleanupTimer: NodeJS.Timeout;
+  private metrics: MemoryMetrics;
 
   constructor() {
     this.vectorStore = new VectorStore(llmManager.getActiveProvider());
+    this.metrics = {
+      totalItems: 0,
+      averageAge: 0,
+      typeDistribution: {},
+      storageUsage: 0
+    };
     this.startCleanupInterval();
   }
 
@@ -49,6 +63,7 @@ class MemoryManager {
     }
 
     this.cleanup();
+    this.updateMetrics();
   }
 
   private cleanup(): void {
@@ -59,13 +74,13 @@ class MemoryManager {
     const items = Array.from(this.items.entries());
     
     // Remove old items
-    const validItems = items.filter(([_, item]) => 
+    const validItems = items.filter(([, item]) => 
       (item.timestamp || 0) > cutoff
     );
 
     // Keep only most recent if over size limit
     if (validItems.length > maxSize) {
-      validItems.sort(([_, a], [_, b]) => 
+      validItems.sort(([, a], [, b]) => 
         (b.timestamp || 0) - (a.timestamp || 0)
       );
       validItems.splice(maxSize);
@@ -73,6 +88,27 @@ class MemoryManager {
 
     // Update map with remaining items
     this.items = new Map(validItems);
+    this.updateMetrics();
+  }
+
+  private updateMetrics(): void {
+    const items = Array.from(this.items.values());
+    const now = Date.now();
+
+    // Calculate metrics
+    this.metrics = {
+      totalItems: items.length,
+      averageAge: items.length > 0 
+        ? items.reduce((sum, item) => sum + (now - (item.timestamp || 0)), 0) / items.length 
+        : 0,
+      typeDistribution: items.reduce((dist, item) => {
+        dist[item.type] = (dist[item.type] || 0) + 1;
+        return dist;
+      }, {} as Record<string, number>),
+      storageUsage: items.reduce((size, item) => 
+        size + new TextEncoder().encode(JSON.stringify(item)).length, 0
+      )
+    };
   }
 
   async search(query: string, options?: {
@@ -128,14 +164,21 @@ class MemoryManager {
   async clear(): Promise<void> {
     this.items.clear();
     await this.vectorStore.clear();
+    this.updateMetrics();
   }
 
-  cleanup(): void {
-    clearInterval(this.cleanupTimer);
+  stopCleanup(): void {
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer);
+    }
   }
 
   getSize(): number {
     return this.items.size;
+  }
+
+  getMetrics(): MemoryMetrics {
+    return { ...this.metrics };
   }
 }
 

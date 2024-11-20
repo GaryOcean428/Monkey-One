@@ -1,5 +1,5 @@
 import type { LLMProvider } from './index';
-import type { Message } from '@/types';
+import type { Message } from '../../../types';
 import { HfInference } from '@huggingface/inference';
 
 export class GraniteProvider implements LLMProvider {
@@ -24,12 +24,7 @@ export class GraniteProvider implements LLMProvider {
         // Format context using RAG-optimized prompting
         prompt = this.formatRagPrompt(message, context, options.documents);
       } else {
-        const chat = context.map(msg => ({
-          role: msg.role,
-          content: msg.content
-        }));
-        chat.push({ role: 'user', content: message });
-        prompt = this.client.tokenizer.apply_chat_template(chat, false, true);
+        prompt = this.formatChatPrompt(message, context);
       }
 
       const response = await this.client.textGeneration({
@@ -51,9 +46,26 @@ export class GraniteProvider implements LLMProvider {
     }
   }
 
+  private formatChatPrompt(message: string, context: Message[]): string {
+    const formattedMessages = context.map(msg => {
+      const role = msg.role === 'assistant' ? 'Assistant' :
+                   msg.role === 'user' ? 'User' :
+                   'System';
+      return `${role}: ${msg.content}`;
+    });
+
+    formattedMessages.push(`User: ${message}`);
+    return formattedMessages.join('\n');
+  }
+
   private formatRagPrompt(query: string, context: Message[], documents: string[]): string {
     const contextStr = context
-      .map(msg => `${msg.role}: ${msg.content}`)
+      .map(msg => {
+        const role = msg.role === 'assistant' ? 'Assistant' :
+                    msg.role === 'user' ? 'User' :
+                    'System';
+        return `${role}: ${msg.content}`;
+      })
       .join('\n');
 
     const docsStr = documents
@@ -79,11 +91,13 @@ Response:`;
     documents?: string[];
     maxTokens?: number;
   }): Promise<void> {
+    const prompt = options?.useRag && options.documents?.length
+      ? this.formatRagPrompt(message, [], options.documents)
+      : this.formatChatPrompt(message, []);
+
     const stream = await this.client.textGenerationStream({
       model: this.model,
-      inputs: options?.useRag && options.documents?.length
-        ? this.formatRagPrompt(message, [], options.documents)
-        : message,
+      inputs: prompt,
       parameters: {
         max_new_tokens: options?.maxTokens || 1000,
         temperature: 0.7,
@@ -105,6 +119,21 @@ Response:`;
       inputs: text
     });
 
-    return Array.isArray(response) ? response : [];
+    // Handle different possible response types
+    if (Array.isArray(response)) {
+      // If it's a nested array, flatten it to a single array
+      const flattened = response.flat();
+      if (flattened.every(item => typeof item === 'number')) {
+        return flattened;
+      }
+    }
+    if (typeof response === 'number') {
+      // Handle single number case
+      return [response];
+    }
+
+    // Default to empty array if response format is unexpected
+    console.warn('Unexpected embedding format:', response);
+    return [];
   }
 }

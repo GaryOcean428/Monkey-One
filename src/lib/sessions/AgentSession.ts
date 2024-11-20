@@ -1,4 +1,4 @@
-import { Agent, AgentType, Message, MessageType, MemoryItem, MemoryType, AgentStatus } from '../../types';
+import { Agent, Message, MessageType, MemoryItem, MemoryType, AgentStatus } from '../../types';
 import { RuntimeError } from '../errors/AgentErrors';
 
 export interface SessionOptions {
@@ -21,7 +21,7 @@ export class AgentSession {
   private history: Message[] = [];
   private memory: MemoryItem[] = [];
   private context: Record<string, any> = {};
-  private status: AgentStatus = 'IDLE';
+  private status: AgentStatus = AgentStatus.IDLE;
   private metadata: Record<string, any> = {};
 
   constructor(agent: Agent, options: SessionOptions = {}) {
