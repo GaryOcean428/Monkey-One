@@ -27,7 +27,7 @@ export abstract class BaseAgent {
       const results = await this.github.searchCode(query, { language });
       return results.items;
     } catch (error) {
-      console.warn('Error searching GitHub:', error);
+      console.error('Error searching GitHub:', error);
       return [];
     }
   }
@@ -41,7 +41,7 @@ export abstract class BaseAgent {
       const content = await this.github.getContents(owner, repo, path);
       return content;
     } catch (error) {
-      console.warn('Error reusing code:', error);
+      console.error('Error reusing code:', error);
       return null;
     }
   }
@@ -54,7 +54,7 @@ export abstract class BaseAgent {
       }
       return await this.github.createRepository(repoId);
     } catch (error) {
-      console.warn('Error creating development environment:', error);
+      console.error('Error creating development environment:', error);
       return null;
     }
   }
