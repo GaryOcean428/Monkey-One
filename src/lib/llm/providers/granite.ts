@@ -114,26 +114,24 @@ Response:`;
   }
 
   async generateEmbedding(text: string): Promise<number[]> {
-    const response = await this.client.featureExtraction({
-      model: 'sentence-transformers/all-MiniLM-L6-v2',
-      inputs: text
-    });
+    try {
+      const response = await this.client.featureExtraction({
+        model: 'sentence-transformers/all-MiniLM-L6-v2',
+        inputs: text
+      });
 
-    // Handle different possible response types
-    if (Array.isArray(response)) {
-      // If it's a nested array, flatten it to a single array
-      const flattened = response.flat();
-      if (flattened.every(item => typeof item === 'number')) {
-        return flattened;
+      if (Array.isArray(response)) {
+        const flattened = response.flat();
+        if (flattened.every(item => typeof item === 'number')) {
+          return flattened;
+        }
       }
-    }
-    if (typeof response === 'number') {
-      // Handle single number case
-      return [response];
-    }
 
-    // Default to empty array if response format is unexpected
-    console.warn('Unexpected embedding format:', response);
-    return [];
+      console.warn('Unexpected embedding format:', response);
+      return [];
+    } catch (error) {
+      console.error('Error generating embedding:', error);
+      return [];
+    }
   }
 }

@@ -157,8 +157,7 @@ export class ThalamusAgent extends BaseAgent {
     });
   }
 
-  private updateRouteMetrics(sourceId: string, targetId: string, latency: number) {
-    const routeKey = `${sourceId}-${targetId}`;
+  private updateMetric(routeKey: string, latency: number, isError: boolean = false) {
     const currentMetrics = this.metrics.get(routeKey) || {
       throughput: 0,
       latency: 0,
@@ -168,30 +167,9 @@ export class ThalamusAgent extends BaseAgent {
 
     const newThroughput = currentMetrics.throughput + 1;
     const newLatency = (currentMetrics.latency * currentMetrics.throughput + latency) / newThroughput;
-
-    this.metrics.set(routeKey, {
-      ...currentMetrics,
-      throughput: newThroughput,
-      latency: newLatency,
-      lastUpdated: Date.now()
-    });
-  }
-
-  private updateErrorMetrics(message: Message, latency: number) {
-    const route = this.determineRoute(message);
-    if (!route) return;
-
-    const routeKey = `${route.sourceId}-${route.targetId}`;
-    const currentMetrics = this.metrics.get(routeKey) || {
-      throughput: 0,
-      latency: 0,
-      errorRate: 0,
-      lastUpdated: Date.now()
-    };
-
-    const newThroughput = currentMetrics.throughput + 1;
-    const newErrorRate = (currentMetrics.errorRate * currentMetrics.throughput + 1) / newThroughput;
-    const newLatency = (currentMetrics.latency * currentMetrics.throughput + latency) / newThroughput;
+    const newErrorRate = isError
+      ? (currentMetrics.errorRate * currentMetrics.throughput + 1) / newThroughput
+      : currentMetrics.errorRate;
 
     this.metrics.set(routeKey, {
       throughput: newThroughput,
@@ -199,6 +177,17 @@ export class ThalamusAgent extends BaseAgent {
       errorRate: newErrorRate,
       lastUpdated: Date.now()
     });
+  }
+
+  private updateRouteMetrics(sourceId: string, targetId: string, latency: number) {
+    this.updateMetric(`${sourceId}-${targetId}`, latency);
+  }
+
+  private updateErrorMetrics(message: Message, latency: number) {
+    const route = this.determineRoute(message);
+    if (route) {
+      this.updateMetric(`${route.sourceId}-${route.targetId}`, latency, true);
+    }
   }
 
   private updateMetrics() {
@@ -220,15 +209,20 @@ export class ThalamusAgent extends BaseAgent {
     });
   }
 
+  /**
+   * Handle high load condition by temporarily reducing the priority of the route.
+   * 
+   * @param routeKey the key of the route to be updated
+   */
   private handleHighLoad(routeKey: string) {
     const [sourceId, targetId] = routeKey.split('-');
     const route = this.routes.get(routeKey);
     
     if (route) {
-      // Temporarily reduce priority
+      // Temporarily reduce priority to prevent overload
       route.priority *= 0.8;
       
-      // Schedule priority recovery
+      // Schedule priority recovery after 30 seconds
       setTimeout(() => {
         if (route.priority < this.DEFAULT_PRIORITY) {
           route.priority = this.DEFAULT_PRIORITY;
