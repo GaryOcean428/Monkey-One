@@ -54,12 +54,17 @@ class MemoryManager {
 
     // Add to vector store for semantic search if applicable
     if (item.type === 'document' || item.type === 'conversation') {
-      await this.vectorStore.addDocument(item.content, {
-        type: item.type,
-        tags: item.tags,
-        timestamp,
-        ...item.metadata
-      });
+      try {
+        await this.vectorStore.addDocument(item.content, {
+          type: item.type,
+          tags: item.tags,
+          timestamp,
+          ...item.metadata
+        });
+      } catch (error) {
+        console.error('Error adding document to VectorStore:', error);
+        // Optionally remove the item or handle the error as needed
+      }
     }
 
     this.cleanup();
