@@ -33,8 +33,7 @@ export class VectorStore {
     if (cachedEmbedding) {
       embedding = cachedEmbedding;
     } else {
-      embedding = await this.provider.generateEmbedding(content);
-      this.updateEmbeddingCache(content, embedding);
+      embedding = await this.generateEmbedding(content);
     }
 
     this.documents.set(id, {
@@ -66,7 +65,7 @@ export class VectorStore {
       throw new Error('Provider does not support embeddings');
     }
 
-    const queryEmbedding = await this.provider.generateEmbedding(query);
+    const queryEmbedding = await this.generateEmbedding(query);
     
     // Use array for better performance in sorting
     const documents = Array.from(this.documents.values());
@@ -109,6 +108,32 @@ export class VectorStore {
       }
     }
     this.embeddingCache.set(content, embedding);
+  }
+
+  async generateEmbedding(text: string): Promise<number[]> {
+    if (!this.provider.generateEmbedding) {
+      console.warn('Embedding generation not supported by the provider.');
+      return [];
+    }
+
+    const cachedEmbedding = this.embeddingCache.get(text);
+    if (cachedEmbedding) {
+      return cachedEmbedding;
+    }
+
+    try {
+      const embedding = await this.provider.generateEmbedding(text);
+      if (embedding && embedding.length > 0) {
+        this.updateEmbeddingCache(text, embedding);
+        return embedding;
+      } else {
+        console.warn('Received empty embedding.');
+        return [];
+      }
+    } catch (error) {
+      console.error('Error generating embedding:', error);
+      return [];
+    }
   }
 
   async deleteDocument(id: string): Promise<boolean> {
