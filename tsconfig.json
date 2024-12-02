@@ -1,40 +1,51 @@
 {
   "compilerOptions": {
-    "forceConsistentCasingInFileNames": true,
     "target": "ESNext",
-    "useDefineForClassFields": true,
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "module": "ESNext",
     "skipLibCheck": true,
+
+    /* Module Resolution */
     "moduleResolution": "node",
-    "allowImportingTsExtensions": true,
+    "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
+    "esModuleInterop": true,
+
+    /* Linting */
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "allowJs": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+
+    /* Types */
+    "typeRoots": [
+      "./node_modules/@types",
+      "./src/types"
+    ],
+    "types": ["node"],
+
+    /* Paths */
     "baseUrl": ".",
     "paths": {
-      "types": ["src/types/index"],
-      "lib/*": ["src/lib/*"],
-      "components/*": ["src/components/*"],
-      "hooks/*": ["src/hooks/*"],
-      "store/*": ["src/store/*"]
-    },
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "strictPropertyInitialization": false,
-    "strictNullChecks": true,
-    "noImplicitAny": true,
-    "noImplicitThis": true,
-    "alwaysStrict": true
+      "@/*": ["src/*"]
+    }
   },
-  "include": ["src"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": [
+    "src",
+    "cursor",
+    "vite.config.ts",
+    "src/types/node-globals.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/node_modules/*",
+    "**/puppeteer/*"
+  ],
+  "references": [
+    { "path": "./tsconfig.node.json" }
+  ]
 }
