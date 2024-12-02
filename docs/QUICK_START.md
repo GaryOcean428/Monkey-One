@@ -1,6 +1,7 @@
 # Quick Start Guide
 
 ## Installation
+
 ```bash
 # Clone the repository
 git clone https://github.com/your-org/monkey-one.git
@@ -37,7 +38,7 @@ npm run dev
 ## First Steps
 
 1. **Open the Application**
-   - Navigate to http://localhost:3000
+   - Navigate to <http://localhost:3000>
    - Login or use demo mode
 
 2. **Start a Conversation**
@@ -58,5 +59,6 @@ npm run dev
    - Set up GitHub integration
 
 ## Need Help?
+
 - See full documentation in `/docs/USER_GUIDE.md`
-- Contact support at support@monkey-one.com
+- Contact support at <support@monkey-one.com>

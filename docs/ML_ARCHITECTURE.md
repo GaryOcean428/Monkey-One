@@ -3,7 +3,8 @@
 ## Overview
 
 ### Core ML Components
-```
+
+```plaintext
 ┌─────────────────────────────────────┐
 │           Neural Engine             │
 ├─────────────────────────────────────┤
@@ -35,12 +36,14 @@
 ## Model Architecture
 
 ### Base Model
+
 - Architecture: Transformer-based
 - Size: 7B parameters
 - Context: 32k tokens
 - Training: Continuous
 
 ### Specialized Models
+
 1. Code Understanding
    - Architecture: Encoder-only
    - Focus: Syntax, patterns, semantics
@@ -59,6 +62,7 @@
 ## Training Pipeline
 
 ### Data Processing
+
 1. Collection
    - GitHub repositories
    - Code snippets
@@ -78,6 +82,7 @@
    - Context building
 
 ### Training Process
+
 1. Initial Training
    - Base model training
    - Domain adaptation
@@ -99,6 +104,7 @@
 ## Vector Store Integration
 
 ### Embedding System
+
 1. Generation
    - Code embeddings
    - Pattern embeddings
@@ -118,6 +124,7 @@
    - Ranking
 
 ### Search System
+
 1. Query Processing
    - Query understanding
    - Context extraction
@@ -139,6 +146,7 @@
 ## Performance Optimization
 
 ### Model Optimization
+
 1. Quantization
    - Weight quantization
    - Activation quantization
@@ -158,6 +166,7 @@
    - Context cache
 
 ### Resource Management
+
 1. Memory
    - Memory pooling
    - Garbage collection
@@ -179,6 +188,7 @@
 ## Monitoring & Metrics
 
 ### Performance Metrics
+
 1. Model Performance
    - Accuracy
    - Precision
@@ -198,6 +208,7 @@
    - Adaptation
 
 ### Monitoring Systems
+
 1. Real-time Monitoring
    - Performance tracking
    - Error detection
