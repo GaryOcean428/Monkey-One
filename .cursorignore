@@ -2,10 +2,10 @@
 bin/
 obj/
 *.log
-node_modules
-dist
-.vite
-coverage
+node_modules/
+dist/
+.vite/
+coverage/
 .env
 .env.local
 .env.development
@@ -13,4 +13,20 @@ coverage
 .env.production
 *.env
 *.env.*
+.vscode/
+.idea/
+*.swp
+*.swo
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+Thumbs.db
+.ai-cache
+.vector-store
+model-cache
+*.onnx
+*.bin
 # End of Selection
