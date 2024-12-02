@@ -6,7 +6,7 @@
     "skipLibCheck": true,
 
     /* Module Resolution */
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
@@ -36,14 +36,13 @@
   },
   "include": [
     "src",
-    "cursor",
-    "vite.config.ts",
-    "src/types/node-globals.d.ts"
+    "vite.env.d.ts"
   ],
   "exclude": [
     "node_modules",
     "**/node_modules/*",
-    "**/puppeteer/*"
+    "**/puppeteer/*",
+    "vite.config.ts"
   ],
   "references": [
     { "path": "./tsconfig.node.json" }
