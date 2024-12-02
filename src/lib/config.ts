@@ -16,6 +16,12 @@ const configSchema = z.object({
     maxMemoryItems: z.number(),
     defaultRole: z.string(),
   }),
+  google: z.object({
+    apiKey: z.string(),
+    baseUrl: z.string(),
+    searchEngineId: z.string(),
+    resultsPerPage: z.number(),
+  }),
 });
 
 type Config = z.infer<typeof configSchema>;
@@ -35,6 +41,12 @@ const config: Config = {
   agents: {
     maxMemoryItems: 100,
     defaultRole: 'assistant',
+  },
+  google: {
+    apiKey: import.meta.env.VITE_GOOGLE_API_KEY || '',
+    baseUrl: 'https://www.googleapis.com/customsearch/v1',
+    searchEngineId: import.meta.env.VITE_GOOGLE_SEARCH_ENGINE_ID || '',
+    resultsPerPage: 5,
   },
 } as const;
 
