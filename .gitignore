@@ -11,10 +11,13 @@ dist/
 build/
 .vite
 
-# Environment
+# Environment Variables
 .env
 .env.local
-.env.*
+.env.development
+.env.test
+.env.production
+.env.*.local
 !.env.example
 
 # AI/ML
@@ -40,10 +43,3 @@ yarn-error.log*
 # System
 .DS_Store
 Thumbs.db
-.env
-.env.local
-.env.*.local
-
-.env
-.env.production
-.env.test
