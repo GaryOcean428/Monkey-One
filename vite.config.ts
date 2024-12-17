@@ -1,16 +1,13 @@
-/// <reference types="node" />
-/// <reference path="./src/types/node.d.ts" />
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import { fileURLToPath } from 'node:url'
+import { dirname, resolve } from 'node:path'
+import dotenv from 'dotenv'
 
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import { fileURLToPath, URL } from 'node:url';
-import { dirname, resolve } from 'node:path';
-import dotenv from 'dotenv';
+dotenv.config()
 
-dotenv.config();
-
-const __filename = fileURLToPath(new URL(import.meta.url));
-const __dirname = dirname(__filename);
+const __filename = fileURLToPath(new URL(import.meta.url))
+const __dirname = dirname(__filename)
 
 export default defineConfig({
   plugins: [react()],
@@ -19,5 +16,14 @@ export default defineConfig({
       '@': resolve(__dirname, './src'),
     },
   },
-  // ... rest of config
-});
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: ['./src/setupTests.ts'],
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+    },
+  },
+})
