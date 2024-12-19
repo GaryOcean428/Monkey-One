@@ -46,3 +46,17 @@ Thumbs.db
 
 # Vercel
 .vercel
+
+# Folders
+node_modules/
+dist/
+build/
+coverage/
+logs/
+.ai-cache/
+.vector-store/
+model-cache/
+.vercel/
+.vscode/
+.idea/
+/project/
