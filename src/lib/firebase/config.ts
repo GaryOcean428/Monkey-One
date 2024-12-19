@@ -1,9 +1,9 @@
-import { initializeApp, type FirebaseOptions, type FirebaseApp } from 'firebase/app';
-import { getAnalytics, type Analytics } from 'firebase/analytics';
-import { getAuth, type Auth } from 'firebase/auth';
-import { getFirestore, type Firestore } from 'firebase/firestore';
-import { getStorage, type FirebaseStorage } from 'firebase/storage';
-import { getDatabase, type Database, ref } from 'firebase/database';
+import { initializeApp } from 'firebase/app';
+import { getAnalytics } from 'firebase/analytics';
+import { getAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
+import { getDatabase } from 'firebase/database';
 
 // Validate required environment variables
 const requiredEnvVars = [
@@ -28,7 +28,7 @@ if (missingEnvVars.length > 0) {
 }
 
 // Firebase configuration with required values
-const firebaseConfig: FirebaseOptions = {
+const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
@@ -39,39 +39,13 @@ const firebaseConfig: FirebaseOptions = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
-// Initialize Firebase services with error handling
-let app: FirebaseApp;
-let analytics: Analytics | undefined;
-let auth: Auth | undefined;
-let db: Firestore | undefined;
-let storage: FirebaseStorage | undefined;
-let database: Database | undefined;
+// Initialize Firebase services
+export const app = initializeApp(firebaseConfig);
+export const analytics = typeof window !== 'undefined' && import.meta.env.PROD ? getAnalytics(app) : undefined;
+export const auth = getAuth(app);
+export const db = getFirestore(app);
+export const storage = getStorage(app);
+export const database = getDatabase(app);
 
-try {
-  app = initializeApp(firebaseConfig);
-
-  // Only initialize analytics in production and browser environment
-  if (typeof window !== 'undefined' && import.meta.env.PROD) {
-    analytics = getAnalytics(app);
-  }
-
-  auth = getAuth(app);
-  db = getFirestore(app);
-  storage = getStorage(app);
-  database = getDatabase(app);
-} catch (error) {
-  console.error('Error initializing Firebase:', error);
-  throw new Error('Failed to initialize Firebase services');
-}
-
-// Export initialized services and helper functions
-export {
-  app,
-  analytics,
-  auth,
-  db,
-  storage,
-  database,
-  firebaseConfig,
-  ref
-};
+// Export config for reference
+export { firebaseConfig };

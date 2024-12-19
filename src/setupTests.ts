@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom';
 import { TextDecoder, TextEncoder } from 'util';
-import { expect, vi } from 'vitest'
+import { vi } from '@vitest/globals';  // Update this import
 
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
