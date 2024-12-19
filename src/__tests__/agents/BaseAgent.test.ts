@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach } from 'vitest';
 import { BaseAgent } from '../../lib/agents/base';
 import type { Message } from '../../types';
 

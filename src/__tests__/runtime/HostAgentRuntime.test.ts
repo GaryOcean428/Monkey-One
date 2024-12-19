@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { HostAgentRuntime, HostRuntimeConfig } from '@/lib/runtime/HostAgentRuntime'
 import { Agent, AgentStatus, AgentType, LogLevel, Message, MessageType } from '@/types'
 import { RuntimeError } from '@/lib/errors/AgentErrors'
@@ -31,7 +32,7 @@ class MockAgent implements Agent {
   }
 }
 
-jest.mock('../agents/base', () => ({
+vi.mock('../agents/base', () => ({
   default: MockAgent
 }))
 
@@ -143,7 +144,7 @@ describe('HostAgentRuntime', () => {
 
     it('should handle broadcast failures gracefully', async () => {
       const failingAgent = agents[0]
-      jest.spyOn(failingAgent, 'handleMessage').mockRejectedValue(new Error('Test error'))
+      vi.spyOn(failingAgent, 'handleMessage').mockRejectedValue(new Error('Test error'))
 
       const message: Omit<Message, 'recipient'> = {
         id: 'broadcast-3',
@@ -168,7 +169,7 @@ describe('HostAgentRuntime', () => {
     })
 
     it('should persist state when creating agent', async () => {
-      const persistSpy = jest.spyOn(console, 'log')
+      const persistSpy = vi.spyOn(console, 'log')
       await runtime.createAgent(AgentType.BASE, ['test'])
       expect(persistSpy).toHaveBeenCalledWith(
         'Persisting state:',
@@ -177,7 +178,7 @@ describe('HostAgentRuntime', () => {
     })
 
     it('should attempt to recover state on startup', () => {
-      const recoverSpy = jest.spyOn(console, 'log')
+      const recoverSpy = vi.spyOn(console, 'log')
       runtime = new HostAgentRuntime({
         ...defaultConfig,
         enablePersistence: true,
@@ -202,7 +203,7 @@ describe('HostAgentRuntime', () => {
 
     it('should force shutdown after timeout', async () => {
       const agent = await runtime.createAgent(AgentType.BASE, ['test'])
-      jest.spyOn(agent, 'handleMessage').mockImplementation(() => 
+      vi.spyOn(agent, 'handleMessage').mockImplementation(() => 
         new Promise(resolve => setTimeout(resolve, 200))
       )
 

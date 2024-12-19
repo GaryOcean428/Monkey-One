@@ -1,14 +1,15 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ToolResultHandling } from '../../lib/tools/ToolResultHandling';
 import { Tool } from '../../types';
 import { ToolExecutionError } from '../../lib/errors/AgentErrors';
 
-describe('ToolResultHandling', () => {
-  const createMockTool = (result: unknown): Tool => ({
-    name: 'mock',
-    description: 'mock tool',
-    execute: jest.fn().mockResolvedValue(result)
-  });
+const createMockTool = (result: unknown): Tool => ({
+  name: 'mock',
+  description: 'mock tool',
+  execute: vi.fn().mockResolvedValue(result)
+});
 
+describe('ToolResultHandling', () => {
   describe('basic validation', () => {
     it('should validate number results', async () => {
       const tool = createMockTool(42);
@@ -152,7 +153,7 @@ describe('ToolResultHandling', () => {
   describe('error mapping', () => {
     it('should map known errors', async () => {
       const tool = createMockTool(null);
-      jest.spyOn(tool, 'execute').mockRejectedValue(new Error('RATE_LIMIT_EXCEEDED'));
+      vi.spyOn(tool, 'execute').mockRejectedValue(new Error('RATE_LIMIT_EXCEEDED'));
       
       const mappedTool = ToolResultHandling.withErrorMapping(tool, {
         'RATE_LIMIT_EXCEEDED': 'Please try again later'
@@ -164,7 +165,7 @@ describe('ToolResultHandling', () => {
 
     it('should pass through unknown errors', async () => {
       const tool = createMockTool(null);
-      jest.spyOn(tool, 'execute').mockRejectedValue(new Error('UNKNOWN_ERROR'));
+      vi.spyOn(tool, 'execute').mockRejectedValue(new Error('UNKNOWN_ERROR'));
       
       const mappedTool = ToolResultHandling.withErrorMapping(tool, {
         'RATE_LIMIT_EXCEEDED': 'Please try again later'
@@ -176,7 +177,7 @@ describe('ToolResultHandling', () => {
 
     it('should handle regex patterns in error mapping', async () => {
       const tool = createMockTool(null);
-      jest.spyOn(tool, 'execute').mockRejectedValue(new Error('Error code: 429'));
+      vi.spyOn(tool, 'execute').mockRejectedValue(new Error('Error code: 429'));
       
       const mappedTool = ToolResultHandling.withErrorMapping(tool, {
         'Error code: \\d+': 'An error occurred'
