@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --force",
-    "build": "vite build --mode production --debug false --minify terser",
+    "build": "vite build --mode production --debug false",
     "build:analyze": "vite build --mode production --debug false --minify terser --stats",
     "build:ssr": "vite build --ssr src/entry-server.tsx",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
