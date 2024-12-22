@@ -1,173 +1,136 @@
-import { OrchestratorAgent } from '../../lib/agents/orchestrator';
-import { memoryManager } from '../../lib/memory';
-import { AgentRegistry } from '../../lib/registry/AgentRegistry';
-import type { Message, TaskMessage } from '../../types';
+import { OrchestratorAgent } from '../../lib/agents/core/OrchestratorAgent';
+import { Agent, AgentStatus, AgentType, Message, MessageType } from '@/types';
+import { RuntimeError } from '@/lib/errors/AgentErrors';
 
-// Mock dependencies
-jest.mock('../../lib/memory');
-jest.mock('../../lib/registry/AgentRegistry');
-jest.mock('../../lib/monitoring/ToolMonitor');
-jest.mock('../../lib/patterns/AgentMixture');
-jest.mock('../../lib/patterns/DebateCoordinator');
-jest.mock('../../lib/tools/CalculatorTool');
+// Mock child agent for testing
+class MockChildAgent implements Agent {
+    id: string;
+    type: AgentType;
+    status: AgentStatus;
+    capabilities: string[];
+
+    constructor(id: string) {
+        this.id = id;
+        this.type = AgentType.BASE;
+        this.status = AgentStatus.IDLE;
+        this.capabilities = ['test'];
+    }
+
+    async initialize(): Promise<void> {}
+
+    async handleMessage(message: Message): Promise<Message> {
+        return {
+            id: `response-${message.id}`,
+            type: MessageType.RESPONSE,
+            sender: this.id,
+            recipient: message.sender,
+            content: `Processed by ${this.id}`,
+            timestamp: Date.now()
+        };
+    }
+}
 
 describe('OrchestratorAgent', () => {
-  let agent: OrchestratorAgent;
-
-  beforeEach(() => {
-    // Reset all mocks
-    jest.clearAllMocks();
-    
-    // Initialize agent
-    agent = new OrchestratorAgent('test-id', 'Test Orchestrator');
-  });
-
-  describe('initialization', () => {
-    it('should initialize with correct properties', () => {
-      expect(agent.id).toBe('test-id');
-      expect(agent.agentName).toBe('Test Orchestrator');
-      expect(agent.role).toBe('Orchestrator');
-      expect(agent.getCapabilities()).toHaveLength(5);
-      const capabilityNames = agent.getCapabilities().map(c => c.name);
-      expect(capabilityNames).toEqual([
-        'task_planning',
-        'task_delegation', 
-        'progress_tracking',
-        'distributed_execution',
-        'multi_agent_interaction'
-      ]);
-      expect(agent.subordinates).toEqual([]);
-    });
-  });
-
-  describe('task handling', () => {
-    const mockTask: TaskMessage = {
-      id: 'task-1',
-      role: 'user',
-      content: 'Test task',
-      timestamp: Date.now(),
-      type: 'task'
-    };
+    let orchestrator: OrchestratorAgent;
+    let mockChild1: MockChildAgent;
+    let mockChild2: MockChildAgent;
 
     beforeEach(() => {
-      // Mock memory manager
-      (memoryManager.add as jest.Mock).mockResolvedValue(undefined);
+        orchestrator = new OrchestratorAgent('test-orchestrator', 'Test Orchestrator');
+        mockChild1 = new MockChildAgent('child-1');
+        mockChild2 = new MockChildAgent('child-2');
     });
 
-    it('should store original task in memory', async () => {
-      await agent.handleTask(mockTask, {});
-      
-      expect(memoryManager.add).toHaveBeenCalledWith({
-        type: 'task',
-        content: mockTask.content,
-        tags: ['original-task']
-      });
+    describe('agent management', () => {
+        it('should register child agents', async () => {
+            await orchestrator.registerAgent(mockChild1);
+            expect(orchestrator.getAgents()).toContain(mockChild1);
+        });
+
+        it('should unregister child agents', async () => {
+            await orchestrator.registerAgent(mockChild1);
+            await orchestrator.unregisterAgent(mockChild1.id);
+            expect(orchestrator.getAgents()).not.toContain(mockChild1);
+        });
+
+        it('should throw error when registering duplicate agent', async () => {
+            await orchestrator.registerAgent(mockChild1);
+            await expect(orchestrator.registerAgent(mockChild1))
+                .rejects.toThrow(RuntimeError);
+        });
     });
 
-    it('should update progress through task execution stages', async () => {
-      await agent.handleTask(mockTask, {});
+    describe('message orchestration', () => {
+        beforeEach(async () => {
+            await orchestrator.registerAgent(mockChild1);
+            await orchestrator.registerAgent(mockChild2);
+        });
 
-      expect(agent['progressLedger'].status).toBe('completed');
-      expect(memoryManager.add).toHaveBeenCalledWith(
-        expect.objectContaining({
-          type: 'summary',
-          tags: ['task-completion']
-        })
-      );
+        it('should route message to specific agent', async () => {
+            const message: Message = {
+                id: 'test-1',
+                type: MessageType.COMMAND,
+                sender: 'test',
+                recipient: mockChild1.id,
+                content: 'test message',
+                timestamp: Date.now()
+            };
+
+            const response = await orchestrator.processMessage(message);
+            expect(response.content).toBe('Processed by child-1');
+        });
+
+        it('should broadcast message to all agents', async () => {
+            const message: Message = {
+                id: 'test-2',
+                type: MessageType.BROADCAST,
+                sender: 'test',
+                content: 'broadcast message',
+                timestamp: Date.now()
+            };
+
+            const responses = await orchestrator.broadcast(message);
+            expect(responses).toHaveLength(2);
+        });
+
+        it('should handle agent errors gracefully', async () => {
+            const failingAgent = new MockChildAgent('failing-agent');
+            jest.spyOn(failingAgent, 'handleMessage')
+                .mockRejectedValue(new Error('Test error'));
+
+            await orchestrator.registerAgent(failingAgent);
+
+            const message: Message = {
+                id: 'test-3',
+                type: MessageType.COMMAND,
+                sender: 'test',
+                recipient: failingAgent.id,
+                content: 'test message',
+                timestamp: Date.now()
+            };
+
+            const response = await orchestrator.processMessage(message);
+            expect(response.type).toBe(MessageType.ERROR);
+        });
     });
 
-    it('should handle task execution errors', async () => {
-      // Mock memory manager to throw error
-      (memoryManager.add as jest.Mock).mockRejectedValueOnce(new Error('Test error'));
+    describe('agent monitoring', () => {
+        it('should track agent status changes', async () => {
+            await orchestrator.registerAgent(mockChild1);
+            mockChild1.status = AgentStatus.BUSY;
+            
+            const status = orchestrator.getAgentStatus(mockChild1.id);
+            expect(status).toBe(AgentStatus.BUSY);
+        });
 
-      const response = await agent.handleTask(mockTask, {});
-      
-      expect(response.content).toContain('Error executing task: Test error');
-      expect(memoryManager.add).toHaveBeenCalledWith({
-        type: 'error',
-        content: expect.stringContaining('Test error'),
-        tags: ['error', 'task-failure']
-      });
+        it('should get active agents', async () => {
+            await orchestrator.registerAgent(mockChild1);
+            await orchestrator.registerAgent(mockChild2);
+            mockChild1.status = AgentStatus.BUSY;
+
+            const activeAgents = orchestrator.getActiveAgents();
+            expect(activeAgents).toHaveLength(1);
+            expect(activeAgents[0]).toBe(mockChild1);
+        });
     });
-  });
-
-  describe('tool handling', () => {
-    const mockToolCall = {
-      toolName: 'calculator',
-      args: { operation: 'add', numbers: [1, 2] }
-    };
-
-    it('should handle tool calls and log executions', async () => {
-      const mockResult = { status: 'success', result: 3 };
-      agent['toolAgent'].handleToolCall = jest.fn().mockResolvedValue(mockResult);
-
-      const result = await agent.handleToolCall(mockToolCall);
-
-      expect(result).toEqual(mockResult);
-      expect(agent['toolMonitor'].logExecution).toHaveBeenCalledWith(
-        expect.any(Object),
-        mockToolCall.args,
-        mockResult
-      );
-    });
-
-    it('should handle tool execution errors', async () => {
-      const error = new Error('Tool execution failed');
-      agent['toolAgent'].handleToolCall = jest.fn().mockRejectedValue(error);
-
-      await expect(agent.handleToolCall(mockToolCall)).rejects.toThrow(error);
-    });
-  });
-
-  describe('plan management', () => {
-    it('should create and store initial plan', async () => {
-      const task = 'Test task';
-      await agent['planTask'](task);
-
-      expect(memoryManager.add).toHaveBeenCalledWith({
-        type: 'plan',
-        content: expect.any(String),
-        tags: ['task-plan']
-      });
-
-      expect(agent['progressLedger'].status).toBe('planned');
-    });
-
-    it('should handle plan revision on failure', async () => {
-      // Setup initial state
-      agent['progressLedger'] = {
-        completedSteps: ['step1'],
-        currentStep: 'failed-step',
-        remainingSteps: ['step3'],
-        status: 'in_progress'
-      };
-
-      await agent['revisePlan']();
-
-      expect(memoryManager.add).toHaveBeenCalledWith({
-        type: 'plan-revision',
-        content: expect.any(String),
-        tags: ['plan-revision']
-      });
-
-      expect(agent['progressLedger'].status).toBe('replanned');
-    });
-  });
-
-  describe('task delegation', () => {
-    it('should analyze and delegate tasks', async () => {
-      const task = 'Test task';
-      const response = await agent['delegateTask'](task);
-
-      expect(response).toMatchObject({
-        id: expect.any(String),
-        role: 'assistant',
-        content: expect.stringContaining(task),
-        timestamp: expect.any(Number),
-        metadata: expect.objectContaining({
-          status: 'completed'
-        })
-      });
-    });
-  });
 });

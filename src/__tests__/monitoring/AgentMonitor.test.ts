@@ -1,6 +1,9 @@
-import { AgentMonitor } from '@/lib/monitoring/AgentMonitor'
-import { Agent, AgentStatus, AgentType, Message, MessageType } from '@/types'
-import { RuntimeError } from '@/lib/errors/AgentErrors'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { AgentMonitor } from '@/lib/monitoring/AgentMonitor';
+import { Agent, AgentStatus, AgentType, Message, MessageType } from '@/types';
+import { RuntimeError } from '@/lib/errors/AgentErrors';
+
+vi.mock('../../lib/memory');
 
 class MockAgent implements Agent {
   id: string
@@ -104,7 +107,7 @@ describe('AgentMonitor', () => {
       monitor.trackMessage(mockMessage)
 
       // Simulate delay
-      jest.advanceTimersByTime(100)
+      vi.advanceTimersByTime(100)
 
       // Send response
       const responseMessage: Message = {

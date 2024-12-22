@@ -1,26 +1,27 @@
 import '@testing-library/jest-dom';
 import { TextDecoder, TextEncoder } from 'util';
+import { vi } from '@vitest/globals';  // Update this import
 
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: jest.fn().mockImplementation(query => ({
+  value: vi.fn().mockImplementation(query => ({
     matches: false,
     media: query,
     onchange: null,
-    addListener: jest.fn(),
-    removeListener: jest.fn(),
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-    dispatchEvent: jest.fn(),
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
   })),
 });
 
 // Mock ResizeObserver
-global.ResizeObserver = jest.fn().mockImplementation(() => ({
-  observe: jest.fn(),
-  unobserve: jest.fn(),
-  disconnect: jest.fn(),
+global.ResizeObserver = vi.fn().mockImplementation(() => ({
+  observe: vi.fn(),
+  unobserve: vi.fn(),
+  disconnect: vi.fn(),
 }));
 
 // Mock TextEncoder/TextDecoder
@@ -96,61 +97,61 @@ function createCanvasContextMock(): CanvasRenderingContext2D {
     imageSmoothingQuality: 'high',
     
     // Path methods
-    beginPath: jest.fn(),
-    closePath: jest.fn(),
-    moveTo: jest.fn(),
-    lineTo: jest.fn(),
-    stroke: jest.fn(),
-    fill: jest.fn(),
-    rect: jest.fn(),
-    clearRect: jest.fn(),
-    fillRect: jest.fn(),
-    strokeRect: jest.fn(),
-    arc: jest.fn(),
-    arcTo: jest.fn(),
+    beginPath: vi.fn(),
+    closePath: vi.fn(),
+    moveTo: vi.fn(),
+    lineTo: vi.fn(),
+    stroke: vi.fn(),
+    fill: vi.fn(),
+    rect: vi.fn(),
+    clearRect: vi.fn(),
+    fillRect: vi.fn(),
+    strokeRect: vi.fn(),
+    arc: vi.fn(),
+    arcTo: vi.fn(),
     
     // Transformation methods
-    scale: jest.fn(),
-    rotate: jest.fn(),
-    translate: jest.fn(),
-    transform: jest.fn(),
-    setTransform: jest.fn(),
-    resetTransform: jest.fn(),
+    scale: vi.fn(),
+    rotate: vi.fn(),
+    translate: vi.fn(),
+    transform: vi.fn(),
+    setTransform: vi.fn(),
+    resetTransform: vi.fn(),
     
     // Compositing and clipping
-    save: jest.fn(),
-    restore: jest.fn(),
-    clip: jest.fn(),
-    isPointInPath: jest.fn(),
-    isPointInStroke: jest.fn(),
+    save: vi.fn(),
+    restore: vi.fn(),
+    clip: vi.fn(),
+    isPointInPath: vi.fn(),
+    isPointInStroke: vi.fn(),
     
     // Drawing images and text
-    drawImage: jest.fn(),
-    createLinearGradient: jest.fn(),
-    createRadialGradient: jest.fn(),
-    createConicGradient: jest.fn(),
-    createPattern: jest.fn(),
-    measureText: jest.fn((text: string) => createTextMetricsMock(text)),
-    fillText: jest.fn(),
-    strokeText: jest.fn(),
+    drawImage: vi.fn(),
+    createLinearGradient: vi.fn(),
+    createRadialGradient: vi.fn(),
+    createConicGradient: vi.fn(),
+    createPattern: vi.fn(),
+    measureText: vi.fn((text: string) => createTextMetricsMock(text)),
+    fillText: vi.fn(),
+    strokeText: vi.fn(),
     
     // Additional methods
-    getContextAttributes: jest.fn(),
-    getLineDash: jest.fn(),
-    setLineDash: jest.fn(),
-    createImageData: jest.fn(),
-    getImageData: jest.fn(),
-    putImageData: jest.fn(),
+    getContextAttributes: vi.fn(),
+    getLineDash: vi.fn(),
+    setLineDash: vi.fn(),
+    createImageData: vi.fn(),
+    getImageData: vi.fn(),
+    putImageData: vi.fn(),
     
     // More path methods
-    quadraticCurveTo: jest.fn(),
-    bezierCurveTo: jest.fn(),
+    quadraticCurveTo: vi.fn(),
+    bezierCurveTo: vi.fn(),
     
     // Additional clipping and path methods
-    ellipse: jest.fn(),
+    ellipse: vi.fn(),
     
     // Gradient and pattern methods
-    addColorStop: jest.fn(),
+    addColorStop: vi.fn(),
   } as unknown as CanvasRenderingContext2D;
 
   return mockContext;
@@ -164,44 +165,44 @@ function createWebGLContextMock(): WebGLRenderingContext {
     drawingBufferHeight: 150,
     
     // WebGL-specific methods
-    clear: jest.fn(),
-    clearColor: jest.fn(),
-    clearDepth: jest.fn(),
-    clearStencil: jest.fn(),
-    enable: jest.fn(),
-    disable: jest.fn(),
+    clear: vi.fn(),
+    clearColor: vi.fn(),
+    clearDepth: vi.fn(),
+    clearStencil: vi.fn(),
+    enable: vi.fn(),
+    disable: vi.fn(),
     
     // Shader and program methods
-    createShader: jest.fn(),
-    shaderSource: jest.fn(),
-    compileShader: jest.fn(),
-    createProgram: jest.fn(),
-    attachShader: jest.fn(),
-    linkProgram: jest.fn(),
+    createShader: vi.fn(),
+    shaderSource: vi.fn(),
+    compileShader: vi.fn(),
+    createProgram: vi.fn(),
+    attachShader: vi.fn(),
+    linkProgram: vi.fn(),
     
     // Attribute and uniform methods
-    getAttribLocation: jest.fn(),
-    getUniformLocation: jest.fn(),
-    vertexAttribPointer: jest.fn(),
-    enableVertexAttribArray: jest.fn(),
+    getAttribLocation: vi.fn(),
+    getUniformLocation: vi.fn(),
+    vertexAttribPointer: vi.fn(),
+    enableVertexAttribArray: vi.fn(),
     
     // Drawing methods
-    drawArrays: jest.fn(),
-    drawElements: jest.fn(),
+    drawArrays: vi.fn(),
+    drawElements: vi.fn(),
     
     // Texture methods
-    createTexture: jest.fn(),
-    bindTexture: jest.fn(),
-    texImage2D: jest.fn(),
-    texParameteri: jest.fn(),
+    createTexture: vi.fn(),
+    bindTexture: vi.fn(),
+    texImage2D: vi.fn(),
+    texParameteri: vi.fn(),
     
     // Viewport and scissor
-    viewport: jest.fn(),
-    scissor: jest.fn(),
+    viewport: vi.fn(),
+    scissor: vi.fn(),
     
     // Miscellaneous
-    getError: jest.fn(),
-    getContextAttributes: jest.fn(),
+    getError: vi.fn(),
+    getContextAttributes: vi.fn(),
   } as unknown as WebGLRenderingContext;
 }
 
@@ -223,7 +224,7 @@ type RenderingContext =
   | null;
 
 // Create mock implementation with precise typing
-const mockGetContext = jest.fn((contextId: string, options?: unknown) => {
+const mockGetContext = vi.fn((contextId: string, options?: unknown) => {
   switch (contextId) {
     case '2d':
       return createCanvasContextMock();

@@ -55,7 +55,9 @@ export class MLService {
   }
 
   private async saveModel() {
-    if (!this.model) return;
+    if (!this.model) {
+      return;
+    }
 
     const modelArtifacts = await this.model.save(tf.io.withSaveHandler(async (artifacts: ModelArtifacts) => {
       const modelRef = this.getModelRef('ml-models/latest');
@@ -92,7 +94,9 @@ export class MLService {
   }
 
   async train(data: tf.Tensor, labels: tf.Tensor, epochs: number = 10) {
-    if (!this.model) throw new Error('Model not initialized');
+    if (!this.model) {
+      throw new Error('Model not initialized');
+    }
 
     const history = await this.model.fit(data, labels, {
       epochs,
@@ -115,7 +119,9 @@ export class MLService {
   }
 
   async predict(input: tf.Tensor): Promise<tf.Tensor> {
-    if (!this.model) throw new Error('Model not initialized');
+    if (!this.model) {
+      throw new Error('Model not initialized');
+    }
     return this.model.predict(input) as tf.Tensor;
   }
 

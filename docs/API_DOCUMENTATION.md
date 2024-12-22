@@ -3,32 +3,37 @@
 ## Model References
 
 ### Groq Models
+
 - `llama-3.2-70b-preview`: Latest LLaMA 3.2 70B model
 - `llama-3.2-7b-preview`: Latest LLaMA 3.2 7B model
 - `llama3-groq-70b-8192-tool-use-preview`: Tool-optimized 70B model
 - `llama3-groq-8b-8192-tool-use-preview`: Tool-optimized 8B model
 
-Documentation: https://console.groq.com/docs/models
+Documentation: <https://console.groq.com/docs/models>
 
 ### Perplexity Models
+
 - `llama-3.1-sonar-small-128k-online` (8B parameters)
 - `llama-3.1-sonar-large-128k-online` (70B parameters)
 - `llama-3.1-sonar-huge-128k-online` (405B parameters)
 
-Documentation: https://docs.perplexity.ai/guides/model-cards
+Documentation: <https://docs.perplexity.ai/guides/model-cards>
 
 ### XAI (Grok) Models
+
 - `grok-beta`: Latest Grok model optimized for coding and analysis
 
-Documentation: https://docs.x.ai/api
+Documentation: <https://docs.x.ai/api>
 
 ### Huggingface Models
+
 - `Qwen/Qwen2.5-Coder-32B-Instruct`: Specialized coding model
 - `ibm-granite/granite-3.0-8b-instruct`: IBM's Granite code model
 
 Documentation:
-- Qwen: https://huggingface.co/Qwen/Qwen2.5-Coder-32B-Instruct
-- Granite: https://huggingface.co/collections/ibm-granite/granite-code-models-6624c5cec322e4c148c8b330
+
+- Qwen: <https://huggingface.co/Qwen/Qwen2.5-Coder-32B-Instruct>
+- Granite: <https://huggingface.co/collections/ibm-granite/granite-code-models-6624c5cec322e4c148c8b330>
 
 ## Usage Examples
 
@@ -88,6 +93,7 @@ const response = await granite.sendMessage("Refactor this code to use async/awai
 ## Error Handling
 
 All providers implement standard error handling:
+
 - Network errors
 - Rate limiting
 - Invalid responses

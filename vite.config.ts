@@ -1,55 +1,85 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import path from 'path';
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import { fileURLToPath } from 'node:url'
+import { dirname } from 'node:path'
+import path from 'path'
+import dotenv from 'dotenv'
+import { nodeResolve } from '@rollup/plugin-node-resolve'
+import commonjs from '@rollup/plugin-commonjs'
+import terser from '@rollup/plugin-terser'
+import { visualizer } from 'rollup-plugin-visualizer'
+import compression from 'vite-plugin-compression'
+
+dotenv.config()
+
+const __filename = fileURLToPath(new URL(import.meta.url))
+const __dirname = dirname(__filename)
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    nodeResolve(),
+    commonjs(),
+    compression({
+      algorithm: 'brotli',
+      ext: '.br'
+    }),
+    process.env.ANALYZE && visualizer({
+      filename: './dist/stats.html',
+      open: true,
+      gzipSize: true,
+      brotliSize: true
+    })
+  ],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      '@': '/src',
     },
-  },
-  server: {
-    port: 5173,
-    host: true,
-    hmr: {
-      clientPort: 24678 // Use a different port for WebSocket
-    },
-    proxy: {
-      '/api': {
-        target: process.env.VITE_API_ENDPOINT || 'http://localhost:3000',
-        changeOrigin: true,
-        secure: false,
-        rewrite: (path) => path.replace(/^\/api/, '')
-      }
-    },
-    cors: {
-      origin: true,
-      credentials: true
-    }
   },
   build: {
-    outDir: 'dist',
-    sourcemap: true,
+    target: 'es2015',
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true
+      }
+    },
     rollupOptions: {
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom'],
-          'ui-vendor': [
-            '@radix-ui/react-dialog',
-            '@radix-ui/react-dropdown-menu',
-            '@radix-ui/react-select',
-            '@radix-ui/react-tabs',
-            '@radix-ui/react-tooltip'
-          ],
-          'utils-vendor': ['zustand', 'clsx', 'tailwind-merge']
+          'firebase-vendor': ['firebase/app', 'firebase/auth', 'firebase/firestore'],
+          'ui-vendor': ['@radix-ui/react-dialog', '@radix-ui/react-select'],
+          'ml-vendor': ['@tensorflow/tfjs', '@huggingface/inference']
         }
-      }
-    }
+      },
+      plugins: [
+        terser({
+          format: {
+            comments: false
+          }
+        })
+      ]
+    },
+    sourcemap: true,
+    chunkSizeWarningLimit: 1000
   },
   optimizeDeps: {
-    exclude: ['@tensorflow/tfjs-node']
+    include: ['react', 'react-dom', 'firebase/app']
   },
-  clearScreen: false,
-  cacheDir: '.vite'
-});
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: ['./src/setupTests.ts'],
+    include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html'],
+      exclude: [
+        'node_modules/',
+        'src/setupTests.ts',
+      ],
+    },
+  },
+})

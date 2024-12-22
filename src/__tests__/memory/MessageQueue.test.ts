@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { MessageQueue } from '../../lib/memory/MessageQueue';
 import type { Message } from '../../types';
 
@@ -32,7 +33,7 @@ describe('MessageQueue', () => {
       const processedMessages: Message[] = [];
       const queuePrivate = queue as unknown as MessageQueuePrivate;
       
-      const mockProcess = jest.spyOn(queuePrivate, 'processQueue')
+      const mockProcess = vi.spyOn(queuePrivate, 'processQueue')
         .mockImplementation(async () => {
           while (queuePrivate.queue.length > 0) {
             const message = queuePrivate.queue.shift();
@@ -78,7 +79,7 @@ describe('MessageQueue', () => {
 
     it('should handle empty queue gracefully', async () => {
       const queuePrivate = queue as unknown as MessageQueuePrivate;
-      const mockProcess = jest.spyOn(queuePrivate, 'processQueue');
+      const mockProcess = vi.spyOn(queuePrivate, 'processQueue');
       await queuePrivate.processQueue();
       expect(mockProcess).toHaveBeenCalled();
       mockProcess.mockRestore();
@@ -88,7 +89,7 @@ describe('MessageQueue', () => {
       const processedMessages: Message[] = [];
       const queuePrivate = queue as unknown as MessageQueuePrivate;
       
-      const mockProcess = jest.spyOn(queuePrivate, 'processQueue')
+      const mockProcess = vi.spyOn(queuePrivate, 'processQueue')
         .mockImplementation(async () => {
           while (queuePrivate.queue.length > 0) {
             const message = queuePrivate.queue.shift();
