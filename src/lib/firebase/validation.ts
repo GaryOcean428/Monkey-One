@@ -12,22 +12,14 @@ const configSchema = z.object({
   measurementId: z.string().optional()
 });
 
-export const validateConfig = (env: Record<string, string | undefined>): FirebaseConfig | null => {
-  // Check if all required environment variables are present
-  const hasAllConfig = [
-    'VITE_FIREBASE_API_KEY',
-    'VITE_FIREBASE_AUTH_DOMAIN', 
-    'VITE_FIREBASE_PROJECT_ID',
-    'VITE_FIREBASE_STORAGE_BUCKET',
-    'VITE_FIREBASE_MESSAGING_SENDER_ID',
-    'VITE_FIREBASE_APP_ID',
-    'VITE_FIREBASE_DATABASE_URL'
-  ].every(key => env[key]);
-
+export const validateConfig = (env: Record): FirebaseConfig | null => {
   if (!hasAllConfig) {
+    const missingKeys = ['VITE_FIREBASE_API_KEY', 'VITE_FIREBASE_AUTH_DOMAIN', 'VITE_FIREBASE_PROJECT_ID', 
+      'VITE_FIREBASE_STORAGE_BUCKET', 'VITE_FIREBASE_MESSAGING_SENDER_ID', 'VITE_FIREBASE_APP_ID', 
+      'VITE_FIREBASE_DATABASE_URL'].filter(key => !env[key]);
+    console.error('Missing required Firebase configuration keys:', missingKeys);
     return null;
   }
-
   const config = {
     apiKey: env.VITE_FIREBASE_API_KEY,
     authDomain: env.VITE_FIREBASE_AUTH_DOMAIN,
