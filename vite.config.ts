@@ -9,6 +9,7 @@ import commonjs from '@rollup/plugin-commonjs'
 import terser from '@rollup/plugin-terser'
 import { visualizer } from 'rollup-plugin-visualizer'
 import compression from 'vite-plugin-compression'
+import tsconfigPaths from 'vite-tsconfig-paths'
 
 dotenv.config()
 
@@ -18,7 +19,11 @@ const __dirname = dirname(__filename)
 export default defineConfig({
   plugins: [
     react(),
-    nodeResolve(),
+    tsconfigPaths(),
+    nodeResolve({
+      extensions: ['.js', '.jsx', '.ts', '.tsx'],
+      preferBuiltins: true
+    }),
     commonjs(),
     compression({
       algorithm: 'brotli',
@@ -33,8 +38,9 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@': '/src',
+      '@': path.resolve(__dirname, 'src')
     },
+    extensions: ['.js', '.jsx', '.ts', '.tsx', '.json']
   },
   build: {
     target: 'es2015',
@@ -46,6 +52,10 @@ export default defineConfig({
       }
     },
     rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, 'index.html')
+      },
+      external: [],
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom'],
@@ -66,7 +76,21 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'firebase/app']
+    include: [
+      'react',
+      'react-dom',
+      'firebase/app',
+      '@radix-ui/react-tooltip',
+      'clsx',
+      'tailwind-merge'
+    ],
+    esbuildOptions: {
+      resolveExtensions: ['.js', '.jsx', '.ts', '.tsx']
+    }
+  },
+  server: {
+    port: 3000,
+    host: true
   },
   test: {
     globals: true,
