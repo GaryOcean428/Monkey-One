@@ -7,7 +7,7 @@
     "skipLibCheck": true,
 
     /* Module Resolution */
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "allowImportingTsExtensions": true,
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
