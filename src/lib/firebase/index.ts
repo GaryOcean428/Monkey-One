@@ -6,7 +6,7 @@ import { serviceManager } from './services';
 let isInitialized = false;
 
 export async function initializeFirebase() {
-  if (isInitialized) return;
+  if (isInitialized) {
   
   try {
     await serviceManager.initializeServices();
