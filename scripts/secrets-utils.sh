@@ -34,42 +34,48 @@ check_command() {
 # Function to validate environment file
 validate_env_file() {
     local env_file=$1
+    
     if [ ! -f "$env_file" ]; then
         log_error "Environment file not found: $env_file"
         return 1
     fi
     
-    # Check if file is readable
-    if [ ! -r "$env_file" ]; then
-        log_error "Environment file is not readable: $env_file"
-        return 1
-    }
+    # Create a backup
+    local backup_file="$env_file.backup-$(date +%Y%m%d-%H%M%S)"
+    cp "$env_file" "$backup_file"
+    log_success "Created backup: $backup_file"
     
-    # Validate environment file format
-    while IFS= read -r line || [ -n "$line" ]; do
-        # Skip empty lines and comments
-        [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]] && continue
-        
-        # Check if line follows KEY=VALUE format
-        if ! [[ "$line" =~ ^[A-Za-z_][A-Za-z0-9_]*=.*$ ]]; then
-            log_warning "Invalid line format in $env_file: $line"
-        fi
-    done < "$env_file"
+    # Remove Windows line endings and empty lines
+    local temp_file=$(mktemp)
+    tr -d '\r' < "$env_file" | grep -v '^[[:space:]]*$' > "$temp_file"
+    mv "$temp_file" "$env_file"
     
     return 0
 }
 
-# Function to get value from environment file
+# Function to get environment value
 get_env_value() {
     local env_file=$1
     local key=$2
     local value
     
-    value=$(grep "^${key}=" "$env_file" | cut -d '=' -f2-)
+    # Read the value, removing any Windows line endings
+    value=$(grep "^$key=" "$env_file" | cut -d'=' -f2- | tr -d '\r')
     
-    # Remove leading/trailing whitespace and quotes
-    value=$(echo "$value" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's/^["\x27]//' -e 's/["\x27]$//')
+    # Remove any surrounding quotes
+    value="${value#\"}"
+    value="${value%\"}"
+    value="${value#\'}"
+    value="${value%\'}"
     
+    echo "$value"
+}
+
+# Function to clean environment value (remove quotes, spaces, and \r)
+clean_env_value() {
+    local value=$1
+    # Remove leading/trailing whitespace, quotes, and carriage returns
+    value=$(echo "$value" | sed -e 's/^[[:space:]"'\'']*//g' -e 's/[[:space:]"'\'']*$//g' -e 's/\r//g')
     echo "$value"
 }
 

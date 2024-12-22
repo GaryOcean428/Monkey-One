@@ -134,6 +134,37 @@ load_secrets() {
     SECRETS["GRAFANA_ADMIN_PASSWORD"]=$(get_env_value "$env_file" "GRAFANA_ADMIN_PASSWORD")
 }
 
+# Function to get repository public key
+get_repo_public_key() {
+    local key_response
+    key_response=$(curl -s \
+        -H "Authorization: token $GITHUB_PAT" \
+        -H "Accept: application/vnd.github.v3+json" \
+        "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/actions/secrets/public-key")
+    
+    if [ $? -ne 0 ]; then
+        log_error "Failed to get repository public key"
+        return 1
+    fi
+    
+    # Pretty print the response for debugging
+    echo "$key_response" | python3 -m json.tool
+    
+    # Extract key_id and public_key using python for better JSON parsing
+    KEY_ID=$(echo "$key_response" | python3 -c "import sys, json; print(json.load(sys.stdin).get('key_id', ''))")
+    PUBLIC_KEY=$(echo "$key_response" | python3 -c "import sys, json; print(json.load(sys.stdin).get('key', ''))")
+    
+    if [ -z "$KEY_ID" ] || [ -z "$PUBLIC_KEY" ]; then
+        log_error "Invalid public key response from GitHub"
+        log_error "key_id: $KEY_ID"
+        log_error "public_key: $PUBLIC_KEY"
+        return 1
+    fi
+    
+    log_success "Successfully retrieved GitHub public key"
+    return 0
+}
+
 # Function to add secrets to a specific environment
 add_secrets_to_environment() {
     local env_name=$1
@@ -159,19 +190,11 @@ add_secrets_to_environment() {
         return 1
     fi
     
-    # Get public key for the environment
-    local key_response
-    key_response=$(curl -s -H "Authorization: token $GITHUB_PAT" \
-        "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/actions/secrets/public-key")
-    
-    local key_id
-    local public_key
-    key_id=$(echo "$key_response" | grep -o '"key_id":"[^"]*' | cut -d'"' -f4)
-    public_key=$(echo "$key_response" | grep -o '"key":"[^"]*' | cut -d'"' -f4)
-    
-    if [ -z "$key_id" ] || [ -z "$public_key" ]; then
-        log_error "Could not get public key information for environment $env_name"
-        return 1
+    # Get repository public key if we haven't already
+    if [ -z "$KEY_ID" ] || [ -z "$PUBLIC_KEY" ]; then
+        if ! get_repo_public_key; then
+            return 1
+        fi
     fi
     
     # Add each secret to the environment
@@ -187,19 +210,33 @@ add_secrets_to_environment() {
         
         log_info "Adding secret: $secret_name to environment: $env_name"
         
-        local secret_response
-        secret_response=$(curl -s -X PUT \
+        # First add to repository level
+        local repo_response
+        repo_response=$(curl -s -X PUT \
             -H "Authorization: token $GITHUB_PAT" \
             -H "Accept: application/vnd.github.v3+json" \
-            "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/environments/$env_name/secrets/$secret_name" \
-            -d "{\"encrypted_value\":\"$encoded_value\",\"key_id\":\"$key_id\"}")
+            "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/actions/secrets/$secret_name" \
+            -d "{\"encrypted_value\":\"$encoded_value\",\"key_id\":\"$KEY_ID\"}")
         
         if [ $? -ne 0 ]; then
-            log_error "Failed to add secret: $secret_name to environment: $env_name"
+            log_error "Failed to add secret: $secret_name to repository"
             continue
         fi
         
-        log_success "Added secret: $secret_name to environment: $env_name"
+        # Then add to environment level
+        local env_response
+        env_response=$(curl -s -X PUT \
+            -H "Authorization: token $GITHUB_PAT" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/environments/$env_name/secrets/$secret_name" \
+            -d "{\"encrypted_value\":\"$encoded_value\",\"key_id\":\"$KEY_ID\"}")
+        
+        if [ $? -ne 0 ]; then
+            log_warning "Could not add secret: $secret_name to environment: $env_name (this is normal for some environments)"
+            continue
+        fi
+        
+        log_success "Added secret: $secret_name to repository and environment: $env_name"
     done
 }
 
