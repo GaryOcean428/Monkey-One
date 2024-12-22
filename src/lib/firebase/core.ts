@@ -22,23 +22,13 @@ class FirebaseCore {
     if (this.app) {
       return this.app;
     }
-
-    const { projectId, apiKey, authDomain } = this.config;
-    
-    if (!projectId || !apiKey || !authDomain) {
-      throw new Error('Missing required Firebase configuration');
-    }
-
-    // Check if app is already initialized
-    const existingApps = getApps();
-    if (existingApps.length > 0) {
-      this.app = existingApps[0];
+    try {
+      this.app = initializeApp(this.config);
       return this.app;
+    } catch (error) {
+      console.error('Failed to initialize Firebase app:', error);
+      throw new Error('Firebase initialization failed');
     }
-
-    // Initialize new app
-    this.app = initializeApp(this.config);
-    return this.app;
   }
 
   getApp(): FirebaseApp {
