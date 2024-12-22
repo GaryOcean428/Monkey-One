@@ -18,12 +18,16 @@ export class BrainStorage {
     };
   }
 
-  private async safeWrite(ref: DatabaseReference, data: unknown) {
-    try {
-      await set(ref, data);
-    } catch (error) {
-      console.error('Firebase write failed:', error);
-      throw error;
+  private async safeWrite(ref: DatabaseReference, data: unknown, retries = 3) {
+    for (let i = 0; i < retries; i++) {
+      try {
+        await set(ref, data);
+        return;
+      } catch (error) {
+        console.error(`Firebase write attempt ${i + 1} failed:`, error);
+        if (i === retries - 1) throw error;
+        await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+      }
     }
   }
 
