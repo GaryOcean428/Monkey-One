@@ -13,5 +13,10 @@ initializeFirebase().then(() => {
   );
 }).catch(error => {
   console.error('Failed to start application:', error);
-  // Optionally render an error screen
+  ReactDOM.createRoot(document.getElementById('root')!).render(
+    
+      Application Error
+      Failed to initialize required services. Please try again later.
+    
+  );
 });
