@@ -6,14 +6,14 @@
     "framework": "vite",
     "outputDirectory": "dist",
     "env": {
-        "VITE_GITHUB_TOKEN": "@github_token",
-        "VITE_GITHUB_USERNAME": "@github_username",
-        "VITE_GITHUB_USEREMAIL": "@github_email",
-        "VITE_FIREBASE_API_KEY": "@firebase_api_key",
-        "VITE_FIREBASE_PROJECT_ID": "@firebase_project_id",
-        "VITE_PINECONE_API_KEY": "@pinecone_api_key",
-        "VITE_PINECONE_ENVIRONMENT": "@pinecone_environment",
-        "GRAFANA_ADMIN_PASSWORD": "@grafana_admin_password"
+        "VITE_GITHUB_TOKEN": "@github-token",
+        "VITE_GITHUB_USERNAME": "@github-username",
+        "VITE_GITHUB_USEREMAIL": "@github-email",
+        "VITE_FIREBASE_API_KEY": "@firebase-api-key",
+        "VITE_FIREBASE_PROJECT_ID": "@firebase-project-id",
+        "VITE_PINECONE_API_KEY": "@pinecone-api-key",
+        "VITE_PINECONE_ENVIRONMENT": "@pinecone-environment",
+        "GRAFANA_ADMIN_PASSWORD": "@grafana-admin-password"
     },
     "git": {
         "deploymentEnabled": {

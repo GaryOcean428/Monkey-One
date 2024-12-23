@@ -1,71 +1,39 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 import { useChatStore } from '@/store/chatStore';
 import { useAgentStore } from '@/store/agentStore';
 
 export function useChat() {
-  const {
-    messages,
-    tasks,
-    activeTask,
-    isProcessing,
-    error: storeError,
-    sendMessage: sendMessageToStore,
-    approveTask,
-    rejectTask
-  } = useChatStore();
-
+  const { messages, tasks, activeTask, isProcessing, error, sendMessage, clearMessages, approveTask, rejectTask } = useChatStore();
   const { activeAgent } = useAgentStore();
-  const [localError, setLocalError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const handleSendMessage = useCallback(async (content: string) => {
     if (!activeAgent) {
-      setLocalError(null);
+      throw new Error('No active agent selected');
     }
-  }, [activeAgent]);
+    await sendMessage(content, activeAgent.id);
+  }, [activeAgent, sendMessage]);
 
-  const sendMessage = useCallback(async (content: string) => {
-    if (!activeAgent) {
-      setLocalError('Please select an agent to start chatting');
-      return;
-    }
+  const handleApproveTask = useCallback(async (taskId: string) => {
+    await approveTask(taskId);
+  }, [approveTask]);
 
-    if (!content.trim()) {
-      setLocalError('Message cannot be empty');
-      return;
-    }
+  const handleRejectTask = useCallback(async (taskId: string) => {
+    await rejectTask(taskId);
+  }, [rejectTask]);
 
-    try {
-      setLocalError(null);
-      await sendMessageToStore(content, activeAgent.id);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to send message';
-      setLocalError(errorMessage);
-      throw err;
-    }
-  }, [activeAgent, sendMessageToStore]);
-
-  const handleTaskAction = useCallback(async (taskId: string, action: 'approve' | 'reject') => {
-    try {
-      setLocalError(null);
-      if (action === 'approve') {
-        await approveTask(taskId);
-      } else {
-        await rejectTask(taskId);
-      }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to process task action';
-      setLocalError(errorMessage);
-    }
-  }, [approveTask, rejectTask]);
+  const handleClearChat = useCallback(() => {
+    clearMessages();
+  }, [clearMessages]);
 
   return {
     messages,
     tasks,
     activeTask,
-    isProcessing,
-    error: localError || storeError,
-    sendMessage,
-    handleTaskAction,
-    hasActiveAgent: Boolean(activeAgent)
+    isLoading: isProcessing,
+    error,
+    sendMessage: handleSendMessage,
+    approveTask: handleApproveTask,
+    rejectTask: handleRejectTask,
+    clearChat: handleClearChat
   };
 }
