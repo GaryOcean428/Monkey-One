@@ -9,7 +9,7 @@ interface FeatureFlagProps {
 export function FeatureFlag({ flagKey, children, fallback = null }: FeatureFlagProps) {
   const [isEnabled, loading, error] = useRemoteConfig<boolean>(flagKey, false);
 
-  if (loading) return null;
+  if (loading) {
   if (error) {
     console.error(`Error loading feature flag ${flagKey}:`, error);
     return fallback;
