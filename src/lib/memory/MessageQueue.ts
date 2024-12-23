@@ -1,69 +1,49 @@
-import { Message } from '@/types';
+export class MessageQueue<T> {
+  private queue: T[] = [];
+  private maxSize: number;
+  private listeners: ((message: T) => void)[] = [];
 
-export class MessageQueue {
-  private queue: Message[] = [];
-  private processing: boolean = false;
-  private listeners: Set<(message: Message) => void> = new Set();
-
-  constructor(private maxSize: number = parseInt(import.meta.env.VITE_CACHE_MAX_SIZE) || 1000) {
-    if (maxSize < 1) throw new Error('Queue size must be positive');
+  constructor(maxSize = 1000) {
+    this.maxSize = maxSize;
   }
 
-  add(message: Message) {
-    if (!message) throw new Error('Message cannot be null or undefined');
-    
+  enqueue(message: T): void {
     if (this.queue.length >= this.maxSize) {
-      this.queue.shift(); // Remove oldest message
+      throw new Error(`Queue size limit (${this.maxSize}) reached`);
     }
     this.queue.push(message);
     this.notifyListeners(message);
   }
 
-  hasMessages(): boolean {
-    return this.queue.length > 0;
+  dequeue(): T | undefined {
+    return this.queue.shift();
   }
 
-  async next(): Promise<Message | null> {
-    return this.queue.shift() || null;
+  peek(): T | undefined {
+    return this.queue[0];
   }
 
-  async clear(): Promise<void> {
+  clear(): void {
     this.queue = [];
-    this.processing = false;
   }
 
-  isProcessing(): boolean {
-    return this.processing;
-  }
-
-  setProcessing(value: boolean): void {
-    this.processing = value;
-  }
-
-  onMessage(callback: (message: Message) => void): () => void {
-    this.listeners.add(callback);
-    return () => this.listeners.delete(callback);
-  }
-
-  private notifyListeners(message: Message): void {
-    this.listeners.forEach(listener => {
-      try {
-        listener(message);
-      } catch (error) {
-        console.error('Error in message listener:', error);
-      }
-    });
-  }
-
-  getQueueSize(): number {
+  size(): number {
     return this.queue.length;
   }
 
-  peek(): Message | null {
-    return this.queue[0] || null;
+  isEmpty(): boolean {
+    return this.queue.length === 0;
   }
 
-  toArray(): Message[] {
+  on(listener: (message: T) => void): void {
+    this.listeners.push(listener);
+  }
+
+  private notifyListeners(message: T): void {
+    this.listeners.forEach(listener => listener(message));
+  }
+
+  toArray(): T[] {
     return [...this.queue];
   }
-}
+}

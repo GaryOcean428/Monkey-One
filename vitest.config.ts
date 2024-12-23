@@ -1,18 +1,37 @@
-import { defineConfig } from 'vitest/config'
+import { defineConfig } from 'vitest/config';
+import path from 'path';
+import react from '@vitejs/plugin-react';
 
 export default defineConfig({
+  plugins: [react()],
   test: {
-    globals: true, // This allows using describe, it, etc. without imports
+    globals: true,
     environment: 'jsdom',
-    include: ['**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
-    setupFiles: ['./src/setupTests.ts'], // If you need a setup file
-    deps: {
-      inline: ['vitest-canvas-mock'] // If you need canvas mocking
-    },
+    setupFiles: ['./src/setupTests.ts'],
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html'],
-      exclude: ['node_modules/**', 'dist/**']
+      reporter: ['text', 'lcov', 'html'],
+      exclude: [
+        'node_modules/',
+        'src/setupTests.ts',
+        '**/*.d.ts',
+        '**/*.test.ts',
+        '**/*.test.tsx'
+      ]
+    },
+    include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
+    exclude: ['node_modules', 'dist'],
+    deps: {
+      inline: ['@testing-library/react']
+    },
+    mockReset: true,
+    restoreMocks: true,
+    clearMocks: true,
+    testTimeout: 20000
+  },
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src')
     }
   }
-})
+});

@@ -8,13 +8,17 @@ export interface Message {
   metadata?: Record<string, unknown>;
 }
 
+export interface AgentCapability {
+  name: string;
+  description: string;
+  version?: string;
+}
+
 export interface Agent {
   id: string;
   name: string;
   type: 'orchestrator' | 'coder' | 'websurfer' | 'filesurfer';
   status: 'idle' | 'active' | 'error';
-  role?: string;
-  capabilities?: string[];
   metadata?: Record<string, unknown>;
 }
 
@@ -231,4 +235,4 @@ export interface AgentMetrics {
   successRate: number;
   lastActive: number;
   status: string;
-}
+}

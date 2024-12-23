@@ -1,11 +1,26 @@
 import { monitoring } from '../monitoring/MonitoringSystem';
 import { firebasePerformance } from '../firebase/FirebasePerformance';
+import { logger } from '../../utils/logger';
+import { captureException } from '../../utils/sentry';
+import { memoryUsage } from '../../utils/metrics';
 
 interface OptimizationMetrics {
   cacheHitRate: number;
   averageLatency: number;
   errorRate: number;
   memoryUsage: number;
+}
+
+interface CacheAnalysis {
+  frequentlyAccessed: string[];
+  predictedAccess: string[];
+  unusedEntries: string[];
+}
+
+interface PerformanceAnalysis {
+  slowOperations: string[];
+  highMemoryOperations: string[];
+  frequentErrors: string[];
 }
 
 export class PerformanceOptimizer {
@@ -15,10 +30,29 @@ export class PerformanceOptimizer {
   private readonly LATENCY_THRESHOLD = 1000; // 1 second
   private readonly ERROR_RATE_THRESHOLD = 0.01; // 1%
   private readonly MEMORY_THRESHOLD = 1024; // 1GB
+  private readonly MAX_BATCH_SIZE = 100;
+  private readonly MIN_BATCH_SIZE = 10;
 
   private constructor() {
-    // Start optimization loop
-    setInterval(() => this.optimizePerformance(), this.OPTIMIZATION_INTERVAL);
+    this.startOptimizationLoop();
+    this.startMetricsCollection();
+  }
+
+  private startOptimizationLoop(): void {
+    setInterval(() => {
+      this.optimizePerformance().catch(error => {
+        logger.error('Performance optimization failed:', error);
+        captureException(error);
+      });
+    }, this.OPTIMIZATION_INTERVAL);
+  }
+
+  private startMetricsCollection(): void {
+    setInterval(() => {
+      const usage = process.memoryUsage();
+      memoryUsage.set({ type: 'heap' }, usage.heapUsed);
+      memoryUsage.set({ type: 'rss' }, usage.rss);
+    }, 60000); // Every minute
   }
 
   static getInstance(): PerformanceOptimizer {
@@ -29,147 +63,94 @@ export class PerformanceOptimizer {
   }
 
   private async getMetrics(): Promise<OptimizationMetrics> {
-    const metrics = await monitoring.getMetrics();
+    try {
+      const metrics = await monitoring.getMetrics();
+      
+      return {
+        cacheHitRate: metrics.cacheHits / (metrics.cacheHits + metrics.cacheMisses),
+        averageLatency: metrics.totalLatency / metrics.totalRequests,
+        errorRate: metrics.errors / metrics.totalRequests,
+        memoryUsage: process.memoryUsage().heapUsed / (1024 * 1024)
+      };
+    } catch (error) {
+      logger.error('Failed to get metrics:', error);
+      captureException(error);
+      throw error;
+    }
+  }
+
+  private async analyzeCacheUsage(): Promise<CacheAnalysis> {
+    const metrics = await monitoring.getCacheMetrics();
+    const accessPatterns = new Map<string, number>();
     
+    // Analyze access patterns
+    metrics.accesses.forEach(access => {
+      const count = accessPatterns.get(access.key) || 0;
+      accessPatterns.set(access.key, count + 1);
+    });
+
+    // Sort by access frequency
+    const sortedEntries = Array.from(accessPatterns.entries())
+      .sort(([, a], [, b]) => b - a);
+
     return {
-      cacheHitRate: metrics.cacheHits / (metrics.cacheHits + metrics.cacheMisses),
-      averageLatency: metrics.totalLatency / metrics.totalRequests,
-      errorRate: metrics.errors / metrics.totalRequests,
-      memoryUsage: process.memoryUsage().heapUsed / (1024 * 1024)
+      frequentlyAccessed: sortedEntries.slice(0, 10).map(([key]) => key),
+      predictedAccess: this.predictNextAccesses(metrics.accesses),
+      unusedEntries: metrics.keys.filter(key => !accessPatterns.has(key))
     };
   }
 
-  private async optimizeCache(metrics: OptimizationMetrics) {
+  private predictNextAccesses(accesses: Array<{ key: string; timestamp: number }>): string[] {
+    // Simple prediction based on recent access patterns
+    return accesses
+      .slice(-100)
+      .map(access => access.key)
+      .filter((key, index, self) => self.indexOf(key) === index)
+      .slice(0, 10);
+  }
+
+  private async optimizeCache(metrics: OptimizationMetrics): Promise<void> {
     if (metrics.cacheHitRate < this.CACHE_HIT_RATE_THRESHOLD) {
-      // Analyze cache usage patterns
-      const cacheAnalysis = await this.analyzeCacheUsage();
+      logger.info('Optimizing cache due to low hit rate:', metrics.cacheHitRate);
       
-      // Adjust cache TTL based on usage patterns
-      if (cacheAnalysis.frequentlyAccessed.length > 0) {
-        await this.adjustCacheTTL(cacheAnalysis.frequentlyAccessed, 'increase');
-      }
+      const analysis = await this.analyzeCacheUsage();
       
-      // Pre-fetch commonly accessed data
-      await this.preFetchCommonData(cacheAnalysis.predictedAccess);
-      
+      // Pre-fetch predicted data
+      await Promise.all(
+        analysis.predictedAccess.map(key => this.preFetchData(key))
+      );
+
+      // Clean up unused entries
+      await this.cleanupCache(analysis.unusedEntries);
+
       monitoring.recordMetric('cache_optimization', 1);
     }
   }
 
-  private async optimizeLatency(metrics: OptimizationMetrics) {
-    if (metrics.averageLatency > this.LATENCY_THRESHOLD) {
-      // Analyze slow operations
-      const slowOps = await this.analyzeSlowOperations();
-      
-      // Optimize database queries
-      await this.optimizeDatabaseQueries(slowOps.databaseOperations);
-      
-      // Adjust batch sizes
-      await this.adjustBatchSizes(slowOps.batchOperations);
-      
-      monitoring.recordMetric('latency_optimization', 1);
+  private async preFetchData(key: string): Promise<void> {
+    try {
+      // Implement pre-fetching logic
+      logger.debug('Pre-fetching data for key:', key);
+    } catch (error) {
+      logger.error('Failed to pre-fetch data:', error);
+      captureException(error);
     }
   }
 
-  private async optimizeErrorHandling(metrics: OptimizationMetrics) {
-    if (metrics.errorRate > this.ERROR_RATE_THRESHOLD) {
-      // Analyze error patterns
-      const errorAnalysis = await this.analyzeErrorPatterns();
-      
-      // Adjust retry strategies
-      await this.adjustRetryStrategies(errorAnalysis.retryableErrors);
-      
-      // Implement circuit breakers
-      await this.implementCircuitBreakers(errorAnalysis.failingOperations);
-      
-      monitoring.recordMetric('error_handling_optimization', 1);
+  private async cleanupCache(entries: string[]): Promise<void> {
+    try {
+      // Implement cache cleanup logic
+      logger.debug('Cleaning up cache entries:', entries.length);
+    } catch (error) {
+      logger.error('Failed to cleanup cache:', error);
+      captureException(error);
     }
   }
 
-  private async optimizeMemory(metrics: OptimizationMetrics) {
-    if (metrics.memoryUsage > this.MEMORY_THRESHOLD) {
-      // Analyze memory usage
-      const memoryAnalysis = await this.analyzeMemoryUsage();
-      
-      // Clean up unnecessary cache entries
-      await this.cleanupCache(memoryAnalysis.unusedCache);
-      
-      // Optimize data structures
-      await this.optimizeDataStructures(memoryAnalysis.inefficientStructures);
-      
-      monitoring.recordMetric('memory_optimization', 1);
-    }
-  }
-
-  private async analyzeCacheUsage() {
-    // Implement cache usage analysis
-    return {
-      frequentlyAccessed: [],
-      predictedAccess: []
-    };
-  }
-
-  private async analyzeSlowOperations() {
-    // Implement slow operation analysis
-    return {
-      databaseOperations: [],
-      batchOperations: []
-    };
-  }
-
-  private async analyzeErrorPatterns() {
-    // Implement error pattern analysis
-    return {
-      retryableErrors: [],
-      failingOperations: []
-    };
-  }
-
-  private async analyzeMemoryUsage() {
-    // Implement memory usage analysis
-    return {
-      unusedCache: [],
-      inefficientStructures: []
-    };
-  }
-
-  private async adjustCacheTTL(items: string[], action: 'increase' | 'decrease') {
-    // Implement cache TTL adjustment
-  }
-
-  private async preFetchCommonData(predictions: string[]) {
-    // Implement data pre-fetching
-  }
-
-  private async optimizeDatabaseQueries(operations: string[]) {
-    // Implement database query optimization
-  }
-
-  private async adjustBatchSizes(operations: string[]) {
-    // Implement batch size adjustment
-  }
-
-  private async adjustRetryStrategies(errors: string[]) {
-    // Implement retry strategy adjustment
-  }
-
-  private async implementCircuitBreakers(operations: string[]) {
-    // Implement circuit breakers
-  }
-
-  private async cleanupCache(entries: string[]) {
-    // Implement cache cleanup
-  }
-
-  private async optimizeDataStructures(structures: string[]) {
-    // Implement data structure optimization
-  }
-
-  async optimizePerformance() {
+  public async optimizePerformance(): Promise<void> {
     try {
       const metrics = await this.getMetrics();
       
-      // Run optimizations in parallel
       await Promise.all([
         this.optimizeCache(metrics),
         this.optimizeLatency(metrics),
@@ -178,9 +159,11 @@ export class PerformanceOptimizer {
       ]);
 
       monitoring.recordMetric('optimization_run', 1);
+      logger.info('Performance optimization completed successfully');
     } catch (error) {
-      console.error('Performance optimization failed:', error);
+      logger.error('Performance optimization failed:', error);
       monitoring.recordError('performance_optimizer', error.message);
+      captureException(error);
     }
   }
 }
