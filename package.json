@@ -16,7 +16,9 @@
     "type-check": "tsc --noEmit",
     "docs": "typedoc --out docs src",
     "clean": "rimraf node_modules/.vite dist",
-    "deploy": "npm run build && firebase deploy --only hosting",
+    "predeploy": "npm run lint && npm run test && npm run type-check",
+    "deploy": "npm run predeploy && npm run build && firebase deploy --only hosting",
+    "deploy:ci": "npm run build && firebase deploy --only hosting --token \"$FIREBASE_TOKEN\"",
     "firebase:login": "firebase login",
     "firebase:init": "firebase init",
     "firebase:deploy": "firebase deploy"
