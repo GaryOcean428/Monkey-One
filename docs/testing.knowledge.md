@@ -52,6 +52,7 @@
 - Enforce minimum coverage
 - Block merges on test failures
 - Use GH_TOKEN instead of GITHUB_TOKEN for Vercel deployments to avoid conflicts
+- Use GH_TOKEN instead of GITHUB_TOKEN for Vercel deployments to avoid conflicts
 
 ## Best Practices
 

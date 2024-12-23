@@ -19,7 +19,13 @@
         "deploymentEnabled": {
             "main": true,
             "development": true,
-            "staging": true
+            "staging": true,
+            "preview": true
         }
+    },
+    "github": {
+        "enabled": true,
+        "silent": true,
+        "autoAlias": true
     }
 }
