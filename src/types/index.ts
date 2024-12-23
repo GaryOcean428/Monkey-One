@@ -6,7 +6,8 @@ export enum MessageType {
   BROADCAST = 'BROADCAST',
   SYSTEM = 'SYSTEM',
   COMMAND = 'COMMAND',
-  DEBUG = 'DEBUG'
+  DEBUG = 'DEBUG',
+  TEST = 'TEST'
 }
 
 export interface MotorPattern {
@@ -29,7 +30,8 @@ export interface MemoryItem {
   id: string;
   type: MemoryType;
   content: string;
-  timestamp: Date;
+  timestamp: number;
+  metadata?: Record<string, unknown>;
 }
 
 export interface Message {
@@ -105,9 +107,10 @@ export interface Agent {
   status: AgentStatus;
   metadata?: Record<string, unknown>;
   capabilities: AgentCapability[];
+  subordinates: Agent[];
   getCapabilities(): AgentCapability[];
   registerCapability(capability: AgentCapability): void;
-  handleMessage(message: Message): Promise<void>;
+  handleMessage(message: Message): Promise<Message>;
   initialize(): Promise<void>;
   processMessage(message: Message): Promise<Message>;
 }
