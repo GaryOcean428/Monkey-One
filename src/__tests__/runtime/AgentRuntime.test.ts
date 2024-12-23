@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { Message, MessageType } from '@/types';
 import { AgentRuntime } from '@/lib/runtime/AgentRuntime';
 import { BaseAgent } from '@/lib/agents/base';
 
@@ -12,6 +13,7 @@ class TestAgent extends BaseAgent {
   async processMessage() {
     return {
       id: 'test',
+      type: MessageType.RESPONSE,
       role: 'assistant',
       content: 'test response',
       timestamp: Date.now()
@@ -49,6 +51,7 @@ describe('AgentRuntime', () => {
     it('should enqueue messages', async () => {
       const message = {
         id: 'test',
+        type: MessageType.TASK,
         role: 'user',
         content: 'hello',
         timestamp: Date.now()
@@ -61,6 +64,7 @@ describe('AgentRuntime', () => {
       const processSpy = vi.spyOn(agent, 'processMessage');
       const message = {
         id: 'test',
+        type: MessageType.TASK,
         role: 'user',
         content: 'hello',
         timestamp: Date.now()
@@ -79,8 +83,9 @@ describe('AgentRuntime', () => {
     });
 
     it('should process remaining messages before shutdown', async () => {
-      const message = {
+      const message: Message = {
         id: 'test',
+        type: MessageType.TASK,
         role: 'user',
         content: 'hello',
         timestamp: Date.now()

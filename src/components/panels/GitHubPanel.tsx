@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { GitBranch, GitCommit, GitPullRequest, Plus, AlertTriangle, Search, Link, RefreshCw } from 'lucide-react';
 import { Button } from '../ui/button';
-import { useGitHub } from '@/hooks/useGitHub';
+import { useGitHub } from '../../hooks/useGitHub';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useWorkflow } from '@/hooks/useWorkflow';
+import { useWorkflow } from '../../hooks/useWorkflow';
 import { WorkflowVisualizer } from '../workflow/WorkflowVisualizer';
 import { Button } from '../ui/button';
 import { Plus, Play, Save } from 'lucide-react';
