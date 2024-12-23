@@ -14,7 +14,9 @@
         "VITE_FIREBASE_PROJECT_ID": "${VITE_FIREBASE_PROJECT_ID}",
         "VITE_PINECONE_API_KEY": "${VITE_PINECONE_API_KEY}",
         "VITE_PINECONE_ENVIRONMENT": "${VITE_PINECONE_ENVIRONMENT}",
-        "GRAFANA_ADMIN_PASSWORD": "${GRAFANA_ADMIN_PASSWORD}"
+        "GRAFANA_ADMIN_PASSWORD": "${GRAFANA_ADMIN_PASSWORD}",
+        "NODE_ENV": "production",
+        "VITE_MODE": "production"
     },
     "git": {
         "deploymentEnabled": {
