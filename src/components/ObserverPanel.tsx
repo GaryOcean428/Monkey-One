@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Eye, MessageSquare, ThumbsUp, ThumbsDown, Brain, Code, Zap, GitBranch } from 'lucide-react';
 import { Button } from './ui/button';
-import { useObserver } from '@/hooks/useObserver';
-import { CodeInsight } from '@/types';
+import { useObserver } from '@hooks/useObserver';
+import { CodeInsight } from '@types';
 
 export function ObserverPanel() {
   const { insights, learningMetrics, analyzeCodebase, provideFeedback } = useObserver();

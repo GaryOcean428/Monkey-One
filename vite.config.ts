@@ -39,19 +39,19 @@ export default defineConfig({
     })
   ].filter(Boolean),
   resolve: {
-    alias: [
-      { find: '@', replacement: path.resolve(__dirname, 'src') },
-      { find: '@components', replacement: path.resolve(__dirname, 'src/components') },
-      { find: '@containers', replacement: path.resolve(__dirname, 'src/containers') },
-      { find: '@utils', replacement: path.resolve(__dirname, 'src/utils') },
-      { find: '@hooks', replacement: path.resolve(__dirname, 'src/hooks') },
-      { find: '@assets', replacement: path.resolve(__dirname, 'src/assets') },
-      { find: '@styles', replacement: path.resolve(__dirname, 'src/styles') },
-      { find: '@services', replacement: path.resolve(__dirname, 'src/services') },
-      { find: '@types', replacement: path.resolve(__dirname, 'src/types') },
-      { find: '@store', replacement: path.resolve(__dirname, 'src/store') },
-      { find: '@lib', replacement: path.resolve(__dirname, 'src/lib') }
-    ],
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+      '@components': path.resolve(__dirname, './src/components'),
+      '@containers': path.resolve(__dirname, './src/containers'),
+      '@utils': path.resolve(__dirname, './src/utils'),
+      '@hooks': path.resolve(__dirname, './src/hooks'),
+      '@assets': path.resolve(__dirname, './src/assets'),
+      '@styles': path.resolve(__dirname, './src/styles'),
+      '@services': path.resolve(__dirname, './src/services'),
+      '@types': path.resolve(__dirname, './src/types'),
+      '@store': path.resolve(__dirname, './src/store'),
+      '@lib': path.resolve(__dirname, './src/lib')
+    },
     extensions: ['.js', '.jsx', '.ts', '.tsx', '.json']
   },
   build: {
