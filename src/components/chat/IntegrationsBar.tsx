@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Mail, Github, Calendar, FileText, Cloud } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { useIntegrations } from '@/hooks/useIntegrations';
+import { cn } from '../../lib/utils';
+import { useIntegrations } from '../../hooks/useIntegrations';
 import { Button } from '../ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 

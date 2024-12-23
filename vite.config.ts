@@ -16,10 +16,25 @@ dotenv.config();
 const __filename = fileURLToPath(new URL(import.meta.url));
 const __dirname = dirname(__filename);
 
+// Define chunks for code splitting
+const manualChunks = {
+  'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+  'vendor-firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore'],
+  'vendor-ui': ['@radix-ui/react-alert-dialog', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
+  'vendor-ml': ['@tensorflow/tfjs', '@tensorflow/tfjs-core'],
+  'vendor-editor': ['@monaco-editor/react']
+};
+
 export default defineConfig({
   plugins: [
     react({
-      fastRefresh: true
+      fastRefresh: true,
+      babel: {
+        plugins: [
+          ['@babel/plugin-transform-runtime'],
+          ['babel-plugin-import', { libraryName: 'antd', style: true }]
+        ]
+      }
     }),
     tsconfigPaths(),
     nodeResolve({
@@ -38,24 +53,8 @@ export default defineConfig({
       brotliSize: true
     })
   ].filter(Boolean),
-  resolve: {
-    alias: [
-      { find: '@', replacement: path.resolve(__dirname, 'src') },
-      { find: '@components', replacement: path.resolve(__dirname, 'src/components') },
-      { find: '@containers', replacement: path.resolve(__dirname, 'src/containers') },
-      { find: '@utils', replacement: path.resolve(__dirname, 'src/utils') },
-      { find: '@hooks', replacement: path.resolve(__dirname, 'src/hooks') },
-      { find: '@assets', replacement: path.resolve(__dirname, 'src/assets') },
-      { find: '@styles', replacement: path.resolve(__dirname, 'src/styles') },
-      { find: '@services', replacement: path.resolve(__dirname, 'src/services') },
-      { find: '@types', replacement: path.resolve(__dirname, 'src/types') },
-      { find: '@store', replacement: path.resolve(__dirname, 'src/store') },
-      { find: '@lib', replacement: path.resolve(__dirname, 'src/lib') }
-    ],
-    extensions: ['.js', '.jsx', '.ts', '.tsx', '.json']
-  },
   build: {
-    target: 'es2015',
+    target: 'esnext',
     minify: 'terser',
     terserOptions: {
       compress: {
@@ -64,50 +63,30 @@ export default defineConfig({
       }
     },
     rollupOptions: {
-      input: {
-        main: path.resolve(__dirname, 'index.html')
-      },
-      external: [],
       output: {
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom'],
-          'firebase-vendor': ['firebase/app', 'firebase/auth', 'firebase/firestore'],
-          'ui-vendor': ['@radix-ui/react-dialog', '@radix-ui/react-select'],
-          'ml-vendor': ['@tensorflow/tfjs', '@huggingface/inference']
-        }
-      },
-      plugins: [
-        terser({
-          format: {
-            comments: false
-          }
-        })
-      ]
+        manualChunks,
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash][extname]'
+      }
     },
-    sourcemap: true,
+    sourcemap: false,
     chunkSizeWarningLimit: 1000
   },
-  optimizeDeps: {
-    include: [
-      'react',
-      'react-dom',
-      'firebase/app',
-      '@radix-ui/react-tooltip',
-      'clsx',
-      'tailwind-merge'
-    ],
-    esbuildOptions: {
-      resolveExtensions: ['.js', '.jsx', '.ts', '.tsx']
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+      '@components': path.resolve(__dirname, './src/components'),
+      '@containers': path.resolve(__dirname, './src/containers'),
+      '@utils': path.resolve(__dirname, './src/utils'),
+      '@hooks': path.resolve(__dirname, './src/hooks'),
+      '@assets': path.resolve(__dirname, './src/assets'),
+      '@styles': path.resolve(__dirname, './src/styles'),
+      '@services': path.resolve(__dirname, './src/services'),
+      '@types': path.resolve(__dirname, './src/types'),
     }
   },
-  server: {
-    hmr: true,
-    watch: {
-      usePolling: true,
-      interval: 100
-    },
-    overlay: true,
-    port: 3000,
-    host: true
+  optimizeDeps: {
+    include: ['react', 'react-dom'],
+    exclude: ['@tensorflow/tfjs']
   }
 });

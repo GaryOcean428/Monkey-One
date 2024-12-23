@@ -74,3 +74,8 @@ export function createAgent(type: AgentType, config: AgentConstructor): Agent {
             throw new Error(`Unknown agent type: ${type}`);
     }
 }
+export {
+    AgentConstructor,
+    AgentType,
+    createAgent
+};

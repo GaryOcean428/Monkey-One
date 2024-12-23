@@ -8,37 +8,48 @@ import type { FirebaseConfig } from './types';
 
 class FirebaseCore {
   private app: FirebaseApp | null = null;
-  private config: FirebaseConfig;
+  private config: FirebaseConfig | null = null;
 
   constructor() {
-    const validatedConfig = validateConfig(import.meta.env);
-    if (!validatedConfig) {
-      throw new Error('Invalid Firebase configuration');
+    try {
+      const validatedConfig = validateConfig(import.meta.env);
+      if (!validatedConfig) {
+        throw new Error('Invalid Firebase configuration');
+      }
+      this.config = validatedConfig;
+      console.log('FirebaseCore initialized with valid configuration');
+    } catch (error) {
+      console.error('Failed to initialize FirebaseCore:', error);
+      throw error;
     }
-    this.config = validatedConfig;
   }
 
   initialize(): FirebaseApp {
-    if (this.app) {
+    try {
+      if (this.app) {
+        return this.app;
+      }
+
+      if (!this.config) {
+        throw new Error('Firebase configuration not available');
+      }
+
+      // Check if app is already initialized
+      const existingApps = getApps();
+      if (existingApps.length > 0) {
+        console.log('Using existing Firebase app instance');
+        this.app = existingApps[0];
+        return this.app;
+      }
+
+      // Initialize new app
+      console.log('Initializing new Firebase app instance');
+      this.app = initializeApp(this.config);
       return this.app;
+    } catch (error) {
+      console.error('Failed to initialize Firebase app:', error);
+      throw error;
     }
-
-    const { projectId, apiKey, authDomain } = this.config;
-    
-    if (!projectId || !apiKey || !authDomain) {
-      throw new Error('Missing required Firebase configuration');
-    }
-
-    // Check if app is already initialized
-    const existingApps = getApps();
-    if (existingApps.length > 0) {
-      this.app = existingApps[0];
-      return this.app;
-    }
-
-    // Initialize new app
-    this.app = initializeApp(this.config);
-    return this.app;
   }
 
   getApp(): FirebaseApp {
@@ -49,19 +60,23 @@ class FirebaseCore {
   }
 
   getAuth() {
-    return getAuth(this.getApp());
+    const app = this.getApp();
+    return getAuth(app);
   }
 
   getFirestore() {
-    return getFirestore(this.getApp());
+    const app = this.getApp();
+    return getFirestore(app);
   }
 
   getStorage() {
-    return getStorage(this.getApp());
+    const app = this.getApp();
+    return getStorage(app);
   }
 
   getDatabase() {
-    return getDatabase(this.getApp());
+    const app = this.getApp();
+    return getDatabase(app);
   }
 }
 
