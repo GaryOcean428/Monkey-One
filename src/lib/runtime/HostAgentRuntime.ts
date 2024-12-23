@@ -2,7 +2,16 @@ import { BaseAgent } from '../agents/base';
 import { Message } from '../../types';
 import { AgentRegistry } from '../registry/AgentRegistry';
 
+export interface HostRuntimeConfig {
+  logLevel: LogLevel;
+  maxAgents?: number;
+  timeout?: number;
+}
+
 export class HostAgentRuntime {
+  public async broadcast(message: Message): Promise<void> {
+    // Broadcast implementation
+  }
   private agents: Map<string, BaseAgent> = new Map();
   private registry: AgentRegistry;
 

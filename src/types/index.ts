@@ -4,7 +4,32 @@ export enum MessageType {
   RESPONSE = 'RESPONSE',
   ERROR = 'ERROR',
   BROADCAST = 'BROADCAST',
-  SYSTEM = 'SYSTEM'
+  SYSTEM = 'SYSTEM',
+  COMMAND = 'COMMAND',
+  DEBUG = 'DEBUG'
+}
+
+export interface MotorPattern {
+  id: string;
+  sequence: string[];
+  timing: number[];
+  accuracy: number;
+  confidence: number;
+  usageCount: number;
+  lastUsed: number;
+}
+
+export enum MemoryType {
+  TASK = 'task',
+  RESPONSE = 'response',
+  ERROR = 'error'
+}
+
+export interface MemoryItem {
+  id: string;
+  type: MemoryType;
+  content: string;
+  timestamp: Date;
 }
 
 export interface Message {
@@ -15,6 +40,8 @@ export interface Message {
   timestamp: number;
   status?: 'sending' | 'sent' | 'error';
   metadata?: Record<string, unknown>;
+  sender?: string;
+  recipient?: string;
 }
 
 export interface AgentCapability {
@@ -26,6 +53,18 @@ export interface AgentCapability {
 export interface AgentCapability {
   name: string;
   description?: string;
+  version?: string;
+}
+
+export { AgentCapability, LogLevel, MotorPattern };
+
+export { AgentCapability };
+
+export enum LogLevel {
+  DEBUG = 'debug',
+  INFO = 'info',
+  WARN = 'warn',
+  ERROR = 'error'
 }
 
 export enum AgentType {
@@ -41,12 +80,36 @@ export enum AgentStatus {
   ERROR = 'error'
 }
 
+export enum LogLevel {
+  DEBUG = 'debug',
+  INFO = 'info',
+  WARN = 'warn',
+  ERROR = 'error'
+}
+
+export interface HostRuntimeConfig {
+  logLevel: LogLevel;
+  maxAgents?: number;
+  timeout?: number;
+  monitoring?: {
+    enablePerformance?: boolean;
+    enableErrorReporting?: boolean;
+    logLevel?: LogLevel;
+  };
+}
+
 export interface Agent {
   id: string;
   name: string;
   type: AgentType;
   status: AgentStatus;
   metadata?: Record<string, unknown>;
+  capabilities: AgentCapability[];
+  getCapabilities(): AgentCapability[];
+  registerCapability(capability: AgentCapability): void;
+  handleMessage(message: Message): Promise<void>;
+  initialize(): Promise<void>;
+  processMessage(message: Message): Promise<Message>;
 }
 
 export interface Settings {
@@ -261,5 +324,8 @@ export interface AgentMetrics {
   averageResponseTime: number;
   successRate: number;
   lastActive: number;
-  status: string;
+  status: AgentStatus;
+  messageCount: number;
+  errorCount: number;
+  metadata?: Record<string, unknown>;
 }

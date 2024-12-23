@@ -77,7 +77,19 @@ export class BrainCore extends EventEmitter {
    * Performs background learning when the system is idle.
    * This helps improve system performance over time.
    */
-  public async performBackgroundLearning(): Promise<void> {
+  public async learn(): Promise<void> {
+    await this.performBackgroundLearning();
+  }
+
+  public getWeights(): unknown {
+    return {};
+  }
+
+  public isInitialized(): boolean {
+    return true;
+  }
+
+  private async performBackgroundLearning(): Promise<void> {
     if (!this.activityMonitor.getState().isLearning) {
       this.activityMonitor.recordActivity('learning');
       await this.neuralProcessor.process('background_learning');
