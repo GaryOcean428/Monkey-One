@@ -21,7 +21,8 @@ vi.mock('@tensorflow/tfjs', async () => {
       dispose: vi.fn()
     })),
     layers: {
-      dense: vi.fn(() => ({ apply: vi.fn() }))
+      dense: vi.fn(() => ({ apply: vi.fn() })),
+      dropout: vi.fn(() => ({ apply: vi.fn() }))
     },
     tensor: vi.fn((data) => ({
       data,
