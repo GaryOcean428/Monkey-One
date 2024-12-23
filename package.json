@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --force",
-    "build": "vite build --mode production --debug false --minify terser",
+    "build": "vite build --mode production",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -17,7 +17,10 @@
     "docs": "typedoc --out docs src",
     "clean": "rimraf node_modules/.vite dist",
     "vercel-build": "npm run build",
-    "deploy": "vercel deploy --prod"
+    "deploy": "npm run build && firebase deploy --only hosting",
+    "firebase:login": "firebase login",
+    "firebase:init": "firebase init",
+    "firebase:deploy": "firebase deploy"
   },
   "dependencies": {
     "@google-cloud/storage": "^7.7.0",
