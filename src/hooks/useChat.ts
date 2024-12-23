@@ -1,6 +1,6 @@
-import { useCallback } from 'react';
-import { useChatStore } from '@/store/chatStore';
-import { useAgentStore } from '@/store/agentStore';
+import { useCallback } from "react";
+import { useChatStore } from "../store/chatStore";
+import { useAgentStore } from "../store/agentStore";
 
 export function useChat() {
   const { messages, tasks, activeTask, isProcessing, error, sendMessage, clearMessages, approveTask, rejectTask } = useChatStore();
