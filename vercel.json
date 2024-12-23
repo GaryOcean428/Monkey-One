@@ -6,7 +6,8 @@
     "framework": "vite",
     "outputDirectory": "dist",
     "env": {
-        "VITE_GITHUB_TOKEN": "@github-token",
+        "GH_TOKEN": "@gh-token",
+        "GITHUB_TOKEN": "@gh-token",
         "VITE_GITHUB_USERNAME": "@github-username",
         "VITE_GITHUB_USEREMAIL": "@github-email",
         "VITE_FIREBASE_API_KEY": "@firebase-api-key",
