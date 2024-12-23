@@ -42,15 +42,9 @@ describe('HostAgentRuntime', () => {
 
   beforeEach(() => {
     defaultConfig = {
-      maxConcurrentAgents: 5,
-      rateLimit: {
-        requests: 100,
-        windowMs: 60000
-      },
+      maxAgents: 5,
       monitoring: {
-        enablePerformance: true,
-        enableErrorReporting: true,
-        logLevel: LogLevel.INFO
+        logLevel: LogLevel.DEBUG
       },
       enablePersistence: false,
       persistencePath: './test-state',
@@ -121,11 +115,8 @@ describe('HostAgentRuntime', () => {
         timestamp: Date.now()
       }
 
-      const responses = await runtime.broadcast(message)
-      expect(responses).toHaveLength(agents.length)
-      responses.forEach(response => {
-        expect(response.type).toBe(MessageType.RESPONSE)
-      })
+      await runtime.broadcast(message)
+      // No response checking since broadcast is now void
     })
 
     it('should broadcast message with filter', async () => {

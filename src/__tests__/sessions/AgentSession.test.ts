@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { AgentSession } from '@/lib/sessions/AgentSession';
 import { BaseAgent } from '@/lib/agents/base';
+import { Message, MessageType, AgentCapability, MemoryItem, MemoryType } from '@/types';
 
 class TestAgent extends BaseAgent {
   constructor() {
@@ -9,13 +10,22 @@ class TestAgent extends BaseAgent {
     ]);
   }
 
-  async processMessage() {
+  async processMessage(message: Message): Promise<Message> {
     return {
       id: 'test',
+      type: MessageType.RESPONSE,
       role: 'assistant',
       content: 'test response',
       timestamp: Date.now()
     };
+  }
+
+  getCapabilities(): AgentCapability[] {
+    return this.capabilities;
+  }
+
+  registerCapability(capability: AgentCapability): void {
+    this.capabilities.push(capability);
   }
 }
 
@@ -37,7 +47,7 @@ describe('AgentSession', () => {
         content: 'hello',
         timestamp: Date.now()
       };
-      const response = await session.handleMessage(message);
+      const response = await    session.addMessage(message);
       expect(response).toBeDefined();
       expect(response.content).toBe('test response');
     });
@@ -50,8 +60,9 @@ describe('AgentSession', () => {
 
   describe('memory management', () => {
     it('should add memory items', () => {
-      const item = {
-        type: 'test',
+      const item: MemoryItem = {
+        id: 'test',
+        type: MemoryType.TASK,
         content: 'memory content',
         timestamp: Date.now()
       };
@@ -62,7 +73,8 @@ describe('AgentSession', () => {
 
     it('should get memory by type', () => {
       const item = {
-        type: 'test',
+        id: 'test',
+      type: MemoryType.TASK,
         content: 'memory content',
         timestamp: Date.now()
       };

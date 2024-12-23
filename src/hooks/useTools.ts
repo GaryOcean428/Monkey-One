@@ -1,9 +1,8 @@
 import { useState, useCallback } from 'react';
-import { toolManager } from '@/lib/tools/ToolManager';
-import type { Tool, ToolResult } from '@/types';
+import { toolManager } from '../lib/tools';
 
 export function useTools() {
-  const [tools, setTools] = useState<Tool[]>(toolManager.listTools());
+  const [tools, setTools] = useState(toolManager.listTools());
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -27,9 +26,9 @@ export function useTools() {
   const executeTool = useCallback(async (
     name: string,
     args: Record<string, unknown>
-  ): Promise<ToolResult> => {
+  ) => {
     try {
-      return await toolManager.executeTool(name, args);
+      return await toolManager.execute(name, args);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to execute tool';
       throw new Error(errorMessage);
@@ -44,3 +43,5 @@ export function useTools() {
     executeTool
   };
 }
+
+export default useTools;

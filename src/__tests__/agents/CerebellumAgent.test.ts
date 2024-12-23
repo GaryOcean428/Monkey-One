@@ -1,12 +1,25 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { CerebellumAgent } from '@/lib/agents/core/CerebellumAgent';
+import { AgentType, MotorPattern } from '@/types';
+
+class TestCerebellumAgent extends CerebellumAgent {
+  constructor() {
+    super('test-id', 'Test Agent');
+  }
+
+  // Make protected method public for testing
+  public async testExecuteMotorPattern(pattern: MotorPattern) {
+    return this.executeMotorPattern(pattern);
+  }
+}
+import { Message, MessageType } from '@/types';
 
 describe('CerebellumAgent', () => {
   let agent: CerebellumAgent;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    agent = new CerebellumAgent('cerebellum-1', 'Cerebellum Agent');
+    agent = new TestCerebellumAgent();
   });
 
   describe('initialization', () => {
@@ -30,6 +43,7 @@ describe('CerebellumAgent', () => {
       const analyzeSpy = vi.spyOn(agent as any, 'analyzeMotorComponents');
       await agent.processMessage({
         id: 'test',
+        type: MessageType.TASK,
         role: 'user',
         content: 'execute task',
         timestamp: Date.now()
@@ -41,6 +55,7 @@ describe('CerebellumAgent', () => {
       const createPatternSpy = vi.spyOn(agent as any, 'createNewPattern');
       await agent.processMessage({
         id: 'test',
+        type: MessageType.TASK,
         role: 'user',
         content: 'new task',
         timestamp: Date.now()
@@ -54,6 +69,7 @@ describe('CerebellumAgent', () => {
       const updateMetricsSpy = vi.spyOn(agent as any, 'updateLearningMetrics');
       await agent.processMessage({
         id: 'test',
+        type: MessageType.TASK,
         role: 'user',
         content: 'task execution',
         timestamp: Date.now()
@@ -63,7 +79,15 @@ describe('CerebellumAgent', () => {
 
     it('should optimize pattern timing based on accuracy', async () => {
       const optimizeSpy = vi.spyOn(agent as any, 'optimizePerformance');
-      await agent.executeMotorPattern('test-pattern');
+      await agent.testExecuteMotorPattern({
+      id: 'test',
+      sequence: ['move'],
+      timing: [1000],
+      accuracy: 0.5,
+      confidence: 0.1,
+      usageCount: 0,
+      lastUsed: Date.now()
+    });
       expect(optimizeSpy).toHaveBeenCalled();
     });
   });

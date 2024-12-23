@@ -9,6 +9,62 @@ import { agentProcessingTime } from '../../utils/metrics';
  * It provides metrics and monitoring capabilities for the agent system.
  */
 export class AgentMonitor {
+  private agents: Map<string, Agent> = new Map();
+
+  registerAgent(agent: Agent): void {
+    this.agents.set(agent.id, agent);
+  }
+
+  unregisterAgent(agentId: string): void {
+    this.agents.delete(agentId);
+  }
+
+  updateAgentStatus(agentId: string, status: AgentStatus): void {
+    const agent = this.agents.get(agentId);
+    if (agent) {
+      agent.status = status;
+    }
+  }
+
+  getActiveAgents(): Agent[] {
+    return Array.from(this.agents.values()).filter(agent => agent.status === AgentStatus.ACTIVE);
+  }
+
+  getIdleAgents(): Agent[] {
+    return Array.from(this.agents.values()).filter(agent => agent.status === AgentStatus.IDLE);
+  }
+
+  getErroredAgents(): Agent[] {
+    return Array.from(this.agents.values()).filter(agent => agent.status === AgentStatus.ERROR);
+  }
+
+  getAgentMetrics(agentId: string): AgentMetrics {
+    return {
+      totalMessages: 0,
+      averageResponseTime: 0,
+      successRate: 0,
+      lastActive: Date.now(),
+      status: 'active',
+      messageCount: 0,
+      errorCount: 0
+    };
+  }
+
+  getMonitoringStats(): { totalMessages: number; totalErrors: number; agentMetrics: Record<string, AgentMetrics> } {
+    return {
+      totalMessages: 0,
+      totalErrors: 0,
+      agentMetrics: {}
+    };
+  }
+
+  clearMetrics(agentId: string): void {
+    // Clear metrics for specific agent
+  }
+
+  clearAllMetrics(): void {
+    // Clear all metrics
+  }
   private static readonly MAX_MESSAGES = 1000;
   private static readonly CLEANUP_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours
 

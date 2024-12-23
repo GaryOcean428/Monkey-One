@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { BrainstemAgent } from '../../lib/agents/core/BrainstemAgent';
-import type { Message } from '@/types';
+import { Message, MessageType } from '@/types';
 
 describe('BrainstemAgent', () => {
   let agent: BrainstemAgent;
@@ -21,7 +21,8 @@ describe('BrainstemAgent', () => {
   it('should process messages and update system state', async () => {
     const message: Message = {
       id: 'test-1',
-      role: 'user',
+      type: MessageType.TASK,
+      role: 'user', 
       content: 'urgent test message',
       timestamp: Date.now()
     };

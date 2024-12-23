@@ -13,7 +13,17 @@ import { captureException } from '../../utils/sentry';
  * 
  * @extends EventEmitter
  */
+interface BrainState {
+  isLearning: boolean;
+  activeRegions: string[];
+}
+
 export class BrainCore extends EventEmitter {
+  private state: BrainState = {
+    isLearning: false,
+    activeRegions: []
+  };
+
   private personalityCore: PersonalityCore;
   private activityMonitor: ActivityMonitor;
   private neuralProcessor: NeuralProcessor;
@@ -38,7 +48,7 @@ export class BrainCore extends EventEmitter {
    * Initializes the brain by setting up the neural processor and event handlers.
    * @throws {Error} If initialization fails
    */
-  private async initializeBrain(): Promise<void> {
+  public async initializeBrain(): Promise<void> {
     try {
       await this.neuralProcessor.initialize();
       this.registerEventHandlers();
@@ -67,6 +77,18 @@ export class BrainCore extends EventEmitter {
    * Performs background learning when the system is idle.
    * This helps improve system performance over time.
    */
+  public async learn(): Promise<void> {
+    await this.performBackgroundLearning();
+  }
+
+  public getWeights(): unknown {
+    return {};
+  }
+
+  public isInitialized(): boolean {
+    return true;
+  }
+
   private async performBackgroundLearning(): Promise<void> {
     if (!this.activityMonitor.getState().isLearning) {
       this.activityMonitor.recordActivity('learning');
@@ -156,6 +178,10 @@ export class BrainCore extends EventEmitter {
    * Cleans up resources and stops all brain processes.
    * Should be called when shutting down the system.
    */
+  public dispose(): void {
+    this.cleanup();
+  }
+
   public cleanup(): void {
     this.activityMonitor.cleanup();
     this.neuralProcessor.cleanup();

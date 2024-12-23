@@ -21,8 +21,6 @@ Options:
     --env-dev FILE         Development environment file
     --env-preview FILE     Preview environment file
     -t, --token TOKEN      Vercel token (optional)
-    --hook NAME            Create deploy hook with specified name
-    --branch BRANCH        Branch to deploy (default: main)
 EOF
 }
 
@@ -57,14 +55,6 @@ while [[ $# -gt 0 ]]; do
             VERCEL_TOKEN="$2"
             shift 2
             ;;
-        --hook)
-            HOOK_NAME="$2"
-            shift 2
-            ;;
-        --branch)
-            BRANCH_NAME="$2"
-            shift 2
-            ;;
         *)
             log_error "Unknown option: $1"
             show_usage
@@ -73,32 +63,40 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# If hook name is provided, create deploy hook
-if [ -n "$HOOK_NAME" ]; then
+# Function to add a secret to Vercel
+add_secret() {
+    local name=$1
+    local value=$2
+    local environment=${3:-production}
+
     if [ "$DRY_RUN" = true ]; then
-        log_info "[DRY RUN] Would create deploy hook: $HOOK_NAME for branch: ${BRANCH_NAME:-main}"
-    else
-        log_info "Creating deploy hook: $HOOK_NAME for branch: ${BRANCH_NAME:-main}"
-        RESPONSE=$(curl -X POST "https://api.vercel.com/v1/integrations/deploy/prj_$VERCEL_PROJECT_ID" \
-            -H "Authorization: Bearer $VERCEL_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d "{\"name\":\"$HOOK_NAME\",\"branch\":\"${BRANCH_NAME:-main}\"}")
+        log_info "[DRY RUN] Would add secret: $name to environment: $environment"
+        return 0
+    }
+
+    # Remove any existing secret
+    vercel secrets rm "$name" -y > /dev/null 2>&1 || true
+    
+    # Add the new secret
+    echo "$value" | vercel secrets add "$name" - --env "$environment"
+}
+
+# Add required secrets
+if [ -f "$ENV_FILE" ]; then
+    while IFS='=' read -r key value || [ -n "$key" ]; do
+        # Skip empty lines and comments
+        [[ -z "$key" || "$key" =~ ^[[:space:]]*# ]] && continue
         
-        if echo "$RESPONSE" | grep -q "\"id\""; then
-            HOOK_URL=$(echo "$RESPONSE" | grep -o '"url":"[^"]*"' | cut -d'"' -f4)
-            log_success "Deploy hook created successfully!"
-            log_info "Deploy hook URL: $HOOK_URL"
-            
-            # Save hook URL to environment file if specified
-            if [ -n "$ENV_FILE" ]; then
-                echo "VERCEL_DEPLOY_HOOK_URL=$HOOK_URL" >> "$ENV_FILE"
-                log_success "Deploy hook URL saved to $ENV_FILE"
-            fi
-        else
-            log_error "Failed to create deploy hook: $RESPONSE"
-            exit 1
-        fi
-    fi
+        # Clean the key and value
+        key=$(echo "$key" | tr -d ' ')
+        value=$(echo "$value" | tr -d '"' | tr -d "'")
+        
+        # Convert environment variable names to Vercel secret names
+        secret_name=$(echo "$key" | tr '[:upper:]' '[:lower:]' | tr '_' '-')
+        
+        # Add the secret to Vercel
+        add_secret "$secret_name" "$value"
+    done < "$ENV_FILE"
 fi
 
-# Continue with existing secret setup...
+log_success "Vercel secrets setup completed!"

@@ -15,9 +15,18 @@ class ToolManager {
     }
     return tool.execute(args);
   }
+
+  listTools(): Tool[] {
+    return Array.from(this.tools.values());
+  }
+
+  async generateTool(spec: any): Promise<Tool> {
+    // Implementation for tool generation
+    throw new Error('Not implemented');
+  }
 }
 
-const toolManager = new ToolManager();
+export const toolManager = new ToolManager();
 
 // Register default tools
 toolManager.register({
@@ -31,29 +40,4 @@ toolManager.register({
   }
 });
 
-toolManager.register({
-  name: 'executeCode',
-  description: 'Execute JavaScript code safely',
-  execute: async ({ code }) => {
-    if (typeof code !== 'string') {
-      throw new Error('Code must be a string');
-    }
-    
-    // Create a safe execution environment
-    const sandbox = {
-      console: {
-        log: (...args: unknown[]) => args.join(' '),
-        error: (...args: unknown[]) => args.join(' ')
-      }
-    };
-
-    try {
-      const fn = new Function('sandbox', `with (sandbox) { ${code} }`);
-      return fn(sandbox);
-    } catch (error) {
-      throw new Error(`Code execution failed: ${(error as Error).message}`);
-    }
-  }
-});
-
-export { toolManager as tools };
+export type { Tool };
