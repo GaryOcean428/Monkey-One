@@ -1,10 +1,22 @@
-import { initializeApp, type FirebaseApp } from 'firebase/app';
-import { getAnalytics, type Analytics } from 'firebase/analytics';
-import { getAuth, type Auth } from 'firebase/auth';
-import { getFirestore, type Firestore } from 'firebase/firestore';
-import { getStorage, type FirebaseStorage } from 'firebase/storage';
-import { getDatabase, type Database } from 'firebase/database';
+import { initializeApp, getApps, type FirebaseApp } from 'firebase/app';
+import { getAnalytics, isSupported, type Analytics } from 'firebase/analytics';
+import { getAuth, connectAuthEmulator, type Auth } from 'firebase/auth';
+import { getFirestore, connectFirestoreEmulator, type Firestore } from 'firebase/firestore';
+import { getStorage, connectStorageEmulator, type FirebaseStorage } from 'firebase/storage';
+import { getDatabase, connectDatabaseEmulator, type Database } from 'firebase/database';
 import type { FirebaseConfig } from './types';
+
+// Debug: Log all environment variables (excluding sensitive values)
+console.log('Environment Variables Check:', {
+  hasApiKey: !!import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  hasSenderId: !!import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  hasAppId: !!import.meta.env.VITE_FIREBASE_APP_ID,
+  hasMeasurementId: !!import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
+});
 
 // Validate required environment variables
 const requiredEnvVars = [
@@ -23,6 +35,7 @@ const missingEnvVars = requiredEnvVars.filter(
 );
 
 if (missingEnvVars.length > 0) {
+  console.error('Missing required Firebase configuration:', missingEnvVars);
   throw new Error(
     `Missing required Firebase configuration: ${missingEnvVars.join(', ')}`
   );
@@ -63,6 +76,7 @@ const initializeFirebaseService = <T>(
   required = true
 ): T | undefined => {
   try {
+    console.log(`Initializing Firebase ${serviceName}...`);
     const service = initFn();
     console.log(`Firebase ${serviceName} initialized successfully`);
     return service;
@@ -77,31 +91,49 @@ const initializeFirebaseService = <T>(
 let services: FirebaseServices;
 
 try {
+  console.log('Starting Firebase initialization...');
+  
   // Initialize Firebase app
-  const app = initializeApp(firebaseConfig);
+  const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 
-  // Initialize services
+  // Initialize Analytics conditionally
+  let analytics: Analytics | null = null;
+  if (import.meta.env.PROD) {
+    isSupported().then(yes => yes && (analytics = getAnalytics(app)));
+  }
+
+  // Initialize other services
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const storage = getStorage(app);
+  const database = getDatabase(app);
+
+  // Use emulators in development
+  if (import.meta.env.DEV) {
+    connectAuthEmulator(auth, 'http://localhost:9099');
+    connectFirestoreEmulator(db, 'localhost', 8080);
+    connectStorageEmulator(storage, 'localhost', 9199);
+    connectDatabaseEmulator(database, 'localhost', 9000);
+  }
+
   services = {
     app,
-    analytics: initializeFirebaseService('Analytics', 
-      () => typeof window !== 'undefined' && import.meta.env.PROD ? getAnalytics(app) : undefined,
-      false
-    ),
-    auth: initializeFirebaseService('Auth', 
-      () => getAuth(app)
-    ) as Auth,
-    db: initializeFirebaseService('Firestore', 
-      () => getFirestore(app)
-    ) as Firestore,
-    storage: initializeFirebaseService('Storage', 
-      () => getStorage(app)
-    ) as FirebaseStorage,
-    database: initializeFirebaseService('Realtime Database', 
-      () => getDatabase(app)
-    ) as Database
+    analytics,
+    auth,
+    db,
+    storage,
+    database
   };
+
+  console.log('All Firebase services initialized successfully');
 } catch (error) {
   console.error('Failed to initialize Firebase:', error);
+  if (error instanceof Error) {
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack
+    });
+  }
   throw error;
 }
 
