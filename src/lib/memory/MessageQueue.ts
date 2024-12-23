@@ -2,6 +2,7 @@ export class MessageQueue<T> {
   private queue: T[] = [];
   private maxSize: number;
   private listeners: ((message: T) => void)[] = [];
+  private isProcessing = false;
 
   constructor(maxSize = 1000) {
     this.maxSize = maxSize;
@@ -16,7 +17,11 @@ export class MessageQueue<T> {
   }
 
   dequeue(): T | undefined {
-    return this.queue.shift();
+    const message = this.queue.shift();
+    if (message) {
+      this.notifyListeners(message);
+    }
+    return message;
   }
 
   peek(): T | undefined {
@@ -36,14 +41,31 @@ export class MessageQueue<T> {
   }
 
   on(listener: (message: T) => void): void {
+    if (typeof listener !== 'function') {
+      throw new Error('Listener must be a function');
+    }
     this.listeners.push(listener);
   }
 
   private notifyListeners(message: T): void {
-    this.listeners.forEach(listener => listener(message));
+    this.listeners.forEach(listener => {
+      try {
+        listener(message);
+      } catch (error) {
+        console.error('Error in message listener:', error);
+      }
+    });
   }
 
   toArray(): T[] {
     return [...this.queue];
+  }
+
+  setProcessing(value: boolean): void {
+    this.isProcessing = value;
+  }
+
+  isProcessing(): boolean {
+    return this.isProcessing;
   }
 }

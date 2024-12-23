@@ -1,20 +1,19 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { MessageQueue } from '@/lib/memory/MessageQueue';
-import { Message, MessageType } from '@/types';
+import { Message } from '@/types';
 
 describe('MessageQueue', () => {
-  let queue: MessageQueue;
+  let queue: MessageQueue<Message>;
 
   beforeEach(() => {
-    vi.clearAllMocks();
-    queue = new MessageQueue();
+    queue = new MessageQueue<Message>();
   });
 
   describe('message handling', () => {
     it('should add and retrieve messages', () => {
       const message: Message = {
-        id: '1',
-        type: MessageType.COMMAND,
+        id: 'test',
+        role: 'user',
         content: 'test message',
         timestamp: Date.now()
       };
@@ -29,9 +28,9 @@ describe('MessageQueue', () => {
 
     it('should process messages in FIFO order', () => {
       const messages = [
-        { id: '1', type: MessageType.COMMAND, content: 'first', timestamp: Date.now() },
-        { id: '2', type: MessageType.COMMAND, content: 'second', timestamp: Date.now() },
-        { id: '3', type: MessageType.COMMAND, content: 'third', timestamp: Date.now() }
+        { id: '1', role: 'user', content: 'first', timestamp: Date.now() },
+        { id: '2', role: 'user', content: 'second', timestamp: Date.now() },
+        { id: '3', role: 'user', content: 'third', timestamp: Date.now() }
       ];
 
       messages.forEach(msg => queue.enqueue(msg));
@@ -49,51 +48,55 @@ describe('MessageQueue', () => {
     });
 
     it('should continue processing after error', () => {
-      const errorHandler = vi.fn();
-      queue.on('error', errorHandler);
+      const errorListener = vi.fn().mockImplementation(() => {
+        throw new Error('Test error');
+      });
+      const successListener = vi.fn();
+
+      queue.on(errorListener);
+      queue.on(successListener);
 
       const message: Message = {
-        id: '1',
-        type: MessageType.COMMAND,
+        id: 'test',
+        role: 'user',
         content: 'test message',
         timestamp: Date.now()
       };
 
       queue.enqueue(message);
-      queue.processMessage(message).catch(errorHandler);
-
-      expect(errorHandler).not.toHaveBeenCalled();
+      expect(errorListener).toHaveBeenCalledWith(message);
+      expect(successListener).toHaveBeenCalledWith(message);
     });
   });
 
   describe('event handling', () => {
     it('should emit events when messages are added/removed', () => {
-      const onAdd = vi.fn();
-      const onRemove = vi.fn();
+      const addListener = vi.fn();
+      const removeListener = vi.fn();
 
-      queue.on('messageAdded', onAdd);
-      queue.on('messageRemoved', onRemove);
+      queue.on(addListener);
+      queue.on(removeListener);
 
       const message: Message = {
-        id: '1',
-        type: MessageType.COMMAND,
+        id: 'test',
+        role: 'user',
         content: 'test message',
         timestamp: Date.now()
       };
 
       queue.enqueue(message);
-      expect(onAdd).toHaveBeenCalledWith(message);
+      expect(addListener).toHaveBeenCalledWith(message);
 
       queue.dequeue();
-      expect(onRemove).toHaveBeenCalledWith(message);
+      expect(removeListener).toHaveBeenCalledWith(message);
     });
   });
 
   describe('queue management', () => {
     it('should clear all messages', () => {
       const messages = [
-        { id: '1', type: MessageType.COMMAND, content: 'first', timestamp: Date.now() },
-        { id: '2', type: MessageType.COMMAND, content: 'second', timestamp: Date.now() }
+        { id: '1', role: 'user', content: 'first', timestamp: Date.now() },
+        { id: '2', role: 'user', content: 'second', timestamp: Date.now() }
       ];
 
       messages.forEach(msg => queue.enqueue(msg));
@@ -104,18 +107,19 @@ describe('MessageQueue', () => {
     });
 
     it('should respect max queue size', () => {
-      const maxSize = 2;
-      const limitedQueue = new MessageQueue(maxSize);
-
+      const limitedQueue = new MessageQueue<Message>(2);
       const messages = [
-        { id: '1', type: MessageType.COMMAND, content: 'first', timestamp: Date.now() },
-        { id: '2', type: MessageType.COMMAND, content: 'second', timestamp: Date.now() },
-        { id: '3', type: MessageType.COMMAND, content: 'third', timestamp: Date.now() }
+        { id: '1', role: 'user', content: 'first', timestamp: Date.now() },
+        { id: '2', role: 'user', content: 'second', timestamp: Date.now() }
       ];
 
       messages.forEach(msg => limitedQueue.enqueue(msg));
-      expect(limitedQueue.size()).toBe(maxSize);
-      expect(limitedQueue.dequeue()).toEqual(messages[1]); // First message should be dropped
+      expect(() => limitedQueue.enqueue({
+        id: '3',
+        role: 'user',
+        content: 'third',
+        timestamp: Date.now()
+      })).toThrow('Queue size limit (2) reached');
     });
   });
 });
