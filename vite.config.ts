@@ -16,10 +16,25 @@ dotenv.config();
 const __filename = fileURLToPath(new URL(import.meta.url));
 const __dirname = dirname(__filename);
 
+// Define chunks for code splitting
+const manualChunks = {
+  'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+  'vendor-firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore'],
+  'vendor-ui': ['@radix-ui/react-alert-dialog', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
+  'vendor-ml': ['@tensorflow/tfjs', '@tensorflow/tfjs-core'],
+  'vendor-editor': ['@monaco-editor/react']
+};
+
 export default defineConfig({
   plugins: [
     react({
-      fastRefresh: true
+      fastRefresh: true,
+      babel: {
+        plugins: [
+          ['@babel/plugin-transform-runtime'],
+          ['babel-plugin-import', { libraryName: 'antd', style: true }]
+        ]
+      }
     }),
     tsconfigPaths(),
     nodeResolve({
@@ -38,6 +53,25 @@ export default defineConfig({
       brotliSize: true
     })
   ].filter(Boolean),
+  build: {
+    target: 'esnext',
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true
+      }
+    },
+    rollupOptions: {
+      output: {
+        manualChunks,
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash][extname]'
+      }
+    },
+    sourcemap: false,
+    chunkSizeWarningLimit: 1000
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -49,65 +83,10 @@ export default defineConfig({
       '@styles': path.resolve(__dirname, './src/styles'),
       '@services': path.resolve(__dirname, './src/services'),
       '@types': path.resolve(__dirname, './src/types'),
-      '@store': path.resolve(__dirname, './src/store'),
-      '@lib': path.resolve(__dirname, './src/lib')
-    },
-    extensions: ['.js', '.jsx', '.ts', '.tsx', '.json']
-  },
-  build: {
-    target: 'es2015',
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true
-      }
-    },
-    rollupOptions: {
-      input: {
-        main: path.resolve(__dirname, 'index.html')
-      },
-      external: [],
-      output: {
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom'],
-          'firebase-vendor': ['firebase/app', 'firebase/auth', 'firebase/firestore'],
-          'ui-vendor': ['@radix-ui/react-dialog', '@radix-ui/react-select'],
-          'ml-vendor': ['@tensorflow/tfjs', '@huggingface/inference']
-        }
-      },
-      plugins: [
-        terser({
-          format: {
-            comments: false
-          }
-        })
-      ]
-    },
-    sourcemap: true,
-    chunkSizeWarningLimit: 1000
-  },
-  optimizeDeps: {
-    include: [
-      'react',
-      'react-dom',
-      'firebase/app',
-      '@radix-ui/react-tooltip',
-      'clsx',
-      'tailwind-merge'
-    ],
-    esbuildOptions: {
-      resolveExtensions: ['.js', '.jsx', '.ts', '.tsx']
     }
   },
-  server: {
-    hmr: true,
-    watch: {
-      usePolling: true,
-      interval: 100
-    },
-    overlay: true,
-    port: 3000,
-    host: true
+  optimizeDeps: {
+    include: ['react', 'react-dom'],
+    exclude: ['@tensorflow/tfjs']
   }
 });
