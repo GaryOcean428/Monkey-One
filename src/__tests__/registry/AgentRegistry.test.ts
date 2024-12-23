@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { AgentRegistry } from '@/lib/registry/AgentRegistry';
 import { BaseAgent } from '@/lib/agents/base';
 
@@ -12,6 +12,7 @@ class TestAgent extends BaseAgent {
   async processMessage() {
     return {
       id: 'test',
+      type: MessageType.RESPONSE,
       role: 'assistant',
       content: 'test response',
       timestamp: Date.now()

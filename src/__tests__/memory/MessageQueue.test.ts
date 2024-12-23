@@ -81,6 +81,7 @@ describe('MessageQueue', () => {
 
       const message: Message = {
         id: 'test',
+        type: MessageType.TASK,
         role: 'user',
         content: 'test message',
         timestamp: Date.now()
@@ -97,8 +98,8 @@ describe('MessageQueue', () => {
   describe('queue management', () => {
     it('should clear all messages', () => {
       const messages = [
-        { id: '1', role: 'user', content: 'first', timestamp: Date.now() },
-        { id: '2', role: 'user', content: 'second', timestamp: Date.now() }
+        { id: '1', type: MessageType.TASK, role: 'user', content: 'first', timestamp: Date.now() },
+        { id: '2', type: MessageType.TASK, role: 'user', content: 'second', timestamp: Date.now() }
       ];
 
       messages.forEach(msg => queue.enqueue(msg));
@@ -111,13 +112,14 @@ describe('MessageQueue', () => {
     it('should respect max queue size', () => {
       const limitedQueue = new MessageQueue<Message>(2);
       const messages = [
-        { id: '1', role: 'user', content: 'first', timestamp: Date.now() },
-        { id: '2', role: 'user', content: 'second', timestamp: Date.now() }
+        { id: '1', type: MessageType.TASK, role: 'user', content: 'first', timestamp: Date.now() },
+        { id: '2', type: MessageType.TASK, role: 'user', content: 'second', timestamp: Date.now() }
       ];
 
       messages.forEach(msg => limitedQueue.enqueue(msg));
       expect(() => limitedQueue.enqueue({
         id: '3',
+        type: MessageType.TASK,
         role: 'user',
         content: 'third',
         timestamp: Date.now()

@@ -1,22 +1,25 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { AgentMonitor } from '@/lib/monitoring/AgentMonitor';
-import { Agent, AgentStatus, AgentType, Message, MessageType, AgentCapability } from '@/types';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { Agent, AgentType, AgentStatus, Message, MessageType, AgentCapability } from '@/types';
+import { Logger } from '@/utils/logger';
 import { RuntimeError } from '@/lib/errors/AgentErrors';
+import { AgentMonitor } from '@/lib/monitoring/AgentMonitor';
+
+const logger = new Logger('test');
 
 vi.mock('../../lib/memory');
 
 class MockAgent implements Agent {
   id: string;
   name: string;
-  type: 'orchestrator';
-  status: 'idle' | 'active' | 'error';
+  type: AgentType;
+  status: AgentStatus;
   capabilities: AgentCapability[];
 
   constructor() {
     this.id = 'mock-agent';
     this.name = 'Mock Agent';
-    this.type = 'orchestrator';
-    this.status = 'idle';
+    this.type = AgentType.ORCHESTRATOR;
+    this.status = AgentStatus.IDLE;
     this.capabilities = [{ name: 'test', description: 'Test capability' }];
   }
 
@@ -51,13 +54,8 @@ describe('AgentMonitor', () => {
   let mockMessage: Message
 
   beforeEach(() => {
-    monitor = new AgentMonitor()
-    mockAgent = new MockAgent(
-      'test-agent',
-      AgentType.BASE,
-      AgentStatus.IDLE,
-      [{ name: 'test', description: 'Test capability' }]
-    )
+    monitor = new AgentMonitor(logger)
+    mockAgent = new MockAgent()
     mockMessage = {
       id: 'msg-1',
       type: MessageType.COMMAND,

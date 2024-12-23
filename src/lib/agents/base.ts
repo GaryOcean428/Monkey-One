@@ -1,17 +1,30 @@
 import { Message, MessageType } from '../../types';
 import { GitHubClient } from '../github/GitHubClient';
 
-export abstract class BaseAgent {
+export abstract class BaseAgent implements Agent {
+  abstract processMessage(message: Message): Promise<Message>;
+
+  async handleMessage(message: Message): Promise<void> {
+    await this.processMessage(message);
+  }
+
+  async initialize(): Promise<void> {
+    // Default initialization
+  }
+  public type: AgentType;
+  public status: AgentStatus;
   protected github: GitHubClient;
   public readonly capabilities: AgentCapability[];
   public readonly subordinates: BaseAgent[] = [];
 
   constructor(
     public readonly id: string,
-    public readonly agentName: string,
-    public readonly role: string,
+    public readonly name: string,
+    type: AgentType,
     capabilities: AgentCapability[] = []
   ) {
+    this.type = type;
+    this.status = AgentStatus.IDLE;
     this.github = new GitHubClient();
     this.capabilities = capabilities;
   }

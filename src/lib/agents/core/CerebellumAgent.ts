@@ -131,7 +131,7 @@ export class CerebellumAgent extends BaseAgent {
     };
   }
 
-  private async executeMotorPattern(pattern: MotorPattern): Promise<{
+  protected async executeMotorPattern(pattern: MotorPattern): Promise<{
     success: boolean;
     accuracy: number;
     executionTime: number;
