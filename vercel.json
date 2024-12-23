@@ -6,15 +6,17 @@
     "framework": "vite",
     "outputDirectory": "dist",
     "env": {
-        "GH_TOKEN": "@gh-token",
-        "GITHUB_TOKEN": "@gh-token",
-        "VITE_GITHUB_USERNAME": "@github-username",
-        "VITE_GITHUB_USEREMAIL": "@github-email",
-        "VITE_FIREBASE_API_KEY": "@firebase-api-key",
-        "VITE_FIREBASE_PROJECT_ID": "@firebase-project-id",
-        "VITE_PINECONE_API_KEY": "@pinecone-api-key",
-        "VITE_PINECONE_ENVIRONMENT": "@pinecone-environment",
-        "GRAFANA_ADMIN_PASSWORD": "@grafana-admin-password"
+        "GH_TOKEN": "${GH_TOKEN}",
+        "GITHUB_TOKEN": "${GH_TOKEN}",
+        "VITE_GITHUB_USERNAME": "${VITE_GITHUB_USERNAME}",
+        "VITE_GITHUB_USEREMAIL": "${VITE_GITHUB_USEREMAIL}",
+        "VITE_FIREBASE_API_KEY": "${VITE_FIREBASE_API_KEY}",
+        "VITE_FIREBASE_PROJECT_ID": "${VITE_FIREBASE_PROJECT_ID}",
+        "VITE_PINECONE_API_KEY": "${VITE_PINECONE_API_KEY}",
+        "VITE_PINECONE_ENVIRONMENT": "${VITE_PINECONE_ENVIRONMENT}",
+        "GRAFANA_ADMIN_PASSWORD": "${GRAFANA_ADMIN_PASSWORD}",
+        "NODE_ENV": "production",
+        "VITE_MODE": "production"
     },
     "git": {
         "deploymentEnabled": {

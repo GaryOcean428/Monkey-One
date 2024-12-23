@@ -1,18 +1,25 @@
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
-import { MainPanel } from './components/MainPanel';
-import { SettingsProvider } from './context/SettingsContext';
-import { AgentProvider } from './context/AgentContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { TooltipProvider } from './components/ui/tooltip';
 import { useSettings } from './context/SettingsContext';
+
+// Lazy load heavy components
+const MainPanel = lazy(() => import('./components/MainPanel'));
+const ObserverPanel = lazy(() => import('./components/ObserverPanel'));
+
+// Loading fallback
+const LoadingFallback = () => (
+  <div className="flex items-center justify-center h-full">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+  </div>
+);
 
 function AppContent() {
   const { settings } = useSettings();
 
   useEffect(() => {
-    // Apply theme class to root html element
     document.documentElement.classList.toggle('dark', settings.theme === 'dark');
   }, [settings.theme]);
 
@@ -21,7 +28,11 @@ function AppContent() {
       <Sidebar />
       <main className="flex-1 flex flex-col">
         <Header />
-        <MainPanel />
+        <ErrorBoundary>
+          <Suspense fallback={<LoadingFallback />}>
+            <MainPanel />
+          </Suspense>
+        </ErrorBoundary>
       </main>
     </div>
   );
@@ -30,13 +41,11 @@ function AppContent() {
 function App() {
   return (
     <ErrorBoundary>
-      <SettingsProvider>
-        <AgentProvider>
-          <TooltipProvider>
-            <AppContent />
-          </TooltipProvider>
-        </AgentProvider>
-      </SettingsProvider>
+      <TooltipProvider>
+        <Suspense fallback={<LoadingFallback />}>
+          <AppContent />
+        </Suspense>
+      </TooltipProvider>
     </ErrorBoundary>
   );
 }
