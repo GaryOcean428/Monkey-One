@@ -41,6 +41,10 @@ export abstract class BaseAgent implements Agent {
     return [...this.capabilities];
   }
 
+  getCapabilityNames(): string[] {
+    return this.capabilities.map(cap => cap.name);
+  }
+
   registerCapability(capability: AgentCapability): void {
     if (!this.capabilities.some(cap => cap.name === capability.name)) {
       this.capabilities.push(capability);
@@ -92,10 +96,6 @@ export abstract class BaseAgent implements Agent {
     };
 
     return message;
-  }
-
-  getCapabilities(): string[] {
-    return [...this.capabilities.map(cap => cap.name)];
   }
 
   hasCapability(capability: string): boolean {
