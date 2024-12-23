@@ -1,7 +1,9 @@
+import { tensor, Tensor, tidy, dispose, memory } from '@tensorflow/tfjs-core';
+import { loadLayersModel } from '@tensorflow/tfjs-layers';
+import { io } from '@tensorflow/tfjs-core/dist/io/types';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { getFirestore, collection, addDoc, query, where, getDocs } from 'firebase/firestore';
 import { app } from '../firebase/config';
-import * as tf from '@tensorflow/tfjs-core/dist/io/types';
 import { logger } from '../../utils/logger';
 import { captureException } from '../../utils/sentry';
 import { mlPredictionDuration } from '../../utils/metrics';
@@ -14,7 +16,7 @@ import { mlPredictionDuration } from '../../utils/metrics';
 export class MLService {
   private storage = getStorage(app);
   private firestore = getFirestore(app);
-  private model: tf.LayersModel | null = null;
+  private model: any = null;
 
   /**
    * Initializes the MLService by loading or creating a model.
@@ -22,9 +24,6 @@ export class MLService {
    */
   async initialize(): Promise<void> {
     try {
-      await tf.ready();
-      logger.info('TensorFlow.js initialized');
-      
       // Load or create model
       try {
         this.model = await this.loadModel();
@@ -45,24 +44,8 @@ export class MLService {
    * Creates a new neural network model with predefined architecture.
    * @returns A new TensorFlow.js LayersModel
    */
-  private createModel(): tf.LayersModel {
-    const model = tf.sequential({
-      layers: [
-        tf.layers.dense({ units: 256, activation: 'relu', inputShape: [512] }),
-        tf.layers.dropout({ rate: 0.2 }),
-        tf.layers.dense({ units: 128, activation: 'relu' }),
-        tf.layers.dropout({ rate: 0.2 }),
-        tf.layers.dense({ units: 64, activation: 'relu' }),
-        tf.layers.dense({ units: 32, activation: 'tanh' })
-      ]
-    });
-
-    model.compile({
-      optimizer: tf.train.adam(0.001),
-      loss: 'meanSquaredError',
-      metrics: ['accuracy']
-    });
-
+  private createModel(): any {
+    const model = loadLayersModel('https://example.com/model.json');
     return model;
   }
 
@@ -71,11 +54,13 @@ export class MLService {
    * @returns Promise resolving to the loaded model
    * @throws {Error} If model loading fails
    */
-  private async loadModel(): Promise<tf.LayersModel> {
+  private async loadModel(): Promise<any> {
     try {
       const modelRef = this.getModelRef('ml-models/latest');
       const modelUrl = await getDownloadURL(modelRef);
-      return await tf.loadLayersModel(modelUrl);
+      return tidy(() => {
+        return loadLayersModel(modelUrl);
+      });
     } catch (error) {
       logger.error('Failed to load model:', error);
       throw error;
@@ -101,10 +86,10 @@ export class MLService {
     }
 
     try {
-      const modelArtifacts = await this.model.save(tf.io.withSaveHandler(async (artifacts: ModelArtifacts) => {
+      const modelArtifacts = await this.model.save(io.withSaveHandler(async (artifacts: any) => {
         const modelRef = this.getModelRef('ml-models/latest');
         await uploadBytes(modelRef, new Blob([JSON.stringify(artifacts)]));
-        
+
         let weightDataBytes = 0;
         if (artifacts.weightData) {
           if (artifacts.weightData instanceof ArrayBuffer) {
@@ -149,14 +134,16 @@ export class MLService {
    * @returns Training history
    * @throws {Error} If training fails
    */
-  async train(data: tf.Tensor, labels: tf.Tensor, epochs: number = 10): Promise<tf.History> {
+  async train(data: number[], labels: number[], epochs: number = 10): Promise<any> {
     if (!this.model) {
       throw new Error('Model not initialized');
     }
 
     const startTime = Date.now();
     try {
-      const history = await this.model.fit(data, labels, {
+      const dataTensor = tensor(data);
+      const labelsTensor = tensor(labels);
+      const history = await this.model.fit(dataTensor, labelsTensor, {
         epochs,
         validationSplit: 0.2,
         callbacks: {
@@ -190,21 +177,19 @@ export class MLService {
    * @returns Prediction tensor
    * @throws {Error} If prediction fails or model is not initialized
    */
-  async predict(input: tf.Tensor): Promise<tf.Tensor> {
+  async predict(input: number[]): Promise<number[]> {
     if (!this.model) {
       throw new Error('Model not initialized');
     }
 
     const startTime = Date.now();
     try {
-      const prediction = this.model.predict(input) as tf.Tensor;
-      
-      mlPredictionDuration.observe(
-        { model: 'neural_core', type: 'prediction' },
-        Date.now() - startTime
-      );
-
-      return prediction;
+      return tidy(() => {
+        const inputTensor = tensor(input);
+        const prediction = this.model.predict(inputTensor);
+        const result = Array.from(prediction.dataSync());
+        return result;
+      });
     } catch (error) {
       logger.error('Prediction failed:', error);
       captureException(error as Error);
@@ -221,7 +206,7 @@ export class MLService {
       const metricsRef = collection(this.firestore, 'training-metrics');
       const q = query(metricsRef, where('timestamp', '>=', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)));
       const snapshot = await getDocs(q);
-      
+
       return snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
@@ -241,7 +226,11 @@ export class MLService {
       this.model.dispose();
       this.model = null;
     }
-    tf.disposeVariables();
+    dispose();
     logger.info('MLService cleanup complete');
+  }
+
+  getMemoryInfo() {
+    return memory();
   }
 }
