@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { BaseAgent } from '@/lib/agents/base';
-import { AgentCapability } from '@/types';
+import { AgentCapability, Message, MessageType } from '@/types';
 
 // Create test agent class
 class TestAgent extends BaseAgent {
@@ -18,6 +18,7 @@ class TestAgent extends BaseAgent {
     // Test implementation
     return {
       id: 'test',
+      type: MessageType.RESPONSE,
       role: 'assistant',
       content: 'test response',
       timestamp: Date.now()

@@ -1,6 +1,15 @@
-import { useWorkflowStore } from '@/store/workflowStore';
+import { useState, useCallback } from 'react';
+import type { WorkflowDefinition } from '../types';
 
 export function useWorkflow() {
-  const workflows = useWorkflowStore((state) => state.workflows);
-  return { workflows };
-}
+  const [workflows, setWorkflows] = useState<WorkflowDefinition[]>([]);
+
+  const createWorkflow = useCallback(async (definition: Partial<WorkflowDefinition>) => {
+    // Implementation
+  }, []);
+
+  return {
+    workflows,
+    createWorkflow
+  };
+}

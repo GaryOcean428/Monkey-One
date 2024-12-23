@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { fileURLToPath } from 'node:url';
-import { dirname } from 'node:path';
+import { dirname, resolve } from 'node:path';
 import path from 'path';
 import dotenv from 'dotenv';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
@@ -18,7 +18,9 @@ const __dirname = dirname(__filename);
 
 export default defineConfig({
   plugins: [
-    react(),
+    react({
+      fastRefresh: true
+    }),
     tsconfigPaths(),
     nodeResolve({
       extensions: ['.js', '.jsx', '.ts', '.tsx'],
@@ -35,11 +37,21 @@ export default defineConfig({
       gzipSize: true,
       brotliSize: true
     })
-  ],
+  ].filter(Boolean),
   resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src')
-    },
+    alias: [
+      { find: '@', replacement: path.resolve(__dirname, 'src') },
+      { find: '@components', replacement: path.resolve(__dirname, 'src/components') },
+      { find: '@containers', replacement: path.resolve(__dirname, 'src/containers') },
+      { find: '@utils', replacement: path.resolve(__dirname, 'src/utils') },
+      { find: '@hooks', replacement: path.resolve(__dirname, 'src/hooks') },
+      { find: '@assets', replacement: path.resolve(__dirname, 'src/assets') },
+      { find: '@styles', replacement: path.resolve(__dirname, 'src/styles') },
+      { find: '@services', replacement: path.resolve(__dirname, 'src/services') },
+      { find: '@types', replacement: path.resolve(__dirname, 'src/types') },
+      { find: '@store', replacement: path.resolve(__dirname, 'src/store') },
+      { find: '@lib', replacement: path.resolve(__dirname, 'src/lib') }
+    ],
     extensions: ['.js', '.jsx', '.ts', '.tsx', '.json']
   },
   build: {
@@ -89,6 +101,12 @@ export default defineConfig({
     }
   },
   server: {
+    hmr: true,
+    watch: {
+      usePolling: true,
+      interval: 100
+    },
+    overlay: true,
     port: 3000,
     host: true
   }

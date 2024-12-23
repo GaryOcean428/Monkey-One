@@ -4,7 +4,7 @@ import { MessageQueue } from '../memory/MessageQueue';
 
 export class AgentRuntime {
   private agent: BaseAgent;
-  private queue: MessageQueue;
+  public messageQueue: MessageQueue;
   private isProcessing: boolean = false;
   private processingTimeout: number | null = null;
   private abortController: AbortController | null = null;
@@ -15,14 +15,14 @@ export class AgentRuntime {
     this.startProcessing();
   }
 
-  private startProcessing() {
+  public startProcessing() {
     if (this.isProcessing) return;
     
     this.isProcessing = true;
     this.processQueue();
   }
 
-  private async processQueue() {
+  protected async processQueue() {
     if (this.abortController) {
       this.abortController.abort();
     }

@@ -1,5 +1,5 @@
 import { MessageBroker } from '../../lib/communication/MessageBroker';
-import type { Message } from '../../types';
+import { Message, MessageType } from '../../types';
 
 type MessageHandlerFn = (message: Message) => Promise<void>;
 
@@ -15,6 +15,7 @@ describe('MessageBroker', () => {
   describe('publish/subscribe pattern', () => {
     const mockMessage: Message = {
       id: 'test-1',
+      type: MessageType.TASK,
       role: 'user',
       content: 'test message',
       timestamp: Date.now()
