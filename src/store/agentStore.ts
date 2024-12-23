@@ -1,129 +1,84 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
-import type { Agent, AgentMetrics } from '@/types';
-import { createAgent as createAgentInstance } from '@/lib/agents';
+import type { Agent } from '../types';
 
-interface CreateAgentParams {
-  name: string;
-  type: Agent['type'];
+interface AgentMetrics {
+  messagesProcessed: number;
+  averageResponseTime: number;
+  successRate: number;
 }
 
 interface AgentState {
   agents: Agent[];
   activeAgent: Agent | null;
-  metrics: Record<string, AgentMetrics>;
+  metrics: AgentMetrics;
   isLoading: boolean;
   error: string | null;
-}
-
-interface AgentActions {
   initializeAgents: () => Promise<void>;
   setActiveAgent: (agent: Agent | null) => void;
+  addAgent: (agent: Agent) => void;
+  removeAgent: (agentId: string) => void;
   updateAgentStatus: (agentId: string, status: Agent['status']) => void;
-  updateMetrics: (agentId: string, metrics: Partial<AgentMetrics>) => void;
-  createAgent: (params: CreateAgentParams) => Promise<void>;
+  updateMetrics: (metrics: Partial<AgentMetrics>) => void;
 }
 
-export const useAgentStore = create<AgentState & AgentActions>()(
+const initialMetrics: AgentMetrics = {
+  messagesProcessed: 0,
+  averageResponseTime: 0,
+  successRate: 0
+};
+
+export const useAgentStore = create<AgentState>()(
   immer((set) => ({
     agents: [],
     activeAgent: null,
-    metrics: {},
+    metrics: initialMetrics,
     isLoading: false,
     error: null,
 
     initializeAgents: async () => {
-      set(state => {
-        state.isLoading = true;
-        state.error = null;
-      });
-
+      set((state) => { state.isLoading = true; state.error = null; });
       try {
-        // Initialize default agents
-        const defaultAgents: Agent[] = [
-          {
-            id: 'orchestrator-1',
-            name: 'Orchestrator',
-            type: 'orchestrator',
-            status: 'idle',
-            capabilities: ['task_planning', 'task_delegation']
-          },
-          {
-            id: 'coder-1',
-            name: 'Code Assistant',
-            type: 'coder',
-            status: 'idle',
-            capabilities: ['code_generation', 'code_review']
-          },
-          {
-            id: 'websurfer-1',
-            name: 'Web Surfer',
-            type: 'websurfer',
-            status: 'idle',
-            capabilities: ['web_search', 'data_extraction']
-          }
-        ];
-
-        set(state => {
-          state.agents = defaultAgents;
-          state.activeAgent = defaultAgents[0];
-          state.isLoading = false;
-        });
+        // TODO: Load agents from backend/storage
+        set((state) => { state.isLoading = false; });
       } catch (error) {
-        set(state => {
+        set((state) => {
+          state.isLoading = false;
           state.error = error instanceof Error ? error.message : 'Failed to initialize agents';
-          state.isLoading = false;
         });
       }
     },
 
-    createAgent: async (params) => {
-      set(state => {
-        state.isLoading = true;
-        state.error = null;
-      });
+    setActiveAgent: (agent) => set((state) => {
+      state.activeAgent = agent;
+    }),
 
-      try {
-        const newAgent = createAgentInstance(params.type, {
-          id: crypto.randomUUID(),
-          name: params.name
-        });
+    addAgent: (agent) => set((state) => {
+      state.agents.push(agent);
+    }),
 
-        set(state => {
-          state.agents.push(newAgent);
-          state.isLoading = false;
-        });
-      } catch (error) {
-        set(state => {
-          state.error = error instanceof Error ? error.message : 'Failed to create agent';
-          state.isLoading = false;
-        });
-        throw error;
+    removeAgent: (agentId) => set((state) => {
+      state.agents = state.agents.filter((a) => a.id !== agentId);
+      if (state.activeAgent?.id === agentId) {
+        state.activeAgent = null;
       }
-    },
+    }),
 
-    setActiveAgent: (agent) => {
-      set(state => {
-        state.activeAgent = agent;
-      });
-    },
+    updateAgentStatus: (agentId, status) => set((state) => {
+      const agent = state.agents.find(a => a.id === agentId);
+      if (agent) {
+        agent.status = status;
+      }
+      if (state.activeAgent?.id === agentId) {
+        state.activeAgent.status = status;
+      }
+    }),
 
-    updateAgentStatus: (agentId, status) => {
-      set(state => {
-        const agentIndex = state.agents.findIndex(a => a.id === agentId);
-        if (agentIndex !== -1) {
-          state.agents[agentIndex].status = status;
-        }
-      });
-    },
-
-    updateMetrics: (agentId, metrics) => {
-      set(state => {
-        state.metrics[agentId] = {
-          ...state.metrics[agentId],
-          ...metrics
-        };
-      });
-    }
+    updateMetrics: (newMetrics) => set((state) => {
+      state.metrics = {
+        ...state.metrics,
+        ...newMetrics
+      };
+    })
   }))
 );
