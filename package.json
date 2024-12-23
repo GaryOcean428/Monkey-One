@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --force",
+    "dev": "vite --port 3000",
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
@@ -20,6 +20,7 @@
     "vercel-deploy": "vercel deploy --prod"
   },
   "dependencies": {
+    "@auth0/auth0-react": "^2.0.0",
     "@supabase/auth-helpers-react": "^0.4.2",
     "@supabase/supabase-js": "^2.47.10",
     "react": "^18.2.0",
