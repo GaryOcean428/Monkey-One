@@ -1,9 +1,10 @@
-import { initializeApp } from 'firebase/app';
-import { getAnalytics } from 'firebase/analytics';
-import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
-import { getStorage } from 'firebase/storage';
-import { getDatabase } from 'firebase/database';
+import { initializeApp, type FirebaseApp } from 'firebase/app';
+import { getAnalytics, type Analytics } from 'firebase/analytics';
+import { getAuth, type Auth } from 'firebase/auth';
+import { getFirestore, type Firestore } from 'firebase/firestore';
+import { getStorage, type FirebaseStorage } from 'firebase/storage';
+import { getDatabase, type Database } from 'firebase/database';
+import type { FirebaseConfig } from './types';
 
 // Validate required environment variables
 const requiredEnvVars = [
@@ -28,7 +29,7 @@ if (missingEnvVars.length > 0) {
 }
 
 // Firebase configuration with required values
-const firebaseConfig = {
+const firebaseConfig: FirebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
@@ -39,13 +40,70 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
-// Initialize Firebase services
-export const app = initializeApp(firebaseConfig);
-export const analytics = typeof window !== 'undefined' && import.meta.env.PROD ? getAnalytics(app) : undefined;
-export const auth = getAuth(app);
-export const db = getFirestore(app);
-export const storage = getStorage(app);
-export const database = getDatabase(app);
+// Log non-sensitive config info
+console.log('Initializing Firebase with project:', {
+  projectId: firebaseConfig.projectId,
+  authDomain: firebaseConfig.authDomain,
+  databaseURL: firebaseConfig.databaseURL,
+  storageBucket: firebaseConfig.storageBucket
+});
 
-// Export config for reference
+interface FirebaseServices {
+  app: FirebaseApp;
+  analytics?: Analytics;
+  auth: Auth;
+  db: Firestore;
+  storage: FirebaseStorage;
+  database: Database;
+}
+
+const initializeFirebaseService = <T>(
+  serviceName: string,
+  initFn: () => T,
+  required = true
+): T | undefined => {
+  try {
+    const service = initFn();
+    console.log(`Firebase ${serviceName} initialized successfully`);
+    return service;
+  } catch (error) {
+    const logFn = required ? console.error : console.warn;
+    logFn(`Failed to initialize Firebase ${serviceName}:`, error);
+    if (required) throw error;
+    return undefined;
+  }
+};
+
+let services: FirebaseServices;
+
+try {
+  // Initialize Firebase app
+  const app = initializeApp(firebaseConfig);
+
+  // Initialize services
+  services = {
+    app,
+    analytics: initializeFirebaseService('Analytics', 
+      () => typeof window !== 'undefined' && import.meta.env.PROD ? getAnalytics(app) : undefined,
+      false
+    ),
+    auth: initializeFirebaseService('Auth', 
+      () => getAuth(app)
+    ) as Auth,
+    db: initializeFirebaseService('Firestore', 
+      () => getFirestore(app)
+    ) as Firestore,
+    storage: initializeFirebaseService('Storage', 
+      () => getStorage(app)
+    ) as FirebaseStorage,
+    database: initializeFirebaseService('Realtime Database', 
+      () => getDatabase(app)
+    ) as Database
+  };
+} catch (error) {
+  console.error('Failed to initialize Firebase:', error);
+  throw error;
+}
+
+export const { app, analytics, auth, db, storage, database } = services;
 export { firebaseConfig };
