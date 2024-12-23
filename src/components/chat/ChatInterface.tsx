@@ -1,14 +1,14 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Send, Loader } from 'lucide-react';
+import React, { useCallback, useRef, useEffect } from 'react';
+import { useChat } from '../../hooks/useChat';
 import { ChatMessage } from './ChatMessage';
-import { useChat } from '@/hooks/useChat';
-import { cn } from '@/lib/utils';
+import { MessageInput } from './MessageInput';
+import { cn } from '../../lib/utils';
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
 
 export function ChatInterface() {
   const { messages, isProcessing, error, sendMessage, hasActiveAgent } = useChat();
-  const [input, setInput] = useState('');
+  const [input, setInput] = React.useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -18,11 +18,11 @@ export function ChatInterface() {
     }
   };
 
-  useEffect(() => {
+  React.useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.focus();
     }

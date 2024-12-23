@@ -2,7 +2,7 @@ import React from 'react';
 import { ChatInterface } from './ChatInterface';
 import { TaskPanel } from './TaskPanel';
 import { IntegrationsBar } from './IntegrationsBar';
-import { useChat } from '@/hooks/useChat';
+import { useChat } from '../../hooks/useChat';
 import { TooltipProvider } from '../ui/tooltip';
 
 export function ChatContainer() {
