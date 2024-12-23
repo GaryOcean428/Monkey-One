@@ -4,6 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "dev": "vite --force",
+    "build": "vite build --mode production",
+    "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
@@ -12,14 +15,13 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css}\"",
     "type-check": "tsc --noEmit",
     "docs": "typedoc --out docs src",
-    "dev": "vite --force",
-    "build": "vite build --mode production --debug false --minify terser",
-    "build:analyze": "vite build --mode production --debug false --minify terser --stats",
-    "build:ssr": "vite build --ssr src/entry-server.tsx",
-    "preview": "vite preview",
     "clean": "rimraf node_modules/.vite dist",
-    "start": "vite preview",
-    "vercel-build": "npm run build"
+    "predeploy": "npm run lint && npm run test && npm run type-check",
+    "deploy": "npm run predeploy && npm run build && firebase deploy --only hosting",
+    "deploy:ci": "npm run build && firebase deploy --only hosting --token \"$FIREBASE_TOKEN\"",
+    "firebase:login": "firebase login",
+    "firebase:init": "firebase init",
+    "firebase:deploy": "firebase deploy"
   },
   "dependencies": {
     "@google-cloud/storage": "^7.7.0",
@@ -39,7 +41,6 @@
     "@radix-ui/react-tooltip": "^1.0.7",
     "@tensorflow/tfjs-core": "^4.17.0",
     "@tensorflow/tfjs-layers": "^4.17.0",
-    "@vitest/coverage-v8": "^2.1.8",
     "async-mutex": "^0.5.0",
     "axios": "^1.6.7",
     "class-variance-authority": "^0.7.0",
@@ -73,14 +74,11 @@
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-terser": "^0.4.4",
-    "@tensorflow/tfjs": "^4.22.0",
-    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/jest-dom": "^6.2.0",
     "@testing-library/react": "^14.1.2",
-    "@types/jest": "^29.5.14",
     "@types/node": "^20.11.0",
     "@types/react": "^18.2.47",
     "@types/react-dom": "^18.2.18",
-    "@types/testing-library__jest-dom": "^5.14.9",
     "@typescript-eslint/eslint-plugin": "^6.18.1",
     "@typescript-eslint/parser": "^6.18.1",
     "@vitejs/plugin-react": "^4.2.1",
@@ -98,6 +96,6 @@
     "typescript": "^5.3.3",
     "vite-plugin-compression": "^0.5.1",
     "vite-tsconfig-paths": "^4.2.3",
-    "vitest": "^2.1.8"
+    "vitest": "^1.1.3"
   }
 }
