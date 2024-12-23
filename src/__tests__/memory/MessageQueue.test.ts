@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { MessageQueue } from '@/lib/memory/MessageQueue';
-import { Message } from '@/types';
+import { Message, MessageType } from '@/types';
 
 describe('MessageQueue', () => {
   let queue: MessageQueue<Message>;
@@ -13,6 +13,7 @@ describe('MessageQueue', () => {
     it('should add and retrieve messages', () => {
       const message: Message = {
         id: 'test',
+        type: MessageType.TASK,
         role: 'user',
         content: 'test message',
         timestamp: Date.now()
@@ -28,9 +29,9 @@ describe('MessageQueue', () => {
 
     it('should process messages in FIFO order', () => {
       const messages = [
-        { id: '1', role: 'user', content: 'first', timestamp: Date.now() },
-        { id: '2', role: 'user', content: 'second', timestamp: Date.now() },
-        { id: '3', role: 'user', content: 'third', timestamp: Date.now() }
+        { id: '1', type: MessageType.TASK, role: 'user', content: 'first', timestamp: Date.now() },
+        { id: '2', type: MessageType.TASK, role: 'user', content: 'second', timestamp: Date.now() },
+        { id: '3', type: MessageType.TASK, role: 'user', content: 'third', timestamp: Date.now() }
       ];
 
       messages.forEach(msg => queue.enqueue(msg));
@@ -58,6 +59,7 @@ describe('MessageQueue', () => {
 
       const message: Message = {
         id: 'test',
+        type: MessageType.TASK,
         role: 'user',
         content: 'test message',
         timestamp: Date.now()

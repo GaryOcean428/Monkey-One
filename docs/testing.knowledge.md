@@ -60,6 +60,20 @@
 - Avoid test interdependence
 - Mock time-sensitive operations
 
+### Message Testing
+When creating test messages, always include all required fields:
+```typescript
+const testMessage = {
+  id: string;
+  type: MessageType;  // Must use MessageType enum (e.g., MessageType.TASK), not string literals
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  timestamp: number;
+  status?: 'sending' | 'sent' | 'error';
+  metadata?: Record<string, unknown>;
+};
+```
+
 2. Test Organization
 - Group related tests
 - Use descriptive test names

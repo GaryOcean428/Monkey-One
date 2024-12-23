@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { CerebellumAgent } from '@/lib/agents/core/CerebellumAgent';
+import { Message, MessageType } from '@/types';
 
 describe('CerebellumAgent', () => {
   let agent: CerebellumAgent;
@@ -30,6 +31,7 @@ describe('CerebellumAgent', () => {
       const analyzeSpy = vi.spyOn(agent as any, 'analyzeMotorComponents');
       await agent.processMessage({
         id: 'test',
+        type: MessageType.TASK,
         role: 'user',
         content: 'execute task',
         timestamp: Date.now()
@@ -41,6 +43,7 @@ describe('CerebellumAgent', () => {
       const createPatternSpy = vi.spyOn(agent as any, 'createNewPattern');
       await agent.processMessage({
         id: 'test',
+        type: MessageType.TASK,
         role: 'user',
         content: 'new task',
         timestamp: Date.now()
@@ -54,6 +57,7 @@ describe('CerebellumAgent', () => {
       const updateMetricsSpy = vi.spyOn(agent as any, 'updateLearningMetrics');
       await agent.processMessage({
         id: 'test',
+        type: MessageType.TASK,
         role: 'user',
         content: 'task execution',
         timestamp: Date.now()

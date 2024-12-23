@@ -1,21 +1,31 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { AgentMonitor } from '@/lib/monitoring/AgentMonitor';
-import { Agent, AgentStatus, AgentType, Message, MessageType } from '@/types';
+import { Agent, AgentStatus, AgentType, Message, MessageType, AgentCapability } from '@/types';
 import { RuntimeError } from '@/lib/errors/AgentErrors';
 
 vi.mock('../../lib/memory');
 
 class MockAgent implements Agent {
-  id: string
-  type: AgentType
-  status: AgentStatus
-  capabilities: string[]
+  id: string;
+  name: string;
+  type: 'orchestrator';
+  status: 'idle' | 'active' | 'error';
+  capabilities: AgentCapability[];
 
-  constructor(id: string, type: AgentType, status: AgentStatus, capabilities: string[]) {
-    this.id = id
-    this.type = type
-    this.status = status
-    this.capabilities = capabilities
+  constructor() {
+    this.id = 'mock-agent';
+    this.name = 'Mock Agent';
+    this.type = 'orchestrator';
+    this.status = 'idle';
+    this.capabilities = [{ name: 'test', description: 'Test capability' }];
+  }
+
+  getCapabilities(): AgentCapability[] {
+    return this.capabilities;
+  }
+
+  registerCapability(capability: AgentCapability): void {
+    this.capabilities.push(capability);
   }
 
   async initialize(): Promise<void> {
@@ -46,7 +56,7 @@ describe('AgentMonitor', () => {
       'test-agent',
       AgentType.BASE,
       AgentStatus.IDLE,
-      ['test']
+      [{ name: 'test', description: 'Test capability' }]
     )
     mockMessage = {
       id: 'msg-1',
