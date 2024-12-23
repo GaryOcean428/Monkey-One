@@ -7,19 +7,7 @@ import { getDatabase, connectDatabaseEmulator, type Database } from 'firebase/da
 import { getRemoteConfig, getValue, fetchAndActivate, type RemoteConfig } from 'firebase/remote-config';
 import type { FirebaseConfig } from './types';
 
-// Debug: Log all environment variables (excluding sensitive values)
-console.log('Environment Variables Check:', {
-  hasApiKey: !!import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  hasSenderId: !!import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  hasAppId: !!import.meta.env.VITE_FIREBASE_APP_ID,
-  hasMeasurementId: !!import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
-});
-
-// Validate required environment variables
+// Validate required environment variables without logging their values
 const requiredEnvVars = [
   'VITE_FIREBASE_API_KEY',
   'VITE_FIREBASE_AUTH_DOMAIN',
@@ -30,19 +18,15 @@ const requiredEnvVars = [
   'VITE_FIREBASE_DATABASE_URL'
 ] as const;
 
-// Check for missing environment variables
 const missingEnvVars = requiredEnvVars.filter(
   varName => !import.meta.env[varName]
 );
 
 if (missingEnvVars.length > 0) {
-  console.error('Missing required Firebase configuration:', missingEnvVars);
-  throw new Error(
-    `Missing required Firebase configuration: ${missingEnvVars.join(', ')}`
-  );
+  throw new Error('Missing required Firebase configuration variables');
 }
 
-// Firebase configuration with required values
+// Initialize Firebase configuration without logging
 const firebaseConfig: FirebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -53,14 +37,6 @@ const firebaseConfig: FirebaseConfig = {
   databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
-
-// Log non-sensitive config info
-console.log('Initializing Firebase with project:', {
-  projectId: firebaseConfig.projectId,
-  authDomain: firebaseConfig.authDomain,
-  databaseURL: firebaseConfig.databaseURL,
-  storageBucket: firebaseConfig.storageBucket
-});
 
 interface FirebaseServices {
   app: FirebaseApp;
@@ -86,25 +62,20 @@ const initializeFirebaseService = <T>(
     const logFn = required ? console.error : console.warn;
     logFn(`Failed to initialize Firebase ${serviceName}:`, error);
     if (required) {
-    return undefined;
+      return undefined;
+    }
   }
 };
 
 let services: FirebaseServices;
 
 try {
-  console.log('Starting Firebase initialization...');
+  console.log('Initializing Firebase services...');
   
   // Initialize Firebase app
   const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 
-  // Initialize Analytics conditionally
-  let analytics: Analytics | null = null;
-  if (import.meta.env.PROD) {
-    isSupported().then(yes => yes && (analytics = getAnalytics(app)));
-  }
-
-  // Initialize other services
+  // Initialize services without logging details
   const auth = getAuth(app);
   const db = getFirestore(app);
   const storage = getStorage(app);
@@ -113,23 +84,19 @@ try {
   // Initialize Remote Config with default settings
   const remoteConfig = getRemoteConfig(app);
   remoteConfig.settings = {
-    minimumFetchIntervalMillis: import.meta.env.PROD ? 3600000 : 0, // 1 hour in production, 0 in development
-    fetchTimeoutMillis: 60000 // 1 minute timeout
+    minimumFetchIntervalMillis: import.meta.env.PROD ? 3600000 : 0,
+    fetchTimeoutMillis: 60000
   };
 
-  // Set default values
+  // Set default values without exposing sensitive information
   remoteConfig.defaultConfig = {
-    welcome_message: 'Welcome to Monkey One!',
-    features_enabled: JSON.stringify({
-      chat: true,
-      videoCall: false,
-      fileSharing: true
-    }),
+    app_version: '1.0.0',
+    maintenance_mode: false,
     theme: 'light',
     api_endpoint: import.meta.env.VITE_API_ENDPOINT || 'https://api.default.com'
   };
 
-  // Use emulators in development
+  // Use emulators in development without logging connection details
   if (import.meta.env.DEV) {
     connectAuthEmulator(auth, 'http://localhost:9099');
     connectFirestoreEmulator(db, 'localhost', 8080);
@@ -139,7 +106,7 @@ try {
 
   services = {
     app,
-    analytics,
+    analytics: null,
     auth,
     db,
     storage,
@@ -147,20 +114,23 @@ try {
     remoteConfig
   };
 
+  // Initialize analytics in production only
+  if (import.meta.env.PROD) {
+    isSupported().then(yes => {
+      if (yes) {
+        services.analytics = getAnalytics(app);
+      }
+    });
+  }
+
   // Fetch remote config values immediately
   fetchAndActivate(remoteConfig)
     .then(() => console.log('Remote config fetched and activated'))
     .catch(error => console.error('Error fetching remote config:', error));
 
-  console.log('All Firebase services initialized successfully');
+  console.log('Firebase services initialized successfully');
 } catch (error) {
-  console.error('Failed to initialize Firebase:', error);
-  if (error instanceof Error) {
-    console.error('Error details:', {
-      message: error.message,
-      stack: error.stack
-    });
-  }
+  console.error('Firebase initialization failed');
   throw error;
 }
 
