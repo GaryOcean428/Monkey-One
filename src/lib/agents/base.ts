@@ -1,8 +1,10 @@
-import { Message, MessageType } from '../../types';
+import { Message, MessageType, AgentCapability, AgentType, AgentStatus, Agent } from '../../types';
 import { GitHubClient } from '../github/GitHubClient';
+import { logger } from '../logger';
+import { RuntimeError } from '../errors';
 
 export abstract class BaseAgent implements Agent {
-  public readonly capabilities: AgentCapability[] = [];
+  public readonly capabilities: AgentCapability[];
   public readonly subordinates: Agent[] = [];
   public type: AgentType;
   public status: AgentStatus;
@@ -48,45 +50,17 @@ export abstract class BaseAgent implements Agent {
       });
     }
   }
-  abstract processMessage(message: Message): Promise<Message>;
-
-  async handleMessage(message: Message): Promise<void> {
-    await this.processMessage(message);
-  }
-
-  async initialize(): Promise<void> {
-    // Default initialization
-  }
-  public type: AgentType;
-  public status: AgentStatus;
-  protected github: GitHubClient;
-  public readonly capabilities: AgentCapability[];
-  public readonly subordinates: BaseAgent[] = [];
-
-  constructor(
-    public readonly id: string,
-    public readonly name: string,
-    type: AgentType,
-    capabilities: AgentCapability[] = []
-  ) {
-    this.type = type;
-    this.status = AgentStatus.IDLE;
-    this.github = new GitHubClient();
-    this.capabilities = capabilities;
-  }
-
-  abstract processMessage(message: Message): Promise<Message>;
 
   protected async searchGitHubForSolutions(query: string, language?: string) {
     try {
       if (!this.github.isGitHubConfigured()) {
-        console.warn('GitHub integration not configured. Skipping code search.');
+        logger.warn('GitHub integration not configured. Skipping code search.');
         return [];
       }
       const results = await this.github.searchCode(query, { language });
       return results.items;
     } catch (error) {
-      console.error('Error searching GitHub:', error);
+      logger.error('Error searching GitHub:', error);
       return [];
     }
   }
@@ -94,26 +68,13 @@ export abstract class BaseAgent implements Agent {
   protected async reuseExistingCode(owner: string, repo: string, path: string) {
     try {
       if (!this.github.isGitHubConfigured()) {
-        console.warn('GitHub integration not configured. Skipping code reuse.');
+        logger.warn('GitHub integration not configured. Skipping code reuse.');
         return null;
       }
       const content = await this.github.getContents(owner, repo, path);
       return content;
     } catch (error) {
-      console.error('Error reusing code:', error);
-      return null;
-    }
-  }
-
-  protected async createDevelopmentEnvironment(repoId: string) {
-    try {
-      if (!this.github.isGitHubConfigured()) {
-        console.warn('GitHub integration not configured. Skipping environment creation.');
-        return null;
-      }
-      return await this.github.createRepository(repoId);
-    } catch (error) {
-      console.error('Error creating development environment:', error);
+      logger.error('Error reusing code:', error);
       return null;
     }
   }
@@ -134,14 +95,14 @@ export abstract class BaseAgent implements Agent {
   }
 
   getCapabilities(): string[] {
-    return [...this.capabilities];
+    return [...this.capabilities.map(cap => cap.name)];
   }
 
   hasCapability(capability: string): boolean {
     return this.capabilities.some(cap => cap.name === capability);
   }
 
-  addSubordinate(agent: BaseAgent): void {
+  addSubordinate(agent: Agent): void {
     this.subordinates.push(agent);
   }
 
@@ -149,7 +110,7 @@ export abstract class BaseAgent implements Agent {
     this.subordinates = this.subordinates.filter(agent => agent.id !== agentId);
   }
 
-  getSubordinates(): BaseAgent[] {
+  getSubordinates(): Agent[] {
     return [...this.subordinates];
   }
 }
