@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { SecurityMiddleware } from '../../lib/middleware/SecurityMiddleware';
-import type { Message } from '../../types';
+import type { Message, MessageType } from '@/types';
 
 describe('SecurityMiddleware', () => {
   const middleware = new SecurityMiddleware();
@@ -9,6 +9,7 @@ describe('SecurityMiddleware', () => {
     it('should validate valid message', () => {
       const message: Message = {
         id: '123',
+        type: MessageType.TASK,
         role: 'user',
         content: 'Hello',
         timestamp: Date.now()
@@ -20,6 +21,7 @@ describe('SecurityMiddleware', () => {
     it('should reject message with invalid role', () => {
       const message: Message = {
         id: '123',
+        type: MessageType.TASK,
         role: 'invalid' as any,
         content: 'Hello',
         timestamp: Date.now()
@@ -31,6 +33,7 @@ describe('SecurityMiddleware', () => {
     it('should reject message exceeding length limit', () => {
       const message: Message = {
         id: '123',
+        type: MessageType.TASK,
         role: 'user',
         content: 'a'.repeat(11000),
         timestamp: Date.now()

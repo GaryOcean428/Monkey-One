@@ -1,6 +1,15 @@
 // Core types
+export enum MessageType {
+  TASK = 'TASK',
+  RESPONSE = 'RESPONSE',
+  ERROR = 'ERROR',
+  BROADCAST = 'BROADCAST',
+  SYSTEM = 'SYSTEM'
+}
+
 export interface Message {
   id: string;
+  type: MessageType;
   role: 'user' | 'assistant' | 'system';
   content: string;
   timestamp: number;
@@ -14,11 +23,29 @@ export interface AgentCapability {
   version?: string;
 }
 
+export interface AgentCapability {
+  name: string;
+  description?: string;
+}
+
+export enum AgentType {
+  ORCHESTRATOR = 'orchestrator',
+  CODER = 'coder',
+  WEBSURFER = 'websurfer',
+  FILESURFER = 'filesurfer'
+}
+
+export enum AgentStatus {
+  IDLE = 'idle',
+  ACTIVE = 'active',
+  ERROR = 'error'
+}
+
 export interface Agent {
   id: string;
   name: string;
-  type: 'orchestrator' | 'coder' | 'websurfer' | 'filesurfer';
-  status: 'idle' | 'active' | 'error';
+  type: AgentType;
+  status: AgentStatus;
   metadata?: Record<string, unknown>;
 }
 
