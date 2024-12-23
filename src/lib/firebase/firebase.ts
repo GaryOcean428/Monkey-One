@@ -1,60 +1,75 @@
 import { ref, get, type DatabaseReference } from 'firebase/database';
 import { app, analytics, auth, database } from './config';
 
-// Test Firebase connection with proper error handling
-export async function testFirebaseConnection(): Promise<boolean> {
+interface ServiceValidation {
+  name: string;
+  instance: unknown;
+  required: boolean;
+}
+
+function validateFirebaseServices(): boolean {
+  const services: ServiceValidation[] = [
+    { name: 'App', instance: app, required: true },
+    { name: 'Database', instance: database, required: true },
+    { name: 'Auth', instance: auth, required: true },
+    { name: 'Analytics', instance: analytics, required: false }
+  ];
+
+  const requiredServicesValid = services
+    .filter(service => service.required)
+    .every(({ name, instance }) => {
+      const isValid = !!instance;
+      if (!isValid) {
+        console.error(`Required Firebase service ${name} not initialized`);
+      }
+      return isValid;
+    });
+
+  // Log status of optional services
+  services
+    .filter(service => !service.required)
+    .forEach(({ name, instance }) => {
+      console.log(`Optional Firebase service ${name} status:`, !!instance);
+    });
+
+  return requiredServicesValid;
+}
+
+async function testDatabaseConnection(): Promise<boolean> {
+  if (!database) return false;
+
   try {
-    if (!app) {
-      console.error('Firebase app not initialized');
-      return false;
-    }
-
-    if (!database) {
-      console.error('Firebase database not initialized');
-      return false;
-    }
-
-    // Test database connection
     const testRef: DatabaseReference = ref(database, '.info/connected');
     const snapshot = await get(testRef);
     const isConnected = snapshot.val() === true;
     
-    if (isConnected) {
-      console.log('Successfully connected to Firebase');
-    } else {
-      console.warn('Firebase connection test returned false');
-    }
-
-    // Test auth initialization
-    if (!auth) {
-      console.error('Firebase auth not initialized');
-      return false;
-    }
-
-    // Additional service checks
-    const services = [
-      { name: 'Database', instance: database },
-      { name: 'Auth', instance: auth },
-      { name: 'Analytics', instance: analytics }
-    ];
-
-    for (const service of services) {
-      if (!service.instance) {
-        console.warn(`Firebase ${service.name} not initialized`);
-      } else {
-        console.log(`Firebase ${service.name} initialized successfully`);
-      }
-    }
+    console.log(
+      isConnected 
+        ? 'Successfully connected to Firebase Database'
+        : 'Firebase Database connection test returned false'
+    );
 
     return isConnected;
   } catch (error) {
-    console.error('Firebase connection test failed:', error);
+    console.error('Firebase Database connection test failed:', error);
     if (error instanceof Error) {
-      console.error('Error details:', error.message);
-      console.error('Error stack:', error.stack);
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack
+      });
     }
     return false;
   }
+}
+
+export async function testFirebaseConnection(): Promise<boolean> {
+  // First validate service initialization
+  if (!validateFirebaseServices()) {
+    return false;
+  }
+
+  // Then test database connection
+  return await testDatabaseConnection();
 }
 
 // Export initialized services
