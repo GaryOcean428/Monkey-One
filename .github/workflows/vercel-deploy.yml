@@ -33,7 +33,7 @@ jobs:
         run: |
           vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
         env:
-          VITE_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VITE_GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           VITE_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
           VITE_FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
           VITE_PINECONE_API_KEY: ${{ secrets.PINECONE_API_KEY }}
