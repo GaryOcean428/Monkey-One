@@ -4,14 +4,44 @@ import App from './App';
 import { initializeFirebase } from './lib/firebase';
 import './index.css';
 
-// Initialize Firebase before rendering
-initializeFirebase().then(() => {
-  ReactDOM.createRoot(document.getElementById('root')!).render(
-    <React.StrictMode>
-      <App />
-    </React.StrictMode>
+// Add error boundary for the entire app
+const ErrorFallback = ({ error }: { error: Error }) => {
+  return (
+    <div style={{ padding: '20px', textAlign: 'center' }}>
+      <h1>Something went wrong</h1>
+      <pre style={{ color: 'red' }}>{error.message}</pre>
+    </div>
   );
-}).catch(error => {
-  console.error('Failed to start application:', error);
-  // Optionally render an error screen
-});
+};
+
+const rootElement = document.getElementById('root');
+if (!rootElement) {
+  console.error('Failed to find root element');
+  document.body.innerHTML = '<div style="padding: 20px; text-align: center;">Failed to initialize application: Root element not found</div>';
+} else {
+  console.log('Starting application initialization...');
+  
+  // Initialize Firebase before rendering
+  initializeFirebase()
+    .then(() => {
+      console.log('Firebase initialized successfully');
+      const root = ReactDOM.createRoot(rootElement);
+      root.render(
+        <React.StrictMode>
+          <React.Suspense fallback={<div>Loading...</div>}>
+            <App />
+          </React.Suspense>
+        </React.StrictMode>
+      );
+      console.log('Application rendered successfully');
+    })
+    .catch(error => {
+      console.error('Failed to initialize Firebase:', error);
+      rootElement.innerHTML = `
+        <div style="padding: 20px; text-align: center;">
+          <h1>Failed to initialize application</h1>
+          <pre style="color: red">${error.message}</pre>
+        </div>
+      `;
+    });
+}
