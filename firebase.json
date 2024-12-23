@@ -11,9 +11,7 @@
         "source": "**",
         "destination": "/index.html"
       }
-    ]
-{
-  "hosting": {
+    ],
     "headers": [
       {
         "source": "**/*.@(jpg|jpeg|gif|png|svg|webp)",
@@ -24,20 +22,16 @@
           }
         ]
       }
+    ],
+    "predeploy": [
+      "npm run build"
     ]
-  }
-}  },
+  },
   "emulators": {
     "hosting": {
       "port": 5000
     },
-    "ui": {{
-      "hosting": {
-        "predeploy": [
-          "npm run build"
-        ]
-      }
-    }
+    "ui": {
       "enabled": true
     }
   }
