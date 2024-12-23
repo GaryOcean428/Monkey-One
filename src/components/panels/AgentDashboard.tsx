@@ -3,7 +3,7 @@ import { AgentMonitor } from '../AgentMonitor';
 import { AgentWorkflow } from '../AgentWorkflow';
 import { PerformanceMetrics } from '../PerformanceMetrics';
 import { ObserverPanel } from '../ObserverPanel';
-import { useAgents } from '@/hooks/useAgents';
+import { useAgents } from '../../hooks/useAgents';
 
 export default function AgentDashboard() {
   const { agents, activeAgent } = useAgents();
@@ -20,4 +20,4 @@ export default function AgentDashboard() {
       </div>
     </div>
   );
-}
+}
