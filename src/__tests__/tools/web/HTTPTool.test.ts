@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { HTTPTool } from '../../../lib/tools/web/HTTPTool';
 import { ToolExecutionError } from '../../../lib/errors/AgentErrors';
 
@@ -34,7 +35,7 @@ describe('HTTPTool', () => {
   });
 
   beforeEach(() => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
     const mockResponse = {
       status: 200,
       statusText: 'OK',
@@ -44,11 +45,11 @@ describe('HTTPTool', () => {
       json: () => Promise.resolve({ data: 'test' }),
       text: () => Promise.resolve('test')
     };
-    global.fetch = jest.fn().mockResolvedValue(mockResponse);
+    global.fetch = vi.fn().mockResolvedValue(mockResponse);
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   describe('request validation', () => {
@@ -166,7 +167,7 @@ describe('HTTPTool', () => {
         }
       });
 
-      const fetchCall = (fetch as jest.Mock).mock.calls[0];
+      const fetchCall = (fetch as vi.Mock).mock.calls[0];
       const headers = fetchCall[1].headers as Headers;
       expect(headers.get('Authorization')).toBe('Basic dXNlcjpwYXNz');
     });
@@ -183,7 +184,7 @@ describe('HTTPTool', () => {
         }
       });
 
-      const fetchCall = (fetch as jest.Mock).mock.calls[0];
+      const fetchCall = (fetch as vi.Mock).mock.calls[0];
       const headers = fetchCall[1].headers as Headers;
       expect(headers.get('Authorization')).toBe('Bearer token123');
     });
@@ -192,7 +193,7 @@ describe('HTTPTool', () => {
   describe('response handling', () => {
     it('should parse JSON response', async () => {
       const mockJsonResponse = { data: 'test' };
-      global.fetch = jest.fn().mockResolvedValue({
+      global.fetch = vi.fn().mockResolvedValue({
         status: 200,
         statusText: 'OK',
         headers: new Headers({
@@ -214,7 +215,7 @@ describe('HTTPTool', () => {
 
     it('should handle text response', async () => {
       const textResponse = 'Plain text response';
-      global.fetch = jest.fn().mockResolvedValue({
+      global.fetch = vi.fn().mockResolvedValue({
         status: 200,
         statusText: 'OK',
         headers: new Headers({
@@ -238,7 +239,7 @@ describe('HTTPTool', () => {
   describe('error handling and retries', () => {
     it('should retry on network errors', async () => {
       const networkError = new TypeError('Failed to fetch');
-      global.fetch = jest.fn()
+      global.fetch = vi.fn()
         .mockRejectedValueOnce(networkError)
         .mockRejectedValueOnce(networkError)
         .mockResolvedValueOnce({
@@ -262,7 +263,7 @@ describe('HTTPTool', () => {
     });
 
     it('should handle timeout', async () => {
-      global.fetch = jest.fn().mockImplementation(() => {
+      global.fetch = vi.fn().mockImplementation(() => {
         return new Promise((_, reject) => {
           setTimeout(() => {
             reject(new Error('Timeout'));
@@ -278,11 +279,11 @@ describe('HTTPTool', () => {
         }
       })).rejects.toThrow(ToolExecutionError);
 
-      jest.runAllTimers();
+      vi.runAllTimers();
     });
 
     it('should include error details in ToolExecutionError', async () => {
-      global.fetch = jest.fn().mockRejectedValue(new Error('Network error'));
+      global.fetch = vi.fn().mockRejectedValue(new Error('Network error'));
 
       try {
         await http.execute({

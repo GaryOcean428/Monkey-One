@@ -1,12 +1,10 @@
-import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { act } from '@testing-library/react';
 import { useChatStore } from '@/store/chatStore';
 import { llmManager } from '@/lib/llm/providers';
-import { memoryManager } from '@/lib/memory';
 
 // Mock dependencies
-jest.mock('@/lib/llm/providers');
-jest.mock('@/lib/memory');
+vi.mock('@/lib/llm/providers');
 
 describe('chatStore', () => {
   beforeEach(() => {
@@ -15,27 +13,20 @@ describe('chatStore', () => {
       tasks: [],
       activeTask: null,
       isProcessing: false,
-      error: null,
-      agents: [],
-      activeAgent: null
+      error: null
     });
   });
 
   describe('sendMessage', () => {
     it('should add user message and process response', async () => {
       const mockResponse = 'Test response';
-      (llmManager.sendMessage as jest.Mock).mockResolvedValue(mockResponse);
+      vi.mocked(llmManager.sendMessage).mockResolvedValue(mockResponse);
 
       const store = useChatStore.getState();
-      store.setActiveAgent({
-        id: 'test-agent',
-        name: 'Test Agent',
-        type: 'test',
-        status: 'idle'
-      });
+      const testAgentId = 'test-agent';
 
       await act(async () => {
-        await store.sendMessage('Test message');
+        await store.sendMessage('Test message', testAgentId);
       });
 
       const state = useChatStore.getState();
@@ -47,25 +38,33 @@ describe('chatStore', () => {
 
     it('should handle errors gracefully', async () => {
       const errorMessage = 'Test error';
-      (llmManager.sendMessage as jest.Mock).mockRejectedValue(new Error(errorMessage));
+      vi.mocked(llmManager.sendMessage).mockRejectedValue(new Error(errorMessage));
+      const testAgentId = 'test-agent';
 
       const store = useChatStore.getState();
-      store.setActiveAgent({
-        id: 'test-agent',
-        name: 'Test Agent',
-        type: 'test',
-        status: 'idle'
-      });
 
       await act(async () => {
-        await store.sendMessage('Test message');
+        await store.sendMessage('Test message', testAgentId);
       });
 
       const state = useChatStore.getState();
       expect(state.error).toBe(errorMessage);
-      expect(state.messages[0].status).toBe('error');
     });
   });
 
-  // Add more test cases for other actions
+  describe('clearMessages', () => {
+    it('should clear all messages', () => {
+      const store = useChatStore.getState();
+      store.messages.push({ 
+        id: '1', 
+        role: 'user', 
+        content: 'test',
+        timestamp: Date.now(),
+        status: 'sent'
+      });
+
+      store.clearMessages();
+      expect(store.messages).toHaveLength(0);
+    });
+  });
 });

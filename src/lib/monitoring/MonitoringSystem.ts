@@ -1,30 +1,39 @@
-import { MetricsClient } from '@opentelemetry/metrics';
-import { PrometheusExporter } from '@opentelemetry/exporter-prometheus';
-import { Resource } from '@opentelemetry/resources';
-import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
+import { EventEmitter } from 'events';
+import { logger } from '../../utils/logger';
+import { captureException } from '../../utils/sentry';
+import {
+  memoryUsage,
+  agentProcessingTime,
+  cacheOperations,
+  cacheSize,
+  errorCount,
+  brainActivityGauge,
+  neuralNetworkMetrics
+} from '../../utils/metrics';
 
-export class MonitoringSystem {
+/**
+ * MonitoringSystem provides centralized monitoring and metrics collection
+ * for the entire application. It handles performance tracking, resource
+ * utilization, and system health monitoring.
+ */
+export class MonitoringSystem extends EventEmitter {
   private static instance: MonitoringSystem;
-  private metricsClient: MetricsClient;
-  private exporter: PrometheusExporter;
+  private readonly METRICS_INTERVAL = 60000; // 1 minute
+  private readonly CLEANUP_INTERVAL = 3600000; // 1 hour
+  private metricsTimer: NodeJS.Timer;
+  private cleanupTimer: NodeJS.Timer;
+  private metrics: Map<string, number> = new Map();
+  private operationTimers: Map<string, number> = new Map();
 
   private constructor() {
-    this.exporter = new PrometheusExporter({
-      port: 9464,
-      endpoint: '/metrics'
-    });
-
-    const resource = new Resource({
-      [SemanticResourceAttributes.SERVICE_NAME]: 'monkey-one',
-      [SemanticResourceAttributes.SERVICE_VERSION]: '1.0.0'
-    });
-
-    this.metricsClient = new MetricsClient({
-      resource,
-      exporter: this.exporter
-    });
+    super();
+    this.startMetricsCollection();
+    this.startCleanupInterval();
   }
 
+  /**
+   * Gets the singleton instance of MonitoringSystem
+   */
   static getInstance(): MonitoringSystem {
     if (!MonitoringSystem.instance) {
       MonitoringSystem.instance = new MonitoringSystem();
@@ -32,50 +41,156 @@ export class MonitoringSystem {
     return MonitoringSystem.instance;
   }
 
-  // Vector Store Metrics
-  recordVectorOperation(operation: string, duration: number) {
-    this.metricsClient.recordMetric({
-      name: 'vector_store_operation',
-      value: duration,
-      attributes: { operation }
+  /**
+   * Starts periodic metrics collection
+   */
+  private startMetricsCollection(): void {
+    this.metricsTimer = setInterval(() => {
+      try {
+        this.collectSystemMetrics();
+      } catch (error) {
+        logger.error('Failed to collect metrics:', error);
+        captureException(error);
+      }
+    }, this.METRICS_INTERVAL);
+  }
+
+  /**
+   * Starts periodic cleanup of old metrics
+   */
+  private startCleanupInterval(): void {
+    this.cleanupTimer = setInterval(() => {
+      try {
+        this.cleanupOldMetrics();
+      } catch (error) {
+        logger.error('Failed to cleanup metrics:', error);
+        captureException(error);
+      }
+    }, this.CLEANUP_INTERVAL);
+  }
+
+  /**
+   * Collects system-wide metrics
+   */
+  private collectSystemMetrics(): void {
+    // Memory metrics
+    const memUsage = process.memoryUsage();
+    memoryUsage.set({ type: 'heap' }, memUsage.heapUsed);
+    memoryUsage.set({ type: 'rss' }, memUsage.rss);
+    memoryUsage.set({ type: 'external' }, memUsage.external);
+
+    // Cache metrics
+    const cacheStats = this.getCacheStats();
+    cacheSize.set(cacheStats.size);
+    cacheOperations.inc({ operation: 'cleanup', status: 'success' });
+
+    // Brain activity metrics
+    this.collectBrainMetrics();
+  }
+
+  /**
+   * Collects brain-specific metrics
+   */
+  private collectBrainMetrics(): void {
+    const regions = ['amygdala', 'cerebellum', 'thalamus', 'hippocampus'];
+    regions.forEach(region => {
+      const activity = Math.random(); // Replace with actual activity measurement
+      brainActivityGauge.set({ region }, activity);
+    });
+
+    // Neural network performance metrics
+    const networkMetrics = {
+      accuracy: this.metrics.get('accuracy') || 0,
+      loss: this.metrics.get('loss') || 0,
+      learningRate: this.metrics.get('learningRate') || 0
+    };
+
+    Object.entries(networkMetrics).forEach(([metric, value]) => {
+      neuralNetworkMetrics.set({ metric }, value);
     });
   }
 
-  // Firebase Metrics
-  recordDatabaseOperation(operation: string, duration: number) {
-    this.metricsClient.recordMetric({
-      name: 'database_operation',
-      value: duration,
-      attributes: { operation }
-    });
+  /**
+   * Gets current cache statistics
+   */
+  private getCacheStats(): { size: number; hitRate: number } {
+    return {
+      size: this.metrics.size * 100, // Approximate size in bytes
+      hitRate: (this.metrics.get('cacheHits') || 0) / 
+               (this.metrics.get('cacheTotal') || 1)
+    };
   }
 
-  // Tool Creation Metrics
-  recordToolCreation(success: boolean, duration: number) {
-    this.metricsClient.recordMetric({
-      name: 'tool_creation',
-      value: duration,
-      attributes: { success: success.toString() }
-    });
+  /**
+   * Records a metric value
+   * @param name - Metric name
+   * @param value - Metric value
+   */
+  public recordMetric(name: string, value: number): void {
+    this.metrics.set(name, value);
+    this.emit('metric', { name, value });
   }
 
-  // System Health Metrics
-  recordMemoryUsage() {
-    const used = process.memoryUsage();
-    this.metricsClient.recordMetric({
-      name: 'memory_usage',
-      value: used.heapUsed / 1024 / 1024,
-      attributes: { type: 'heap' }
-    });
+  /**
+   * Records the start of an operation
+   * @param operationId - Unique operation identifier
+   */
+  public startOperation(operationId: string): void {
+    this.operationTimers.set(operationId, Date.now());
   }
 
-  // Error Metrics
-  recordError(component: string, errorType: string) {
-    this.metricsClient.recordMetric({
-      name: 'error_count',
-      value: 1,
-      attributes: { component, errorType }
-    });
+  /**
+   * Records the end of an operation and its duration
+   * @param operationId - Operation identifier
+   * @param type - Type of operation
+   */
+  public endOperation(operationId: string, type: string): void {
+    const startTime = this.operationTimers.get(operationId);
+    if (startTime) {
+      const duration = Date.now() - startTime;
+      agentProcessingTime.observe({ operation: type }, duration);
+      this.operationTimers.delete(operationId);
+    }
+  }
+
+  /**
+   * Records an error occurrence
+   * @param type - Error type
+   * @param message - Error message
+   */
+  public recordError(type: string, message: string): void {
+    errorCount.inc({ type });
+    logger.error(`${type} error: ${message}`);
+    this.emit('error', { type, message });
+  }
+
+  /**
+   * Cleans up old metrics to prevent memory leaks
+   */
+  private cleanupOldMetrics(): void {
+    const now = Date.now();
+    
+    // Clean up old operation timers
+    for (const [operationId, startTime] of this.operationTimers.entries()) {
+      if (now - startTime > 3600000) { // 1 hour timeout
+        this.operationTimers.delete(operationId);
+        this.recordError('operation_timeout', `Operation ${operationId} timed out`);
+      }
+    }
+
+    // Reset accumulated metrics
+    this.metrics.clear();
+  }
+
+  /**
+   * Cleans up resources
+   */
+  public cleanup(): void {
+    clearInterval(this.metricsTimer);
+    clearInterval(this.cleanupTimer);
+    this.metrics.clear();
+    this.operationTimers.clear();
+    this.removeAllListeners();
   }
 }
 

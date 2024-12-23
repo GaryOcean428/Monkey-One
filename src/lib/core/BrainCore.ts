@@ -1,192 +1,165 @@
-import { NeuralCore } from '../evolution/NeuralCore';
-import { PersonalityCore } from './PersonalityCore';
 import { EventEmitter } from 'events';
+import { PersonalityCore } from './PersonalityCore';
+import { ActivityMonitor } from './ActivityMonitor';
+import { NeuralProcessor } from './NeuralProcessor';
 import { memoryManager } from '../memory';
+import { logger } from '../../utils/logger';
+import { captureException } from '../../utils/sentry';
 
-interface BrainState {
-  isLearning: boolean;
-  isProcessing: boolean;
-  lastActivity: number;
-  activeRegions: string[];
-}
-
+/**
+ * BrainCore is the central processing unit of the AI system.
+ * It coordinates between different specialized components like the PersonalityCore,
+ * ActivityMonitor, and NeuralProcessor to process inputs and generate responses.
+ * 
+ * @extends EventEmitter
+ */
 export class BrainCore extends EventEmitter {
-  private neuralCore: NeuralCore;
   private personalityCore: PersonalityCore;
-  private state: BrainState;
-  private readonly UPDATE_INTERVAL = 1000; // 1 second
-  private updateTimer: NodeJS.Timer;
+  private activityMonitor: ActivityMonitor;
+  private neuralProcessor: NeuralProcessor;
 
+  /**
+   * Creates a new instance of BrainCore.
+   * Initializes all core components and starts the brain initialization process.
+   */
   constructor() {
     super();
-    this.neuralCore = new NeuralCore();
     this.personalityCore = new PersonalityCore();
-    this.state = {
-      isLearning: false,
-      isProcessing: false,
-      lastActivity: Date.now(),
-      activeRegions: []
-    };
-
-    this.initializeBrain();
-  }
-
-  private async initializeBrain() {
-    await this.neuralCore.initialize();
-    this.startActivityMonitoring();
-    this.registerEventHandlers();
-  }
-
-  private startActivityMonitoring() {
-    this.updateTimer = setInterval(() => {
-      this.monitorActivity();
-    }, this.UPDATE_INTERVAL);
-  }
-
-  private registerEventHandlers() {
-    this.on('learning', () => {
-      this.state.isLearning = true;
-      this.state.lastActivity = Date.now();
-      this.emit('stateChange', this.state);
-    });
-
-    this.on('processing', () => {
-      this.state.isProcessing = true;
-      this.state.lastActivity = Date.now();
-      this.emit('stateChange', this.state);
-    });
-
-    this.on('idle', () => {
-      this.state.isLearning = false;
-      this.state.isProcessing = false;
-      this.emit('stateChange', this.state);
+    this.activityMonitor = new ActivityMonitor();
+    this.neuralProcessor = new NeuralProcessor();
+    
+    this.initializeBrain().catch(error => {
+      logger.error('Failed to initialize brain:', error);
+      captureException(error);
     });
   }
 
-  private async monitorActivity() {
-    const currentTime = Date.now();
-    const idleThreshold = 5000; // 5 seconds
-
-    if (currentTime - this.state.lastActivity > idleThreshold) {
-      // Trigger background learning during idle periods
-      await this.performBackgroundLearning();
-    }
-
-    // Update active regions based on current activity
-    this.updateActiveRegions();
-  }
-
-  private async performBackgroundLearning() {
-    if (!this.state.isLearning && !this.state.isProcessing) {
-      this.emit('learning');
-      await this.neuralCore.evolve();
-      this.emit('idle');
+  /**
+   * Initializes the brain by setting up the neural processor and event handlers.
+   * @throws {Error} If initialization fails
+   */
+  private async initializeBrain(): Promise<void> {
+    try {
+      await this.neuralProcessor.initialize();
+      this.registerEventHandlers();
+      logger.info('Brain initialized successfully');
+    } catch (error) {
+      logger.error('Brain initialization failed:', error);
+      captureException(error as Error);
+      throw error;
     }
   }
 
-  private updateActiveRegions() {
-    const regions = new Set(this.state.activeRegions);
-
-    if (this.state.isLearning) {
-      regions.add('hippocampus');
-      regions.add('cortex');
-    }
-
-    if (this.state.isProcessing) {
-      regions.add('thalamus');
-      regions.add('cerebellum');
-    }
-
-    this.state.activeRegions = Array.from(regions);
+  /**
+   * Sets up event handlers for brain activities.
+   * Primarily handles idle state to trigger background learning.
+   */
+  private registerEventHandlers(): void {
+    this.activityMonitor.on('idle', () => {
+      this.performBackgroundLearning().catch(error => {
+        logger.error('Background learning failed:', error);
+        captureException(error);
+      });
+    });
   }
 
-  async process(input: string, userId?: string): Promise<{
+  /**
+   * Performs background learning when the system is idle.
+   * This helps improve system performance over time.
+   */
+  private async performBackgroundLearning(): Promise<void> {
+    if (!this.activityMonitor.getState().isLearning) {
+      this.activityMonitor.recordActivity('learning');
+      await this.neuralProcessor.process('background_learning');
+      this.emit('learningComplete');
+    }
+  }
+
+  /**
+   * Processes an input through the brain's components.
+   * 
+   * @param input - The input string to process
+   * @param userId - Optional user identifier for personalization
+   * @returns Promise resolving to the processed response with emotional context and neural metrics
+   * @throws {Error} If processing fails
+   */
+  public async process(input: string, userId?: string): Promise<{
     response: string;
-    emotionalContext: any;
-    neuralMetrics: any;
+    emotionalContext: unknown;
+    neuralMetrics: unknown;
   }> {
     try {
-      this.emit('processing');
+      this.activityMonitor.recordActivity('processing');
+      logger.debug('Processing input:', { input, userId });
 
-      // Process through personality core first
       const personalityResponse = await this.personalityCore.processInteraction(
         input,
         userId || 'anonymous'
       );
 
-      // Get neural predictions and learning metrics
-      const neuralMetrics = await this.getNeuralMetrics();
+      const { prediction, metrics } = await this.neuralProcessor.process(input);
 
-      // Store interaction in memory
-      await this.storeInteraction(input, personalityResponse, neuralMetrics);
+      await this.storeInteraction(input, personalityResponse, metrics);
 
-      this.emit('idle');
+      logger.debug('Processing complete', { userId });
 
       return {
         response: personalityResponse.response,
         emotionalContext: personalityResponse.emotionalContext,
-        neuralMetrics
+        neuralMetrics: metrics
       };
     } catch (error) {
-      console.error('Error in brain processing:', error);
-      this.emit('idle');
+      logger.error('Error in brain processing:', error);
+      captureException(error as Error, { input, userId });
       throw error;
     }
   }
 
-  private async getNeuralMetrics() {
-    const architecture = this.neuralCore.getArchitecture();
-    const trainingHistory = this.neuralCore.getTrainingHistory();
-    
-    return {
-      architecture,
-      performance: trainingHistory[trainingHistory.length - 1] || null,
-      evolutionStage: this.calculateEvolutionStage(trainingHistory)
-    };
-  }
-
-  private calculateEvolutionStage(history: any[]): number {
-    if (history.length === 0) return 0;
-    
-    const recentPerformance = history.slice(-100);
-    const averageAccuracy = recentPerformance.reduce(
-      (acc, m) => acc + m.accuracy, 0
-    ) / recentPerformance.length;
-
-    return Math.min(1, averageAccuracy);
-  }
-
+  /**
+   * Stores an interaction in the memory system for future reference.
+   * 
+   * @param input - The original input
+   * @param personalityResponse - The response from personality processing
+   * @param neuralMetrics - Metrics from neural processing
+   */
   private async storeInteraction(
     input: string,
-    personalityResponse: any,
-    neuralMetrics: any
-  ) {
-    await memoryManager.add({
-      type: 'brain_interaction',
-      content: JSON.stringify({
-        input,
-        response: personalityResponse,
-        metrics: neuralMetrics,
-        timestamp: Date.now()
-      }),
-      tags: ['brain', 'interaction', 'learning']
-    });
+    personalityResponse: unknown,
+    neuralMetrics: unknown
+  ): Promise<void> {
+    try {
+      await memoryManager.add({
+        type: 'brain_interaction',
+        content: JSON.stringify({
+          input,
+          response: personalityResponse,
+          metrics: neuralMetrics,
+          timestamp: Date.now()
+        }),
+        tags: ['brain', 'interaction', 'learning']
+      });
+    } catch (error) {
+      logger.error('Failed to store interaction:', error);
+      captureException(error as Error);
+    }
   }
 
-  getState(): BrainState {
-    return { ...this.state };
+  /**
+   * Gets the current state of the brain's activity monitor.
+   * @returns The current activity state
+   */
+  public getState(): ReturnType<typeof ActivityMonitor.prototype.getState> {
+    return this.activityMonitor.getState();
   }
 
-  getPersonalityCore(): PersonalityCore {
-    return this.personalityCore;
-  }
-
-  getNeuralCore(): NeuralCore {
-    return this.neuralCore;
-  }
-
-  cleanup() {
-    clearInterval(this.updateTimer);
+  /**
+   * Cleans up resources and stops all brain processes.
+   * Should be called when shutting down the system.
+   */
+  public cleanup(): void {
+    this.activityMonitor.cleanup();
+    this.neuralProcessor.cleanup();
     this.removeAllListeners();
+    logger.info('Brain cleanup complete');
   }
-}
+}

@@ -1,27 +1,27 @@
-export interface Logger {
-  info(message: string, ...args: any[]): void;
-  error(message: string, ...args: any[]): void;
-  warn(message: string, ...args: any[]): void;
-  debug(message: string, ...args: any[]): void;
+import { createLogger, format, transports } from 'winston';
+
+const logger = createLogger({
+  level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
+  format: format.combine(
+    format.timestamp(),
+    format.errors({ stack: true }),
+    format.splat(),
+    format.json()
+  ),
+  transports: [
+    new transports.Console({
+      format: format.combine(
+        format.colorize(),
+        format.simple()
+      )
+    })
+  ]
+});
+
+// Add file transports in production
+if (process.env.NODE_ENV === 'production') {
+  logger.add(new transports.File({ filename: 'logs/error.log', level: 'error' }));
+  logger.add(new transports.File({ filename: 'logs/combined.log' }));
 }
 
-export class ConsoleLogger implements Logger {
-  info(message: string, ...args: any[]): void {
-    console.log(message, ...args);
-  }
-
-  error(message: string, ...args: any[]): void {
-    console.error(message, ...args);
-  }
-
-  warn(message: string, ...args: any[]): void {
-    console.warn(message, ...args);
-  }
-
-  debug(message: string, ...args: any[]): void {
-    console.debug(message, ...args);
-  }
-}
-
-// Create a default logger instance
-export const logger = new ConsoleLogger();
+export { logger };

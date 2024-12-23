@@ -1,38 +1,53 @@
-import type { Tool } from '../../types';
-
-export interface ToolOptions {
-  timeout: number;
-  rateLimit?: number;
-  cache?: boolean;
-  dependencies?: string[];
-  retries?: number;
-}
+import { Tool, ToolResult } from '../../types';
 
 export class ToolPipeline {
-  private tools: Tool[] = [];
+  private tools: Map<string, Tool> = new Map();
+  private timeoutMs = 5000;
 
-  registerTool(tool: Tool, options: ToolOptions) {
-    // Check for duplicate tools
-    if (!this.tools.some(existingTool => existingTool.name === tool.name)) {
-      this.tools.push(tool);
+  registerTool(tool: Tool): void {
+    if (this.tools.has(tool.name)) {
+      throw new Error(`Tool ${tool.name} already registered`);
     }
+    if (!tool.name || !tool.execute) {
+      throw new Error('Invalid tool definition');
+    }
+    this.tools.set(tool.name, tool);
   }
 
-  unregisterTool(toolName: string) {
-    this.tools = this.tools.filter(tool => tool.name !== toolName);
+  unregisterTool(name: string): void {
+    if (!this.tools.has(name)) {
+      throw new Error(`Tool ${name} not registered`);
+    }
+    this.tools.delete(name);
   }
 
-  async executeTool(toolName: string, args: Record<string, unknown>): Promise<unknown> {
-    const tool = this.tools.find(t => t.name === toolName);
-    
+  async executeTool(name: string, args: Record<string, unknown>): Promise<ToolResult> {
+    const tool = this.tools.get(name);
     if (!tool) {
-      throw new Error(`Tool not found: ${toolName}`);
+      throw new Error(`Tool ${name} not found`);
     }
 
-    return tool.execute(args);
+    try {
+      const result = await Promise.race([
+        tool.execute(args),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error(`Tool ${name} execution timed out`)), this.timeoutMs)
+        )
+      ]);
+
+      return {
+        status: 'success',
+        result
+      };
+    } catch (error) {
+      return {
+        status: 'error',
+        error: error instanceof Error ? error.message : String(error)
+      };
+    }
   }
 
-  getRegisteredTools(): Tool[] {
-    return [...this.tools];
+  getRegisteredTools(): string[] {
+    return Array.from(this.tools.keys());
   }
 }

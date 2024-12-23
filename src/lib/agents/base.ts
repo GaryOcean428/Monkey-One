@@ -3,14 +3,14 @@ import { GitHubClient } from '../github/GitHubClient';
 
 export abstract class BaseAgent {
   protected github: GitHubClient;
-  protected capabilities: string[];
-  protected subordinates: BaseAgent[] = [];
+  public readonly capabilities: AgentCapability[];
+  public readonly subordinates: BaseAgent[] = [];
 
   constructor(
     public readonly id: string,
     public readonly agentName: string,
     public readonly role: string,
-    capabilities: string[] = []
+    capabilities: AgentCapability[] = []
   ) {
     this.github = new GitHubClient();
     this.capabilities = capabilities;
@@ -79,7 +79,7 @@ export abstract class BaseAgent {
   }
 
   hasCapability(capability: string): boolean {
-    return this.capabilities.includes(capability);
+    return this.capabilities.some(cap => cap.name === capability);
   }
 
   addSubordinate(agent: BaseAgent): void {

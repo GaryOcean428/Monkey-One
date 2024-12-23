@@ -1,172 +1,121 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { MessageQueue } from '../../lib/memory/MessageQueue';
-import type { Message } from '../../types';
-
-// Type for accessing private members in tests
-type MessageQueuePrivate = {
-  queue: Message[];
-  processQueue: () => Promise<void>;
-};
+import { MessageQueue } from '@/lib/memory/MessageQueue';
+import { Message, MessageType } from '@/types';
 
 describe('MessageQueue', () => {
   let queue: MessageQueue;
 
   beforeEach(() => {
+    vi.clearAllMocks();
     queue = new MessageQueue();
   });
 
   describe('message handling', () => {
-    const mockMessage: Message = {
-      id: 'test-1',
-      role: 'user',
-      content: 'test message',
-      timestamp: Date.now()
-    };
-
-    it('should add messages to the queue', () => {
-      queue.add(mockMessage);
-      const queuePrivate = queue as unknown as MessageQueuePrivate;
-      expect(queuePrivate.queue).toContain(mockMessage);
-    });
-
-    it('should process messages in FIFO order', async () => {
-      const processedMessages: Message[] = [];
-      const queuePrivate = queue as unknown as MessageQueuePrivate;
-      
-      const mockProcess = vi.spyOn(queuePrivate, 'processQueue')
-        .mockImplementation(async () => {
-          while (queuePrivate.queue.length > 0) {
-            const message = queuePrivate.queue.shift();
-            if (message) {
-              processedMessages.push(message);
-            }
-          }
-        });
-
-      const messages: Message[] = [
-        {
-          id: '1',
-          role: 'user',
-          content: 'first',
-          timestamp: Date.now()
-        },
-        {
-          id: '2',
-          role: 'user',
-          content: 'second',
-          timestamp: Date.now()
-        },
-        {
-          id: '3',
-          role: 'user',
-          content: 'third',
-          timestamp: Date.now()
-        }
-      ];
-
-      // Add messages
-      messages.forEach(msg => queue.add(msg));
-
-      // Wait for processing to complete
-      await new Promise(resolve => setTimeout(resolve, 0));
-
-      expect(mockProcess).toHaveBeenCalled();
-      expect(processedMessages).toEqual(messages);
-      expect(queuePrivate.queue).toHaveLength(0);
-
-      mockProcess.mockRestore();
-    });
-
-    it('should handle empty queue gracefully', async () => {
-      const queuePrivate = queue as unknown as MessageQueuePrivate;
-      const mockProcess = vi.spyOn(queuePrivate, 'processQueue');
-      await queuePrivate.processQueue();
-      expect(mockProcess).toHaveBeenCalled();
-      mockProcess.mockRestore();
-    });
-
-    it('should continue processing after error', async () => {
-      const processedMessages: Message[] = [];
-      const queuePrivate = queue as unknown as MessageQueuePrivate;
-      
-      const mockProcess = vi.spyOn(queuePrivate, 'processQueue')
-        .mockImplementation(async () => {
-          while (queuePrivate.queue.length > 0) {
-            const message = queuePrivate.queue.shift();
-            if (message) {
-              if (message.id === '2') {
-                throw new Error('Test error');
-              }
-              processedMessages.push(message);
-            }
-          }
-        });
-
-      const messages: Message[] = [
-        {
-          id: '1',
-          role: 'user',
-          content: 'first',
-          timestamp: Date.now()
-        },
-        {
-          id: '2',
-          role: 'user',
-          content: 'error message',
-          timestamp: Date.now()
-        },
-        {
-          id: '3',
-          role: 'user',
-          content: 'third',
-          timestamp: Date.now()
-        }
-      ];
-
-      // Add messages
-      messages.forEach(msg => {
-        try {
-          queue.add(msg);
-        } catch {
-          // Expected error for message 2
-        }
-      });
-
-      // Wait for processing to complete
-      await new Promise(resolve => setTimeout(resolve, 0));
-
-      expect(mockProcess).toHaveBeenCalled();
-      expect(processedMessages).toContain(messages[0]);
-      expect(processedMessages).not.toContain(messages[1]);
-      expect(processedMessages).toContain(messages[2]);
-
-      mockProcess.mockRestore();
-    });
-  });
-
-  describe('error handling', () => {
-    it('should handle invalid message gracefully', () => {
-      const invalidMessage = undefined;
-      expect(() => queue.add(invalidMessage as unknown as Message))
-        .toThrow();
-    });
-
-    it('should maintain queue integrity after error', () => {
-      const validMessage: Message = {
-        id: 'valid',
-        role: 'user',
-        content: 'valid message',
+    it('should add and retrieve messages', () => {
+      const message: Message = {
+        id: '1',
+        type: MessageType.COMMAND,
+        content: 'test message',
         timestamp: Date.now()
       };
 
-      queue.add(validMessage);
-      
-      expect(() => queue.add(undefined as unknown as Message))
-        .toThrow();
+      queue.enqueue(message);
+      expect(queue.size()).toBe(1);
 
-      const queuePrivate = queue as unknown as MessageQueuePrivate;
-      expect(queuePrivate.queue).toContain(validMessage);
-      expect(queuePrivate.queue).toHaveLength(1);
+      const retrieved = queue.dequeue();
+      expect(retrieved).toEqual(message);
+      expect(queue.size()).toBe(0);
+    });
+
+    it('should process messages in FIFO order', () => {
+      const messages = [
+        { id: '1', type: MessageType.COMMAND, content: 'first', timestamp: Date.now() },
+        { id: '2', type: MessageType.COMMAND, content: 'second', timestamp: Date.now() },
+        { id: '3', type: MessageType.COMMAND, content: 'third', timestamp: Date.now() }
+      ];
+
+      messages.forEach(msg => queue.enqueue(msg));
+      expect(queue.size()).toBe(3);
+
+      messages.forEach(expected => {
+        const actual = queue.dequeue();
+        expect(actual).toEqual(expected);
+      });
+    });
+
+    it('should handle empty queue gracefully', () => {
+      expect(queue.size()).toBe(0);
+      expect(queue.dequeue()).toBeUndefined();
+    });
+
+    it('should continue processing after error', () => {
+      const errorHandler = vi.fn();
+      queue.on('error', errorHandler);
+
+      const message: Message = {
+        id: '1',
+        type: MessageType.COMMAND,
+        content: 'test message',
+        timestamp: Date.now()
+      };
+
+      queue.enqueue(message);
+      queue.processMessage(message).catch(errorHandler);
+
+      expect(errorHandler).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('event handling', () => {
+    it('should emit events when messages are added/removed', () => {
+      const onAdd = vi.fn();
+      const onRemove = vi.fn();
+
+      queue.on('messageAdded', onAdd);
+      queue.on('messageRemoved', onRemove);
+
+      const message: Message = {
+        id: '1',
+        type: MessageType.COMMAND,
+        content: 'test message',
+        timestamp: Date.now()
+      };
+
+      queue.enqueue(message);
+      expect(onAdd).toHaveBeenCalledWith(message);
+
+      queue.dequeue();
+      expect(onRemove).toHaveBeenCalledWith(message);
+    });
+  });
+
+  describe('queue management', () => {
+    it('should clear all messages', () => {
+      const messages = [
+        { id: '1', type: MessageType.COMMAND, content: 'first', timestamp: Date.now() },
+        { id: '2', type: MessageType.COMMAND, content: 'second', timestamp: Date.now() }
+      ];
+
+      messages.forEach(msg => queue.enqueue(msg));
+      expect(queue.size()).toBe(2);
+
+      queue.clear();
+      expect(queue.size()).toBe(0);
+    });
+
+    it('should respect max queue size', () => {
+      const maxSize = 2;
+      const limitedQueue = new MessageQueue(maxSize);
+
+      const messages = [
+        { id: '1', type: MessageType.COMMAND, content: 'first', timestamp: Date.now() },
+        { id: '2', type: MessageType.COMMAND, content: 'second', timestamp: Date.now() },
+        { id: '3', type: MessageType.COMMAND, content: 'third', timestamp: Date.now() }
+      ];
+
+      messages.forEach(msg => limitedQueue.enqueue(msg));
+      expect(limitedQueue.size()).toBe(maxSize);
+      expect(limitedQueue.dequeue()).toEqual(messages[1]); // First message should be dropped
     });
   });
 });

@@ -26,8 +26,9 @@ export class NeuralCore {
     // Enable memory optimization
     if (!this.memoryOptimized) {
       tf.enableProdMode(); // Disable debug mode
-      tf.env().set('WEBGL_DELETE_TEXTURE_THRESHOLD', 0); // Aggressive texture cleanup
-      tf.env().set('WEBGL_FORCE_F16_TEXTURES', true); // Use 16-bit floats
+      const env = tf.env();
+      env.set('WEBGL_DELETE_TEXTURE_THRESHOLD', 0); // Aggressive texture cleanup
+      env.set('WEBGL_FORCE_F16_TEXTURES', true); // Use 16-bit floats
       this.memoryOptimized = true;
     }
 

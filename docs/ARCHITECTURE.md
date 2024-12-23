@@ -11,7 +11,7 @@
 │  - Self-evolving architecture      │
 │  - Learning optimization           │
 │  - Pattern recognition             │
-└─────────────────┬───────────────────┘
+└─────────────────────┬───────────────┘
                   │
 ┌─────────────────┴───────────────────┐
 │         Brain Regions               │
@@ -212,3 +212,5 @@
 - Feature flags
 - API endpoints
 - Resource limits
+
+```
