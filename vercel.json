@@ -14,5 +14,12 @@
         "VITE_PINECONE_API_KEY": "@pinecone_api_key",
         "VITE_PINECONE_ENVIRONMENT": "@pinecone_environment",
         "GRAFANA_ADMIN_PASSWORD": "@grafana_admin_password"
+    },
+    "git": {
+        "deploymentEnabled": {
+            "main": true,
+            "development": true,
+            "staging": true
+        }
     }
 }
