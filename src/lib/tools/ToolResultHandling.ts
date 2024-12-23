@@ -19,7 +19,11 @@ export class ToolResultHandling {
           const result = await tool.execute(args);
           
           if (!handler.validate(result)) {
-            throw new Error(`Invalid result type from tool ${tool.name}`);
+            throw new ToolExecutionError(`Invalid result type from tool ${tool.name}`, {
+              toolName: tool.name,
+              expectedType: handler.constructor.name,
+              actualType: typeof result
+            });
           }
 
           return handler.transform ? handler.transform(result) : result;
@@ -54,7 +58,19 @@ export class ToolResultHandling {
   ): Tool {
     return this.withResultValidation(tool, {
       validate: (result): result is T[] => {
-        return Array.isArray(result) && result.every(elementValidator);
+        if (!Array.isArray(result)) {
+          throw new ToolExecutionError('Result must be an array', {
+            toolName: tool.name,
+            actualType: typeof result
+          });
+        }
+        if (!result.every(elementValidator)) {
+          throw new ToolExecutionError('Array must contain only numbers', {
+            toolName: tool.name,
+            invalidElements: result.filter(x => !elementValidator(x))
+          });
+        }
+        return true;
       }
     });
   }
@@ -66,12 +82,24 @@ export class ToolResultHandling {
     return this.withResultValidation(tool, {
       validate: (result): result is T => {
         if (typeof result !== 'object' || result === null) {
-          return false;
+          throw new ToolExecutionError('Result must be an object', {
+            toolName: tool.name,
+            actualType: typeof result
+          });
         }
 
-        return Object.entries(validator).every(([key, validateFn]) => {
-          return validateFn((result as any)[key]);
-        });
+        const invalidProps = Object.entries(validator).filter(
+          ([key, validateFn]) => !validateFn((result as any)[key])
+        );
+
+        if (invalidProps.length > 0) {
+          throw new ToolExecutionError('Invalid object properties', {
+            toolName: tool.name,
+            invalidProperties: invalidProps.map(([key]) => key)
+          });
+        }
+
+        return true;
       }
     });
   }
@@ -127,7 +155,7 @@ export class ToolResultHandling {
             }
           }
           
-          throw new ToolExecutionError('UNKNOWN_ERROR', {
+          throw new ToolExecutionError(message, {
             toolName: tool.name,
             originalError: message
           });

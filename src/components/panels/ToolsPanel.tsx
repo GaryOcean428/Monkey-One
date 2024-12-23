@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Wrench, Plus, Settings, Wand2 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { ToolCreator } from '../tools/ToolCreator';
-import { useTools } from '@/hooks/useTools';
+import { useTools } from '../../hooks/useTools';
 
 export function ToolsPanel() {
   const { tools, executeTool } = useTools();
@@ -57,4 +57,4 @@ export function ToolsPanel() {
       )}
     </div>
   );
-}
+}
