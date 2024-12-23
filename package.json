@@ -16,7 +16,6 @@
     "type-check": "tsc --noEmit",
     "docs": "typedoc --out docs src",
     "clean": "rimraf node_modules/.vite dist",
-    "vercel-build": "npm run build",
     "deploy": "npm run build && firebase deploy --only hosting",
     "firebase:login": "firebase login",
     "firebase:init": "firebase init",
@@ -93,7 +92,6 @@
     "rollup-plugin-visualizer": "^5.12.0",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.3.3",
-    "vercel": "^33.7.1",
     "vite-plugin-compression": "^0.5.1",
     "vite-tsconfig-paths": "^4.2.3",
     "vitest": "^1.1.3"
