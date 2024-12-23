@@ -1,0 +1,10 @@
+version: 2
+updates:
+  - package-ecosystem: "npm" # Use the appropriate value for the package manager (e.g., npm, yarn, pip, etc.)
+    directory: "/" # Location of package manifests
+    schedule:
+      interval: "weekly"
+      day: "monday" # Optional: specify the day of the week for the updates
+    open-pull-requests-limit: 10 # Optional: limit the number of open pull requests
+    commit-message:
+      prefix: "deps" # Optional: add a prefix to the commit message

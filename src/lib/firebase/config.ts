@@ -69,7 +69,7 @@ const initializeFirebaseService = <T>(
   } catch (error) {
     const logFn = required ? console.error : console.warn;
     logFn(`Failed to initialize Firebase ${serviceName}:`, error);
-    if (required) throw error;
+    if (required) {
     return undefined;
   }
 };
