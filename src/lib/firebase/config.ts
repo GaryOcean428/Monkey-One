@@ -22,6 +22,7 @@ const missingEnvVars = requiredEnvVars.filter(
 );
 
 if (missingEnvVars.length > 0) {
+  console.error('Missing required Firebase configuration:', missingEnvVars.join(', '));
   throw new Error(
     `Missing required Firebase configuration: ${missingEnvVars.join(', ')}`
   );
@@ -39,13 +40,66 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
-// Initialize Firebase services
-export const app = initializeApp(firebaseConfig);
-export const analytics = typeof window !== 'undefined' && import.meta.env.PROD ? getAnalytics(app) : undefined;
-export const auth = getAuth(app);
-export const db = getFirestore(app);
-export const storage = getStorage(app);
-export const database = getDatabase(app);
+console.log('Initializing Firebase with config:', {
+  ...firebaseConfig,
+  apiKey: '***' // Hide sensitive data
+});
 
-// Export config for reference
-export { firebaseConfig };
+let app;
+let analytics;
+let auth;
+let db;
+let storage;
+let database;
+
+try {
+  // Initialize Firebase app
+  app = initializeApp(firebaseConfig);
+  console.log('Firebase app initialized successfully');
+
+  // Initialize services
+  try {
+    analytics = typeof window !== 'undefined' && import.meta.env.PROD ? getAnalytics(app) : undefined;
+    console.log('Firebase Analytics initialized:', !!analytics);
+  } catch (error) {
+    console.warn('Failed to initialize Firebase Analytics:', error);
+  }
+
+  try {
+    auth = getAuth(app);
+    console.log('Firebase Auth initialized successfully');
+  } catch (error) {
+    console.error('Failed to initialize Firebase Auth:', error);
+    throw error;
+  }
+
+  try {
+    db = getFirestore(app);
+    console.log('Firebase Firestore initialized successfully');
+  } catch (error) {
+    console.error('Failed to initialize Firestore:', error);
+    throw error;
+  }
+
+  try {
+    storage = getStorage(app);
+    console.log('Firebase Storage initialized successfully');
+  } catch (error) {
+    console.error('Failed to initialize Firebase Storage:', error);
+    throw error;
+  }
+
+  try {
+    database = getDatabase(app);
+    console.log('Firebase Realtime Database initialized successfully');
+  } catch (error) {
+    console.error('Failed to initialize Firebase Realtime Database:', error);
+    throw error;
+  }
+} catch (error) {
+  console.error('Failed to initialize Firebase:', error);
+  throw error;
+}
+
+// Export initialized services and config
+export { app, analytics, auth, db, storage, database, firebaseConfig };
