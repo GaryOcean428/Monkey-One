@@ -2,6 +2,52 @@ import { Message, MessageType } from '../../types';
 import { GitHubClient } from '../github/GitHubClient';
 
 export abstract class BaseAgent implements Agent {
+  public readonly capabilities: AgentCapability[] = [];
+  public readonly subordinates: Agent[] = [];
+  public type: AgentType;
+  public status: AgentStatus;
+  protected github: GitHubClient;
+
+  constructor(
+    public readonly id: string,
+    public readonly name: string,
+    type: AgentType,
+    capabilities: AgentCapability[] = []
+  ) {
+    this.type = type;
+    this.status = AgentStatus.IDLE;
+    this.github = new GitHubClient();
+    this.capabilities = capabilities;
+  }
+
+  abstract processMessage(message: Message): Promise<Message>;
+
+  async handleMessage(message: Message): Promise<Message> {
+    try {
+      return await this.processMessage(message);
+    } catch (error) {
+      logger.error('Error handling message:', error);
+      throw new RuntimeError('Failed to handle message', { cause: error });
+    }
+  }
+
+  async initialize(): Promise<void> {
+    logger.debug('Base agent initialized', { id: this.id, type: this.type });
+  }
+
+  getCapabilities(): AgentCapability[] {
+    return [...this.capabilities];
+  }
+
+  registerCapability(capability: AgentCapability): void {
+    if (!this.capabilities.some(cap => cap.name === capability.name)) {
+      this.capabilities.push(capability);
+      logger.debug('Capability registered', { 
+        agentId: this.id, 
+        capability: capability.name 
+      });
+    }
+  }
   abstract processMessage(message: Message): Promise<Message>;
 
   async handleMessage(message: Message): Promise<void> {
