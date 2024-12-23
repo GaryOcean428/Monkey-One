@@ -1,20 +1,20 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import { fileURLToPath } from 'node:url'
-import { dirname } from 'node:path'
-import path from 'path'
-import dotenv from 'dotenv'
-import { nodeResolve } from '@rollup/plugin-node-resolve'
-import commonjs from '@rollup/plugin-commonjs'
-import terser from '@rollup/plugin-terser'
-import { visualizer } from 'rollup-plugin-visualizer'
-import compression from 'vite-plugin-compression'
-import tsconfigPaths from 'vite-tsconfig-paths'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import { fileURLToPath } from 'node:url';
+import { dirname } from 'node:path';
+import path from 'path';
+import dotenv from 'dotenv';
+import { nodeResolve } from '@rollup/plugin-node-resolve';
+import commonjs from '@rollup/plugin-commonjs';
+import terser from '@rollup/plugin-terser';
+import { visualizer } from 'rollup-plugin-visualizer';
+import compression from 'vite-plugin-compression';
+import tsconfigPaths from 'vite-tsconfig-paths';
 
-dotenv.config()
+dotenv.config();
 
-const __filename = fileURLToPath(new URL(import.meta.url))
-const __dirname = dirname(__filename)
+const __filename = fileURLToPath(new URL(import.meta.url));
+const __dirname = dirname(__filename);
 
 export default defineConfig({
   plugins: [
@@ -38,7 +38,7 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, 'src')
+      '@': path.resolve(__dirname, './src')
     },
     extensions: ['.js', '.jsx', '.ts', '.tsx', '.json']
   },
@@ -91,19 +91,5 @@ export default defineConfig({
   server: {
     port: 3000,
     host: true
-  },
-  test: {
-    globals: true,
-    environment: 'jsdom',
-    setupFiles: ['./src/setupTests.ts'],
-    include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'html'],
-      exclude: [
-        'node_modules/',
-        'src/setupTests.ts',
-      ],
-    },
-  },
-})
+  }
+});

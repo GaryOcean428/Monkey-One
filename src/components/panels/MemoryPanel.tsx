@@ -1,5 +1,5 @@
 import React from 'react';
-import { useMemory } from '@/hooks/useMemory';
+import useMemory from '../../hooks/useMemory';
 
 export default function MemoryPanel() {
   const { memories } = useMemory();
@@ -34,4 +34,4 @@ export default function MemoryPanel() {
       </div>
     </div>
   );
-}
+}

@@ -50,55 +50,36 @@ export const useChatStore = create<ChatState & ChatActions>()(
       });
 
       try {
-        const recentMessages = get().messages.slice(-5);
-        const processedResponse = await responseProcessor.processResponse(
-          content,
-          recentMessages
-        );
+        const response = await responseProcessor.processResponse(content, agentId);
 
-        await memoryManager.add({
-          type: 'conversation',
-          content: JSON.stringify({
-            userMessage,
-            response: processedResponse,
-            agentId,
-          }),
-          tags: ['chat', 'conversation'],
-        });
+        const assistantMessage: Message = {
+          id: crypto.randomUUID(),
+          role: 'assistant',
+          content: response,
+          timestamp: Date.now(),
+          status: 'sent',
+        };
 
         set((state) => {
-          const msgIndex = state.messages.findIndex((m) => m.id === userMessage.id);
-          if (msgIndex !== -1) {
-            state.messages[msgIndex].status = 'sent';
-          }
-
-          state.messages.push({
-            id: crypto.randomUUID(),
-            role: 'assistant',
-            content: processedResponse.content,
-            timestamp: Date.now(),
-            status: 'sent',
-            metadata: {
-              agentId,
-              confidence: processedResponse.confidence,
-              context: processedResponse.context,
-              ...processedResponse.metadata,
-            },
-          });
-
+          state.messages[state.messages.length - 1].status = 'sent';
+          state.messages.push(assistantMessage);
           state.isProcessing = false;
-          state.error = null;
         });
+
+        // Store conversation in memory
+        await memoryManager.storeConversation({
+          userMessage,
+          assistantMessage,
+          agentId,
+        });
+
       } catch (error) {
-        console.error('Error processing message:', error);
         set((state) => {
-          const msgIndex = state.messages.findIndex((m) => m.id === userMessage.id);
-          if (msgIndex !== -1) {
-            state.messages[msgIndex].status = 'error';
-          }
-          state.error =
-            error instanceof Error ? error.message : 'Failed to process message';
+          state.error = error instanceof Error ? error.message : 'An unknown error occurred';
           state.isProcessing = false;
+          if (state.messages.length > 0) {
+            state.messages[state.messages.length - 1].status = 'error';
+          }
         });
       }
     },
@@ -112,19 +93,18 @@ export const useChatStore = create<ChatState & ChatActions>()(
 
     approveTask: async (taskId: string) => {
       set((state) => {
-        const taskIndex = state.tasks.findIndex((t) => t.id === taskId);
-        if (taskIndex !== -1) {
-          state.tasks[taskIndex].status = 'completed';
-          state.tasks[taskIndex].completedTime = Date.now();
+        const task = state.tasks.find((t) => t.id === taskId);
+        if (task) {
+          task.status = 'approved';
         }
       });
     },
 
     rejectTask: async (taskId: string) => {
       set((state) => {
-        const taskIndex = state.tasks.findIndex((t) => t.id === taskId);
-        if (taskIndex !== -1) {
-          state.tasks[taskIndex].status = 'rejected';
+        const task = state.tasks.find((t) => t.id === taskId);
+        if (task) {
+          task.status = 'rejected';
         }
       });
     },

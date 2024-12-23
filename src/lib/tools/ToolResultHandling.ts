@@ -15,20 +15,23 @@ export class ToolResultHandling {
       name: tool.name,
       description: tool.description,
       execute: async (args: Record<string, unknown>) => {
-        const result = await tool.execute(args);
-        
-        if (!handler.validate(result)) {
-          throw new ToolExecutionError(
-            `Invalid result from tool ${tool.name}`,
-            {
-              toolName: tool.name,
-              expectedType: handler.constructor.name,
-              actualType: typeof result
-            }
-          );
-        }
+        try {
+          const result = await tool.execute(args);
+          
+          if (!handler.validate(result)) {
+            throw new Error(`Invalid result type from tool ${tool.name}`);
+          }
 
-        return handler.transform ? handler.transform(result) : result;
+          return handler.transform ? handler.transform(result) : result;
+        } catch (error) {
+          if (error instanceof Error) {
+            throw new ToolExecutionError(error.message, {
+              toolName: tool.name,
+              error: error.message
+            });
+          }
+          throw error;
+        }
       }
     };
   }
@@ -56,9 +59,9 @@ export class ToolResultHandling {
     });
   }
 
-  static withObjectResult<T extends Record<string, unknown>>(
+  static withObjectResult<T extends object>(
     tool: Tool,
-    shape: Record<keyof T, (value: unknown) => boolean>
+    validator: Record<keyof T, (value: unknown) => boolean>
   ): Tool {
     return this.withResultValidation(tool, {
       validate: (result): result is T => {
@@ -66,16 +69,16 @@ export class ToolResultHandling {
           return false;
         }
 
-        return Object.entries(shape).every(([key, validator]) => {
-          return key in result && validator((result as Record<string, unknown>)[key]);
+        return Object.entries(validator).every(([key, validateFn]) => {
+          return validateFn((result as any)[key]);
         });
       }
     });
   }
 
-  static withAsyncTransform<T>(
+  static withAsyncTransformation<T>(
     tool: Tool,
-    transform: (result: T) => Promise<unknown>
+    transform: (result: unknown) => Promise<T>
   ): Tool {
     return {
       name: tool.name,
@@ -83,16 +86,15 @@ export class ToolResultHandling {
       execute: async (args: Record<string, unknown>) => {
         try {
           const result = await tool.execute(args);
-          return await transform(result as T);
+          return await transform(result);
         } catch (error) {
-          throw new ToolExecutionError(
-            `Error in async transform: ${error instanceof Error ? error.message : String(error)}`,
-            {
+          if (error instanceof Error) {
+            throw new ToolExecutionError('Transform error: ' + error.message, {
               toolName: tool.name,
-              errorType: 'TransformError',
-              errorMessage: error instanceof Error ? error.message : String(error)
-            }
-          );
+              error: error.message
+            });
+          }
+          throw error;
         }
       }
     };
@@ -100,7 +102,7 @@ export class ToolResultHandling {
 
   static withErrorMapping(
     tool: Tool,
-    errorMap: Record<string, string>
+    errorMap: Record<string, string | RegExp>
   ): Tool {
     return {
       name: tool.name,
@@ -110,18 +112,25 @@ export class ToolResultHandling {
           return await tool.execute(args);
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error);
-          const mappedMessage = Object.entries(errorMap).find(
-            ([pattern]) => new RegExp(pattern).test(message)
-          )?.[1] || message;
-
-          throw new ToolExecutionError(
-            mappedMessage,
-            {
-              toolName: tool.name,
-              originalError: message,
-              errorType: 'MappedError'
+          
+          for (const [pattern, replacement] of Object.entries(errorMap)) {
+            if (typeof replacement === 'string' && message.includes(pattern)) {
+              throw new ToolExecutionError(replacement, {
+                toolName: tool.name,
+                originalError: message
+              });
+            } else if (replacement instanceof RegExp && replacement.test(message)) {
+              throw new ToolExecutionError('Please try again later', {
+                toolName: tool.name,
+                originalError: message
+              });
             }
-          );
+          }
+          
+          throw new ToolExecutionError('UNKNOWN_ERROR', {
+            toolName: tool.name,
+            originalError: message
+          });
         }
       }
     };

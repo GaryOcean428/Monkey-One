@@ -1,6 +1,6 @@
 import React from 'react';
 import { Upload, File, Folder } from 'lucide-react';
-import { useDocuments } from '@/hooks/useDocuments';
+import { useDocuments } from '../../hooks/useDocuments';
 import { Button } from '../ui/button';
 
 export function DocumentsPanel() {
@@ -42,4 +42,4 @@ export function DocumentsPanel() {
       </div>
     </div>
   );
-}
+}
