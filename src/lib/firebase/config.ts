@@ -4,6 +4,7 @@ import { getAuth, connectAuthEmulator, type Auth } from 'firebase/auth';
 import { getFirestore, connectFirestoreEmulator, type Firestore } from 'firebase/firestore';
 import { getStorage, connectStorageEmulator, type FirebaseStorage } from 'firebase/storage';
 import { getDatabase, connectDatabaseEmulator, type Database } from 'firebase/database';
+import { getRemoteConfig, getValue, fetchAndActivate, type RemoteConfig } from 'firebase/remote-config';
 import type { FirebaseConfig } from './types';
 
 // Debug: Log all environment variables (excluding sensitive values)
@@ -68,6 +69,7 @@ interface FirebaseServices {
   db: Firestore;
   storage: FirebaseStorage;
   database: Database;
+  remoteConfig: RemoteConfig;
 }
 
 const initializeFirebaseService = <T>(
@@ -107,6 +109,25 @@ try {
   const db = getFirestore(app);
   const storage = getStorage(app);
   const database = getDatabase(app);
+  
+  // Initialize Remote Config with default settings
+  const remoteConfig = getRemoteConfig(app);
+  remoteConfig.settings = {
+    minimumFetchIntervalMillis: import.meta.env.PROD ? 3600000 : 0, // 1 hour in production, 0 in development
+    fetchTimeoutMillis: 60000 // 1 minute timeout
+  };
+
+  // Set default values
+  remoteConfig.defaultConfig = {
+    welcome_message: 'Welcome to Monkey One!',
+    features_enabled: JSON.stringify({
+      chat: true,
+      videoCall: false,
+      fileSharing: true
+    }),
+    theme: 'light',
+    api_endpoint: import.meta.env.VITE_API_ENDPOINT || 'https://api.default.com'
+  };
 
   // Use emulators in development
   if (import.meta.env.DEV) {
@@ -122,8 +143,14 @@ try {
     auth,
     db,
     storage,
-    database
+    database,
+    remoteConfig
   };
+
+  // Fetch remote config values immediately
+  fetchAndActivate(remoteConfig)
+    .then(() => console.log('Remote config fetched and activated'))
+    .catch(error => console.error('Error fetching remote config:', error));
 
   console.log('All Firebase services initialized successfully');
 } catch (error) {
@@ -137,5 +164,5 @@ try {
   throw error;
 }
 
-export const { app, analytics, auth, db, storage, database } = services;
+export const { app, analytics, auth, db, storage, database, remoteConfig } = services;
 export { firebaseConfig };
