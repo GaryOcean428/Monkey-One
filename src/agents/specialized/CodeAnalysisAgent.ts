@@ -126,7 +126,7 @@ export class CodeAnalysisAgent extends BaseAgent {
     if (content.includes('analyze')) return 'analyze_code';
     if (content.includes('refactor')) return 'suggest_refactoring';
     if (content.includes('optimize')) return 'optimize_performance';
-    if (content.includes('security')) return 'review_security';
+    if (content.includes('security')) {
     if (content.includes('document')) return 'generate_docs';
     return 'analyze_code';
   }
