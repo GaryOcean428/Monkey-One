@@ -54,6 +54,13 @@ export class SecurityError extends AgentError {
   }
 }
 
+export class ToolExecutionError extends AgentError {
+  constructor(message: string, details: Record<string, unknown> = {}) {
+    super(message, 'TOOL_EXECUTION_ERROR', details);
+    this.name = 'ToolExecutionError';
+  }
+}
+
 export function handleError(error: unknown): AgentError {
   if (error instanceof AgentError) {
     return error;

@@ -64,7 +64,7 @@ describe('ToolResultHandling', () => {
       );
       
       await expect(validatedTool.execute({}))
-        .rejects.toThrow(ToolExecutionError);
+        .rejects.toThrow('Array must contain only numbers');
     });
   });
 
@@ -88,7 +88,7 @@ describe('ToolResultHandling', () => {
       );
       
       await expect(transformedTool.execute({}))
-        .rejects.toThrow(/Transform error/);
+        .rejects.toThrow('Transform error');
     });
   });
 
@@ -107,7 +107,8 @@ describe('ToolResultHandling', () => {
 
     it('should pass through unknown errors', async () => {
       const tool = createMockTool(null);
-      vi.spyOn(tool, 'execute').mockRejectedValue(new Error('UNKNOWN_ERROR'));
+      const error = new Error('UNKNOWN_ERROR');
+      vi.spyOn(tool, 'execute').mockRejectedValue(error);
       
       const mappedTool = ToolResultHandling.withErrorMapping(tool, {
         'known_error': 'Mapped error'
