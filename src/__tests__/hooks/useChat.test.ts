@@ -1,4 +1,5 @@
 import { renderHook, act } from '@testing-library/react';
+import { AgentType, AgentStatus } from '@/types';
 import { useChat } from '@/hooks/useChat';
 import { useChatStore } from '@/store/chatStore';
 import { useAgentStore } from '@/store/agentStore';
@@ -36,8 +37,8 @@ describe('useChat', () => {
       activeAgent: {
         id: 'test-agent',
         name: 'Test Agent',
-        type: 'test',
-        status: 'idle'
+        type: AgentType.ORCHESTRATOR,
+        status: AgentStatus.IDLE
       }
     });
 

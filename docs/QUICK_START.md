@@ -1,64 +1,106 @@
 # Quick Start Guide
 
+## Prerequisites
+
+- Node.js (v18 or higher)
+- Python 3.9+
+- Git
+- API keys for:
+  - Groq
+  - Perplexity
+  - XAI (Grok)
+  - Huggingface
+
 ## Installation
 
+1. Clone the repository:
 ```bash
-# Clone the repository
-git clone https://github.com/your-org/monkey-one.git
-
-# Install dependencies
+git clone https://github.com/your-username/monkey-one.git
 cd monkey-one
+```
+
+2. Install dependencies:
+```bash
+# Install Node dependencies
 npm install
 
-# Set up environment variables
-cp .env.production.example .env.production
-cp .env.test.example .env.test
+# Install Python dependencies
+pip install -r requirements.txt
+```
 
-# Update the environment files with your configuration
-# IMPORTANT: Never commit .env files to git!
+3. Configure environment:
+```bash
+cp .env.example .env
+# Edit .env with your API keys and configuration
+```
 
-# Start the development server
+## Configuration
+
+1. API Keys Setup:
+   - Add your API keys to `.env`
+   - Never commit API keys to version control
+   - Use environment variables in production
+
+2. Model Configuration:
+   - Configure default models in `config/models.json`
+   - Set resource limits in `config/resources.json`
+   - Configure logging in `config/logging.json`
+
+## Running the Project
+
+1. Start the development server:
+```bash
 npm run dev
 ```
 
-## Environment Setup
+2. Start the ML pipeline:
+```bash
+python scripts/start_ml_pipeline.py
+```
 
-1. **Configure Environment Variables**
-   - Copy `.env.production.example` to `.env.production`
-   - Copy `.env.test.example` to `.env.test`
-   - Update the files with your actual configuration values
-   - Never commit these files to git - they are already in .gitignore
+3. Run tests:
+```bash
+npm test
+```
 
-2. **Required Environment Variables**
-   - Firebase configuration
-   - API keys for LLM providers
-   - Database credentials
-   - See `.env.production.example` for all required variables
+## Common Issues & Troubleshooting
 
-## First Steps
+### API Connection Issues
+- Check API keys are correctly set in `.env`
+- Verify network connectivity
+- Ensure API service status is operational
 
-1. **Open the Application**
-   - Navigate to <http://localhost:3000>
-   - Login or use demo mode
+### Memory Issues
+- Check system has sufficient RAM (8GB+ recommended)
+- Monitor memory usage with `npm run monitor`
+- Clear cache if needed: `npm run clear-cache`
 
-2. **Start a Conversation**
-   - Click the chat interface
-   - Describe your automation needs
-   - Follow agent suggestions
+### Model Loading Issues
+- Verify model checksums
+- Check disk space for model storage
+- Use `npm run validate-models` to verify integrity
 
-3. **Create Your First Workflow**
-   - Work with the conversational agent
-   - Define requirements
-   - Test the solution
-   - Save for future use
+## Development Workflow
 
-4. **Next Steps**
-   - Explore more complex automations
-   - Try different agent combinations
-   - Save and manage workflows
-   - Set up GitHub integration
+1. Create feature branch:
+```bash
+git checkout -b feature/your-feature-name
+```
+
+2. Make changes and test:
+```bash
+npm run lint
+npm test
+```
+
+3. Submit PR:
+- Follow PR template
+- Ensure CI passes
+- Request review
 
 ## Need Help?
 
-- See full documentation in `/docs/USER_GUIDE.md`
-- Contact support at <support@monkey-one.com>
+- Check [troubleshooting guide](./TROUBLESHOOTING.md)
+- Review [common issues](./COMMON_ISSUES.md)
+- Join our [Discord community](https://discord.gg/monkey-one)
+- Open an issue on GitHub
