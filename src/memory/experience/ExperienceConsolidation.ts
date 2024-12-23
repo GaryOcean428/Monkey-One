@@ -155,8 +155,8 @@ export class ExperienceConsolidation extends EventEmitter {
     const processed = new Set<string>();
 
     for (const exp of experiences) {
-      if (processed.has(exp.id)) {
-
+      if (processed.has(exp.id)) continue;
+      
       const similar = await this.findSimilarExperiences(exp);
       if (similar.length > 0) {
         groups.push([exp, ...similar]);
