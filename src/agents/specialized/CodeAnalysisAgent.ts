@@ -123,7 +123,7 @@ export class CodeAnalysisAgent extends BaseAgent {
 
   private async classifyIntent(content: string): Promise<string> {
     // TODO: Implement intent classification using the model
-    if (content.includes('analyze')) return 'analyze_code';
+    if (content.includes('analyze')) {
     if (content.includes('refactor')) return 'suggest_refactoring';
     if (content.includes('optimize')) return 'optimize_performance';
     if (content.includes('security')) return 'review_security';
