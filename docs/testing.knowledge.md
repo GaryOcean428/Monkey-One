@@ -57,6 +57,17 @@
 - Reset state between tests
 - Clean up resources
 
+### Required Testing Dependencies
+- @types/jest for TypeScript type definitions
+- @testing-library/react for React component testing
+- @tensorflow/tfjs for ML-related tests
+- firebase/storage and firebase/firestore for Firebase tests
+
+### Message Type Requirements
+- All Message objects must include: id, type, role, content, timestamp
+- AgentCapability must be {name: string, description?: string}
+- Use proper enums (MessageType, AgentType) instead of string literals
+
 ### CI/CD Integration
 - Run tests in GitHub Actions
 - Generate coverage reports
