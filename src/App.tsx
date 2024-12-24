@@ -13,28 +13,28 @@ import { useNavigationStore } from './store/navigationStore';
 import { ThemeProvider } from './components/ThemeProvider';
 
 // Lazy-loaded components
-const ChatPanel = lazy(() => import('./components/panels/ChatPanel').then(module => ({ default: module.ChatPanel })));
-const AgentDashboard = lazy(() => import('./components/panels/AgentDashboard').then(module => ({ default: module.AgentDashboard })));
-const WorkflowPanel = lazy(() => import('./components/panels/WorkflowPanel').then(module => ({ default: module.WorkflowPanel })));
-const MemoryPanel = lazy(() => import('./components/panels/MemoryPanel').then(module => ({ default: module.MemoryPanel })));
-const DocumentsPanel = lazy(() => import('./components/panels/DocumentsPanel').then(module => ({ default: module.DocumentsPanel })));
-const DashboardPanel = lazy(() => import('./components/panels/DashboardPanel').then(module => ({ default: module.DashboardPanel })));
-const ToolsPanel = lazy(() => import('./components/panels/ToolsPanel').then(module => ({ default: module.ToolsPanel })));
-const SearchPanel = lazy(() => import('./components/panels/SearchPanel').then(module => ({ default: module.SearchPanel })));
-const VectorStorePanel = lazy(() => import('./components/panels/VectorStorePanel').then(module => ({ default: module.VectorStorePanel })));
-const GitHubPanel = lazy(() => import('./components/panels/GitHubPanel').then(module => ({ default: module.GitHubPanel })));
-const PerformancePanel = lazy(() => import('./components/panels/PerformancePanel').then(module => ({ default: module.PerformancePanel })));
+const ChatPanel = lazy(() => import('./components/panels/ChatPanel'));
+const AgentDashboard = lazy(() => import('./components/panels/AgentDashboard'));
+const WorkflowPanel = lazy(() => import('./components/panels/WorkflowPanel'));
+const MemoryPanel = lazy(() => import('./components/panels/MemoryPanel'));
+const DocumentsPanel = lazy(() => import('./components/panels/DocumentsPanel'));
+const DashboardPanel = lazy(() => import('./components/panels/DashboardPanel'));
+const ToolsPanel = lazy(() => import('./components/panels/ToolsPanel'));
+const SearchPanel = lazy(() => import('./components/panels/SearchPanel'));
+const VectorStorePanel = lazy(() => import('./components/panels/VectorStorePanel'));
+const GitHubPanel = lazy(() => import('./components/panels/GitHubPanel'));
+const PerformancePanel = lazy(() => import('./components/panels/PerformancePanel'));
 
 // Loading fallback
 const LoadingFallback = () => (
   <div className="flex items-center justify-center h-full">
-    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white"></div>
   </div>
 );
 
 function AuthenticatedContent() {
   const { settings } = useSettings();
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
   const initializeAgents = useAgentStore(state => state.initializeAgents);
   const { activeTab } = useNavigationStore();
@@ -49,16 +49,26 @@ function AuthenticatedContent() {
     }
   }, [user, initializeAgents]);
 
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="w-full max-w-md space-y-6 p-8 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+          <LoadingFallback />
+        </div>
+      </div>
+    );
+  }
+
   if (!user) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="w-full max-w-md p-8">
+        <div className="w-full max-w-md space-y-6 p-8 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
           {isSignUp ? (
             <>
               <SignUpForm />
               <button
                 onClick={() => setIsSignUp(false)}
-                className="mt-4 w-full text-center text-sm text-gray-600 hover:text-gray-900"
+                className="mt-4 w-full text-center text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
               >
                 Already have an account? Sign in
               </button>
@@ -68,7 +78,7 @@ function AuthenticatedContent() {
               <LoginForm />
               <button
                 onClick={() => setIsSignUp(true)}
-                className="mt-4 w-full text-center text-sm text-gray-600 hover:text-gray-900"
+                className="mt-4 w-full text-center text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
               >
                 Don't have an account? Sign up
               </button>

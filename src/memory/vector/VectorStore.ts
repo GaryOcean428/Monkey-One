@@ -28,10 +28,6 @@ export class VectorStore {
   ) {
     this.namespace = namespace;
     this.dimension = dimension;
-    this.client = new Pinecone({
-      apiKey: import.meta.env.VITE_PINECONE_API_KEY,
-      environment: import.meta.env.VITE_PINECONE_ENVIRONMENT
-    });
   }
 
   public static async getInstance(
@@ -47,7 +43,18 @@ export class VectorStore {
 
   private async initialize(): Promise<void> {
     if (!this.client) {
-      await this.client.init();
+      try {
+        // Initialize with only apiKey
+        this.client = new Pinecone({
+          apiKey: import.meta.env.VITE_PINECONE_API_KEY
+        });
+        
+        // Configure environment after initialization
+        this.client.environment = import.meta.env.VITE_PINECONE_ENVIRONMENT;
+      } catch (error) {
+        console.error('Failed to initialize Pinecone client:', error);
+        throw error;
+      }
     }
   }
 

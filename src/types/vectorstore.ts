@@ -29,8 +29,8 @@ export interface SearchResult {
 
 export interface VectorStoreConfig {
   apiKey: string;
-  environment: string;
-  projectId: string;
+  environment?: string;
+  projectId?: string;
   defaultIndex?: string;
   namespace?: string;
   dimensions?: number;

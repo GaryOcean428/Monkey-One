@@ -24,7 +24,7 @@ export function AgentMonitor({ agents, activeAgent }: AgentMonitorProps) {
               <div>
                 <h3 className="font-medium dark:text-white">{agent.name}</h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {agent.type.charAt(0).toUpperCase() + agent.type.slice(1)}
+                  {agent.type ? agent.type.charAt(0).toUpperCase() + agent.type.slice(1) : 'General'}
                 </p>
               </div>
             </div>

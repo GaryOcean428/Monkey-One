@@ -27,6 +27,66 @@ enum AgentType {
   Coder = 'coder'
 }
 
+export interface Agent {
+  id: string;
+  name: string;
+  description: string;
+  type?: string;
+  status: 'available' | 'busy' | 'offline';
+  capabilities: string[];
+  model: string;
+  systemPrompt: string;
+}
+
+export interface CodeInsight {
+  id: string;
+  type: 'pattern' | 'performance' | 'solution';
+  title: string;
+  description: string;
+  confidence: number;
+  timestamp: string;
+  helpful?: boolean;
+}
+
+export interface WorkflowTeamMember {
+  id: string;
+  role: string;
+  status: 'active' | 'inactive' | 'failed';
+}
+
+export interface WorkflowStep {
+  id: string;
+  name: string;
+  action: string;
+  agentId: string;
+  type: string;
+  status: 'pending' | 'in_progress' | 'completed' | 'failed';
+  error?: string;
+  config?: Record<string, any>;
+  dependencies?: string[];
+}
+
+export interface WorkflowMetadata {
+  iterationCount: number;
+  successMetrics: {
+    accuracy: number;
+    efficiency: number;
+    reliability: number;
+  };
+}
+
+export interface WorkflowDefinition {
+  id: string;
+  name: string;
+  description: string;
+  steps: WorkflowStep[];
+  team: WorkflowTeamMember[];
+  metadata: WorkflowMetadata;
+  created: string;
+  updated: string;
+  status: 'draft' | 'active' | 'archived';
+}
+
 export function createAgent(type: AgentType, config: AgentConstructor): Agent {
   switch (type) {
     case AgentType.Orchestrator: {
@@ -34,9 +94,12 @@ export function createAgent(type: AgentType, config: AgentConstructor): Agent {
       return {
         id: agent.id,
         name: agent.name,
-        role: agent.role,
+        description: agent.description,
+        type: AgentType.Orchestrator,
+        status: agent.status,
         capabilities: agent.capabilities,
-        subordinates: agent.subordinates,
+        model: agent.model,
+        systemPrompt: agent.systemPrompt,
         superiorId: config.superiorId
       };
     }
@@ -45,9 +108,12 @@ export function createAgent(type: AgentType, config: AgentConstructor): Agent {
       return {
         id: agent.id,
         name: agent.name,
-        role: agent.role,
+        description: agent.description,
+        type: AgentType.WebSurfer,
+        status: agent.status,
         capabilities: agent.capabilities,
-        subordinates: agent.subordinates,
+        model: agent.model,
+        systemPrompt: agent.systemPrompt,
         superiorId: config.superiorId
       };
     }
@@ -56,9 +122,12 @@ export function createAgent(type: AgentType, config: AgentConstructor): Agent {
       return {
         id: agent.id,
         name: agent.name,
-        role: agent.role,
+        description: agent.description,
+        type: AgentType.FileSurfer,
+        status: agent.status,
         capabilities: agent.capabilities,
-        subordinates: agent.subordinates,
+        model: agent.model,
+        systemPrompt: agent.systemPrompt,
         superiorId: config.superiorId
       };
     }
@@ -67,9 +136,12 @@ export function createAgent(type: AgentType, config: AgentConstructor): Agent {
       return {
         id: agent.id,
         name: agent.name,
-        role: agent.role,
+        description: agent.description,
+        type: AgentType.Coder,
+        status: agent.status,
         capabilities: agent.capabilities,
-        subordinates: agent.subordinates,
+        model: agent.model,
+        systemPrompt: agent.systemPrompt,
         superiorId: config.superiorId
       };
     }
@@ -81,5 +153,10 @@ export function createAgent(type: AgentType, config: AgentConstructor): Agent {
 export {
   AgentConstructor,
   AgentType,
-  createAgent
+  createAgent,
+  CodeInsight,
+  WorkflowStep,
+  WorkflowTeamMember,
+  WorkflowMetadata,
+  WorkflowDefinition
 };

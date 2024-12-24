@@ -20,19 +20,34 @@ class VectorStoreImpl implements VectorStore {
 
   constructor(config: VectorStoreConfig) {
     this.config = config;
+    
+    // Initialize Pinecone client with only apiKey
     this.pinecone = new Pinecone({
-      apiKey: config.apiKey,
-      environment: config.environment,
+      apiKey: import.meta.env.VITE_PINECONE_API_KEY
     });
+
+    // Initialize OpenAI client with the correct API key
+    const openaiApiKey = import.meta.env.VITE_OPENAI_API_KEY || import.meta.env.NEXT_PUBLIC_OPENAI_API_KEY;
+    if (!openaiApiKey) {
+      console.error('OpenAI API key is missing');
+    }
+    
     this.openai = new OpenAI({
-      apiKey: import.meta.env.VITE_OPENAI_API_KEY,
+      apiKey: openaiApiKey,
+      dangerouslyAllowBrowser: true // Required for browser environment
     });
   }
 
   private async initialize() {
     if (!this.ready) {
-      await this.pinecone.init();
-      this.ready = true;
+      try {
+        // Configure environment after initialization
+        this.pinecone.environment = import.meta.env.VITE_PINECONE_ENVIRONMENT;
+        this.ready = true;
+      } catch (error) {
+        console.error('Failed to initialize vector store:', error);
+        throw error;
+      }
     }
   }
 
@@ -241,5 +256,5 @@ class VectorStoreImpl implements VectorStore {
 export const vectorStore = new VectorStoreImpl({
   apiKey: import.meta.env.VITE_PINECONE_API_KEY || '',
   environment: import.meta.env.VITE_PINECONE_ENVIRONMENT || '',
-  projectId: import.meta.env.VITE_PINECONE_INDEX_NAME || '',
+  projectId: import.meta.env.VITE_PINECONE_INDEX_NAME || ''
 });
