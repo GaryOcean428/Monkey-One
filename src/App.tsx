@@ -9,7 +9,7 @@ import { SignUpForm } from './components/Auth/SignUpForm';
 import { useAgentStore } from './store/agentStore';
 import { DashboardLayout } from './components/Layout/DashboardLayout';
 import { TabsContent } from './components/ui/tabs';
-import { useNavigationStore } from './store/navigationStore';
+
 import { ThemeProvider } from './components/ThemeProvider';
 import { LocalModelService } from './lib/llm/LocalModelService';
 import { ModelManager } from './components/ModelManager';
@@ -39,7 +39,7 @@ function AuthenticatedContent() {
   const { user, isLoading } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
   const initializeAgents = useAgentStore(state => state.initializeAgents);
-  const activeTab = useNavigationStore((state) => state.activeTab);
+
   const [modelInitialized, setModelInitialized] = useState(false);
 
   useEffect(() => {
