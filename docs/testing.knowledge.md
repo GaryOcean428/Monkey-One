@@ -226,6 +226,21 @@ All agents must implement:
 - registerCapability(): Add new capability
 - handleMessage(): High-level message handling
 
+### Type System
+- Use const assertions for enums: `as const`
+- Explicitly export interfaces: `export { InterfaceName }`
+- Use type assertions for empty arrays: `[] as Type[]`
+- Use union types for string literals: `type Status = 'available' | 'busy' | 'offline'`
+- Define constants as `const NAME = {...} as const` instead of `enum`
+
+### Test Assertions
+- Use toEqual() for object comparisons instead of individual property checks
+- Handle async/await properly in test cases
+- Mock external dependencies and services
+- Use type assertions in mock implementations
+- Test both success and error cases
+- Verify all required fields in message objects
+
 ### Message Testing
 When creating test messages, always include all required fields:
 ```typescript

@@ -32,6 +32,7 @@ export interface AgentCapability {
   name: string;
   description?: string;
 }
+export { AgentCapability };  // Explicit export
 
 export interface Message {
   id: string;
@@ -76,19 +77,34 @@ export interface Agent {
   processMessage(message: Message): Promise<Message>;
 }
 
-export enum MessageType {
-  TASK = 'task',
-  RESPONSE = 'response',
-  ERROR = 'error',
-  BROADCAST = 'broadcast',
-  HANDOFF = 'handoff'
-}
+export const MessageType = {
+  TASK: 'task',
+  RESPONSE: 'response',
+  ERROR: 'error',
+  BROADCAST: 'broadcast',
+  HANDOFF: 'handoff'
+} as const;
+
+export type MessageType = typeof MessageType[keyof typeof MessageType];
 
 export interface AgentMetrics {
   messageCount: number;
   errorCount: number;
   averageResponseTime: number;
   status: string;
+}
+
+export interface LogLevel {
+  DEBUG: string;
+  INFO: string;
+  WARN: string;
+  ERROR: string;
+}
+
+export interface HostRuntimeConfig {
+  id: string;
+  type: AgentType;
+  capabilities: AgentCapability[];
 }
 
 export interface LogLevel {
