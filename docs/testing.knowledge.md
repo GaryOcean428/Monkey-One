@@ -164,9 +164,59 @@ const testMessage = {
 ### Agent Testing
 When working with agents, always use the proper enums and implement all required interface methods:
 
-- Use `AgentType` enum for agent types (e.g., `AgentType.ORCHESTRATOR`)
-- Use `AgentStatus` enum for agent status (e.g., `AgentStatus.IDLE`)
-- Use `MessageType` enum for message types (e.g., `MessageType.TASK`)
+- Use `AgentType` enum for agent types:
+  - `AgentType.ORCHESTRATOR`
+  - `AgentType.WORKER`
+  - `AgentType.SPECIALIST`
+- Use `AgentStatus` enum for agent status:
+  - `AgentStatus.AVAILABLE`
+  - `AgentStatus.BUSY`
+  - `AgentStatus.OFFLINE`
+- Use `MessageType` enum for message types:
+  - `MessageType.TASK`
+  - `MessageType.RESPONSE`
+  - `MessageType.ERROR`
+  - `MessageType.BROADCAST`
+  - `MessageType.HANDOFF`
+
+### Mock Agent Implementation
+When creating mock agents for tests:
+```typescript
+class MockAgent implements Agent {
+  id: string;
+  type = AgentType.SPECIALIST;
+  capabilities = [];
+  status = AgentStatus.AVAILABLE;
+
+  constructor(id: string) {
+    this.id = id;
+  }
+
+  async initialize(): Promise<void> {}
+  async processMessage(): Promise<any> {}
+  async getCapabilities() { return []; }
+  async registerCapability() {}
+  async handleMessage() {}
+}
+```
+
+### Agent Metrics Testing
+When testing agent metrics:
+- Test all metric fields: messageCount, errorCount, averageResponseTime, status
+- Use exact equality for counts and status
+- Use approximate equality for time-based metrics
+- Test metric updates after operations
+- Verify metric persistence
+- Test metric aggregation
+
+### Agent Handoff Testing
+When testing agent handoffs:
+- Mock memory manager for storing handoff context
+- Test capability detection
+- Verify context preservation during handoffs
+- Test error recovery scenarios
+- Validate agent selection logic
+- Use MessageType.HANDOFF for handoff messages
 
 Example mock agent:
 ```typescript
