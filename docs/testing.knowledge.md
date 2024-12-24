@@ -1,5 +1,13 @@
 # Testing Guidelines
 
+## Database & Auth Configuration
+- Use Supabase for auth and database needs
+- Avoid direct Postgres connections - use Supabase client
+- Supabase provides built-in RLS (Row Level Security)
+- Use Supabase migrations for schema changes
+- Store all Supabase-related code in src/lib/supabase/
+
+
 ## Test Categories
 
 ### Unit Tests

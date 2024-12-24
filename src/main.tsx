@@ -1,7 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
-import { initializeFirebase } from './lib/firebase';
 import './index.css';
 
 // Add error boundary for the entire app
@@ -21,27 +20,13 @@ if (!rootElement) {
 } else {
   console.log('Starting application initialization...');
   
-  // Initialize Firebase before rendering
-  initializeFirebase()
-    .then(() => {
-      console.log('Firebase initialized successfully');
-      const root = ReactDOM.createRoot(rootElement);
-      root.render(
-        <React.StrictMode>
-          <React.Suspense fallback={<div>Loading...</div>}>
-            <App />
-          </React.Suspense>
-        </React.StrictMode>
-      );
-      console.log('Application rendered successfully');
-    })
-    .catch(error => {
-      console.error('Failed to initialize Firebase:', error);
-      rootElement.innerHTML = `
-        <div style="padding: 20px; text-align: center;">
-          <h1>Failed to initialize application</h1>
-          <pre style="color: red">${error.message}</pre>
-        </div>
-      `;
-    });
+  const root = ReactDOM.createRoot(rootElement);
+  root.render(
+    <React.StrictMode>
+      <React.Suspense fallback={<div>Loading...</div>}>
+        <App />
+      </React.Suspense>
+    </React.StrictMode>
+  );
+  console.log('Application rendered successfully');
 }
