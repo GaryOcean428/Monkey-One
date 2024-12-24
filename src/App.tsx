@@ -7,11 +7,9 @@ import { SettingsProvider, useSettings } from './context/SettingsContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LoginForm } from './components/Auth/LoginForm';
 import { SignUpForm } from './components/Auth/SignUpForm';
-import { ProfileManager } from './components/Profile/ProfileManager';
 import { useAgentStore } from './store/agentStore';
-
-// Lazy load heavy components
-const MainPanel = lazy(() => import('./components/MainPanel').then(module => ({ default: module.MainPanel })));
+import { RouterProvider } from 'react-router-dom';
+import { router } from './routes';
 
 // Loading fallback
 const LoadingFallback = () => (
@@ -72,10 +70,7 @@ function AuthenticatedContent() {
       <main className="flex-1 flex flex-col">
         <Header />
         <ErrorBoundary>
-          <Suspense fallback={<LoadingFallback />}>
-            <ProfileManager />
-            <MainPanel />
-          </Suspense>
+          <RouterProvider router={router} />
         </ErrorBoundary>
       </main>
     </div>
