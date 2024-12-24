@@ -3,7 +3,7 @@ import { NeuralCore } from '../../evolution/NeuralCore';
 import { memoryManager } from '../../memory';
 import { GitHubClient } from '../../github/GitHubClient';
 import { CodeProcessor } from '../../llm/CodeProcessor';
-import type { Message, CodeInsight, LearningMetric } from '@/types';
+import type { Message, CodeInsight, LearningMetric } from '../../../types';
 import * as tf from '@tensorflow/tfjs';
 
 export class ObserverAgent extends BaseAgent {

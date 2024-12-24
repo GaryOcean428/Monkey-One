@@ -1,12 +1,12 @@
 import { renderHook, act } from '@testing-library/react';
-import { AgentType, AgentStatus } from '@/types';
-import { useChat } from '@/hooks/useChat';
-import { useChatStore } from '@/store/chatStore';
-import { useAgentStore } from '@/store/agentStore';
+import { AgentType, AgentStatus } from '../../types';
+import { useChat } from '../../hooks/useChat';
+import { useChatStore } from '../../store/chatStore';
+import { useAgentStore } from '../../store/agentStore';
 
 // Mock the stores
-jest.mock('@/store/chatStore');
-jest.mock('@/store/agentStore');
+jest.mock('../../store/chatStore');
+jest.mock('../../store/agentStore');
 
 describe('useChat', () => {
   beforeEach(() => {

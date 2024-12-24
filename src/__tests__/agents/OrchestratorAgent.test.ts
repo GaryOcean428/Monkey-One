@@ -1,6 +1,6 @@
 import { OrchestratorAgent } from '../../lib/agents/core/OrchestratorAgent';
-import { Agent, AgentStatus, AgentType, Message, MessageType } from '@/types';
-import { RuntimeError } from '@/lib/errors/AgentErrors';
+import { Agent, AgentStatus, AgentType, Message, MessageType } from '../../types';
+import { RuntimeError } from '../../lib/errors/AgentErrors';
 
 // Mock child agent for testing
 class MockChildAgent implements Agent {

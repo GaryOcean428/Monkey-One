@@ -11,7 +11,7 @@ dotenv.config({ path: '.env.local' });
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   // Load env file based on mode
-  process.env = { ...process.env, ...loadEnv(mode, process.cwd()) };
+  const env = loadEnv(mode, process.cwd(), '');
 
   return {
     plugins: [
@@ -25,6 +25,13 @@ export default defineConfig(({ mode }) => {
         ext: '.br',
       }),
     ],
+    define: {
+      global: 'globalThis',
+      // Expose env variables
+      'import.meta.env.VITE_OPENAI_API_KEY': JSON.stringify(env.NEXT_PUBLIC_OPENAI_API_KEY),
+      'import.meta.env.VITE_PINECONE_API_KEY': JSON.stringify(env.VITE_PINECONE_API_KEY),
+      'import.meta.env.VITE_PINECONE_ENVIRONMENT': JSON.stringify(env.VITE_PINECONE_ENVIRONMENT),
+    },
     build: {
       outDir: 'dist',
       sourcemap: true,
@@ -62,15 +69,19 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       port: 3000,
-      host: true
+      host: true,
+      hmr: {
+        overlay: true,
+        clientPort: 3000,
+      },
+      watch: {
+        usePolling: true,
+        interval: 100,
+      },
     },
     preview: {
       port: 3000,
       host: true
-    },
-    // Ensure all environment variables are available
-    define: {
-      'process.env': process.env
     }
   };
 });

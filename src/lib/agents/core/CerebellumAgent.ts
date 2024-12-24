@@ -1,6 +1,6 @@
 import { BaseAgent } from '../base';
-import type { Message } from '@/types';
-import { memoryManager } from '@/lib/memory';
+import type { Message } from '../../../types';
+import { memoryManager } from '../../../lib/memory';
 
 interface MotorPattern {
   id: string;

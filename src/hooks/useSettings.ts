@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
-import { useSettingsStore } from '@/store/settingsStore';
-import type { Settings } from '@/types';
+import { useSettingsStore } from '../store/settingsStore';
+import type { Settings } from '../types';
 
 export function useSettings() {
   const { settings, updateSettings, resetSettings } = useSettingsStore();

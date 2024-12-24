@@ -5,9 +5,9 @@ import { CodeEditor } from './CodeEditor';
 import { InsightPanel } from './InsightPanel';
 import { ModelSelector } from './ModelSelector';
 import { PerformanceMetrics } from './PerformanceMetrics';
-import { useCodeProcessor } from '@/hooks/useCodeProcessor';
+import { useCodeProcessor } from '../../hooks/useCodeProcessor';
 import { Button } from '../ui/button';
-import { toast } from '@/components/ui/toast';
+import { toast } from '../ui/toast';
 
 export function CodingWorkspace() {
   const [code, setCode] = useState('');

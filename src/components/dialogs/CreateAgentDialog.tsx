@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { useAgentStore } from '@/store/agentStore';
+import { useAgentStore } from '../../store/agentStore';
 
 interface CreateAgentDialogProps {
   open: boolean;

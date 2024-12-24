@@ -1,4 +1,4 @@
-import { Tool, ToolResult } from '@/types';
+import { Tool, ToolResult } from '../../types';
 import { ToolError, ToolTimeoutError } from './ToolError';
 
 class ToolManager {

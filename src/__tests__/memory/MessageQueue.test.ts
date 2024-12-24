@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { MessageQueue } from '@/lib/memory/MessageQueue';
-import { Message, MessageType } from '@/types';
+import { MessageQueue } from '../../lib/memory/MessageQueue';
+import { Message, MessageType } from '../../types';
 
 describe('MessageQueue', () => {
   let queue: MessageQueue<Message>;

@@ -1,6 +1,6 @@
 import { BaseAgent } from '../base';
 import { GitHubClient } from '../../github/GitHubClient';
-import type { Message } from '@/types';
+import type { Message } from '../../../types';
 
 export class GitHubAgent extends BaseAgent {
   private client: GitHubClient;

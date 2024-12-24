@@ -1,5 +1,5 @@
 import { BaseAgent } from '../base';
-import type { Message, ScrapingTask } from '@/types';
+import type { Message, ScrapingTask } from '../../../types';
 import puppeteer from 'puppeteer';
 
 export class WebScraperAgent extends BaseAgent {

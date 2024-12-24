@@ -3,8 +3,8 @@ import { motion } from 'framer-motion';
 import { ThumbsUp, ThumbsDown, MessageSquare, Tag, Wrench } from 'lucide-react'; // Changed Tool to Wrench
 import { Button } from '../ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
-import { useFeedbackStore } from '@/store/feedbackStore';
-import type { Message } from '@/types';
+import { useFeedbackStore } from '../../store/feedbackStore';
+import type { Message } from '../../types';
 
 // Rest of the file remains the same, just update the icon usage
 export function FeedbackControls({ message }: FeedbackControlsProps) {

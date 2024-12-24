@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { AmygdalaAgent } from '@/lib/agents/core/AmygdalaAgent';
+import { AmygdalaAgent } from '../../lib/agents/core/AmygdalaAgent';
 
 describe('AmygdalaAgent', () => {
   let agent: AmygdalaAgent;

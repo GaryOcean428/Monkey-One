@@ -3,6 +3,7 @@ import { Tool } from '../../tools/registry/Tool';
 import { Message } from '../../types/Message';
 import { Response } from '../../types/Response';
 import { Queue } from '../../utils/Queue';
+import { agentQueries } from '../../lib/supabase/agents';
 
 export interface AgentConfig {
   name: string;
@@ -18,6 +19,8 @@ export abstract class BaseAgent extends EventEmitter {
   protected maxRetries: number;
   protected timeout: number;
 
+  protected id: string;
+
   constructor(config: AgentConfig) {
     super();
     this.name = config.name;
@@ -25,6 +28,43 @@ export abstract class BaseAgent extends EventEmitter {
     this.messageQueue = new Queue<Message>();
     this.maxRetries = config.maxRetries || 3;
     this.timeout = config.timeout || 30000;
+    
+    // Create agent record in database
+    this.initializeAgent();
+  }
+
+  private async initializeAgent() {
+    const agent = await agentQueries.createAgent({
+      name: this.name,
+      type: this.constructor.name,
+      status: 'idle',
+      capabilities: this.capabilities
+    });
+    this.id = agent.id;
+  }
+
+  protected async storeThought(type: string, message: string, metadata?: any) {
+    await agentQueries.storeAgentThought({
+      agent_id: this.id,
+      type,
+      message,
+      metadata,
+      importance: 1.0,
+      confidence: 1.0
+    });
+  }
+
+  protected async storeMemory(key: string, value: any, metadata?: any) {
+    await agentQueries.storeAgentMemory({
+      agent_id: this.id,
+      key,
+      value,
+      metadata
+    });
+  }
+
+  protected async updateStatus(status: string) {
+    await agentQueries.updateAgentStatus(this.id, status);
   }
 
   public getName(): string {

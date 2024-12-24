@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { toolhouse } from '@/lib/toolhouse';
+import { toolhouse } from '../lib/toolhouse';
 
 export interface MemoryTrace {
   id: string;
