@@ -1,20 +1,20 @@
 import React from 'react';
 import { cn } from '../../lib/utils';
+import { NeonMonkey } from '../Logo/NeonMonkey';
 import {
   MessageSquare,
   Settings,
-  Brain,
-  Users,
-  LayoutDashboard,
-  Wrench,
-  Search,
+  Code2,
   Database,
-  FileText,
-  Github,
-  Activity,
-  Network,
+  Brain,
+  GitBranch,
+  Terminal,
+  Workflow,
+  Zap,
   ChevronLeft,
   ChevronRight,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Separator } from '../ui/separator';
@@ -22,21 +22,22 @@ import { ScrollArea } from '../ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import { Tabs, TabsContent } from '../ui/tabs';
 import { useNavigationStore } from '../../store/navigationStore';
+import { useTheme } from '../ThemeProvider';
 import { ThoughtLoggerPanel } from '../panels/ThoughtLoggerPanel';
 import { AgentMonitor } from '../panels/AgentMonitor';
 
 const navItems = [
   { id: 'chat', label: 'Chat', icon: MessageSquare },
-  { id: 'agents', label: 'Agents', icon: Users },
-  { id: 'workflows', label: 'Workflows', icon: Network },
+  { id: 'agents', label: 'Agents', icon: GitBranch },
+  { id: 'workflows', label: 'Workflows', icon: Workflow },
   { id: 'memory', label: 'Memory', icon: Brain },
-  { id: 'documents', label: 'Documents', icon: FileText },
-  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { id: 'tools', label: 'Tools', icon: Wrench },
-  { id: 'search', label: 'Search', icon: Search },
+  { id: 'documents', label: 'Documents', icon: Code2 },
+  { id: 'dashboard', label: 'Dashboard', icon: Terminal },
+  { id: 'tools', label: 'Tools', icon: Zap },
+  { id: 'search', label: 'Search', icon: Database },
   { id: 'vectorstore', label: 'Vector Store', icon: Database },
-  { id: 'github', label: 'GitHub', icon: Github },
-  { id: 'performance', label: 'Performance', icon: Activity },
+  { id: 'github', label: 'GitHub', icon: GitBranch },
+  { id: 'performance', label: 'Performance', icon: Terminal },
   { id: 'thought-logger', label: 'Thought Logger', icon: Brain },
 ];
 
@@ -44,10 +45,9 @@ interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
-export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
-  const [collapsed, setCollapsed] = React.useState(false);
-  const { activeTab, setActiveTab } = useNavigationStore();
-  const [showSettings, setShowSettings] = React.useState(false);
+export function DashboardLayout({ children }: DashboardLayoutProps) {
+  const { isCollapsed, toggleSidebar } = useNavigationStore();
+  const { theme, toggleTheme } = useTheme();
 
   const PANEL_COMPONENTS = {
     'chat': null,
@@ -65,30 +65,32 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
   };
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-screen overflow-hidden bg-bg-darker">
       {/* Sidebar */}
       <div
         className={cn(
-          'relative h-full bg-gray-900 flex flex-col transition-all duration-300',
-          collapsed ? 'w-16' : 'w-64'
+          'relative bg-bg-light border-r border-r-gray-800 transition-all duration-300',
+          isCollapsed ? 'w-16' : 'w-64'
         )}
       >
         {/* Logo */}
-        <div className="flex items-center p-4 border-b border-gray-800">
+        <div className="flex items-center justify-between p-4 border-b border-b-gray-800">
+          <div className="flex items-center space-x-2">
+            <NeonMonkey size="sm" animated={false} />
+            {!isCollapsed && (
+              <span className="text-lg font-semibold bg-gradient-to-r from-neon-pink to-neon-blue bg-clip-text text-transparent">
+                Monkey One
+              </span>
+            )}
+          </div>
           <Button
             variant="ghost"
-            size="sm"
-            onClick={() => setCollapsed(!collapsed)}
-            className={cn(
-              'p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg',
-              !collapsed && 'mx-auto'
-            )}
+            size="icon"
+            onClick={toggleSidebar}
+            className="text-gray-400 hover:text-white"
           >
-            {collapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+            {isCollapsed ? <ChevronRight /> : <ChevronLeft />}
           </Button>
-          {!collapsed && (
-            <span className="text-white ml-2 font-semibold">Monkey One</span>
-          )}
         </div>
 
         {/* Navigation */}
@@ -96,7 +98,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
           <nav className="space-y-1">
             {navItems.map((item) => {
               const Icon = item.icon;
-              const isActive = activeTab === item.id;
+              const isActive = item.id === 'chat'; // TODO: implement active tab logic
 
               return (
                 <Tooltip key={item.id} delayDuration={0}>
@@ -107,15 +109,15 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                         'w-full flex items-center gap-3 p-3 mb-1 rounded-lg justify-start',
                         'text-gray-400 hover:text-white hover:bg-gray-800',
                         isActive && 'bg-gray-800 text-white',
-                        !collapsed && 'justify-center px-2'
+                        !isCollapsed && 'justify-center px-2'
                       )}
-                      onClick={() => setActiveTab(item.id)}
+                      onClick={() => {}}
                     >
                       <Icon size={20} />
-                      {!collapsed && <span>{item.label}</span>}
+                      {!isCollapsed && <span>{item.label}</span>}
                     </Button>
                   </TooltipTrigger>
-                  {collapsed && (
+                  {isCollapsed && (
                     <TooltipContent side="right" className="bg-gray-800 text-white">
                       {item.label}
                     </TooltipContent>
@@ -126,19 +128,28 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
           </nav>
         </div>
 
-        {/* Settings */}
-        <div className="p-4 border-t border-gray-800">
+        {/* Settings and Theme Toggle */}
+        <div className="p-4 border-t border-t-gray-800 flex items-center justify-between">
           <Button
             variant="ghost"
             className={cn(
-              'w-full flex items-center gap-3 p-2 rounded-lg',
+              'flex items-center gap-2',
               'text-gray-400 hover:text-white hover:bg-gray-800',
-              !collapsed && 'justify-center'
+              !isCollapsed && 'justify-center'
             )}
-            onClick={() => setShowSettings(true)}
+            onClick={() => {}}
           >
             <Settings size={20} />
-            {!collapsed && <span>Settings</span>}
+            {!isCollapsed && <span>Settings</span>}
+          </Button>
+          
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            className="text-gray-400 hover:text-white"
+          >
+            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
           </Button>
         </div>
       </div>

@@ -1,3 +1,4 @@
+import './styles/globals.css';
 import { useEffect, lazy, Suspense, useState } from 'react';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { TooltipProvider } from './components/ui/tooltip';
@@ -9,6 +10,7 @@ import { useAgentStore } from './store/agentStore';
 import { DashboardLayout } from './components/Layout/DashboardLayout';
 import { TabsContent } from './components/ui/tabs';
 import { useNavigationStore } from './store/navigationStore';
+import { ThemeProvider } from './components/ThemeProvider';
 
 // Lazy-loaded components
 const ChatPanel = lazy(() => import('./components/panels/ChatPanel').then(module => ({ default: module.ChatPanel })));
@@ -100,17 +102,19 @@ function AuthenticatedContent() {
 
 function App() {
   return (
-    <ErrorBoundary>
-      <SettingsProvider>
-        <AuthProvider>
-          <TooltipProvider>
-            <Suspense fallback={<LoadingFallback />}>
-              <AuthenticatedContent />
-            </Suspense>
-          </TooltipProvider>
-        </AuthProvider>
-      </SettingsProvider>
-    </ErrorBoundary>
+    <ThemeProvider>
+      <TooltipProvider>
+        <ErrorBoundary>
+          <SettingsProvider>
+            <AuthProvider>
+              <Suspense fallback={<LoadingFallback />}>
+                <AuthenticatedContent />
+              </Suspense>
+            </AuthProvider>
+          </SettingsProvider>
+        </ErrorBoundary>
+      </TooltipProvider>
+    </ThemeProvider>
   );
 }
 
