@@ -185,7 +185,7 @@ When creating mock agents for tests:
 class MockAgent implements Agent {
   id: string;
   type = AgentType.SPECIALIST;
-  capabilities = [];
+  capabilities: AgentCapability[] = [];
   status = AgentStatus.AVAILABLE;
 
   constructor(id: string) {
@@ -193,11 +193,50 @@ class MockAgent implements Agent {
   }
 
   async initialize(): Promise<void> {}
-  async processMessage(): Promise<any> {}
-  async getCapabilities() { return []; }
-  async registerCapability() {}
-  async handleMessage() {}
+  
+  async processMessage(message: Message): Promise<Message> {
+    return {
+      id: 'response',
+      type: MessageType.RESPONSE,
+      role: 'assistant',
+      content: 'Test response',
+      timestamp: Date.now()
+    };
+  }
+
+  getCapabilities(): AgentCapability[] {
+    return this.capabilities;
+  }
+
+  registerCapability(capability: AgentCapability): void {
+    this.capabilities.push(capability);
+  }
+
+  async handleMessage(message: Message): Promise<Message> {
+    return this.processMessage(message);
+  }
 }
+```
+
+### Required Agent Interface Methods
+All agents must implement:
+- initialize(): Setup agent state
+- processMessage(): Core message processing
+- getCapabilities(): Return list of capabilities
+- registerCapability(): Add new capability
+- handleMessage(): High-level message handling
+
+### Message Testing
+When creating test messages, always include all required fields:
+```typescript
+const testMessage = {
+  id: string;
+  type: MessageType;  // Must use MessageType enum (e.g., MessageType.TASK), not string literals
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  timestamp: number;
+  metadata?: Record<string, unknown>;
+};
 ```
 
 ### Agent Metrics Testing

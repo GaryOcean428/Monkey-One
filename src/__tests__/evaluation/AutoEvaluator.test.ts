@@ -1,13 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AutoEvaluator } from '../../lib/evaluation/AutoEvaluator';
 import { memoryManager } from '../../lib/memory';
-import { Agent, AgentType, AgentStatus, MessageType } from '../../types';
+import { Agent, AgentType, AgentStatus, MessageType, AgentCapability, Message } from '../../types';
 
 // Mock agent implementation
 class MockAgent implements Agent {
   id: string;
   type = AgentType.SPECIALIST;
-  capabilities = [];
+  capabilities: AgentCapability[] = [];
   status = AgentStatus.AVAILABLE;
 
   constructor(id: string) {
@@ -15,10 +15,28 @@ class MockAgent implements Agent {
   }
 
   async initialize(): Promise<void> {}
-  async processMessage(): Promise<any> {}
-  async getCapabilities() { return []; }
-  async registerCapability() {}
-  async handleMessage() {}
+  
+  async processMessage(message: Message): Promise<Message> {
+    return {
+      id: 'response',
+      type: MessageType.RESPONSE,
+      role: 'assistant',
+      content: 'Test response',
+      timestamp: Date.now()
+    };
+  }
+
+  getCapabilities(): AgentCapability[] {
+    return this.capabilities;
+  }
+
+  registerCapability(capability: AgentCapability): void {
+    this.capabilities.push(capability);
+  }
+
+  async handleMessage(message: Message): Promise<Message> {
+    return this.processMessage(message);
+  }
 }
 
 describe('AutoEvaluator', () => {
