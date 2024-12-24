@@ -10,6 +10,9 @@ export function FeatureFlag({ flagKey, children, fallback = null }: FeatureFlagP
   const [isEnabled, loading, error] = useRemoteConfig<boolean>(flagKey, false);
 
   if (loading) {
+    return fallback;
+  }
+  
   if (error) {
     console.error(`Error loading feature flag ${flagKey}:`, error);
     return fallback;
