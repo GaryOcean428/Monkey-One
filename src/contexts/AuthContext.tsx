@@ -2,17 +2,11 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 
-// Simple loading spinner component
-const LoadingSpinner = () => (
-  <div className="flex items-center justify-center">
-    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white"></div>
-  </div>
-);
-
 interface AuthContextType {
-  user: User | null
-  signIn: (email: string, password: string) => Promise<any>
-  signOut: () => Promise<void>
+  user: User | null;
+  signIn: (email: string, password: string) => Promise<any>;
+  signOut: () => Promise<void>;
+  isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -65,6 +59,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     user,
     signIn,
     signOut,
+    isLoading: loading
   };
 
   if (loading) {
