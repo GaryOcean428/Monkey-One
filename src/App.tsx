@@ -4,6 +4,8 @@ import { Header } from './components/Header';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { TooltipProvider } from './components/ui/tooltip';
 import { useSettings } from './context/SettingsContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { LoginForm } from './components/Auth/LoginForm';
 
 // Lazy load heavy components
 const MainPanel = lazy(() => import('./components/MainPanel'));
@@ -16,12 +18,23 @@ const LoadingFallback = () => (
   </div>
 );
 
-function AppContent() {
+function AuthenticatedContent() {
   const { settings } = useSettings();
+  const { user } = useAuth();
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', settings.theme === 'dark');
   }, [settings.theme]);
+
+  if (!user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="w-full max-w-md p-8">
+          <LoginForm />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-background">
@@ -41,11 +54,13 @@ function AppContent() {
 function App() {
   return (
     <ErrorBoundary>
-      <TooltipProvider>
-        <Suspense fallback={<LoadingFallback />}>
-          <AppContent />
-        </Suspense>
-      </TooltipProvider>
+      <AuthProvider>
+        <TooltipProvider>
+          <Suspense fallback={<LoadingFallback />}>
+            <AuthenticatedContent />
+          </Suspense>
+        </TooltipProvider>
+      </AuthProvider>
     </ErrorBoundary>
   );
 }
