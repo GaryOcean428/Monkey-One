@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { MLService } from '@/lib/ml/MLService';
+import { MLService } from '../lib/ml/MLService';
 import * as tf from '@tensorflow/tfjs';
 
 const mlService = new MLService();

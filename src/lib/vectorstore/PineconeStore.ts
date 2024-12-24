@@ -1,5 +1,5 @@
 import { Pinecone } from '@pinecone-database/pinecone';
-import type { CodeInsight, LearningMetric } from '@/types';
+import type { CodeInsight, LearningMetric } from '../../types';
 
 export class PineconeStore {
   private pc: Pinecone;

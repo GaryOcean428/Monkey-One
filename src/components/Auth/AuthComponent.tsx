@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Provider } from '@supabase/supabase-js';
-import { useAuth } from '@/lib/supabase/hooks/useAuth';
+import { useAuth } from '../../lib/supabase/hooks/useAuth';
 
 export function AuthComponent() {
   const { user, loading, error, signInWithEmail, signUpWithEmail, signInWithProvider, signOut, linkIdentity, getLinkedIdentities } = useAuth();

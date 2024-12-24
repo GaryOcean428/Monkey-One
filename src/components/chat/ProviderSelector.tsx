@@ -1,8 +1,8 @@
 import React from 'react';
 import { Check, ChevronDown } from 'lucide-react';
 import { Button } from '../ui/button';
-import { llmManager } from '@/lib/llm/providers';
-import { useLLM } from '@/hooks/useLLM';
+import { llmManager } from '../../lib/llm/providers';
+import { useLLM } from '../../hooks/useLLM';
 import {
   DropdownMenu,
   DropdownMenuContent,

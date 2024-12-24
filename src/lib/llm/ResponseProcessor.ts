@@ -1,6 +1,6 @@
 import { llmManager } from './providers';
 import { memoryManager } from '../memory';
-import type { Message } from '@/types';
+import type { Message } from '../../types';
 
 interface ProcessedResponse {
   content: string;

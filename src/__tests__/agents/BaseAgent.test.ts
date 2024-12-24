@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { BaseAgent } from '@/lib/agents/base';
-import { AgentCapability, Message, MessageType } from '@/types';
+import { BaseAgent } from '../../lib/agents/base';
+import { AgentCapability, Message, MessageType } from '../../types';
 
 // Create test agent class
 class TestAgent extends BaseAgent {

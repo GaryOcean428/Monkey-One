@@ -14,7 +14,7 @@ const defaultSettings: Settings = {
   notifications: true,
   apiEndpoint: import.meta.env.VITE_API_ENDPOINT || 'http://localhost:3000',
   llm: {
-    defaultModel: 'grok-beta',
+    defaultModel: 'gpt-4-o1',
     temperature: 0.7,
     maxTokens: 1000,
     streamResponses: true,

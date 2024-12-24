@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { HostAgentRuntime, HostRuntimeConfig } from '@/lib/runtime/HostAgentRuntime'
-import { Agent, AgentStatus, AgentType, LogLevel, Message, MessageType } from '@/types'
-import { RuntimeError } from '@/lib/errors/AgentErrors'
+import { HostAgentRuntime, HostRuntimeConfig } from '../../lib/runtime/HostAgentRuntime'
+import { Agent, AgentStatus, AgentType, LogLevel, Message, MessageType } from '../../types'
+import { RuntimeError } from '../../lib/errors/AgentErrors'
 
 class MockAgent implements Agent {
   id: string

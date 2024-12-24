@@ -1,6 +1,6 @@
 import { BaseAgent } from '../agents/base';
 import { memoryManager } from '../memory';
-import type { WorkflowDefinition, AgentTask } from '@/types';
+import type { WorkflowDefinition, AgentTask } from '../../types';
 
 export class WorkflowManager {
   private workflows: Map<string, WorkflowDefinition> = new Map();

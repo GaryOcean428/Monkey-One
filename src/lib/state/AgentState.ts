@@ -1,4 +1,4 @@
-import { Agent, AgentStatus, Message } from '@/types';
+import { Agent, AgentStatus, Message } from '../../types';
 import { RuntimeError } from '../errors/AgentErrors';
 
 export interface StateContext {

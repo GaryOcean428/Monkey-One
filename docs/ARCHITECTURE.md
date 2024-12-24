@@ -2,215 +2,187 @@
 
 ## System Overview
 
-### Brain Architecture
-
-```plaintext
-┌─────────────────────────────────────┐
-│           Neural Core               │
-├─────────────────────────────────────┤
-│  - Self-evolving architecture      │
-│  - Learning optimization           │
-│  - Pattern recognition             │
-└─────────────────────┬───────────────┘
-                  │
-┌─────────────────┴───────────────────┐
-│         Brain Regions               │
-├─────────────────────────────────────┤
-│  ┌─────────────┐    ┌─────────────┐ │
-│  │  Amygdala   │    │ Cerebellum  │ │
-│  └─────────────┘    └─────────────┘ │
-│  ┌─────────────┐    ┌─────────────┐ │
-│  │  Thalamus   │    │ Hippocampus │ │
-│  └─────────────┘    └─────────────┘ │
-└─────────────────┬───────────────────┘
-                  │
-┌─────────────────┴───────────────────┐
-│         Memory System               │
-├─────────────────────────────────────┤
-│  - Vector Store                    │
-│  - Firebase Integration            │
-│  - Experience Consolidation        │
-└─────────────────┬───────────────────┘
-                  │
-┌─────────────────┴───────────────────┐
-│         Agent System                │
-├─────────────────────────────────────┤
-│  - Observer Agent                  │
-│  - GitHub Agent                    │
-│  - Tool Creation Agent             │
-└─────────────────────────────────────┘
-```
-
-### Data Flow
-
-```plaintext
-┌──────────┐    ┌──────────┐    ┌──────────┐
-│  Input   │ -> │  Brain   │ -> │  Agents  │
-└──────────┘    └──────────┘    └──────────┘
-      │             │                │
-      │             v                │
-      │        ┌──────────┐         │
-      └------> │  Memory  │ <-------┘
-               └──────────┘
-                    │
-          ┌─────────┴─────────┐
-          │                   │
-    ┌──────────┐       ┌──────────┐
-    │ Firebase │       │ Pinecone │
-    └──────────┘       └──────────┘
-```
-
-### Component Integration
-
-```plaintext
-┌─────────────────────────────────────┐
-│           User Interface            │
-├─────────────────────────────────────┤
-│  - Chat Interface                  │
-│  - Agent Dashboard                 │
-│  - Tool Management                 │
-└─────────────────┬───────────────────┘
-                  │
-┌─────────────────┴───────────────────┐
-│         Integration Layer           │
-├─────────────────────────────────────┤
-│  - API Gateway                     │
-│  - Event Bus                       │
-│  - Message Broker                  │
-└─────────────────┬───────────────────┘
-                  │
-┌─────────────────┴───────────────────┐
-│         Service Layer               │
-├─────────────────────────────────────┤
-│  - Agent Services                  │
-│  - Memory Services                 │
-│  - Tool Services                   │
-└─────────────────┬───────────────────┘
-                  │
-┌─────────────────┴───────────────────┐
-│         Storage Layer               │
-├─────────────────────────────────────┤
-│  - Firebase                        │
-│  - Pinecone                        │
-│  - Local Storage                   │
-└─────────────────────────────────────┘
-```
+Monkey One is a sophisticated AI development environment that combines local and cloud-based AI capabilities with a modern web interface. The system is designed to be modular, extensible, and performant.
 
 ## Core Components
 
-### Neural Core
+### Frontend Architecture
 
-- Self-evolving architecture
-- Learning optimization
-- Pattern recognition
-- TensorFlow.js integration
+#### React Component Structure
+```
+src/
+├── components/
+│   ├── Layout/
+│   │   ├── DashboardLayout.tsx
+│   │   └── MainLayout.tsx
+│   ├── panels/
+│   │   ├── WorkflowPanel.tsx
+│   │   ├── SettingsPanel.tsx
+│   │   ├── MemoryPanel.tsx
+│   │   └── ...
+│   ├── ui/
+│   │   ├── Button.tsx
+│   │   ├── Input.tsx
+│   │   └── ...
+│   └── ...
+```
 
-### Brain Regions
+#### State Management
+- React Context for global state
+- Local component state for UI-specific logic
+- Zustand for complex state management
+- Persistent storage via localStorage
 
-- Amygdala: Emotional processing
-- Cerebellum: Motor learning
-- Thalamus: Signal routing
-- Hippocampus: Memory formation
+#### Routing
+- React Router v6 for navigation
+- Nested routes for complex views
+- Protected routes for authenticated content
+- Universal components supporting both modal and route modes
+
+### Backend Architecture
+
+#### API Layer
+- REST endpoints for core functionality
+- WebSocket for real-time updates
+- GraphQL for complex data queries
+- Rate limiting and caching
+
+#### AI Integration
+- Local model inference (Phi-3.5)
+- Cloud model integration (GPT-4, Claude)
+- Model quantization and optimization
+- Streaming responses
+
+#### Data Storage
+- Vector store for semantic search
+- SQLite for structured data
+- File system for local assets
+- Redis for caching
+
+## Key Features
+
+### Local Model Integration
+- Phi-3.5 model (3.8B parameters)
+- 4-bit quantization (Q4_0)
+- ONNX Runtime optimization
+- WebAssembly execution
+
+### Settings Management
+- Universal settings component
+- Dual-mode operation (modal/route)
+- Persistent preferences
+- Real-time updates
+
+### Workflow System
+- Visual workflow builder
+- Agent orchestration
+- Task scheduling
+- Error handling
 
 ### Memory System
-
-- Vector-based storage
-- Experience consolidation
-- Pattern completion
+- Short-term context
+- Long-term storage
+- Vector embeddings
 - Semantic search
 
-### Agent System
-
-- Multi-agent coordination
-- Specialized capabilities
-- Tool creation
-- GitHub integration
-
-## Technology Stack
+## Technical Stack
 
 ### Frontend
-
-- React
-- TailwindCSS
-- Framer Motion
-- Monaco Editor
+- React 18
+- TypeScript 5
+- Tailwind CSS
+- Shadcn/ui
 
 ### Backend
+- Node.js
+- Express
+- SQLite
+- Redis
 
-- Firebase
-- Pinecone
+### AI/ML
+- ONNX Runtime
+- Transformers.js
 - TensorFlow.js
-- WebAssembly
+- scikit-learn
 
-### Integration
+### Development Tools
+- Vite
+- ESLint
+- Prettier
+- Jest
 
-- GitHub API
-- LLM APIs (temporary)
-- Vector Store
-- WebSocket
-
-## Security Model
+## Security
 
 ### Authentication
+- JWT-based auth
+- Role-based access control
+- Session management
+- 2FA support
 
-- Firebase Auth
-- JWT tokens
+### Data Protection
+- End-to-end encryption
+- Secure storage
 - API key management
 - Rate limiting
 
-### Data Protection
-
-- Encryption at rest
-- Secure communication
-- Access control
-- Audit logging
-
 ## Performance Optimization
 
-### Caching
+### Frontend
+- Code splitting
+- Lazy loading
+- Asset optimization
+- Caching strategies
 
-- Memory cache
-- Vector cache
-- Response cache
-- Asset cache
+### AI/ML
+- Model quantization
+- Batch processing
+- Caching
+- Progressive loading
 
-### Resource Management
+## Development Workflow
 
-- Memory pooling
-- Worker threads
-- Load balancing
-- Resource limits
+### Version Control
+- Git-flow branching model
+- Semantic versioning
+- Automated releases
+- Change logging
 
-## Monitoring
+### Testing
+- Unit tests
+- Integration tests
+- E2E tests
+- Performance testing
 
-### Metrics
+### CI/CD
+- GitHub Actions
+- Automated testing
+- Deployment automation
+- Environment management
 
-- System health
-- Agent performance
-- Learning progress
-- Resource usage
+## Future Architecture
 
-### Logging
+### Planned Improvements
+- Distributed processing
+- Advanced caching
+- Microservices architecture
+- Edge computing support
 
-- Error tracking
-- Performance logs
-- Security events
-- User actions
+### Experimental Features
+- Federated learning
+- P2P capabilities
+- Blockchain integration
+- AR/VR support
 
-## Deployment
+## Contributing
 
-### Environment
+### Development Guidelines
+- Code style guide
+- Documentation requirements
+- Testing standards
+- Review process
 
-- Development
-- Staging
-- Production
-- Testing
-
-### Configuration
-
-- Environment variables
-- Feature flags
-- API endpoints
-- Resource limits
-
-```
+### Architecture Decisions
+- RFC process
+- Technical discussions
+- Performance benchmarks
+- Security audits

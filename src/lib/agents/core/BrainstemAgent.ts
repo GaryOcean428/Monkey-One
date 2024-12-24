@@ -1,6 +1,6 @@
 import { BaseAgent } from '../base';
-import type { Message } from '@/types';
-import { memoryManager } from '@/lib/memory';
+import type { Message } from '../../../types';
+import { memoryManager } from '../../../lib/memory';
 
 interface VitalSign {
   type: 'heartRate' | 'respiration' | 'arousal' | 'attention';

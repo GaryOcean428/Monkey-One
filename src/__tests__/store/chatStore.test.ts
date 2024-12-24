@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { act } from '@testing-library/react';
-import { useChatStore } from '@/store/chatStore';
-import { ResponseProcessor } from '@/lib/llm/ResponseProcessor';
+import { useChatStore } from '../../store/chatStore';
+import { ResponseProcessor } from '../../lib/llm/ResponseProcessor';
 
 // Mock dependencies
-vi.mock('@/lib/llm/ResponseProcessor', () => ({
+vi.mock('../../lib/llm/ResponseProcessor', () => ({
   ResponseProcessor: vi.fn().mockImplementation(() => ({
     processResponse: vi.fn().mockResolvedValue('Processed response')
   }))

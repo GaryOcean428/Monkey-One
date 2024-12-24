@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Brain, Activity, AlertTriangle } from 'lucide-react';
-import { useBrainActivity } from '@/hooks/useBrainActivity';
+import { useBrainActivity } from '../../hooks/useBrainActivity';
 import { NeuralPathway } from './NeuralPathway';
 import { BrainRegionCard } from './BrainRegionCard';
 

@@ -1,6 +1,6 @@
 import { BaseAgent } from '../base';
-import type { Message, AgentCapability } from '@/types';
-import { memoryManager } from '@/lib/memory';
+import type { Message, AgentCapability } from '../../../types';
+import { memoryManager } from '../../../lib/memory';
 
 export class CortexAgent extends BaseAgent {
   protected workingMemory: Map<string, any> = new Map();

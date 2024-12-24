@@ -1,0 +1,104 @@
+{
+  "queries": [
+    {
+      "content": "Hi there!",
+      "expectedTier": "low"
+    },
+    {
+      "content": "What's the weather like?",
+      "expectedTier": "low"
+    },
+    {
+      "content": "Can you help me debug this function?",
+      "expectedTier": "high"
+    },
+    {
+      "content": "Write a complex TypeScript class for handling WebSocket connections with retry logic and error handling",
+      "expectedTier": "superior"
+    },
+    {
+      "content": "Explain how React's virtual DOM works",
+      "expectedTier": "mid"
+    },
+    {
+      "content": "Compare different state management solutions in React",
+      "expectedTier": "high"
+    },
+    {
+      "content": "Generate unit tests for this API endpoint",
+      "expectedTier": "high"
+    },
+    {
+      "content": "What's your name?",
+      "expectedTier": "low"
+    },
+    {
+      "content": "Analyze the time complexity of this sorting algorithm and suggest optimizations",
+      "expectedTier": "superior"
+    },
+    {
+      "content": "How do I center a div?",
+      "expectedTier": "low"
+    },
+    {
+      "content": "Design a scalable microservices architecture for an e-commerce platform",
+      "expectedTier": "superior"
+    },
+    {
+      "content": "Implement a Redux middleware for handling API calls",
+      "expectedTier": "high"
+    },
+    {
+      "content": "How do I use the useState hook?",
+      "expectedTier": "mid"
+    },
+    {
+      "content": "Create a custom React hook for handling form validation",
+      "expectedTier": "high"
+    },
+    {
+      "content": "What's the difference between let and const?",
+      "expectedTier": "low"
+    },
+    {
+      "content": "Implement a binary search tree with balancing",
+      "expectedTier": "high"
+    },
+    {
+      "content": "How do I make a responsive navbar?",
+      "expectedTier": "mid"
+    },
+    {
+      "content": "Design a system for real-time collaborative editing",
+      "expectedTier": "superior"
+    },
+    {
+      "content": "What are React props?",
+      "expectedTier": "low"
+    },
+    {
+      "content": "Implement OAuth2 authentication flow",
+      "expectedTier": "high"
+    },
+    {
+      "content": "Debug this Supabase query performance issue",
+      "expectedTier": "high"
+    },
+    {
+      "content": "Create a custom ESLint rule",
+      "expectedTier": "superior"
+    },
+    {
+      "content": "How do I use Tailwind CSS?",
+      "expectedTier": "mid"
+    },
+    {
+      "content": "Design a type-safe API client with retry logic",
+      "expectedTier": "superior"
+    },
+    {
+      "content": "What's new in TypeScript 5.3?",
+      "expectedTier": "mid"
+    }
+  ]
+}
