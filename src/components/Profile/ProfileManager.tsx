@@ -9,7 +9,6 @@ export function ProfileManager() {
   const [formData, setFormData] = useState({
     username: profile?.username || '',
     full_name: profile?.full_name || '',
-    website: profile?.website || '',
   })
 
   if (loading) {
@@ -57,18 +56,6 @@ export function ProfileManager() {
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
           />
         </div>
-        <div>
-          <label htmlFor="website" className="block text-sm font-medium text-gray-700">
-            Website
-          </label>
-          <input
-            id="website"
-            type="url"
-            value={formData.website}
-            onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          />
-        </div>
         <div className="flex space-x-4">
           <button
             type="submit"
@@ -94,18 +81,17 @@ export function ProfileManager() {
         <h2 className="text-xl font-bold">Profile</h2>
         <p><strong>Username:</strong> {profile?.username}</p>
         <p><strong>Full Name:</strong> {profile?.full_name}</p>
-        <p><strong>Website:</strong> {profile?.website}</p>
       </div>
       <div className="flex space-x-4">
         <button
           onClick={() => setEditing(true)}
-          className="flex-1 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          className="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         >
           Edit Profile
         </button>
         <button
-          onClick={signOut}
-          className="flex-1 py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          onClick={() => signOut()}
+          className="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         >
           Sign Out
         </button>
