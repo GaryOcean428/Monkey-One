@@ -5,12 +5,12 @@ import { format } from 'date-fns';
 import { useThoughtStore } from '../../stores/thoughtStore';
 import type { Thought, ThoughtType } from '../../types/thought';
 import { BasePanel } from './BasePanel';
-import { Button } from '../../components/ui/button';
-import { Input } from '../../components/ui/input';
-import { Select } from '../../components/ui/select';
-import { Badge } from '../../components/ui/badge';
-import { Card } from '../../components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Select } from '../ui/select';
+import { Badge } from '../ui/badge';
+import { Card } from '../ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 
 interface ThoughtItemProps {
   thought: Thought;

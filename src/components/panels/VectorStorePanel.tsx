@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Database, Search, Plus, RefreshCcw, Settings, ChevronRight } from 'lucide-react';
-import { Button } from '../../components/ui/button';
-import { Input } from '../../components/ui/input';
-import { Card } from '../../components/ui/card';
-import { Progress } from '../../components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Card } from '../ui/card';
+import { Progress } from '../ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { useVectorStore } from '../../hooks/useVectorStore';
 import { BasePanel } from './BasePanel';
 

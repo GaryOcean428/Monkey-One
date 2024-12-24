@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useMemoryManagement } from '../../hooks/useMemoryManagement';
-import { Button } from '../../components/ui/button';
-import { Input } from '../../components/ui/input';
-import { Slider } from '../../components/ui/slider';
-import { Card } from '../../components/ui/card';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Slider } from '../ui/slider';
+import { Card } from '../ui/card';
 import { ToolhouseLoadingWrapper } from '../../components/Loading/ToolhouseLoading';
 
 export const MemoryManager: React.FC = () => {

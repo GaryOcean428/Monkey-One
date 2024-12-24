@@ -16,8 +16,11 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
-import { Button } from '../../components/ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/ui/tooltip';
+import { Button } from '../ui/button';
+import { Separator } from '../ui/separator';
+import { ScrollArea } from '../ui/scroll-area';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
+import { Tabs, TabsContent } from '../ui/tabs';
 import { useNavigationStore } from '../../store/navigationStore';
 import { ThoughtLoggerPanel } from '../panels/ThoughtLoggerPanel';
 import { AgentMonitor } from '../panels/AgentMonitor';
