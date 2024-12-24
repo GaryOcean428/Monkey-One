@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LoginForm } from './components/Auth/LoginForm';
 import { SignUpForm } from './components/Auth/SignUpForm';
 import { ProfileManager } from './components/Profile/ProfileManager';
+import { useAgentStore } from './store/agentStore';
 
 // Lazy load heavy components
 const MainPanel = lazy(() => import('./components/MainPanel').then(module => ({ default: module.MainPanel })));
@@ -23,10 +24,17 @@ function AuthenticatedContent() {
   const { settings } = useSettings();
   const { user } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
+  const initializeAgents = useAgentStore(state => state.initializeAgents);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', settings.theme === 'dark');
   }, [settings.theme]);
+
+  useEffect(() => {
+    if (user) {
+      initializeAgents().catch(console.error);
+    }
+  }, [user, initializeAgents]);
 
   if (!user) {
     return (

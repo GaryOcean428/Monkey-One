@@ -34,6 +34,7 @@ export function useChat() {
     sendMessage: handleSendMessage,
     approveTask: handleApproveTask,
     rejectTask: handleRejectTask,
-    clearChat: handleClearChat
+    clearChat: handleClearChat,
+    hasActiveAgent: !!activeAgent
   };
 }
