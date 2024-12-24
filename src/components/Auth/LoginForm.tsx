@@ -9,9 +9,12 @@ export function LoginForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    console.log('LoginForm: Attempting to sign in...')
     try {
       await signIn(email, password)
+      console.log('LoginForm: Sign in successful')
     } catch (error) {
+      console.error('LoginForm: Sign in failed:', error)
       setError(error instanceof Error ? error.message : 'An error occurred')
     }
   }
