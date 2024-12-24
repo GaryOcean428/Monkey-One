@@ -1,5 +1,5 @@
 import { PineconeClient } from '@pinecone-database/pinecone';
-import { Configuration, OpenAIApi } from 'openai';
+import OpenAI from 'openai';
 import type {
   VectorStore,
   VectorIndex,
@@ -14,16 +14,16 @@ import type {
 
 class VectorStoreImpl implements VectorStore {
   private pinecone: PineconeClient;
-  private openai: OpenAIApi;
+  private openai: OpenAI;
   private config: VectorStoreConfig;
   private ready: boolean = false;
 
   constructor(config: VectorStoreConfig) {
     this.config = config;
     this.pinecone = new PineconeClient();
-    this.openai = new OpenAIApi(new Configuration({
+    this.openai = new OpenAI({
       apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
-    }));
+    });
   }
 
   private async initialize() {
@@ -101,7 +101,7 @@ class VectorStoreImpl implements VectorStore {
   }
 
   async generateEmbedding(text: string): Promise<number[]> {
-    const response = await this.openai.createEmbedding({
+    const response = await this.openai.Embedding({
       model: 'text-embedding-ada-002',
       input: text,
     });
