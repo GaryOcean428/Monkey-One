@@ -1,171 +1,90 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Eye, MessageSquare, ThumbsUp, ThumbsDown, Brain, Code, Zap, GitBranch } from 'lucide-react';
+import React from 'react';
+import { BasePanel } from './panels/BasePanel';
+import { Card } from './ui/card';
 import { Button } from './ui/button';
+import { Badge } from './ui/badge';
+import { ThumbsUp, ThumbsDown, Lightbulb } from 'lucide-react';
 import { useObserver } from '../hooks/useObserver';
-import { CodeInsight } from '../types';
 
 export function ObserverPanel() {
-  const { insights, learningMetrics, analyzeCodebase, provideFeedback } = useObserver();
-  const [selectedInsight, setSelectedInsight] = useState<CodeInsight | null>(null);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-
-  useEffect(() => {
-    // Periodically refresh insights
-    const interval = setInterval(() => {
-      analyzeCodebase();
-    }, 300000); // Every 5 minutes
-
-    return () => clearInterval(interval);
-  }, [analyzeCodebase]);
-
-  const handleAnalyze = async () => {
-    setIsAnalyzing(true);
-    await analyzeCodebase();
-    setIsAnalyzing(false);
-  };
+  const { insights, isLoading, error, markInsightHelpful } = useObserver();
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <Eye className="text-purple-500" size={20} />
-          <h2 className="text-lg font-semibold dark:text-white">Observer Agent</h2>
-        </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleAnalyze}
-          disabled={isAnalyzing}
-        >
-          {isAnalyzing ? 'Analyzing...' : 'Analyze Now'}
-        </Button>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4 mb-4">
-        <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
-          <div className="flex items-center gap-2 mb-2">
-            <Brain className="text-blue-500" size={16} />
-            <h3 className="font-medium dark:text-white">Learning Progress</h3>
-          </div>
-          <div className="space-y-2">
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span className="text-gray-600 dark:text-gray-400">Accuracy</span>
-                <span className="text-gray-900 dark:text-white">
-                  {(learningMetrics && learningMetrics.length > 0 ? learningMetrics[0].accuracy * 100 : 0).toFixed(1)}%
-                </span>
-              </div>
-              <div className="h-2 bg-gray-100 rounded-full dark:bg-gray-700">
-                <div
-                  className="h-2 bg-blue-500 rounded-full transition-all"
-                  style={{ width: `${learningMetrics && learningMetrics.length > 0 ? learningMetrics[0].accuracy * 100 : 0}%` }}
-                />
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span className="text-gray-600 dark:text-gray-400">Pattern Recognition</span>
-                <span className="text-gray-900 dark:text-white">
-                  {(learningMetrics && learningMetrics.length > 0 ? learningMetrics[0].patternScore * 100 : 0).toFixed(1)}%
-                </span>
-              </div>
-              <div className="h-2 bg-gray-100 rounded-full dark:bg-gray-700">
-                <div
-                  className="h-2 bg-green-500 rounded-full transition-all"
-                  style={{ width: `${learningMetrics && learningMetrics.length > 0 ? learningMetrics[0].patternScore * 100 : 0}%` }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
-          <div className="flex items-center gap-2 mb-2">
-            <Zap className="text-yellow-500" size={16} />
-            <h3 className="font-medium dark:text-white">System Health</h3>
-          </div>
-          <div className="space-y-2">
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span className="text-gray-600 dark:text-gray-400">Code Quality</span>
-                <span className="text-gray-900 dark:text-white">85%</span>
-              </div>
-              <div className="h-2 bg-gray-100 rounded-full dark:bg-gray-700">
-                <div className="h-2 bg-yellow-500 rounded-full" style={{ width: '85%' }} />
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span className="text-gray-600 dark:text-gray-400">Performance</span>
-                <span className="text-gray-900 dark:text-white">92%</span>
-              </div>
-              <div className="h-2 bg-gray-100 rounded-full dark:bg-gray-700">
-                <div className="h-2 bg-purple-500 rounded-full" style={{ width: '92%' }} />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
+    <BasePanel
+      title="Observer"
+      description="AI insights and observations"
+      isLoading={isLoading}
+      error={error}
+    >
       <div className="space-y-4">
-        <div className="flex items-center gap-2 mb-2">
-          <MessageSquare className="text-gray-500" size={16} />
-          <h3 className="font-medium dark:text-white">Latest Insights</h3>
-        </div>
-
-        <div className="space-y-3">
-          {insights && insights.length > 0 ? (
-            insights.map((insight) => (
-              <motion.div
-                key={insight.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3"
-              >
-                <div className="flex items-center gap-2 mb-2">
-                  {insight.type === 'pattern' && <Code className="text-blue-500" size={16} />}
-                  {insight.type === 'performance' && <Zap className="text-yellow-500" size={16} />}
-                  {insight.type === 'solution' && <GitBranch className="text-green-500" size={16} />}
-                  <span className="font-medium dark:text-white capitalize">{insight.type} Insight</span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 ml-auto">
-                    {(insight.confidence * 100).toFixed(0)}% confidence
-                  </span>
+        {insights.length === 0 ? (
+          <Card className="p-8 text-center">
+            <Lightbulb className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
+            <h3 className="text-lg font-medium mb-2">No Insights Yet</h3>
+            <p className="text-muted-foreground">
+              The AI observer will generate insights as it analyzes agent behavior
+            </p>
+          </Card>
+        ) : (
+          insights.map((insight) => (
+            <Card key={insight.id} className="p-4">
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge variant={
+                      insight.type === 'pattern' ? 'default' :
+                      insight.type === 'performance' ? 'destructive' :
+                      'secondary'
+                    }>
+                      {insight.type}
+                    </Badge>
+                    <span className="text-sm text-muted-foreground">
+                      {new Date(insight.timestamp).toLocaleString()}
+                    </span>
+                  </div>
+                  <h4 className="font-medium mb-1">{insight.title}</h4>
+                  <p className="text-sm text-muted-foreground">
+                    {insight.description}
+                  </p>
                 </div>
-
-                <p className="text-sm text-gray-700 dark:text-gray-300">{insight.description}</p>
-                <div className="flex items-center gap-2 mt-2">
+                <div className="flex items-center gap-1">
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => provideFeedback(insight.id, true)}
-                    className={insight.helpful === true ? 'text-green-500' : ''}
+                    onClick={() => markInsightHelpful(insight.id, true)}
+                    disabled={insight.helpful === true}
                   >
-                    <ThumbsUp size={14} className="mr-1" />
-                    Helpful
+                    <ThumbsUp className={`w-4 h-4 ${
+                      insight.helpful === true ? 'text-green-500' : ''
+                    }`} />
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => provideFeedback(insight.id, false)}
-                    className={insight.helpful === false ? 'text-red-500' : ''}
+                    onClick={() => markInsightHelpful(insight.id, false)}
+                    disabled={insight.helpful === false}
                   >
-                    <ThumbsDown size={14} className="mr-1" />
-                    Not Helpful
+                    <ThumbsDown className={`w-4 h-4 ${
+                      insight.helpful === false ? 'text-red-500' : ''
+                    }`} />
                   </Button>
                 </div>
-              </motion.div>
-            ))
-          ) : (
-            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-              <div className="flex justify-center mb-2">
-                <Eye className="w-8 h-8" />
               </div>
-              <p>No insights available yet. Click "Analyze Now" to start.</p>
-            </div>
-          )}
-        </div>
+              <div className="mt-2 flex items-center gap-2">
+                <div className="h-1 flex-1 bg-gray-100 rounded-full dark:bg-gray-800">
+                  <div
+                    className="h-1 bg-blue-500 rounded-full"
+                    style={{ width: `${insight.confidence * 100}%` }}
+                  />
+                </div>
+                <span className="text-sm text-muted-foreground">
+                  {(insight.confidence * 100).toFixed(0)}% confidence
+                </span>
+              </div>
+            </Card>
+          ))
+        )}
       </div>
-    </div>
+    </BasePanel>
   );
 }
