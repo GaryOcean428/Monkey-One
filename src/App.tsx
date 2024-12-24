@@ -3,10 +3,10 @@ import { useEffect, useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import { SignIn } from './components/Auth/SignIn';
-import { SignUp } from './components/Auth/SignUp';
-import { Chat } from './components/Chat/Chat';
-import { Settings } from './components/Settings/Settings';
-import { Playground } from './components/Playground/Playground';
+import { SignUpForm as SignUp } from './components/Auth/SignUpForm';
+import { ChatContainer as Chat } from './components/chat/ChatContainer';
+import SettingsPanel from './components/panels/SettingsPanel';
+import { MainPanel as Playground } from './components/MainPanel';
 import { useAgentStore } from './store/agentStore';
 import { DashboardLayout } from './components/Layout/DashboardLayout';
 import { TabsContent } from './components/ui/tabs';
@@ -84,7 +84,7 @@ function App() {
                   <DashboardLayout>
                     <Routes>
                       <Route path="/" element={<Chat />} />
-                      <Route path="/settings" element={<Settings />} />
+                      <Route path="/settings" element={<SettingsPanel />} />
                       <Route path="/playground" element={<Playground />} />
                     </Routes>
                   </DashboardLayout>
