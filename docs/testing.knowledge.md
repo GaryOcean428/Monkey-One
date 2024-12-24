@@ -84,6 +84,36 @@
 - Mock store dependencies using vi.mock()
 - Wrap components with necessary providers (ThemeProvider, SettingsProvider)
 - Test ARIA attributes and accessibility features
+- Import '@testing-library/jest-dom' in setupTests.ts
+- Extend Vitest expect with @testing-library/jest-dom matchers
+- Mock browser APIs (TextDecoder, canvas) in setupTests.ts
+- Use vi.mock() for external dependencies
+
+### Test Environment Setup
+Required in setupTests.ts:
+```typescript
+import '@testing-library/jest-dom';
+import { expect, afterEach } from 'vitest';
+import { cleanup } from '@testing-library/react';
+import * as matchers from '@testing-library/jest-dom/matchers';
+
+// Extend Vitest's expect
+expect.extend(matchers);
+
+// Cleanup after each test
+afterEach(() => {
+  cleanup();
+});
+
+// Mock window.matchMedia
+Object.defineProperty(window, 'matchMedia', {...});
+
+// Mock ResizeObserver
+global.ResizeObserver = vi.fn().mockImplementation(...);
+
+// Mock TextDecoder and canvas
+// ... other browser API mocks
+```
 
 ### UI Component Patterns
 - Split data fetching components into Content/Container pattern
@@ -102,6 +132,20 @@
   - Loading states with LoadingSpinner
   - Error boundaries with ToolhouseErrorBoundary
   - Suspense boundaries for code splitting
+
+### Settings Panel Structure
+- Group settings by category (General, LLM, Agent)
+- Each category in its own Card component
+- Use consistent spacing (space-y-4 for form groups)
+- Provide immediate feedback for changes
+- Include reset functionality
+- Support both light and dark themes
+- Use semantic HTML (labels, aria-labels)
+- Handle all form control types:
+  - Switch for boolean values
+  - Select for enumerated values
+  - Input for numbers with min/max
+  - Input for text with validation
 
 ### Message Testing
 When creating test messages, always include all required fields:
