@@ -38,18 +38,6 @@ export class AgentMonitor {
     return Array.from(this.agents.values()).filter(agent => agent.status === AgentStatus.ERROR);
   }
 
-  getAgentMetrics(agentId: string): AgentMetrics {
-    return {
-      totalMessages: 0,
-      averageResponseTime: 0,
-      successRate: 0,
-      lastActive: Date.now(),
-      status: 'active',
-      messageCount: 0,
-      errorCount: 0
-    };
-  }
-
   getMonitoringStats(): { totalMessages: number; totalErrors: number; agentMetrics: Record<string, AgentMetrics> } {
     return {
       totalMessages: 0,
