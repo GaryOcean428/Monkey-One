@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import SettingsPanel from '../../../components/panels/SettingsPanel';
 import { ThemeProvider } from '../../../components/ThemeProvider';
 import { SettingsProvider } from '../../../context/SettingsContext';

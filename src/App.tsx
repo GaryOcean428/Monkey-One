@@ -39,7 +39,7 @@ function AuthenticatedContent() {
   const { user, isLoading } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
   const initializeAgents = useAgentStore(state => state.initializeAgents);
-  const { activeTab } = useNavigationStore();
+  const activeTab = useNavigationStore((state) => state.activeTab);
   const [modelInitialized, setModelInitialized] = useState(false);
 
   useEffect(() => {
@@ -69,12 +69,17 @@ function AuthenticatedContent() {
 
   if (!user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        {isSignUp ? (
-          <SignUpForm onSwitch={() => setIsSignUp(false)} />
-        ) : (
-          <LoginForm onSwitch={() => setIsSignUp(true)} />
-        )}
+      <div className="flex min-h-screen items-center justify-center bg-background">          {isSignUp ? (
+            <SignUpForm />
+          ) : (
+            <LoginForm />
+          )}
+          <button
+            onClick={() => setIsSignUp(!isSignUp)}
+            className="mt-4 w-full text-center text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+          >
+            {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
+          </button>
       </div>
     );
   }
