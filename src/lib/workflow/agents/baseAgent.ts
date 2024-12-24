@@ -139,11 +139,44 @@ export abstract class BaseAgent implements Agent {
       error
     );
 
-    // Reset agent status
+    // Check if error requires handoff
+    const handoffManager = HandoffManager.getInstance();
+    const handoffCriteria = await handoffManager.evaluateHandoff(
+      this,
+      {
+        id: crypto.randomUUID(),
+        type: 'error',
+        role: 'system',
+        content: error.message,
+        timestamp: Date.now()
+      },
+      step.context || {}
+    );
+
+    if (handoffCriteria) {
+      const targetAgent = await handoffManager.findBestAgent(handoffCriteria);
+      if (targetAgent) {
+        const handoffSuccess = await handoffManager.executeHandoff(
+          this,
+          targetAgent,
+          {
+            ...step.context,
+            error: error.message,
+            handoffReason: 'error_recovery'
+          }
+        );
+
+        if (handoffSuccess) {
+          console.log(`Task handed off to agent ${targetAgent.id} for error recovery`);
+          return;
+        }
+      }
+    }
+
+    // If handoff not possible or failed, proceed with normal error handling
     this.status = 'available';
     this.currentTask = undefined;
 
-    // Emit error event
     this.emitEvent({
       id: crypto.randomUUID(),
       type: 'TASK_ERROR',

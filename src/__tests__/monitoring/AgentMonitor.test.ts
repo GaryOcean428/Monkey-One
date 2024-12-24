@@ -71,9 +71,12 @@ describe('AgentMonitor', () => {
       monitor.registerAgent(mockAgent)
       const metrics = monitor.getAgentMetrics(mockAgent.id)
       
-      expect(metrics).toBeDefined()
-      expect(metrics.messageCount).toBe(0)
-      expect(metrics.status).toBe(AgentStatus.IDLE)
+      expect(metrics).toEqual({
+        messageCount: 0,
+        errorCount: 0,
+        averageResponseTime: 0,
+        status: AgentStatus.IDLE
+      })
     })
 
     it('should throw error when registering duplicate agent', () => {

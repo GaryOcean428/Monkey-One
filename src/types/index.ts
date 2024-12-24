@@ -20,30 +20,58 @@ export interface AgentConstructor {
   superiorId?: string;
 }
 
-enum AgentType {
-  Orchestrator = 'orchestrator',
-  WebSurfer = 'websurfer',
-  FileSurfer = 'filesurfer',
-  Coder = 'coder'
+export enum AgentType {
+  ORCHESTRATOR = 'orchestrator',
+  WORKER = 'worker',
+  SPECIALIST = 'specialist'
+}
+
+export enum AgentStatus {
+  AVAILABLE = 'available',
+  BUSY = 'busy',
+  OFFLINE = 'offline'
+}
+
+export interface AgentCapability {
+  name: string;
+  description?: string;
 }
 
 export interface Agent {
   id: string;
-  name: string;
-  description: string;
-  type?: AgentType;
-  status: 'available' | 'busy' | 'offline' | 'error';
-  capabilities: string[];
-  model: string;
-  systemPrompt: string;
-  metadata?: Record<string, any>;
-  lastActive?: string;
-  error?: string;
-  performance?: {
-    successRate: number;
-    averageResponseTime: number;
-    totalTasks: number;
-  };
+  type: AgentType;
+  capabilities: AgentCapability[];
+  status: AgentStatus;
+  initialize(context: Record<string, unknown>): Promise<void>;
+  processMessage(message: Message): Promise<Message>;
+}
+
+export enum MessageType {
+  TASK = 'task',
+  RESPONSE = 'response',
+  ERROR = 'error',
+  BROADCAST = 'broadcast',
+  HANDOFF = 'handoff'
+}
+
+export interface AgentMetrics {
+  messageCount: number;
+  errorCount: number;
+  averageResponseTime: number;
+  status: string;
+}
+
+export interface LogLevel {
+  DEBUG: string;
+  INFO: string;
+  WARN: string;
+  ERROR: string;
+}
+
+export interface HostRuntimeConfig {
+  id: string;
+  type: AgentType;
+  capabilities: AgentCapability[];
 }
 
 export interface CodeInsight {
