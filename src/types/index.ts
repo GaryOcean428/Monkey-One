@@ -31,11 +31,19 @@ export interface Agent {
   id: string;
   name: string;
   description: string;
-  type?: string;
-  status: 'available' | 'busy' | 'offline';
+  type?: AgentType;
+  status: 'available' | 'busy' | 'offline' | 'error';
   capabilities: string[];
   model: string;
   systemPrompt: string;
+  metadata?: Record<string, any>;
+  lastActive?: string;
+  error?: string;
+  performance?: {
+    successRate: number;
+    averageResponseTime: number;
+    totalTasks: number;
+  };
 }
 
 export interface CodeInsight {
