@@ -5,7 +5,7 @@ const hf = new HfInference(import.meta.env.VITE_HUGGINGFACE_TOKEN);
 export interface ModelConfig {
   id: string;
   name: string;
-  provider: 'meta' | 'anthropic' | 'groq';
+  provider: 'meta' | 'anthropic' | 'groq' | 'xai';
   modelId: string;
   contextWindow: number;
   maxOutputTokens: number;
@@ -108,6 +108,37 @@ export const models: Record<string, ModelConfig> = {
     },
   },
 
+  // X.AI Models
+  'grok-2': {
+    id: 'grok-2',
+    name: 'Grok 2',
+    provider: 'xai',
+    modelId: 'grok-2-latest',
+    contextWindow: 8192,
+    maxOutputTokens: 4096,
+    temperature: 0.7,
+    topP: 0.9,
+    capabilities: {
+      code: true,
+      tools: true,
+    },
+  },
+  'grok-2-vision': {
+    id: 'grok-2-vision',
+    name: 'Grok 2 Vision',
+    provider: 'xai',
+    modelId: 'grok-2-vision-1212',
+    contextWindow: 8192,
+    maxOutputTokens: 4096,
+    temperature: 0.7,
+    topP: 0.9,
+    capabilities: {
+      vision: true,
+      code: true,
+      tools: true,
+    },
+  },
+
   // Anthropic Models
   'claude-3.5-sonnet': {
     id: 'claude-3.5-sonnet',
@@ -187,6 +218,26 @@ export async function generateText(
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${import.meta.env.VITE_META_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: model.modelId,
+          messages: [{ role: 'user', content: prompt }],
+          max_tokens: options.maxTokens || model.maxOutputTokens,
+          temperature: options.temperature || model.temperature,
+          tools: options.tools,
+          tool_choice: options.toolChoice,
+        }),
+      });
+      const data = await response.json();
+      return data.choices[0].message.content;
+    }
+
+    case 'xai': {
+      const response = await fetch('https://api.x.ai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_XAI_API_KEY}`,
         },
         body: JSON.stringify({
           model: model.modelId,

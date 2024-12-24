@@ -33,6 +33,19 @@
   - Context: 128K tokens
   - Best for: Advanced vision-language tasks and complex reasoning
 
+### X.AI Models
+- **Grok 2** - `grok-2`
+  - Model ID: `grok-2-latest`
+  - Context: 8K tokens
+  - Best for: Advanced reasoning and code generation
+  - Features: Tool use, code completion, web browsing
+
+- **Grok 2 Vision** - `grok-2-vision`
+  - Model ID: `grok-2-vision-1212`
+  - Context: 8K tokens
+  - Best for: Vision-language tasks and multimodal reasoning
+  - Features: Image analysis, visual coding, tool use
+
 ### Anthropic Models
 - **Claude 3.5 Sonnet** - `claude-3.5-sonnet`
   - Model ID: `claude-3-5-sonnet-20241022`
@@ -60,7 +73,7 @@
 Each model has different capabilities:
 - **Code Generation**: All models
 - **Tool Use**: All models
-- **Vision**: LLaMA 3.2 Vision models
+- **Vision**: LLaMA 3.2 Vision models, Grok 2 Vision
 - **Long Context**: LLaMA 3.2 and Claude 3.5 models
 - **Fast Inference**: Groq models and smaller LLaMA models
 
@@ -111,8 +124,9 @@ const response = await generateText(defaultModel, prompt, {
 1. **Model Selection**
    - Use `llama-3.3-70b` as default for most tasks
    - Use `llama3-groq-8b` for quick responses
-   - Use LLaMA 3.2 Vision models for image tasks
+   - Use LLaMA 3.2 Vision or Grok 2 Vision for image tasks
    - Use Claude 3.5 models for complex reasoning
+   - Use Grok 2 for advanced code generation
 
 2. **Context Management**
    - Stay within context limits
