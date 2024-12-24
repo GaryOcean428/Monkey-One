@@ -11,7 +11,6 @@ import { ProfileManager } from './components/Profile/ProfileManager';
 
 // Lazy load heavy components
 const MainPanel = lazy(() => import('./components/MainPanel').then(module => ({ default: module.MainPanel })));
-const ObserverPanel = lazy(() => import('./components/ObserverPanel').then(module => ({ default: module.ObserverPanel })));
 
 // Loading fallback
 const LoadingFallback = () => (
