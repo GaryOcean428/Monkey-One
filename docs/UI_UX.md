@@ -181,6 +181,177 @@
 - View preferences
 - Workspace presets
 
+## UI/UX Documentation
+
+## Overview
+
+Monkey One uses a modern, responsive UI built with React and Tailwind CSS. The interface is designed to be intuitive, accessible, and efficient for both novice and expert users.
+
+## Core Components
+
+### Layout Structure
+- `DashboardLayout`: Main application layout with sidebar navigation
+- `MainPanel`: Central content area with tab-based navigation
+- `Sidebar`: Collapsible navigation menu
+- `SettingsPanel`: Universal settings interface (modal and route versions)
+
+### Navigation
+
+#### Sidebar Navigation
+- Collapsible sidebar with icon and text labels
+- Primary navigation items for main features
+- Secondary navigation items for user-specific features
+- Visual indicators for active sections
+
+#### Tab Navigation
+- Context-aware tab system in MainPanel
+- Smooth transitions between different views
+- Persistent state management
+
+### Panels and Modals
+
+#### Settings Panel
+The settings panel is implemented as a universal component that works in two modes:
+1. **Modal Mode** (`isModal={true}`):
+   - Appears as an overlay
+   - Darkened background
+   - Centered on screen
+   - Dismissible with close button or click outside
+
+2. **Route Mode** (`isModal={false}`):
+   - Full-page view
+   - Integrated with browser navigation
+   - Accessible via URL
+   - Maintains navigation history
+
+Common features across both modes:
+- Tabbed interface for different setting categories
+- Consistent styling and interactions
+- Shared state management
+- Responsive layout
+
+#### Other Panels
+- `WorkflowPanel`: Workflow management interface
+- `MemoryPanel`: Memory and context management
+- `AgentPanel`: Agent configuration and monitoring
+- `ChatPanel`: Main chat interface
+- `ToolsPanel`: Tool management and creation
+
+### Interactive Elements
+
+#### Buttons and Controls
+- Primary actions: Solid background, high contrast
+- Secondary actions: Outlined style
+- Tertiary actions: Text only
+- Icon buttons: Clear purpose with tooltips
+
+#### Forms and Inputs
+- Clear labeling and grouping
+- Immediate validation feedback
+- Consistent styling across forms
+- Accessible form controls
+
+#### Modals and Dialogs
+- Clear purpose and actions
+- Keyboard navigation support
+- Focus management
+- Escape key dismissal
+
+### Theme System
+
+#### Color Schemes
+- Light and dark mode support
+- System preference detection
+- Runtime theme switching
+- Consistent contrast ratios
+
+#### Typography
+- Clear hierarchy
+- Responsive sizing
+- Consistent line heights
+- Readable font choices
+
+### Accessibility
+
+#### ARIA Support
+- Proper role attributes
+- State management
+- Focus management
+- Screen reader support
+
+#### Keyboard Navigation
+- Logical tab order
+- Keyboard shortcuts
+- Focus indicators
+- Skip links
+
+### Responsive Design
+
+#### Breakpoints
+- Mobile: < 640px
+- Tablet: 640px - 1024px
+- Desktop: > 1024px
+
+#### Adaptive Layouts
+- Collapsible sidebar
+- Responsive grids
+- Flexible containers
+- Mobile-first approach
+
+## Best Practices
+
+### State Management
+- Centralized settings state
+- Local component state when appropriate
+- Persistent storage for preferences
+- Clear state update patterns
+
+### Performance
+- Lazy loading of components
+- Memoization where beneficial
+- Efficient re-rendering
+- Asset optimization
+
+### Error Handling
+- Clear error messages
+- Fallback UI components
+- Recovery options
+- Error boundaries
+
+### Testing
+- Component unit tests
+- Integration tests
+- Accessibility tests
+- Visual regression tests
+
+## Future Improvements
+
+### Planned Enhancements
+- Advanced theme customization
+- User preference sync
+- Enhanced keyboard shortcuts
+- Improved mobile experience
+
+### Experimental Features
+- Gesture controls
+- Voice commands
+- Progressive web app
+- Offline capabilities
+
+## Contributing
+
+### Style Guide
+- Follow existing component patterns
+- Maintain accessibility standards
+- Document new components
+- Include test coverage
+
+### Development Process
+- Component-first development
+- Storybook documentation
+- Peer review process
+- Performance benchmarking
+
 ## Current Implementation Status (as of Dec 24, 2024)
 
 ### Completed Components
