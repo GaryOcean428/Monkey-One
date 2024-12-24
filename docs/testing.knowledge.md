@@ -1,16 +1,5 @@
 # Testing Guidelines
 
-## Database & Auth Configuration
-- Use Supabase for auth and database needs
-- Avoid direct Postgres connections - use Supabase client
-- Supabase provides built-in RLS (Row Level Security)
-- Use Supabase migrations for schema changes
-- Store all Supabase-related code in src/lib/supabase/
-- Keep service role key and JWT secret server-side only
-- Use Supabase Edge Functions for sensitive operations
-- Prefer Supabase's built-in features over direct service integrations
-
-
 ## Test Categories
 
 ### Unit Tests
@@ -40,7 +29,7 @@
 ## Testing Standards
 
 ### Mocking
-- Use Vitest mocks instead of Jest
+- Use Vitest mocks
 - Mock external APIs and services
 - Provide realistic test data
 - Simulate error conditions
@@ -58,163 +47,16 @@
 - Clean up resources
 
 ### Required Testing Dependencies
-- @types/jest for TypeScript type definitions
 - @testing-library/react for React component testing
 - @tensorflow/tfjs for ML-related tests
 - firebase/storage and firebase/firestore for Firebase tests
 
-### Message Type Requirements
-- All Message objects must include: id, type, role, content, timestamp
-- AgentCapability must be {name: string, description?: string}
-- Use proper enums (MessageType, AgentType) instead of string literals
-
-### CI/CD Integration
-- Run tests in GitHub Actions
-- Generate coverage reports
-- Enforce minimum coverage
-- Block merges on test failures
-- Use GH_TOKEN instead of GITHUB_TOKEN for Vercel deployments to avoid conflicts
-- Use GH_TOKEN instead of GITHUB_TOKEN for Vercel deployments to avoid conflicts
-
-## Best Practices
-
-1. Test Setup
-- Use beforeEach for common setup
-- Clean up after tests
-- Avoid test interdependence
-- Mock time-sensitive operations
-
-### Testing Patterns
-- Mock agents must implement all interface methods
-- Use enums instead of string literals for types and statuses
-- Monitor classes should expose methods for registration and status updates
-- Test files should import non-type dependencies without 'type' keyword
-- Monitoring classes should provide both synchronous and asynchronous metrics methods
-- Message interface includes optional sender/recipient for routing tests
-- Mock implementations should match the real interface shape exactly, including all optional fields
-- When importing enums used as values (not just types), avoid using 'type' import
-- When implementing mock objects, ensure all required fields from interfaces are present
-- When testing optimizers or monitors, implement both sync and async versions of metrics methods
-- When testing runtime classes, consider making some private members protected or public for testing
-- When using MessageType enum, always import it as a value import, not a type import
-- Make methods protected instead of private when they need to be accessed in tests
-- Return synchronous values instead of promises when possible to simplify testing
-- Base classes should provide default implementations of interface methods when possible
-- Abstract methods should be clearly marked in base classes
-- When testing protected methods, create a test subclass that exposes them as public methods
-- Always define interfaces for complex data structures like MotorPattern before using them in tests
-- When using enums in tests, define them in types/index.ts and export them properly
-- Memory items and other domain objects should always have an id field
-- Import all required types and enums at the top of test files
-- Use type annotations for test data to catch type errors early
-- Prefer number timestamps over Date objects for consistency and easier testing
-- Avoid duplicate logger instances by importing the shared logger instance
-- Import error types from their source files rather than recreating them
-- Export interfaces and enums explicitly when they are used as values in tests
-- Use enums for status fields instead of string literals to catch type errors early
-- Keep mock constructors simple - avoid passing parameters that can be set as defaults
-- Mock agents must implement all interface methods
-- Use enums instead of string literals for types and statuses
-- Monitor classes should expose methods for registration and status updates
-- Test files should import non-type dependencies without 'type' keyword
-- Monitoring classes should provide both synchronous and asynchronous metrics methods
-- Message interface includes optional sender/recipient for routing tests
-- Mock implementations should match the real interface shape exactly, including all optional fields
-- When importing enums used as values (not just types), avoid using 'type' import
-- When implementing mock objects, ensure all required fields from interfaces are present
-- When testing optimizers or monitors, implement both sync and async versions of metrics methods
-- When testing runtime classes, consider making some private members protected or public for testing
-- When using MessageType enum, always import it as a value import, not a type import
-- Make methods protected instead of private when they need to be accessed in tests
-- Return synchronous values instead of promises when possible to simplify testing
-- Base classes should provide default implementations of interface methods when possible
-- Abstract methods should be clearly marked in base classes
-- When testing protected methods, create a test subclass that exposes them as public methods
-- Always define interfaces for complex data structures like MotorPattern before using them in tests
-- When using enums in tests, define them in types/index.ts and export them properly
-- Memory items and other domain objects should always have an id field
-- Import all required types and enums at the top of test files
-- Use type annotations for test data to catch type errors early
-- Prefer number timestamps over Date objects for consistency and easier testing
-- Avoid duplicate logger instances by importing the shared logger instance
-- Import error types from their source files rather than recreating them
-- Export interfaces and enums explicitly when they are used as values in tests
-- Use enums for status fields instead of string literals to catch type errors early
-- Mock agents must implement all interface methods
-- Use enums instead of string literals for types and statuses
-- Monitor classes should expose methods for registration and status updates
-- Test files should import non-type dependencies without 'type' keyword
-- Monitoring classes should provide both synchronous and asynchronous metrics methods
-- Message interface includes optional sender/recipient for routing tests
-- Mock implementations should match the real interface shape exactly, including all optional fields
-- When importing enums used as values (not just types), avoid using 'type' import
-- When implementing mock objects, ensure all required fields from interfaces are present
-- When testing optimizers or monitors, implement both sync and async versions of metrics methods
-- When testing runtime classes, consider making some private members protected or public for testing
-- When using MessageType enum, always import it as a value import, not a type import
-- Make methods protected instead of private when they need to be accessed in tests
-- Return synchronous values instead of promises when possible to simplify testing
-- Base classes should provide default implementations of interface methods when possible
-- Abstract methods should be clearly marked in base classes
-- When testing protected methods, create a test subclass that exposes them as public methods
-- Always define interfaces for complex data structures like MotorPattern before using them in tests
-- When using enums in tests, define them in types/index.ts and export them properly
-- Memory items and other domain objects should always have an id field
-- Import all required types and enums at the top of test files
-- Use type annotations for test data to catch type errors early
-- Prefer number timestamps over Date objects for consistency and easier testing
-- Avoid duplicate logger instances by importing the shared logger instance
-- Import error types from their source files rather than recreating them
-- Export interfaces and enums explicitly when they are used as values in tests
-- Mock agents must implement all interface methods
-- Use enums instead of string literals for types and statuses
-- Monitor classes should expose methods for registration and status updates
-- Test files should import non-type dependencies without 'type' keyword
-- Monitoring classes should provide both synchronous and asynchronous metrics methods
-- Message interface includes optional sender/recipient for routing tests
-- Mock implementations should match the real interface shape exactly, including all optional fields
-- When importing enums used as values (not just types), avoid using 'type' import
-- When implementing mock objects, ensure all required fields from interfaces are present
-- When testing optimizers or monitors, implement both sync and async versions of metrics methods
-- When testing runtime classes, consider making some private members protected or public for testing
-- When using MessageType enum, always import it as a value import, not a type import
-- Make methods protected instead of private when they need to be accessed in tests
-- Return synchronous values instead of promises when possible to simplify testing
-- Base classes should provide default implementations of interface methods when possible
-- Abstract methods should be clearly marked in base classes
-- When testing protected methods, create a test subclass that exposes them as public methods
-- Always define interfaces for complex data structures like MotorPattern before using them in tests
-- When using enums in tests, define them in types/index.ts and export them properly
-- Memory items and other domain objects should always have an id field
-- Import all required types and enums at the top of test files
-- Use type annotations for test data to catch type errors early
-- Prefer number timestamps over Date objects for consistency and easier testing
-- Avoid duplicate logger instances by importing the shared logger instance
-- Import error types from their source files rather than recreating them
-- Mock agents must implement all interface methods
-- Use enums instead of string literals for types and statuses
-- Monitor classes should expose methods for registration and status updates
-- Test files should import non-type dependencies without 'type' keyword
-- Monitoring classes should provide both synchronous and asynchronous metrics methods
-- Message interface includes optional sender/recipient for routing tests
-- Mock implementations should match the real interface shape exactly, including all optional fields
-- When importing enums used as values (not just types), avoid using 'type' import
-- When implementing mock objects, ensure all required fields from interfaces are present
-- When testing optimizers or monitors, implement both sync and async versions of metrics methods
-- When testing runtime classes, consider making some private members protected or public for testing
-- When using MessageType enum, always import it as a value import, not a type import
-- Make methods protected instead of private when they need to be accessed in tests
-- Return synchronous values instead of promises when possible to simplify testing
-- Base classes should provide default implementations of interface methods when possible
-- Abstract methods should be clearly marked in base classes
-- When testing protected methods, create a test subclass that exposes them as public methods
-- Always define interfaces for complex data structures like MotorPattern before using them in tests
-- When using enums in tests, define them in types/index.ts and export them properly
-- Memory items and other domain objects should always have an id field
-- Import all required types and enums at the top of test files
-- Use type annotations for test data to catch type errors early
-- Prefer number timestamps over Date objects for consistency and easier testing
-- Avoid duplicate logger instances by importing the shared logger instance
+### Test Setup
+- Project uses Vitest, not Jest
+- Import test utilities from 'vitest' not 'jest'
+- Use vi.fn() instead of jest.fn()
+- Use vi.mock() instead of jest.mock()
+- Use vi.spyOn() instead of jest.spyOn()
 
 ### Message Testing
 When creating test messages, always include all required fields:
@@ -254,3 +96,11 @@ class MockAgent implements Agent {
     this.capabilities.push(capability);
   }
 }
+```
+
+### CI/CD Integration
+- Run tests in GitHub Actions
+- Generate coverage reports
+- Enforce minimum coverage
+- Block merges on test failures
+- Use GH_TOKEN instead of GITHUB_TOKEN for Vercel deployments to avoid conflicts
