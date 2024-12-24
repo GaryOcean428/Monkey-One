@@ -26,6 +26,32 @@ export enum AgentType {
   SPECIALIST = 'specialist'
 }
 
+export interface AgentCapability {
+  name: string;
+  description?: string;
+}
+
+export interface Message {
+  id: string;
+  type: MessageType;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  timestamp: number;
+  metadata?: Record<string, unknown>;
+}
+
+export interface Agent {
+  id: string;
+  type: AgentType;
+  capabilities: AgentCapability[];
+  status: AgentStatus;
+  initialize(context: Record<string, unknown>): Promise<void>;
+  processMessage(message: Message): Promise<Message>;
+  getCapabilities(): AgentCapability[];
+  registerCapability(capability: AgentCapability): void;
+  handleMessage(message: Message): Promise<Message>;
+}
+
 export enum AgentStatus {
   AVAILABLE = 'available',
   BUSY = 'busy',
