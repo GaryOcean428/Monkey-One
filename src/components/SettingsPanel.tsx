@@ -7,31 +7,23 @@ import { Switch } from './ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectLabel } from './ui/select';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
+import { ModelManager } from './ModelManager';
 
 const MODEL_OPTIONS = {
-  openai: [
-    { value: 'gpt-4-o1', label: 'GPT-4 O1' },
-    { value: 'gpt-4-o-mini', label: 'GPT-4 O Mini' },
-    { value: 'gpt-4-o-realtime', label: 'GPT-4 O Realtime' },
-    { value: 'gpt-4-o-preview', label: 'GPT-4 O Preview' }
+  local: [
+    { value: 'phi-3.5', label: 'Phi-3.5 (Local)' }
   ],
   groq: [
-    { value: 'llama-3.2-70b-preview', label: 'LLaMA 3.2 70B' },
-    { value: 'llama-3.2-7b-preview', label: 'LLaMA 3.2 7B' },
-    { value: 'llama3-groq-70b-8192-tool-use-preview', label: 'LLaMA 3 70B Tool' },
-    { value: 'llama3-groq-8b-8192-tool-use-preview', label: 'LLaMA 3 8B Tool' }
+    { value: 'mixtral-8x7b-instruct', label: 'Mixtral 8x7B' },
+    { value: 'llama2-70b-4096', label: 'Llama-2 70B' }
   ],
   perplexity: [
-    { value: 'llama-3.1-sonar-small-128k-online', label: 'Sonar Small (8B)' },
-    { value: 'llama-3.1-sonar-large-128k-online', label: 'Sonar Large (70B)' },
-    { value: 'llama-3.1-sonar-huge-128k-online', label: 'Sonar Huge (405B)' }
+    { value: 'pplx-70b-online', label: 'PPLX 70B' },
+    { value: 'pplx-7b-online', label: 'PPLX 7B' }
   ],
   xai: [
-    { value: 'grok-beta', label: 'Grok Beta' }
-  ],
-  huggingface: [
-    { value: 'Qwen/Qwen2.5-Coder-32B-Instruct', label: 'Qwen 2.5 Coder' },
-    { value: 'ibm-granite/granite-3.0-8b-instruct', label: 'IBM Granite 3.0' }
+    { value: 'xai-claude-instant-v1', label: 'Claude Instant' },
+    { value: 'xai-claude-v2', label: 'Claude V2' }
   ]
 };
 
@@ -55,12 +47,16 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
           </button>
         </div>
 
-        <Tabs defaultValue="llm" className="flex h-[calc(90vh-4rem)]">
+        <Tabs defaultValue="general" className="flex h-[calc(90vh-4rem)]">
           <div className="w-48 border-r dark:border-gray-700 p-4 space-y-4">
             <TabsList className="flex flex-col w-full space-y-2">
-              <TabsTrigger value="llm" className="w-full justify-start gap-2">
-                <Bot size={16} />
-                LLM Settings
+              <TabsTrigger value="general" className="w-full justify-start gap-2">
+                <Settings size={16} />
+                General
+              </TabsTrigger>
+              <TabsTrigger value="models" className="w-full justify-start gap-2">
+                <Type size={16} />
+                Models
               </TabsTrigger>
               <TabsTrigger value="brain" className="w-full justify-start gap-2">
                 <Brain size={16} />
@@ -86,49 +82,74 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
           </div>
 
           <div className="flex-1 p-6 overflow-y-auto">
-            <TabsContent value="llm">
+            <TabsContent value="general">
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-medium dark:text-white mb-4">Language Model Settings</h3>
+                  <h3 className="text-lg font-medium dark:text-white mb-4">General Settings</h3>
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium mb-2 dark:text-white">Provider & Model</label>
+                      <label className="block text-sm font-medium mb-2 dark:text-white">Theme</label>
+                      <Select defaultValue="light">
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a theme" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="light">Light</SelectItem>
+                          <SelectItem value="dark">Dark</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-2 dark:text-white">Notifications</label>
+                      <Switch defaultChecked />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="models" className="p-4 space-y-4">
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium">Model Settings</h3>
+                
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Default Model</label>
                       <Select
                         value={settings.llm?.defaultModel}
-                        onValueChange={(value) => updateSettings({ 
+                        onValueChange={(value) => updateSettings({
                           llm: { ...settings.llm, defaultModel: value }
                         })}
                       >
-                        <SelectTrigger className="w-full">
+                        <SelectTrigger>
                           <SelectValue placeholder="Select a model" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectLabel>OpenAI Models</SelectLabel>
-                          {MODEL_OPTIONS.openai.map(model => (
+                          <SelectLabel>Local Models</SelectLabel>
+                          {MODEL_OPTIONS.local.map(model => (
                             <SelectItem key={model.value} value={model.value}>
                               {model.label}
                             </SelectItem>
                           ))}
+                          
                           <SelectLabel>Groq Models</SelectLabel>
                           {MODEL_OPTIONS.groq.map(model => (
                             <SelectItem key={model.value} value={model.value}>
                               {model.label}
                             </SelectItem>
                           ))}
+                          
                           <SelectLabel>Perplexity Models</SelectLabel>
                           {MODEL_OPTIONS.perplexity.map(model => (
                             <SelectItem key={model.value} value={model.value}>
                               {model.label}
                             </SelectItem>
                           ))}
+                          
                           <SelectLabel>XAI Models</SelectLabel>
                           {MODEL_OPTIONS.xai.map(model => (
-                            <SelectItem key={model.value} value={model.value}>
-                              {model.label}
-                            </SelectItem>
-                          ))}
-                          <SelectLabel>Hugging Face Models</SelectLabel>
-                          {MODEL_OPTIONS.huggingface.map(model => (
                             <SelectItem key={model.value} value={model.value}>
                               {model.label}
                             </SelectItem>
@@ -137,33 +158,31 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
                       </Select>
                     </div>
 
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="dark:text-white">Temperature</span>
-                        <span className="text-sm text-gray-500 dark:text-gray-400">
-                          {(settings.llm?.temperature || 0).toFixed(2)}
+                    <div>
+                      <label className="block text-sm font-medium mb-2">
+                        Temperature
+                      </label>
+                      <div className="flex items-center gap-4">
+                        <Slider
+                          value={[settings.llm?.temperature || 0.7]}
+                          min={0}
+                          max={2}
+                          step={0.1}
+                          onValueChange={([value]) =>
+                            updateSettings({
+                              llm: { ...settings.llm, temperature: value }
+                            })
+                          }
+                        />
+                        <span className="text-sm text-muted-foreground w-12">
+                          {settings.llm?.temperature || 0.7}
                         </span>
                       </div>
-                      <Slider
-                        value={[settings.llm?.temperature || 0.7]}
-                        min={0}
-                        max={1}
-                        step={0.1}
-                        onValueChange={([value]) => updateSettings({
-                          llm: { ...settings.llm, temperature: value }
-                        })}
-                      />
                     </div>
+                  </div>
 
-                    <div className="flex items-center justify-between">
-                      <span className="dark:text-white">Stream Responses</span>
-                      <Switch
-                        checked={settings.llm?.streamResponses}
-                        onCheckedChange={(checked) => updateSettings({
-                          llm: { ...settings.llm, streamResponses: checked }
-                        })}
-                      />
-                    </div>
+                  <div className="space-y-4">
+                    <ModelManager />
                   </div>
                 </div>
               </div>
