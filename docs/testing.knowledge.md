@@ -6,6 +6,9 @@
 - Supabase provides built-in RLS (Row Level Security)
 - Use Supabase migrations for schema changes
 - Store all Supabase-related code in src/lib/supabase/
+- Keep service role key and JWT secret server-side only
+- Use Supabase Edge Functions for sensitive operations
+- Prefer Supabase's built-in features over direct service integrations
 
 
 ## Test Categories

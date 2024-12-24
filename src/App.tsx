@@ -3,15 +3,15 @@ import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { TooltipProvider } from './components/ui/tooltip';
-import { useSettings } from './context/SettingsContext';
+import { SettingsProvider, useSettings } from './context/SettingsContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LoginForm } from './components/Auth/LoginForm';
 import { SignUpForm } from './components/Auth/SignUpForm';
 import { ProfileManager } from './components/Profile/ProfileManager';
 
 // Lazy load heavy components
-const MainPanel = lazy(() => import('./components/MainPanel'));
-const ObserverPanel = lazy(() => import('./components/ObserverPanel'));
+const MainPanel = lazy(() => import('./components/MainPanel').then(module => ({ default: module.MainPanel })));
+const ObserverPanel = lazy(() => import('./components/ObserverPanel').then(module => ({ default: module.ObserverPanel })));
 
 // Loading fallback
 const LoadingFallback = () => (
@@ -78,13 +78,15 @@ function AuthenticatedContent() {
 function App() {
   return (
     <ErrorBoundary>
-      <AuthProvider>
-        <TooltipProvider>
-          <Suspense fallback={<LoadingFallback />}>
-            <AuthenticatedContent />
-          </Suspense>
-        </TooltipProvider>
-      </AuthProvider>
+      <SettingsProvider>
+        <AuthProvider>
+          <TooltipProvider>
+            <Suspense fallback={<LoadingFallback />}>
+              <AuthenticatedContent />
+            </Suspense>
+          </TooltipProvider>
+        </AuthProvider>
+      </SettingsProvider>
     </ErrorBoundary>
   );
 }

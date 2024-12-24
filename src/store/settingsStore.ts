@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Settings } from '../types';
+import type { Settings } from '../types/settings';
 
 interface SettingsState {
   settings: Settings;
@@ -27,25 +27,33 @@ const defaultSettings: Settings = {
     maxConcurrentTasks: 5,
     taskTimeout: 30000,
     autoDelegation: true,
-    defaultRole: 'assistant'
+    defaultRole: 'assistant',
+    maxRetries: 3,
+    errorThreshold: 0.1
   },
   memory: {
     maxItems: 1000,
     retentionDays: 30,
     vectorSearch: true,
-    contextWindowSize: 4096
+    contextWindowSize: 4096,
+    embeddingModel: 'text-embedding-ada-002',
+    similarityThreshold: 0.8
   },
   performance: {
     batchSize: 32,
     cacheDuration: 3600,
     cacheEnabled: true,
-    debugMode: false
+    debugMode: false,
+    logLevel: 'info',
+    metricsEnabled: true
   },
   security: {
     apiKeyRotation: 30,
     rateLimit: 100,
     sandboxMode: true,
-    contentFiltering: true
+    contentFiltering: true,
+    maxTokensPerRequest: 4096,
+    allowedDomains: ['*']
   }
 };
 
@@ -53,20 +61,17 @@ export const useSettingsStore = create<SettingsState>()(
   persist(
     (set) => ({
       settings: defaultSettings,
-      updateSettings: (newSettings) => 
+      updateSettings: (newSettings) =>
         set((state) => ({
-          settings: { ...state.settings, ...newSettings }
+          settings: { ...state.settings, ...newSettings },
         })),
-      resetSettings: () => set({ settings: defaultSettings })
+      resetSettings: () => set({ settings: defaultSettings }),
     }),
     {
       name: 'settings-storage',
       partialize: (state) => ({
-        settings: {
-          ...state.settings,
-          theme: state.settings.theme
-        }
-      })
+        settings: state.settings,
+      }),
     }
   )
 );
