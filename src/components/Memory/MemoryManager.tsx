@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { useMemoryManagement } from '@/hooks/useMemoryManagement';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Slider } from '@/components/ui/slider';
-import { Card } from '@/components/ui/card';
-import { ToolhouseLoadingWrapper } from '@/components/Loading/ToolhouseLoading';
+import { useMemoryManagement } from '../../hooks/useMemoryManagement';
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
+import { Slider } from '../../components/ui/slider';
+import { Card } from '../../components/ui/card';
+import { ToolhouseLoadingWrapper } from '../../components/Loading/ToolhouseLoading';
 
 export const MemoryManager: React.FC = () => {
   const { storeMemory, searchMemories, consolidateMemories } = useMemoryManagement();

@@ -1,5 +1,5 @@
 import type { LLMProvider } from './index';
-import type { Message } from '@/types';
+import type { Message } from '../../../types';
 import { HfInference } from '@huggingface/inference';
 
 export class QwenProvider implements LLMProvider {

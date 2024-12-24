@@ -1,6 +1,6 @@
 import * as tf from '@tensorflow/tfjs';
 import { memoryManager } from '../memory';
-import type { NeuralArchitecture, TrainingMetrics } from '@/types';
+import type { NeuralArchitecture, TrainingMetrics } from '../../types';
 
 export class NeuralCore {
   private model: tf.LayersModel | null = null;

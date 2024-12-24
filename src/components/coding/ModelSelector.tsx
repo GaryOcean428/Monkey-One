@@ -7,7 +7,7 @@ import {
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
 import { Button } from '../ui/button';
-import { useLLM } from '@/hooks/useLLM';
+import { useLLM } from '../../hooks/useLLM';
 
 export function ModelSelector() {
   const { activeProvider, switchProvider } = useLLM();

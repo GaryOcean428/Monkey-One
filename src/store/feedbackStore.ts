@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { persist } from 'zustand/middleware';
-import { FeedbackManager, type Feedback } from '@/lib/learning/FeedbackManager';
-import { isDemo } from '@/lib/firebase';
+import { FeedbackManager, type Feedback } from '../lib/learning/FeedbackManager';
+import { isDemo } from '../lib/firebase';
 
 interface FeedbackState {
   isDevMode: boolean;

@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
-import { vectorStore } from '@/lib/vectorstore';
-import type { CodeInsight, LearningMetric, VectorIndex, SearchResult } from '@/types';
+import { vectorStore } from '../lib/vectorstore';
+import type { CodeInsight, LearningMetric, VectorIndex, SearchResult } from '../types';
 
 export function useVectorStore() {
   const [isLoading, setIsLoading] = useState(false);

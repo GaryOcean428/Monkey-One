@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Loader } from 'lucide-react';
 import { ChatMessage } from './ChatMessage';
-import { useChat } from '@/hooks/useChat';
-import { cn } from '@/lib/utils';
+import { useChat } from '../hooks/useChat';
+import { cn } from '../lib/utils';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 

@@ -1,7 +1,7 @@
 import { Subject } from 'rxjs';
 import PQueue from 'p-queue';
 import { BaseAgent } from './base';
-import { AgentTask, TaskResult } from '@/types';
+import { AgentTask, TaskResult } from '../../types';
 import { memoryManager } from '../memory';
 
 interface SwarmConfig {

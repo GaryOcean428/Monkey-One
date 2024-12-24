@@ -1,5 +1,5 @@
 import React from 'react';
-import { cn } from '@/lib/utils';
+import { cn } from '../../lib/utils';
 import {
   MessageSquare,
   Settings,
@@ -16,12 +16,9 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { useNavigationStore } from '@/store/navigationStore';
-import { Tabs, TabsContent } from '@/components/ui/tabs';
+import { Button } from '../../components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/ui/tooltip';
+import { useNavigationStore } from '../../store/navigationStore';
 import { ThoughtLoggerPanel } from '../panels/ThoughtLoggerPanel';
 import { AgentMonitor } from '../panels/AgentMonitor';
 
@@ -64,105 +61,6 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
     'thought-logger': ThoughtLoggerPanel,
   };
 
-  const DEFAULT_LAYOUT = {
-    'chat': {
-      title: 'Chat',
-      type: 'chat',
-      x: 0,
-      y: 0,
-      width: 6,
-      height: 4,
-    },
-    'agents': {
-      title: 'Agents',
-      type: 'agents',
-      x: 6,
-      y: 0,
-      width: 6,
-      height: 4,
-    },
-    'workflows': {
-      title: 'Workflows',
-      type: 'workflows',
-      x: 0,
-      y: 4,
-      width: 6,
-      height: 4,
-    },
-    'memory': {
-      title: 'Memory',
-      type: 'memory',
-      x: 6,
-      y: 4,
-      width: 6,
-      height: 4,
-    },
-    'documents': {
-      title: 'Documents',
-      type: 'documents',
-      x: 0,
-      y: 8,
-      width: 6,
-      height: 4,
-    },
-    'dashboard': {
-      title: 'Dashboard',
-      type: 'dashboard',
-      x: 6,
-      y: 8,
-      width: 6,
-      height: 4,
-    },
-    'tools': {
-      title: 'Tools',
-      type: 'tools',
-      x: 0,
-      y: 12,
-      width: 6,
-      height: 4,
-    },
-    'search': {
-      title: 'Search',
-      type: 'search',
-      x: 6,
-      y: 12,
-      width: 6,
-      height: 4,
-    },
-    'vectorstore': {
-      title: 'Vector Store',
-      type: 'vectorstore',
-      x: 0,
-      y: 16,
-      width: 6,
-      height: 4,
-    },
-    'github': {
-      title: 'GitHub',
-      type: 'github',
-      x: 6,
-      y: 16,
-      width: 6,
-      height: 4,
-    },
-    'performance': {
-      title: 'Performance',
-      type: 'performance',
-      x: 0,
-      y: 20,
-      width: 6,
-      height: 4,
-    },
-    'thought-logger': {
-      title: 'Thought Logger',
-      type: 'thought-logger',
-      x: 6,
-      y: 20,
-      width: 6,
-      height: 4,
-    },
-  };
-
   return (
     <div className="flex h-screen bg-background">
       {/* Sidebar */}
@@ -191,7 +89,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
         </div>
 
         {/* Navigation */}
-        <ScrollArea className="flex-1 py-2 px-2">
+        <div className="flex-1 py-2 px-2 overflow-auto">
           <nav className="space-y-1">
             {navItems.map((item) => {
               const Icon = item.icon;
@@ -223,9 +121,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
               );
             })}
           </nav>
-        </ScrollArea>
-
-        <Separator className="bg-gray-800" />
+        </div>
 
         {/* Settings */}
         <div className="p-4 border-t border-gray-800">
@@ -246,9 +142,9 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
 
       {/* Main Content */}
       <div className="flex-1 overflow-hidden bg-gray-50 dark:bg-gray-900">
-        <Tabs value={activeTab} className="h-full">
+        <div className="h-full">
           {children}
-        </Tabs>
+        </div>
       </div>
     </div>
   );

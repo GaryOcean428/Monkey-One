@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
-import { useFeedbackStore } from '@/store/feedbackStore';
-import type { Message } from '@/types';
+import { useFeedbackStore } from '../../store/feedbackStore';
+import type { Message } from '../../types';
 
 interface FeedbackDialogProps {
   open: boolean;

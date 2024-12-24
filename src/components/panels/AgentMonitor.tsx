@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import { Activity, AlertCircle, CheckCircle } from 'lucide-react';
 import { BasePanel } from './BasePanel';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { useThoughtLogger } from '@/hooks/useThoughtLogger';
+import { Card } from '../../components/ui/card';
+import { Badge } from '../../components/ui/badge';
+import { Progress } from '../../components/ui/progress';
+import { useThoughtLogger } from '../../hooks/useThoughtLogger';
 
 interface Agent {
   id: string;

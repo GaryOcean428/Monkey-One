@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { AgentSession } from '@/lib/sessions/AgentSession';
-import { BaseAgent } from '@/lib/agents/base';
-import { Message, MessageType, AgentCapability, MemoryItem, MemoryType } from '@/types';
+import { AgentSession } from '../../lib/sessions/AgentSession';
+import { BaseAgent } from '../../lib/agents/base';
+import { Message, MessageType, AgentCapability, MemoryItem, MemoryType } from '../../types';
 
 class TestAgent extends BaseAgent {
   constructor() {

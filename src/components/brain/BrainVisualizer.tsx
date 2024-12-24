@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { motion } from 'framer-motion';
-import { useBrainCore } from '@/hooks/useBrainCore';
-import { useThrottledCallback } from '@/hooks/useThrottledCallback';
+import { useBrainCore } from '../../hooks/useBrainCore';
+import { useThrottledCallback } from '../../hooks/useThrottledCallback';
 
 export function BrainVisualizer() {
   const containerRef = useRef<HTMLDivElement>(null);

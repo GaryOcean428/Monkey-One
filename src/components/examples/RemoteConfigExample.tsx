@@ -1,11 +1,11 @@
 import { useEffect } from 'react';
-import { useRemoteConfig } from '@/lib/firebase/hooks/useRemoteConfig';
+import { useRemoteConfig } from '../../lib/firebase/hooks/useRemoteConfig';
 import {
   DARK_MODE_ENABLED,
   API_ENDPOINT,
   MAINTENANCE_MODE,
   BETA_FEATURES_ENABLED
-} from '@/lib/firebase/constants/remoteConfig';
+} from '../../lib/firebase/constants/remoteConfig';
 
 export function RemoteConfigExample() {
   // Use multiple remote config parameters
