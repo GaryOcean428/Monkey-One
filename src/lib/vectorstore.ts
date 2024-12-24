@@ -22,7 +22,7 @@ class VectorStoreImpl implements VectorStore {
     this.config = config;
     this.pinecone = new PineconeClient();
     this.openai = new OpenAI({
-      apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
+      apiKey: import.meta.env.VITE_OPENAI_API_KEY,
     });
   }
 
@@ -239,7 +239,7 @@ class VectorStoreImpl implements VectorStore {
 
 // Create and export a singleton instance
 export const vectorStore = new VectorStoreImpl({
-  apiKey: process.env.NEXT_PUBLIC_PINECONE_API_KEY || '',
-  environment: process.env.NEXT_PUBLIC_PINECONE_ENVIRONMENT || '',
-  projectId: process.env.NEXT_PUBLIC_PINECONE_PROJECT_ID || '',
+  apiKey: import.meta.env.VITE_PINECONE_API_KEY || '',
+  environment: import.meta.env.VITE_PINECONE_ENVIRONMENT || '',
+  projectId: import.meta.env.VITE_PINECONE_INDEX_NAME || '',
 });
