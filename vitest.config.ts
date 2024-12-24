@@ -27,7 +27,11 @@ export default defineConfig({
     mockReset: true,
     restoreMocks: true,
     clearMocks: true,
-    testTimeout: 20000
+    testTimeout: 20000,
+    typecheck: {
+      tsconfig: './tsconfig.json',
+      include: ['src/**/*.ts', 'src/**/*.tsx']
+    }
   },
   resolve: {
     alias: {

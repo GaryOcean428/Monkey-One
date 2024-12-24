@@ -1,9 +1,6 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import dotenv from 'dotenv';
-import { visualizer } from 'rollup-plugin-visualizer';
-
-dotenv.config();
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import { visualizer } from 'rollup-plugin-visualizer'
 
 export default defineConfig({
   plugins: [
@@ -15,7 +12,12 @@ export default defineConfig({
       brotliSize: true,
     })
   ],
-  define: {
-    'process.env': process.env
+  server: {
+    port: 3000,
+    host: true
   },
-});
+  envPrefix: [
+    'VITE_',
+    'SB_SQL_DB_'
+  ]
+})
