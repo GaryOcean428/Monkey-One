@@ -5,16 +5,20 @@ export class PineconeStore {
   private pc: Pinecone;
   private index: any;
   private readonly NAMESPACE = 'monkey-one';
-  private readonly INDEX_NAME = 'quickstart';
+  private readonly INDEX_NAME: string;
+  private readonly DIMENSIONS: number;
 
   constructor() {
     if (!import.meta.env.VITE_PINECONE_API_KEY) {
       throw new Error('Missing Pinecone API key');
     }
     
+    this.INDEX_NAME = import.meta.env.VITE_PINECONE_INDEX_NAME || 'agent-one';
+    this.DIMENSIONS = parseInt(import.meta.env.VITE_PINECONE_DIMENSIONS || '3072');
+    
     this.pc = new Pinecone({
       apiKey: import.meta.env.VITE_PINECONE_API_KEY,
-      environment: import.meta.env.VITE_PINECONE_ENVIRONMENT || 'us-west1-gcp'
+      environment: import.meta.env.VITE_PINECONE_ENVIRONMENT
     });
     
     this.initializeIndex();
@@ -22,8 +26,31 @@ export class PineconeStore {
 
   private async initializeIndex() {
     try {
+      // Check if index exists
+      const indexes = await this.pc.listIndexes();
+      const indexExists = indexes.some(index => index.name === this.INDEX_NAME);
+
+      if (!indexExists) {
+        console.log(`Creating new Pinecone index: ${this.INDEX_NAME}`);
+        await this.pc.createIndex({
+          name: this.INDEX_NAME,
+          dimension: this.DIMENSIONS,
+          metric: import.meta.env.VITE_PINECONE_METRIC || 'cosine'
+        });
+        
+        // Wait for index to be ready
+        let status = 'initializing';
+        while (status !== 'ready') {
+          const description = await this.pc.describeIndex(this.INDEX_NAME);
+          status = description.status.state;
+          if (status === 'failed') {
+            throw new Error('Failed to initialize Pinecone index');
+          }
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
+
       this.index = this.pc.index(this.INDEX_NAME);
-      // Verify the index exists and is ready
       const indexDescription = await this.pc.describeIndex(this.INDEX_NAME);
       console.log('Pinecone index status:', indexDescription.status);
     } catch (error) {
@@ -35,6 +62,10 @@ export class PineconeStore {
   async storeCodeInsight(insight: CodeInsight, embedding: number[]) {
     if (!this.index) {
       await this.initializeIndex();
+    }
+    
+    if (embedding.length !== this.DIMENSIONS) {
+      throw new Error(`Embedding dimension mismatch. Expected ${this.DIMENSIONS}, got ${embedding.length}`);
     }
     
     try {
@@ -62,6 +93,10 @@ export class PineconeStore {
   }): Promise<CodeInsight[]> {
     if (!this.index) {
       await this.initializeIndex();
+    }
+
+    if (embedding.length !== this.DIMENSIONS) {
+      throw new Error(`Embedding dimension mismatch. Expected ${this.DIMENSIONS}, got ${embedding.length}`);
     }
 
     const filter: Record<string, any> = {};
@@ -105,6 +140,10 @@ export class PineconeStore {
       await this.initializeIndex();
     }
     
+    if (embedding.length !== this.DIMENSIONS) {
+      throw new Error(`Embedding dimension mismatch. Expected ${this.DIMENSIONS}, got ${embedding.length}`);
+    }
+    
     try {
       await this.index.namespace('learning-metrics').upsert([{
         id: `metrics-${Date.now()}`,
@@ -123,6 +162,10 @@ export class PineconeStore {
   async findSimilarLearningPatterns(embedding: number[], limit: number = 5) {
     if (!this.index) {
       await this.initializeIndex();
+    }
+
+    if (embedding.length !== this.DIMENSIONS) {
+      throw new Error(`Embedding dimension mismatch. Expected ${this.DIMENSIONS}, got ${embedding.length}`);
     }
 
     try {
@@ -152,13 +195,13 @@ export class PineconeStore {
     try {
       const response = await this.index.namespace(this.NAMESPACE).query({
         topK: 10000,
-        vector: new Array(1536).fill(0), // Adjust dimension based on your embeddings
+        vector: new Array(this.DIMENSIONS).fill(0),
         filter: {
           timestamp: { $lt: cutoffDate }
         }
       });
 
-      if (response.matches.length > 0) {
+      if (response.matches && response.matches.length > 0) {
         await this.index.namespace(this.NAMESPACE).deleteMany({
           ids: response.matches.map(match => match.id)
         });
