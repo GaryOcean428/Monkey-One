@@ -10,9 +10,9 @@ class MessageBroker {
     // Subscription logic
   }
 
-  async sendMessage(message: DebateMessage): Promise<void> {
+  async sendMessage(message: Message): Promise<void> {
     // ...sparse communication logic...
   }
 }
 
-export { MessageBroker };
+export { MessageBroker };
