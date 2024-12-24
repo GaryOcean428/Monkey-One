@@ -60,6 +60,41 @@
 - Test files must import { expect, describe, it, beforeEach } from 'vitest'
 - Type errors in test files do not prevent dev server from running
 
+### UI Component Structure
+- Split complex components into Content and Container components
+- Content component handles data fetching and error states
+- Container component provides layout and error boundaries
+- Always wrap data fetching components with error boundaries
+- Include loading states for async operations
+- Add ARIA labels for accessibility
+
+### UI Component Testing
+- Test loading states using vi.mock() for data fetching hooks
+- Test error states by throwing errors in mocked hooks
+- Test accessibility by verifying ARIA attributes
+- Test component rendering in both light and dark themes
+- Test responsive layouts at different breakpoints
+- Verify error boundary fallback rendering
+- Test suspense boundary loading states
+
+### UI Component Patterns
+- Split data fetching components into Content/Container pattern
+- Content component:
+  - Handles data fetching logic
+  - Manages loading states
+  - Throws errors for error boundary
+  - Returns JSX for rendering
+- Container component:
+  - Provides error boundaries
+  - Handles suspense boundaries
+  - Sets up layout and accessibility
+  - Minimal logic, mostly composition
+- Always include:
+  - Role and aria-label attributes
+  - Loading states with LoadingSpinner
+  - Error boundaries with ToolhouseErrorBoundary
+  - Suspense boundaries for code splitting
+
 ### Message Testing
 When creating test messages, always include all required fields:
 ```typescript
