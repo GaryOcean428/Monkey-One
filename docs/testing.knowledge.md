@@ -57,6 +57,8 @@
 - Use vi.fn() instead of jest.fn()
 - Use vi.mock() instead of jest.mock()
 - Use vi.spyOn() instead of jest.spyOn()
+- Test files must import { expect, describe, it, beforeEach } from 'vitest'
+- Type errors in test files do not prevent dev server from running
 
 ### Message Testing
 When creating test messages, always include all required fields:
