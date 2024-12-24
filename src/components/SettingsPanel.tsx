@@ -9,6 +9,12 @@ import { Input } from './ui/input';
 import { Button } from './ui/button';
 
 const MODEL_OPTIONS = {
+  openai: [
+    { value: 'gpt-4-o1', label: 'GPT-4 O1' },
+    { value: 'gpt-4-o-mini', label: 'GPT-4 O Mini' },
+    { value: 'gpt-4-o-realtime', label: 'GPT-4 O Realtime' },
+    { value: 'gpt-4-o-preview', label: 'GPT-4 O Preview' }
+  ],
   groq: [
     { value: 'llama-3.2-70b-preview', label: 'LLaMA 3.2 70B' },
     { value: 'llama-3.2-7b-preview', label: 'LLaMA 3.2 7B' },
@@ -97,27 +103,30 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
                           <SelectValue placeholder="Select a model" />
                         </SelectTrigger>
                         <SelectContent>
+                          <SelectLabel>OpenAI Models</SelectLabel>
+                          {MODEL_OPTIONS.openai.map(model => (
+                            <SelectItem key={model.value} value={model.value}>
+                              {model.label}
+                            </SelectItem>
+                          ))}
                           <SelectLabel>Groq Models</SelectLabel>
                           {MODEL_OPTIONS.groq.map(model => (
                             <SelectItem key={model.value} value={model.value}>
                               {model.label}
                             </SelectItem>
                           ))}
-
                           <SelectLabel>Perplexity Models</SelectLabel>
                           {MODEL_OPTIONS.perplexity.map(model => (
                             <SelectItem key={model.value} value={model.value}>
                               {model.label}
                             </SelectItem>
                           ))}
-
                           <SelectLabel>XAI Models</SelectLabel>
                           {MODEL_OPTIONS.xai.map(model => (
                             <SelectItem key={model.value} value={model.value}>
                               {model.label}
                             </SelectItem>
                           ))}
-
                           <SelectLabel>Hugging Face Models</SelectLabel>
                           {MODEL_OPTIONS.huggingface.map(model => (
                             <SelectItem key={model.value} value={model.value}>
