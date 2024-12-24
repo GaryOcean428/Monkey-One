@@ -4,21 +4,33 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from './ui/tabs';
 import { Slider } from './ui/slider';
 import { Switch } from './ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Input } from './ui/input';
 import { Button } from './ui/button';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 interface SettingsPanelProps {
-  onClose: () => void;
+  onClose?: () => void;
+  isModal?: boolean;
 }
 
-export function SettingsPanel({ onClose }: SettingsPanelProps) {
+export function SettingsPanel({ onClose, isModal = false }: SettingsPanelProps) {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleClose = () => {
+    if (isModal && onClose) {
+      onClose();
+    } else {
+      navigate(-1);
+    }
+  };
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+    <div className={isModal ? "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" : "h-full"}>
+      <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-xl overflow-hidden ${isModal ? 'w-full max-w-4xl max-h-[90vh]' : 'w-full h-full'}`}>
         <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
           <h2 className="text-xl font-semibold dark:text-white">Settings</h2>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
           >
             <X size={24} />
@@ -102,7 +114,7 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
 
         <div className="border-t dark:border-gray-700 p-4 flex justify-end gap-2">
           <Button variant="outline">Reset to Defaults</Button>
-          <Button onClick={onClose}>Save Changes</Button>
+          <Button onClick={handleClose}>Save Changes</Button>
         </div>
       </div>
     </div>
