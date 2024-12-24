@@ -7,7 +7,7 @@ import { Agent, AgentType, AgentStatus, MessageType, AgentCapability, Message } 
 class MockAgent implements Agent {
   id: string;
   type = AgentType.SPECIALIST;
-  capabilities: AgentCapability[] = [];
+  capabilities = [] as AgentCapability[];
   status = AgentStatus.AVAILABLE;
 
   constructor(id: string) {
@@ -16,7 +16,7 @@ class MockAgent implements Agent {
 
   async initialize(): Promise<void> {}
   
-  async processMessage(message: Message): Promise<Message> {
+  async processMessage(_message: Message): Promise<Message> {
     return {
       id: 'response',
       type: MessageType.RESPONSE,

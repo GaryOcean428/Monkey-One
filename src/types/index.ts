@@ -20,11 +20,13 @@ export interface AgentConstructor {
   superiorId?: string;
 }
 
-export enum AgentType {
-  ORCHESTRATOR = 'orchestrator',
-  WORKER = 'worker',
-  SPECIALIST = 'specialist'
-}
+export const AgentType = {
+  ORCHESTRATOR: 'orchestrator',
+  WORKER: 'worker',
+  SPECIALIST: 'specialist'
+} as const;
+
+export type AgentType = typeof AgentType[keyof typeof AgentType];
 
 export interface AgentCapability {
   name: string;
@@ -52,11 +54,13 @@ export interface Agent {
   handleMessage(message: Message): Promise<Message>;
 }
 
-export enum AgentStatus {
-  AVAILABLE = 'available',
-  BUSY = 'busy',
-  OFFLINE = 'offline'
-}
+export const AgentStatus = {
+  AVAILABLE: 'available',
+  BUSY: 'busy',
+  OFFLINE: 'offline'
+} as const;
+
+export type AgentStatus = typeof AgentStatus[keyof typeof AgentStatus];
 
 export interface AgentCapability {
   name: string;
