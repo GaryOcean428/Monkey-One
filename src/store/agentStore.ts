@@ -28,6 +28,18 @@ const initialMetrics: AgentMetrics = {
   successRate: 0
 };
 
+const defaultAgents: Agent[] = [
+  {
+    id: 'default-assistant',
+    name: 'AI Assistant',
+    description: 'A helpful AI assistant that can answer questions and help with tasks.',
+    status: 'available',
+    capabilities: ['chat', 'task-execution', 'code-assistance'],
+    model: 'gpt-4',
+    systemPrompt: 'You are a helpful AI assistant.',
+  }
+];
+
 export const useAgentStore = create<AgentState>()(
   immer((set) => ({
     agents: [],
@@ -39,8 +51,15 @@ export const useAgentStore = create<AgentState>()(
     initializeAgents: async () => {
       set((state) => { state.isLoading = true; state.error = null; });
       try {
-        // TODO: Load agents from backend/storage
-        set((state) => { state.isLoading = false; });
+        // Load default agents
+        set((state) => { 
+          state.agents = defaultAgents;
+          // Set the first agent as active by default
+          if (defaultAgents.length > 0 && !state.activeAgent) {
+            state.activeAgent = defaultAgents[0];
+          }
+          state.isLoading = false;
+        });
       } catch (error) {
         set((state) => {
           state.isLoading = false;
@@ -49,36 +68,39 @@ export const useAgentStore = create<AgentState>()(
       }
     },
 
-    setActiveAgent: (agent) => set((state) => {
-      state.activeAgent = agent;
-    }),
+    setActiveAgent: (agent) => {
+      set((state) => { state.activeAgent = agent; });
+    },
 
-    addAgent: (agent) => set((state) => {
-      state.agents.push(agent);
-    }),
+    addAgent: (agent) => {
+      set((state) => { state.agents.push(agent); });
+    },
 
-    removeAgent: (agentId) => set((state) => {
-      state.agents = state.agents.filter((a) => a.id !== agentId);
-      if (state.activeAgent?.id === agentId) {
-        state.activeAgent = null;
-      }
-    }),
+    removeAgent: (agentId) => {
+      set((state) => {
+        state.agents = state.agents.filter(a => a.id !== agentId);
+        if (state.activeAgent?.id === agentId) {
+          state.activeAgent = null;
+        }
+      });
+    },
 
-    updateAgentStatus: (agentId, status) => set((state) => {
-      const agent = state.agents.find(a => a.id === agentId);
-      if (agent) {
-        agent.status = status;
-      }
-      if (state.activeAgent?.id === agentId) {
-        state.activeAgent.status = status;
-      }
-    }),
+    updateAgentStatus: (agentId, status) => {
+      set((state) => {
+        const agent = state.agents.find(a => a.id === agentId);
+        if (agent) {
+          agent.status = status;
+          if (state.activeAgent?.id === agentId) {
+            state.activeAgent = agent;
+          }
+        }
+      });
+    },
 
-    updateMetrics: (newMetrics) => set((state) => {
-      state.metrics = {
-        ...state.metrics,
-        ...newMetrics
-      };
-    })
+    updateMetrics: (newMetrics) => {
+      set((state) => {
+        state.metrics = { ...state.metrics, ...newMetrics };
+      });
+    }
   }))
 );

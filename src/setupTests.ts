@@ -8,19 +8,6 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-// Provide jest compatibility
-global.jest = {
-  ...vi,
-  fn: vi.fn,
-  spyOn: vi.spyOn,
-  mock: vi.mock,
-  setTimeout: setTimeout,
-  useFakeTimers: vi.useFakeTimers,
-  useRealTimers: vi.useRealTimers,
-  runAllTimers: vi.runAllTimers,
-  advanceTimersByTime: vi.advanceTimersByTime
-};
-
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
