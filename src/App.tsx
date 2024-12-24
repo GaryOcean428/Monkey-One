@@ -1,40 +1,34 @@
 import './styles/globals.css';
-import { useEffect, lazy, Suspense, useState } from 'react';
-import { ErrorBoundary } from './components/ErrorBoundary';
-import { TooltipProvider } from './components/ui/tooltip';
-import { SettingsProvider, useSettings } from './context/SettingsContext';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { LoginForm } from './components/Auth/LoginForm';
-import { SignUpForm } from './components/Auth/SignUpForm';
+import { useEffect, useState } from 'react';
+import { Routes, Route } from 'react-router-dom';
+import { useAuth } from './contexts/AuthContext';
+import { SignIn } from './components/Auth/SignIn';
+import { SignUp } from './components/Auth/SignUp';
+import { Chat } from './components/Chat/Chat';
+import { Settings } from './components/Settings/Settings';
+import { Playground } from './components/Playground/Playground';
 import { useAgentStore } from './store/agentStore';
 import { DashboardLayout } from './components/Layout/DashboardLayout';
 import { TabsContent } from './components/ui/tabs';
+import { useNavigationStore } from './store/navigationStore';
 import { ThemeProvider } from './components/ThemeProvider';
 import { LocalModelService } from './lib/llm/LocalModelService';
 import { ModelManager } from './components/ModelManager';
-import { Routes, Route } from 'react-router-dom';
-import { ChatPanel } from './components/panels/ChatPanel';
-import { AgentDashboard } from './components/panels/AgentDashboard';
-import { WorkflowPanel } from './components/panels/WorkflowPanel';
-import { MemoryPanel } from './components/panels/MemoryPanel';
-import { DocumentsPanel } from './components/panels/DocumentsPanel';
-import { DashboardPanel } from './components/panels/DashboardPanel';
-import { ToolsPanel } from './components/panels/ToolsPanel';
-import { SearchPanel } from './components/panels/SearchPanel';
-import { VectorStorePanel } from './components/panels/VectorStorePanel';
-import { GitHubPanel } from './components/panels/GitHubPanel';
-import { PerformancePanel } from './components/panels/PerformancePanel';
 import { Toaster } from './components/ui/toaster';
 import { useToast } from './components/ui/use-toast';
 import { logger } from './utils/logger';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { TooltipProvider } from './components/ui/tooltip';
+import { SettingsProvider } from './context/SettingsContext';
+import { AuthProvider } from './contexts/AuthContext';
 
 const localModelService = new LocalModelService();
 
-function AuthenticatedContent() {
-  const { settings } = useSettings();
+function App() {
   const { user, isLoading } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
   const initializeAgents = useAgentStore(state => state.initializeAgents);
+  const activeTab = useNavigationStore((state) => state.activeTab);
   const [modelInitialized, setModelInitialized] = useState(false);
   const { toast } = useToast();
 
@@ -63,10 +57,6 @@ function AuthenticatedContent() {
     }
   }, [user, isLoading, modelInitialized, initializeAgents]);
 
-  useEffect(() => {
-    document.documentElement.classList.toggle('dark', settings.theme === 'dark');
-  }, [settings.theme]);
-
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -75,58 +65,37 @@ function AuthenticatedContent() {
     );
   }
 
-  if (!user) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        {isSignUp ? (
-          <SignUpForm onSwitch={() => setIsSignUp(false)} />
-        ) : (
-          <LoginForm onSwitch={() => setIsSignUp(true)} />
-        )}
-      </div>
-    );
-  }
-
-  if (!modelInitialized) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <ModelManager />
-      </div>
-    );
-  }
-
-  return (
-    <DashboardLayout>
-      <Routes>
-        <Route path="/" element={<ChatPanel />} />
-        <Route path="/agents" element={<AgentDashboard />} />
-        <Route path="/workflow" element={<WorkflowPanel />} />
-        <Route path="/memory" element={<MemoryPanel />} />
-        <Route path="/documents" element={<DocumentsPanel />} />
-        <Route path="/dashboard" element={<DashboardPanel />} />
-        <Route path="/tools" element={<ToolsPanel />} />
-        <Route path="/search" element={<SearchPanel />} />
-        <Route path="/vectorstore" element={<VectorStorePanel />} />
-        <Route path="/github" element={<GitHubPanel />} />
-        <Route path="/performance" element={<PerformancePanel />} />
-      </Routes>
-    </DashboardLayout>
-  );
-}
-
-function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider>
         <TooltipProvider>
           <SettingsProvider>
             <AuthProvider>
-              <AuthenticatedContent />
+              <div className="min-h-screen">
+                {!user ? (
+                  <div className="flex min-h-screen items-center justify-center">
+                    {isSignUp ? (
+                      <SignUp onSwitch={() => setIsSignUp(false)} />
+                    ) : (
+                      <SignIn onSwitch={() => setIsSignUp(true)} />
+                    )}
+                  </div>
+                ) : (
+                  <DashboardLayout>
+                    <Routes>
+                      <Route path="/" element={<Chat />} />
+                      <Route path="/settings" element={<Settings />} />
+                      <Route path="/playground" element={<Playground />} />
+                    </Routes>
+                  </DashboardLayout>
+                )}
+              </div>
+              <ModelManager />
+              <Toaster />
             </AuthProvider>
           </SettingsProvider>
         </TooltipProvider>
       </ThemeProvider>
-      <Toaster />
     </ErrorBoundary>
   );
 }
