@@ -4,7 +4,7 @@ import { WorkflowVisualizer } from '../workflow/WorkflowVisualizer';
 import { Button } from '../ui/button';
 import { Plus, Play, Save } from 'lucide-react';
 
-export function WorkflowPanel() {
+export default function WorkflowPanel() {
   const { workflows } = useWorkflow();
 
   return (
