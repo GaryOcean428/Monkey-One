@@ -1,13 +1,17 @@
-import { useEffect, lazy, Suspense } from 'react';
+import { useEffect, lazy, Suspense, useState } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { TooltipProvider } from './components/ui/tooltip';
-import { useSettings } from './context/SettingsContext';
+import { SettingsProvider, useSettings } from './context/SettingsContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { LoginForm } from './components/Auth/LoginForm';
+import { SignUpForm } from './components/Auth/SignUpForm';
+import { ProfileManager } from './components/Profile/ProfileManager';
+import { useAgentStore } from './store/agentStore';
 
 // Lazy load heavy components
-const MainPanel = lazy(() => import('./components/MainPanel'));
-const ObserverPanel = lazy(() => import('./components/ObserverPanel'));
+const MainPanel = lazy(() => import('./components/MainPanel').then(module => ({ default: module.MainPanel })));
 
 // Loading fallback
 const LoadingFallback = () => (
@@ -16,12 +20,51 @@ const LoadingFallback = () => (
   </div>
 );
 
-function AppContent() {
+function AuthenticatedContent() {
   const { settings } = useSettings();
+  const { user } = useAuth();
+  const [isSignUp, setIsSignUp] = useState(false);
+  const initializeAgents = useAgentStore(state => state.initializeAgents);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', settings.theme === 'dark');
   }, [settings.theme]);
+
+  useEffect(() => {
+    if (user) {
+      initializeAgents().catch(console.error);
+    }
+  }, [user, initializeAgents]);
+
+  if (!user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="w-full max-w-md p-8">
+          {isSignUp ? (
+            <>
+              <SignUpForm />
+              <button
+                onClick={() => setIsSignUp(false)}
+                className="mt-4 w-full text-center text-sm text-gray-600 hover:text-gray-900"
+              >
+                Already have an account? Sign in
+              </button>
+            </>
+          ) : (
+            <>
+              <LoginForm />
+              <button
+                onClick={() => setIsSignUp(true)}
+                className="mt-4 w-full text-center text-sm text-gray-600 hover:text-gray-900"
+              >
+                Don't have an account? Sign up
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-background">
@@ -30,6 +73,7 @@ function AppContent() {
         <Header />
         <ErrorBoundary>
           <Suspense fallback={<LoadingFallback />}>
+            <ProfileManager />
             <MainPanel />
           </Suspense>
         </ErrorBoundary>
@@ -41,11 +85,15 @@ function AppContent() {
 function App() {
   return (
     <ErrorBoundary>
-      <TooltipProvider>
-        <Suspense fallback={<LoadingFallback />}>
-          <AppContent />
-        </Suspense>
-      </TooltipProvider>
+      <SettingsProvider>
+        <AuthProvider>
+          <TooltipProvider>
+            <Suspense fallback={<LoadingFallback />}>
+              <AuthenticatedContent />
+            </Suspense>
+          </TooltipProvider>
+        </AuthProvider>
+      </SettingsProvider>
     </ErrorBoundary>
   );
 }

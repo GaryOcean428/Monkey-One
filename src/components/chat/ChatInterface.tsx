@@ -1,4 +1,5 @@
 import React, { useCallback, useRef, useEffect } from 'react';
+import { Send, Loader } from 'lucide-react';
 import { useChat } from '../../hooks/useChat';
 import { ChatMessage } from './ChatMessage';
 import { MessageInput } from './MessageInput';
@@ -7,7 +8,7 @@ import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
 
 export function ChatInterface() {
-  const { messages, isProcessing, error, sendMessage, hasActiveAgent } = useChat();
+  const { messages, isLoading, error, sendMessage, hasActiveAgent } = useChat();
   const [input, setInput] = React.useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -38,7 +39,7 @@ export function ChatInterface() {
     }
 
     const trimmedInput = input.trim();
-    if (!trimmedInput || isProcessing) {
+    if (!trimmedInput || isLoading) {
       return;
     }
 
@@ -104,7 +105,7 @@ export function ChatInterface() {
               onChange={handleTextareaChange}
               onKeyDown={handleKeyDown}
               placeholder={hasActiveAgent ? "Type a message..." : "Select an agent to start chatting"}
-              disabled={!hasActiveAgent || isProcessing}
+              disabled={!hasActiveAgent || isLoading}
               rows={1}
               className={cn(
                 "pr-12 min-h-[44px] max-h-[200px]",
@@ -117,15 +118,15 @@ export function ChatInterface() {
           </div>
           <Button
             type="submit"
-            disabled={!input.trim() || isProcessing || !hasActiveAgent}
+            disabled={!input.trim() || isLoading || !hasActiveAgent}
             onClick={() => void handleSubmit()}
             className={cn(
               "h-11 px-4",
-              isProcessing && "opacity-50",
+              isLoading && "opacity-50",
               "transition-opacity duration-200"
             )}
           >
-            {isProcessing ? (
+            {isLoading ? (
               <Loader className="w-5 h-5 animate-spin" />
             ) : (
               <Send className="w-5 h-5" />
