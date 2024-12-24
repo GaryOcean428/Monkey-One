@@ -8,7 +8,7 @@ import {
   SecurityError,
   isAgentError,
   handleError
-} from '@/lib/errors/AgentErrors'
+} from '../../lib/errors/AgentErrors'
 
 describe('AgentErrors', () => {
   describe('AgentError', () => {

@@ -2,15 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { Brain, Search, Lightbulb, CheckCircle, AlertCircle, RefreshCw, Code, Database, Zap, Users, MessageSquare, HardDrive, List, Filter, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
-import { useThoughtStore } from '@/stores/thoughtStore';
-import type { Thought, ThoughtType } from '@/types/thought';
+import { useThoughtStore } from '../../stores/thoughtStore';
+import type { Thought, ThoughtType } from '../../types/thought';
 import { BasePanel } from './BasePanel';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
+import { Select } from '../../components/ui/select';
+import { Badge } from '../../components/ui/badge';
+import { Card } from '../../components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
 
 interface ThoughtItemProps {
   thought: Thought;

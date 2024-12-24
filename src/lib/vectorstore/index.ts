@@ -1,5 +1,5 @@
 import { PineconeStore } from './PineconeStore';
-import type { CodeInsight, LearningMetric } from '@/types';
+import type { CodeInsight, LearningMetric } from '../../types';
 
 class VectorStoreManager {
   private store: PineconeStore;

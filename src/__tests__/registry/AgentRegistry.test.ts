@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { AgentRegistry } from '@/lib/registry/AgentRegistry';
-import { BaseAgent } from '@/lib/agents/base';
+import { AgentRegistry } from '../../lib/registry/AgentRegistry';
+import { BaseAgent } from '../../lib/agents/base';
 
 class TestAgent extends BaseAgent {
   constructor() {

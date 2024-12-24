@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { SecurityMiddleware } from '../../lib/middleware/SecurityMiddleware';
-import { Message, MessageType } from '@/types';
+import { Message, MessageType } from '../../types';
 
 describe('SecurityMiddleware', () => {
   const middleware = new SecurityMiddleware();

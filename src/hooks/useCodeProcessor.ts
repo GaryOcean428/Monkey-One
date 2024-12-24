@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
-import { CodeProcessor } from '@/lib/llm/CodeProcessor';
-import { ScriptGenerator } from '@/lib/llm/ScriptGenerator';
-import type { Message } from '@/types';
+import { CodeProcessor } from '../lib/llm/CodeProcessor';
+import { ScriptGenerator } from '../lib/llm/ScriptGenerator';
+import type { Message } from '../types';
 
 const codeProcessor = new CodeProcessor();
 const scriptGenerator = new ScriptGenerator();

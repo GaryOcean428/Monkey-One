@@ -1,7 +1,7 @@
 import { Pinecone } from '@pinecone-database/pinecone';
 import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../firebase/config';
-import type { CodeInsight, LearningMetric } from '@/types';
+import type { CodeInsight, LearningMetric } from '../../types';
 import { monitoring } from '../monitoring/MonitoringSystem';
 import { retry } from '../utils/retry';
 

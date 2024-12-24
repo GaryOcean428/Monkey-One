@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { toolhouse } from '@/lib/toolhouse';
-import type { WebSearchResult, Memory, CodeGenerationOptions, ImageGenerationOptions } from '@/lib/toolhouse';
+import { toolhouse } from '../lib/toolhouse';
+import type { WebSearchResult, Memory, CodeGenerationOptions, ImageGenerationOptions } from '../lib/toolhouse';
 
 // Retry configuration
 const RETRY_COUNT = parseInt(import.meta.env.VITE_AI_RETRY_ATTEMPTS || '3');

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { CerebellumAgent } from '@/lib/agents/core/CerebellumAgent';
-import { AgentType, MotorPattern } from '@/types';
+import { CerebellumAgent } from '../../lib/agents/core/CerebellumAgent';
+import { AgentType, MotorPattern } from '../../types';
 
 class TestCerebellumAgent extends CerebellumAgent {
   constructor() {
@@ -12,7 +12,7 @@ class TestCerebellumAgent extends CerebellumAgent {
     return this.executeMotorPattern(pattern);
   }
 }
-import { Message, MessageType } from '@/types';
+import { Message, MessageType } from '../../types';
 
 describe('CerebellumAgent', () => {
   let agent: CerebellumAgent;

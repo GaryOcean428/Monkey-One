@@ -2,7 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, XCircle, AlertTriangle, FileText, Calendar, Link } from 'lucide-react';
 import { Button } from '../ui/button';
-import type { Task, Action } from '@/types';
+import type { Task, Action } from '../../types';
 
 interface TaskPanelProps {
   task: Task;

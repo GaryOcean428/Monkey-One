@@ -1,5 +1,5 @@
 import { BaseAgent } from '../base';
-import type { Message, FormTask } from '@/types';
+import type { Message, FormTask } from '../../../types';
 import puppeteer from 'puppeteer';
 
 export class FormFillerAgent extends BaseAgent {

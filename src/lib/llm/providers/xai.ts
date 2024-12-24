@@ -1,5 +1,5 @@
 import type { LLMProvider } from './index';
-import type { Message } from '@/types';
+import type { Message } from '../../../types';
 
 export class XAIProvider implements LLMProvider {
   readonly id = 'xai';

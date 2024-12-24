@@ -1,7 +1,7 @@
 import React from 'react';
-import { cn } from '@/lib/utils';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { cn } from '../../lib/utils';
+import { Card } from '../../components/ui/card';
+import { Button } from '../../components/ui/button';
 import {
   Brain,
   Tool,

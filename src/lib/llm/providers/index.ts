@@ -3,7 +3,7 @@ import { GroqProvider } from './groq';
 import { PerplexityProvider } from './perplexity';
 import { QwenProvider } from './qwen';
 import { GraniteProvider } from './granite';
-import type { Message } from '@/types';
+import type { Message } from '../../../types';
 
 export interface LLMProvider {
   id: string;

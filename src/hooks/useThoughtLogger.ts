@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
-import { useThoughtStore } from '@/stores/thoughtStore';
-import type { ThoughtType } from '@/types/thought';
+import { useThoughtStore } from '../stores/thoughtStore';
+import type { ThoughtType } from '../types/thought';
 
 export function useThoughtLogger(options: {
   agentId?: string;

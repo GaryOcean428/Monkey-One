@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Thought, ThoughtType, ThoughtFilter, ThoughtStats } from '@/types/thought';
-import { vectorStore } from '@/lib/vectorstore';
+import type { Thought, ThoughtType, ThoughtFilter, ThoughtStats } from '../types/thought';
+import { vectorStore } from '../lib/vectorstore';
 
 interface ThoughtState {
   thoughts: Thought[];

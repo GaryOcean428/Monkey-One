@@ -1,7 +1,7 @@
 import React from 'react';
 import { Brain, Activity, Zap, Heart, Gauge } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useAgents } from '@/hooks/useAgents';
+import { useAgents } from '../../hooks/useAgents';
 
 export function BrainPanel() {
   const { agents } = useAgents();

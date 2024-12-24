@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { AgentState } from '@/lib/state/AgentState';
+import { AgentState } from '../../lib/state/AgentState';
 
 describe('AgentState', () => {
   let state: AgentState;

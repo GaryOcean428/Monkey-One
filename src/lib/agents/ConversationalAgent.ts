@@ -1,6 +1,6 @@
 import { BaseAgent } from './base';
 import { OrchestratorAgent } from './orchestrator';
-import type { Message, AgentTask, WorkflowDefinition } from '@/types';
+import type { Message, AgentTask, WorkflowDefinition } from '../../types';
 import { memoryManager } from '../memory';
 
 export class ConversationalAgent extends BaseAgent {

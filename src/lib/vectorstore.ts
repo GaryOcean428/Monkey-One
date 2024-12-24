@@ -10,7 +10,7 @@ import type {
   SearchOptions,
   UpsertOptions,
   DeleteOptions,
-} from '@/types/vectorstore';
+} from '../types/vectorstore';
 
 class VectorStoreImpl implements VectorStore {
   private pinecone: PineconeClient;
