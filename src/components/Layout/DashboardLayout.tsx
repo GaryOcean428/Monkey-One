@@ -46,7 +46,7 @@ interface DashboardLayoutProps {
 }
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
-  const { isCollapsed, toggleSidebar } = useNavigationStore();
+  const { isCollapsed, toggleSidebar, activeTab, setActiveTab } = useNavigationStore();
   const { theme, toggleTheme } = useTheme();
 
   const PANEL_COMPONENTS = {
@@ -98,7 +98,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           <nav className="space-y-1">
             {navItems.map((item) => {
               const Icon = item.icon;
-              const isActive = item.id === 'chat'; // TODO: implement active tab logic
+              const isActive = item.id === activeTab;
 
               return (
                 <Tooltip key={item.id} delayDuration={0}>
@@ -111,7 +111,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                         isActive && 'bg-gray-800 text-white',
                         !isCollapsed && 'justify-center px-2'
                       )}
-                      onClick={() => {}}
+                      onClick={() => setActiveTab(item.id)}
                     >
                       <Icon size={20} />
                       {!isCollapsed && <span>{item.label}</span>}
@@ -157,7 +157,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       {/* Main Content */}
       <div className="flex-1 overflow-hidden bg-gray-50 dark:bg-gray-900">
         <div className="h-full">
-          {children}
+          <Tabs value={activeTab} className="h-full">
+            {children}
+          </Tabs>
         </div>
       </div>
     </div>
