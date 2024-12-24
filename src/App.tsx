@@ -11,6 +11,8 @@ import { DashboardLayout } from './components/Layout/DashboardLayout';
 import { TabsContent } from './components/ui/tabs';
 import { useNavigationStore } from './store/navigationStore';
 import { ThemeProvider } from './components/ThemeProvider';
+import { LocalModelService } from './lib/llm/LocalModelService';
+import { ModelManager } from './components/ModelManager';
 
 // Lazy-loaded components
 const ChatPanel = lazy(() => import('./components/panels/ChatPanel'));
@@ -38,93 +40,107 @@ function AuthenticatedContent() {
   const [isSignUp, setIsSignUp] = useState(false);
   const initializeAgents = useAgentStore(state => state.initializeAgents);
   const { activeTab } = useNavigationStore();
+  const [modelInitialized, setModelInitialized] = useState(false);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', settings.theme === 'dark');
   }, [settings.theme]);
 
   useEffect(() => {
+    async function initializeModel() {
+      try {
+        const modelService = LocalModelService.getInstance();
+        await modelService.initialize();
+        setModelInitialized(true);
+      } catch (error) {
+        console.error('Failed to initialize model:', error);
+      }
+    }
+
     if (user) {
+      initializeModel();
       initializeAgents().catch(console.error);
     }
   }, [user, initializeAgents]);
 
   if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="w-full max-w-md space-y-6 p-8 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
-          <LoadingFallback />
-        </div>
-      </div>
-    );
+    return <LoadingFallback />;
   }
 
   if (!user) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="w-full max-w-md space-y-6 p-8 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
-          {isSignUp ? (
-            <>
-              <SignUpForm />
-              <button
-                onClick={() => setIsSignUp(false)}
-                className="mt-4 w-full text-center text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
-              >
-                Already have an account? Sign in
-              </button>
-            </>
-          ) : (
-            <>
-              <LoginForm />
-              <button
-                onClick={() => setIsSignUp(true)}
-                className="mt-4 w-full text-center text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
-              >
-                Don't have an account? Sign up
-              </button>
-            </>
-          )}
-        </div>
+        {isSignUp ? (
+          <SignUpForm onSwitch={() => setIsSignUp(false)} />
+        ) : (
+          <LoginForm onSwitch={() => setIsSignUp(true)} />
+        )}
+      </div>
+    );
+  }
+
+  if (!modelInitialized) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <ModelManager />
       </div>
     );
   }
 
   return (
     <DashboardLayout>
-      <TabsContent value={activeTab} className="h-full m-0 p-0 overflow-hidden">
-        <Suspense fallback={<LoadingFallback />}>
-          {activeTab === 'chat' && <ChatPanel />}
-          {activeTab === 'agents' && <AgentDashboard />}
-          {activeTab === 'workflows' && <WorkflowPanel />}
-          {activeTab === 'memory' && <MemoryPanel />}
-          {activeTab === 'documents' && <DocumentsPanel />}
-          {activeTab === 'dashboard' && <DashboardPanel />}
-          {activeTab === 'tools' && <ToolsPanel />}
-          {activeTab === 'search' && <SearchPanel />}
-          {activeTab === 'vectorstore' && <VectorStorePanel />}
-          {activeTab === 'github' && <GitHubPanel />}
-          {activeTab === 'performance' && <PerformancePanel />}
-        </Suspense>
-      </TabsContent>
+      <Suspense fallback={<LoadingFallback />}>
+        <TabsContent value="chat" className="m-0">
+          <ChatPanel />
+        </TabsContent>
+        <TabsContent value="agents" className="m-0">
+          <AgentDashboard />
+        </TabsContent>
+        <TabsContent value="workflow" className="m-0">
+          <WorkflowPanel />
+        </TabsContent>
+        <TabsContent value="memory" className="m-0">
+          <MemoryPanel />
+        </TabsContent>
+        <TabsContent value="documents" className="m-0">
+          <DocumentsPanel />
+        </TabsContent>
+        <TabsContent value="dashboard" className="m-0">
+          <DashboardPanel />
+        </TabsContent>
+        <TabsContent value="tools" className="m-0">
+          <ToolsPanel />
+        </TabsContent>
+        <TabsContent value="search" className="m-0">
+          <SearchPanel />
+        </TabsContent>
+        <TabsContent value="vectorstore" className="m-0">
+          <VectorStorePanel />
+        </TabsContent>
+        <TabsContent value="github" className="m-0">
+          <GitHubPanel />
+        </TabsContent>
+        <TabsContent value="performance" className="m-0">
+          <PerformancePanel />
+        </TabsContent>
+      </Suspense>
     </DashboardLayout>
   );
 }
 
 function App() {
   return (
-    <ThemeProvider>
-      <TooltipProvider>
-        <ErrorBoundary>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <TooltipProvider>
           <SettingsProvider>
             <AuthProvider>
-              <Suspense fallback={<LoadingFallback />}>
-                <AuthenticatedContent />
-              </Suspense>
+              <AuthenticatedContent />
             </AuthProvider>
           </SettingsProvider>
-        </ErrorBoundary>
-      </TooltipProvider>
-    </ThemeProvider>
+        </TooltipProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }
 

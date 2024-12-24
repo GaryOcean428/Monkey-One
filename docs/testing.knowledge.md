@@ -77,6 +77,14 @@
 - Verify error boundary fallback rendering
 - Test suspense boundary loading states
 
+### Testing Setup
+- @testing-library/react and @testing-library/jest-dom are already installed
+- Use render() from @testing-library/react for component testing
+- Use screen queries like getByText(), getByRole() for assertions
+- Mock store dependencies using vi.mock()
+- Wrap components with necessary providers (ThemeProvider, SettingsProvider)
+- Test ARIA attributes and accessibility features
+
 ### UI Component Patterns
 - Split data fetching components into Content/Container pattern
 - Content component:
