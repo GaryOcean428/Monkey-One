@@ -1,6 +1,4 @@
 import { useEffect, lazy, Suspense, useState } from 'react';
-import { Sidebar } from './components/Sidebar';
-import { Header } from './components/Header';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { TooltipProvider } from './components/ui/tooltip';
 import { SettingsProvider, useSettings } from './context/SettingsContext';
@@ -8,8 +6,22 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LoginForm } from './components/Auth/LoginForm';
 import { SignUpForm } from './components/Auth/SignUpForm';
 import { useAgentStore } from './store/agentStore';
-import { RouterProvider } from 'react-router-dom';
-import { router } from './routes';
+import { DashboardLayout } from './components/Layout/DashboardLayout';
+import { TabsContent } from './components/ui/tabs';
+import { useNavigationStore } from './store/navigationStore';
+
+// Lazy-loaded components
+const ChatPanel = lazy(() => import('./components/panels/ChatPanel').then(module => ({ default: module.ChatPanel })));
+const AgentDashboard = lazy(() => import('./components/panels/AgentDashboard').then(module => ({ default: module.AgentDashboard })));
+const WorkflowPanel = lazy(() => import('./components/panels/WorkflowPanel').then(module => ({ default: module.WorkflowPanel })));
+const MemoryPanel = lazy(() => import('./components/panels/MemoryPanel').then(module => ({ default: module.MemoryPanel })));
+const DocumentsPanel = lazy(() => import('./components/panels/DocumentsPanel').then(module => ({ default: module.DocumentsPanel })));
+const DashboardPanel = lazy(() => import('./components/panels/DashboardPanel').then(module => ({ default: module.DashboardPanel })));
+const ToolsPanel = lazy(() => import('./components/panels/ToolsPanel').then(module => ({ default: module.ToolsPanel })));
+const SearchPanel = lazy(() => import('./components/panels/SearchPanel').then(module => ({ default: module.SearchPanel })));
+const VectorStorePanel = lazy(() => import('./components/panels/VectorStorePanel').then(module => ({ default: module.VectorStorePanel })));
+const GitHubPanel = lazy(() => import('./components/panels/GitHubPanel').then(module => ({ default: module.GitHubPanel })));
+const PerformancePanel = lazy(() => import('./components/panels/PerformancePanel').then(module => ({ default: module.PerformancePanel })));
 
 // Loading fallback
 const LoadingFallback = () => (
@@ -23,6 +35,7 @@ function AuthenticatedContent() {
   const { user } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
   const initializeAgents = useAgentStore(state => state.initializeAgents);
+  const { activeTab } = useNavigationStore();
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', settings.theme === 'dark');
@@ -65,15 +78,23 @@ function AuthenticatedContent() {
   }
 
   return (
-    <div className="flex h-screen bg-background">
-      <Sidebar />
-      <main className="flex-1 flex flex-col">
-        <Header />
-        <ErrorBoundary>
-          <RouterProvider router={router} />
-        </ErrorBoundary>
-      </main>
-    </div>
+    <DashboardLayout>
+      <TabsContent value={activeTab} className="h-full m-0 p-0 overflow-hidden">
+        <Suspense fallback={<LoadingFallback />}>
+          {activeTab === 'chat' && <ChatPanel />}
+          {activeTab === 'agents' && <AgentDashboard />}
+          {activeTab === 'workflows' && <WorkflowPanel />}
+          {activeTab === 'memory' && <MemoryPanel />}
+          {activeTab === 'documents' && <DocumentsPanel />}
+          {activeTab === 'dashboard' && <DashboardPanel />}
+          {activeTab === 'tools' && <ToolsPanel />}
+          {activeTab === 'search' && <SearchPanel />}
+          {activeTab === 'vectorstore' && <VectorStorePanel />}
+          {activeTab === 'github' && <GitHubPanel />}
+          {activeTab === 'performance' && <PerformancePanel />}
+        </Suspense>
+      </TabsContent>
+    </DashboardLayout>
   );
 }
 
