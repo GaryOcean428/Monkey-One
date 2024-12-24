@@ -110,7 +110,7 @@ describe('OrchestratorAgent', () => {
             };
 
             const response = await orchestrator.processMessage(message);
-            expect(response.type).toBe(MessageType.ERROR);
+            expect(response.type).toBe('error');
         });
     });
 

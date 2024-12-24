@@ -1,7 +1,7 @@
 import { env } from '@xenova/transformers';
 import { InferenceSession, Tensor } from 'onnxruntime-web';
 import type { Message } from '../types';
-import { logger } from '../utils/logger';
+import { logger } from '../../utils/logger';
 
 // Configure env for optimal performance
 env.backends.onnx.wasm.numThreads = navigator.hardwareConcurrency;

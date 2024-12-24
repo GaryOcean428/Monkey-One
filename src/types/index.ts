@@ -20,30 +20,104 @@ export interface AgentConstructor {
   superiorId?: string;
 }
 
-enum AgentType {
-  Orchestrator = 'orchestrator',
-  WebSurfer = 'websurfer',
-  FileSurfer = 'filesurfer',
-  Coder = 'coder'
+export const AgentType = {
+  ORCHESTRATOR: 'orchestrator',
+  WORKER: 'worker',
+  SPECIALIST: 'specialist'
+} as const;
+
+export type AgentType = typeof AgentType[keyof typeof AgentType];
+
+export interface AgentCapability {
+  name: string;
+  description?: string;
+}
+export { AgentCapability };  // Explicit export
+
+export interface Message {
+  id: string;
+  type: MessageType;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  timestamp: number;
+  metadata?: Record<string, unknown>;
 }
 
 export interface Agent {
   id: string;
+  type: AgentType;
+  capabilities: AgentCapability[];
+  status: AgentStatus;
+  initialize(context: Record<string, unknown>): Promise<void>;
+  processMessage(message: Message): Promise<Message>;
+  getCapabilities(): AgentCapability[];
+  registerCapability(capability: AgentCapability): void;
+  handleMessage(message: Message): Promise<Message>;
+}
+
+export const AgentStatus = {
+  AVAILABLE: 'available',
+  BUSY: 'busy',
+  OFFLINE: 'offline'
+} as const;
+
+export type AgentStatus = typeof AgentStatus[keyof typeof AgentStatus];
+
+export interface AgentCapability {
   name: string;
-  description: string;
-  type?: AgentType;
-  status: 'available' | 'busy' | 'offline' | 'error';
-  capabilities: string[];
-  model: string;
-  systemPrompt: string;
-  metadata?: Record<string, any>;
-  lastActive?: string;
-  error?: string;
-  performance?: {
-    successRate: number;
-    averageResponseTime: number;
-    totalTasks: number;
-  };
+  description?: string;
+}
+
+export interface Agent {
+  id: string;
+  type: AgentType;
+  capabilities: AgentCapability[];
+  status: AgentStatus;
+  initialize(context: Record<string, unknown>): Promise<void>;
+  processMessage(message: Message): Promise<Message>;
+}
+
+export const MessageType = {
+  TASK: 'task',
+  RESPONSE: 'response',
+  ERROR: 'error',
+  BROADCAST: 'broadcast',
+  HANDOFF: 'handoff'
+} as const;
+
+export type MessageType = typeof MessageType[keyof typeof MessageType];
+
+export interface AgentMetrics {
+  messageCount: number;
+  errorCount: number;
+  averageResponseTime: number;
+  status: string;
+}
+
+export interface LogLevel {
+  DEBUG: string;
+  INFO: string;
+  WARN: string;
+  ERROR: string;
+}
+
+export interface HostRuntimeConfig {
+  id: string;
+  type: AgentType;
+  capabilities: AgentCapability[];
+}
+
+export interface LogLevel {
+  DEBUG: string;
+  INFO: string;
+  WARN: string;
+  ERROR: string;
+}
+
+export interface HostRuntimeConfig {
+  id: string;
+  type: AgentType;
+  capabilities: AgentCapability[];
 }
 
 export interface CodeInsight {

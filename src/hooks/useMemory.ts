@@ -10,14 +10,25 @@ interface Memory {
 
 export function useMemory() {
   const [memories, setMemories] = useState<Memory[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    // Get recent memories on mount
-    const recentMemories = memoryManager.getRecent(10);
-    setMemories(recentMemories);
+    async function loadMemories() {
+      try {
+        const recentMemories = await memoryManager.getRecent(10);
+        setMemories(recentMemories);
+      } catch (err) {
+        setError(err instanceof Error ? err : new Error('Failed to load memories'));
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadMemories();
   }, []);
 
-  return { memories };
+  return { memories, isLoading, error };
 }
 
 export default useMemory;

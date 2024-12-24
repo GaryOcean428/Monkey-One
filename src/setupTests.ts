@@ -1,11 +1,14 @@
-import { expect, afterEach, vi } from 'vitest';
+import '@testing-library/jest-dom';
+import { expect, afterEach } from 'vitest';
 import { cleanup } from '@testing-library/react';
-import { TextDecoder, TextEncoder } from 'util';
+import * as matchers from '@testing-library/jest-dom/matchers';
+
+// Extend Vitest's expect with jest-dom matchers
+expect.extend(matchers);
 
 // Run cleanup after each test case
 afterEach(() => {
   cleanup();
-  vi.restoreAllMocks();
 });
 
 // Mock window.matchMedia
@@ -30,130 +33,37 @@ global.ResizeObserver = vi.fn().mockImplementation(() => ({
   disconnect: vi.fn(),
 }));
 
-// Mock TextEncoder/TextDecoder
-global.TextEncoder = TextEncoder;
-
-// Replace the TextDecoder mock with a more compatible version
-class CustomTextDecoder extends TextDecoder {
-  decode(input?: ArrayBuffer | ArrayBufferView | null, options?: { stream?: boolean }): string {
-    return super.decode(input as ArrayBuffer, options);
+// Mock TextDecoder
+class CustomTextDecoder {
+  decode(bytes: Uint8Array): string {
+    return new TextDecoder().decode(bytes);
   }
 }
-global.TextDecoder = CustomTextDecoder as typeof global.TextDecoder;
 
-// Mock requestAnimationFrame
-global.requestAnimationFrame = (callback: FrameRequestCallback) => {
-  return setTimeout(callback, 0);
-};
+global.TextDecoder = CustomTextDecoder as any;
 
-// Mock cancelAnimationFrame
-global.cancelAnimationFrame = (id: number) => {
-  clearTimeout(id);
-};
-
-// Mock crypto
-Object.defineProperty(global, 'crypto', {
-  value: {
-    randomUUID: () => 'test-uuid',
-    getRandomValues: (arr: Uint8Array) => {
-      for (let i = 0; i < arr.length; i++) {
-        arr[i] = Math.floor(Math.random() * 256);
-      }
-      return arr;
-    }
-  }
-});
-
-// Create a comprehensive mock for TextMetrics
-function createTextMetricsMock(text: string): TextMetrics {
-  return {
-    width: text.length * 10,
-    actualBoundingBoxAscent: 10,
-    actualBoundingBoxDescent: 5,
-    actualBoundingBoxLeft: 0,
-    actualBoundingBoxRight: text.length * 10,
-    fontBoundingBoxAscent: 12,
-    fontBoundingBoxDescent: 6,
-    emHeightAscent: 10,
-    emHeightDescent: 5,
-    hangingBaseline: 8,
-    alphabeticBaseline: 10,
-    ideographicBaseline: 12
-  };
-}
-
-// Comprehensive mock for CanvasRenderingContext2D
-function createCanvasContextMock(): CanvasRenderingContext2D {
-  const canvas = document.createElement('canvas');
-  
-  const mockContext: CanvasRenderingContext2D = {
-    canvas,
-    globalAlpha: 1.0,
-    globalCompositeOperation: 'source-over',
-    fillStyle: '#000000',
-    strokeStyle: '#000000',
-    lineCap: 'butt',
-    lineJoin: 'miter',
-    lineWidth: 1.0,
-    miterLimit: 10.0,
-    shadowBlur: 0,
-    shadowColor: 'rgba(0,0,0,0)',
-    shadowOffsetX: 0,
-    shadowOffsetY: 0,
-    filter: 'none',
-    imageSmoothingEnabled: true,
-    imageSmoothingQuality: 'high',
-    beginPath: vi.fn(),
-    closePath: vi.fn(),
-    moveTo: vi.fn(),
-    lineTo: vi.fn(),
-    stroke: vi.fn(),
-    fill: vi.fn(),
-    rect: vi.fn(),
-    clearRect: vi.fn(),
-    fillRect: vi.fn(),
-    strokeRect: vi.fn(),
-    arc: vi.fn(),
-    arcTo: vi.fn(),
-    scale: vi.fn(),
-    rotate: vi.fn(),
-    translate: vi.fn(),
-    transform: vi.fn(),
-    setTransform: vi.fn(),
-    resetTransform: vi.fn(),
-    save: vi.fn(),
-    restore: vi.fn(),
-    clip: vi.fn(),
-    isPointInPath: vi.fn(),
-    isPointInStroke: vi.fn(),
-    drawImage: vi.fn(),
-    createLinearGradient: vi.fn(),
-    createRadialGradient: vi.fn(),
-    createConicGradient: vi.fn(),
-    createPattern: vi.fn(),
-    measureText: vi.fn((text: string) => createTextMetricsMock(text)),
+// Mock canvas
+const canvas = document.createElement('canvas');
+const ctx = canvas.getContext('2d');
+if (ctx) {
+  Object.assign(ctx, {
+    measureText: () => ({
+      width: 100,
+      actualBoundingBoxAscent: 10,
+      actualBoundingBoxDescent: 10,
+      actualBoundingBoxLeft: 0,
+      actualBoundingBoxRight: 100,
+      fontBoundingBoxAscent: 10,
+      fontBoundingBoxDescent: 10,
+      alphabeticBaseline: 0,
+      emHeightAscent: 10,
+      emHeightDescent: 10,
+      hangingBaseline: 0,
+      ideographicBaseline: 10,
+    }),
     fillText: vi.fn(),
     strokeText: vi.fn(),
-    getContextAttributes: vi.fn(),
-    getLineDash: vi.fn(),
-    setLineDash: vi.fn(),
-    createImageData: vi.fn(),
-    getImageData: vi.fn(),
-    putImageData: vi.fn(),
-    quadraticCurveTo: vi.fn(),
-    bezierCurveTo: vi.fn(),
-    ellipse: vi.fn(),
-  } as unknown as CanvasRenderingContext2D;
-
-  return mockContext;
+    save: vi.fn(),
+    restore: vi.fn(),
+  });
 }
-
-// Mock canvas getContext
-(HTMLCanvasElement.prototype.getContext as any) = function(contextId: string) {
-  switch (contextId) {
-    case '2d':
-      return createCanvasContextMock();
-    default:
-      return null;
-  }
-};
