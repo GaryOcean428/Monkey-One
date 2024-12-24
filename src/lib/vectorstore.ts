@@ -1,4 +1,4 @@
-import { PineconeClient } from '@pinecone-database/pinecone';
+import { Pinecone } from '@pinecone-database/pinecone';
 import OpenAI from 'openai';
 import type {
   VectorStore,
@@ -13,14 +13,17 @@ import type {
 } from '../types/vectorstore';
 
 class VectorStoreImpl implements VectorStore {
-  private pinecone: PineconeClient;
+  private pinecone: Pinecone;
   private openai: OpenAI;
   private config: VectorStoreConfig;
   private ready: boolean = false;
 
   constructor(config: VectorStoreConfig) {
     this.config = config;
-    this.pinecone = new PineconeClient();
+    this.pinecone = new Pinecone({
+      apiKey: config.apiKey,
+      environment: config.environment,
+    });
     this.openai = new OpenAI({
       apiKey: import.meta.env.VITE_OPENAI_API_KEY,
     });
@@ -28,10 +31,7 @@ class VectorStoreImpl implements VectorStore {
 
   private async initialize() {
     if (!this.ready) {
-      await this.pinecone.init({
-        environment: this.config.environment,
-        apiKey: this.config.apiKey,
-      });
+      await this.pinecone.init();
       this.ready = true;
     }
   }

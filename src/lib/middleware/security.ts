@@ -63,7 +63,7 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction) 
 
   try {
     // Verify token here using your JWT library
-    // const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // const decoded = jwt.verify(token, import.meta.env.VITE_JWT_SECRET);
     // req.user = decoded;
     next();
   } catch (error) {
@@ -80,7 +80,7 @@ export function errorHandler(err: Error, req: Request, res: Response, next: Next
   }
 
   res.status(500).json({
-    error: process.env.NODE_ENV === 'production' 
+    error: import.meta.env.PROD === 'true' 
       ? 'Internal server error'
       : err.message
   });

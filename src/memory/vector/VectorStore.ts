@@ -43,8 +43,8 @@ export class VectorStore {
 
   private async initialize(): Promise<void> {
     await this.client.init({
-      apiKey: process.env.PINECONE_API_KEY!,
-      environment: process.env.PINECONE_ENVIRONMENT!
+      apiKey: import.meta.env.VITE_PINECONE_API_KEY,
+      environment: import.meta.env.VITE_PINECONE_ENVIRONMENT
     });
   }
 

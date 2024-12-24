@@ -1,7 +1,7 @@
 import { createLogger, format, transports } from 'winston';
 
 const logger = createLogger({
-  level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
+  level: import.meta.env.PROD ? 'info' : 'debug',
   format: format.combine(
     format.timestamp(),
     format.errors({ stack: true }),
@@ -19,7 +19,7 @@ const logger = createLogger({
 });
 
 // Add file transports in production
-if (process.env.NODE_ENV === 'production') {
+if (import.meta.env.PROD) {
   logger.add(new transports.File({ filename: 'logs/error.log', level: 'error' }));
   logger.add(new transports.File({ filename: 'logs/combined.log' }));
 }
