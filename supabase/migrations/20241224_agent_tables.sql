@@ -91,6 +91,36 @@ CREATE INDEX IF NOT EXISTS idx_agent_memory_key ON agent_memory(key);
 CREATE INDEX IF NOT EXISTS idx_agent_thoughts_embedding ON agent_thoughts USING ivfflat (embedding vector_cosine_ops);
 CREATE INDEX IF NOT EXISTS idx_agent_memory_embedding ON agent_memory USING ivfflat (embedding vector_cosine_ops);
 
+-- Add stored procedure for memory search
+CREATE OR REPLACE FUNCTION search_agent_memory(
+  agent_id_param UUID,
+  query_text TEXT
+) RETURNS TABLE (
+  id UUID,
+  key TEXT,
+  value JSONB,
+  similarity FLOAT
+) LANGUAGE plpgsql AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    am.id,
+    am.key,
+    am.value,
+    1 - (am.embedding <=> (
+      SELECT embedding 
+      FROM agent_memory 
+      WHERE key = 'query_embedding_cache:' || query_text
+      LIMIT 1
+    )) as similarity
+  FROM agent_memory am
+  WHERE am.agent_id = agent_id_param
+  AND am.expires_at > CURRENT_TIMESTAMP
+  ORDER BY similarity DESC
+  LIMIT 10;
+END;
+$$;
+
 -- Add triggers for updated_at
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
