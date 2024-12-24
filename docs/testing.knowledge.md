@@ -185,7 +185,7 @@ When creating mock agents for tests:
 class MockAgent implements Agent {
   id: string;
   type = AgentType.SPECIALIST;
-  capabilities: AgentCapability[] = [];
+  capabilities = [] as AgentCapability[];  // Use type assertion for empty arrays
   status = AgentStatus.AVAILABLE;
 
   constructor(id: string) {
