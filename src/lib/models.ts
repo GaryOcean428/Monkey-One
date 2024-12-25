@@ -135,7 +135,7 @@ import { logger } from '../utils/logger';
 import { TokenCounter } from './utils/tokenCounter';
 import { createModelClient } from './api/modelClients';
 import { LocalModelClient } from './local/localModelClient';
-import type { ModelResponse } from './api/modelClients';
+import type { ModelResponse, StreamChunk } from './api/modelClients';
 
 export interface ModelConfig {
   provider: string;
@@ -155,6 +155,11 @@ export interface ModelResponse {
     totalTokens: number;
   };
   error?: string;
+}
+
+export interface StreamChunk {
+  text: string;
+  done: boolean;
 }
 
 // Approved models configuration based on models.md
@@ -258,7 +263,7 @@ const localClient = new LocalModelClient();
 export async function generateResponse(
   prompt: string,
   modelName?: string,
-  options: Partial<typeof defaultConfig> = {}
+  options: Partial<typeof defaultConfig> & { stream?: boolean; cacheResponse?: boolean } = {}
 ): Promise<ModelResponse> {
   try {
     const model = getModel(modelName);
@@ -292,6 +297,49 @@ export async function generateResponse(
       text: '',
       usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
       error: error instanceof Error ? error.message : 'Unknown error occurred'
+    };
+  }
+}
+
+// Streaming response generation
+export async function* generateStreamingResponse(
+  prompt: string,
+  modelName?: string,
+  options: Partial<typeof defaultConfig> = {}
+): AsyncGenerator<StreamChunk> {
+  try {
+    const model = getModel(modelName);
+    const config = { ...defaultConfig, ...options, stream: true };
+
+    // Validate input length
+    if (!TokenCounter.validateContextLength(prompt, model.contextWindow)) {
+      throw new Error(`Prompt exceeds maximum context length of ${model.contextWindow} tokens`);
+    }
+
+    // Local model handling
+    if (isLocalModel(model.apiEndpoint || '')) {
+      logger.info('Using local Phi-3.5 model');
+      yield* localClient.generateStream(prompt, config);
+      return;
+    }
+
+    // API model handling
+    logger.info(`Using ${model.provider} model: ${model.apiEndpoint}`);
+    const client = createModelClient(model);
+    yield* client.generateStream(prompt, config);
+  } catch (error) {
+    logger.error('Error generating streaming response:', error);
+    
+    // Attempt fallback if not already using fallback model
+    if (modelName !== defaultConfig.fallbackModel) {
+      logger.info(`Attempting fallback to ${defaultConfig.fallbackModel}`);
+      yield* generateStreamingResponse(prompt, defaultConfig.fallbackModel, options);
+      return;
+    }
+
+    yield {
+      text: error instanceof Error ? error.message : 'Unknown error occurred',
+      done: true
     };
   }
 }

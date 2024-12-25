@@ -60,4 +60,4 @@ model-cache/
 .vscode/
 .idea/
 /project/
-/likeprojects/
+/likeprojects/*
