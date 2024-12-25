@@ -13,8 +13,29 @@ export function ModelSelector() {
   const { activeProvider, switchProvider } = useLLM();
 
   const models = [
-    { id: 'qwen', name: 'Qwen 2.5 Coder' },
-    { id: 'granite', name: 'Granite' }
+    // Local Models
+    { id: 'phi3.5', name: 'Phi 3.5 (Local)' },
+    
+    // OpenAI Models
+    { id: 'gpt-4o', name: 'GPT-4o' },
+    { id: 'gpt-4o-mini', name: 'GPT-4o Mini' },
+    { id: 'o1', name: 'o1' },
+    { id: 'o1-mini', name: 'o1 Mini' },
+    
+    // LLaMA Models
+    { id: 'llama-3.3-70b-versatile', name: 'LLaMA 3.3 70B' },
+    
+    // Anthropic Models
+    { id: 'claude-3-5-sonnet', name: 'Claude 3.5 Sonnet' },
+    { id: 'claude-3-5-haiku', name: 'Claude 3.5 Haiku' },
+    
+    // Qwen Models
+    { id: 'qwq-32b', name: 'QwQ 32B Preview' },
+    
+    // Search Models
+    { id: 'sonar-huge', name: 'Sonar Huge' },
+    { id: 'sonar-large', name: 'Sonar Large' },
+    { id: 'sonar-small', name: 'Sonar Small' }
   ];
 
   return (
