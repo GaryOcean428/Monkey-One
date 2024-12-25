@@ -1,15 +1,34 @@
-import { BaseProvider } from './BaseProvider.js';
-import { logger } from '../../utils/logger.js';
-import type { ModelResponse, StreamChunk } from '../types/models.js';
+import { BaseProvider } from '@/lib/providers/BaseProvider';
+import { logger } from '@/utils/logger';
+import type { ModelResponse, StreamChunk, ModelOptions } from '@/lib/types/models';
+import { performanceMonitor } from '@/lib/monitoring/performance';
 
 export class LocalProvider extends BaseProvider {
+  private modelConfig = {
+    name: 'Phi-3.5',
+    apiName: 'phi-3.5',
+    provider: 'local' as const,
+    parameters: 3800000000,
+    contextWindow: 4096,
+    maxOutput: 2048,
+    releaseDate: '2024-12',
+    keyStrengths: ['Local inference', 'Fast response', 'Privacy focused'],
+    quantization: {
+      bits: 4,
+      scheme: 'Q4_0'
+    }
+  };
+
+  private modelInstance: any; // Replace with proper ONNX type when available
+
   constructor() {
     super('local');
   }
 
   async initialize(): Promise<void> {
     try {
-      // Initialize local model resources
+      // Initialize ONNX runtime and load model
+      // this.modelInstance = await ort.InferenceSession.create('path/to/model');
       logger.info('Local provider initialized successfully');
     } catch (error) {
       logger.error('Failed to initialize local provider:', error);
@@ -17,62 +36,80 @@ export class LocalProvider extends BaseProvider {
     }
   }
 
-  async generate(prompt: string, options: any = {}): Promise<ModelResponse> {
+  async generate(prompt: string, options: ModelOptions = {}): Promise<ModelResponse> {
+    const startTime = performance.now();
+    
     try {
-      // Use options for response generation
-      const temperature = options.temperature || 0.7;
-      const maxTokens = options.maxTokens || 1000;
-      
-      // Estimate token count
-      const estimatedTokens = Math.ceil(prompt.length / 4);
-      
-      return {
-        text: `Local response to: ${prompt} (temp: ${temperature}, maxTokens: ${maxTokens})`,
+      // Implement actual model inference here
+      // const result = await this.modelInstance.run({
+      //   input: prompt,
+      //   temperature: options.temperature ?? 0.7,
+      //   max_tokens: options.maxTokens ?? 1024
+      // });
+
+      // Temporary mock response
+      const response = {
+        text: `[Local Provider Mock] Response to: ${prompt}`,
         usage: {
-          promptTokens: estimatedTokens,
-          completionTokens: Math.min(estimatedTokens, maxTokens),
-          totalTokens: estimatedTokens * 2
+          promptTokens: prompt.length / 4,
+          completionTokens: 50,
+          totalTokens: (prompt.length / 4) + 50
+        },
+        metadata: {
+          model: this.modelConfig.apiName,
+          latency: performance.now() - startTime,
+          temperature: options.temperature,
+          maxTokens: options.maxTokens
         }
       };
+
+      performanceMonitor.recordLatency('local', response.metadata.latency);
+      return response;
     } catch (error) {
-      logger.error('Error in local provider generate:', error);
+      logger.error('Error generating response:', error);
       throw error;
     }
   }
 
-  async* generateStream(prompt: string, options: any = {}): AsyncGenerator<StreamChunk> {
+  async* generateStream(prompt: string, options: ModelOptions = {}): AsyncGenerator<StreamChunk> {
+    const startTime = performance.now();
+    const delay = options.streamDelay ?? 50;
+
     try {
-      // Use options for stream generation
-      const temperature = options.temperature || 0.7;
-      const streamDelay = options.streamDelay || 50;
+      // Mock streaming response
+      const words = `[Local Provider Stream] Response to: ${prompt}`.split(' ');
       
-      // Simulate streaming response
-      const words = prompt.split(' ');
-      
-      yield {
-        text: `[temp: ${temperature}] `,
-        done: false
-      };
-      
-      for (const word of words) {
+      for (let i = 0; i < words.length; i++) {
+        await new Promise(resolve => setTimeout(resolve, delay));
+        
         yield {
-          text: word + ' ',
-          done: false
+          text: words[i] + ' ',
+          isComplete: i === words.length - 1,
+          metadata: {
+            model: this.modelConfig.apiName,
+            latency: performance.now() - startTime
+          }
         };
-        await new Promise(resolve => setTimeout(resolve, streamDelay));
       }
 
-      yield {
-        text: '',
-        done: true
-      };
+      performanceMonitor.recordLatency('local-stream', performance.now() - startTime);
     } catch (error) {
-      logger.error('Error in local provider stream:', error);
+      logger.error('Error in stream generation:', error);
       throw error;
     }
   }
 
   async isAvailable(): Promise<boolean> {
-    return true;
+    try {
+      // Add actual model availability check
+      return true;
+    } catch (error) {
+      logger.error('Error checking model availability:', error);
+      return false;
+    }
+  }
+
+  getConfig() {
+    return this.modelConfig;
   }
 }

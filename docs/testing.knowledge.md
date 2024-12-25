@@ -89,6 +89,11 @@
 - Mock browser APIs (TextDecoder, canvas) in setupTests.ts
 - Use vi.mock() for external dependencies
 
+### Import Paths
+- Use @/ alias for imports from src directory (e.g. '@/lib/providers')
+- Don't use .js extensions in TypeScript imports
+- Vite resolves @ to src directory via vite.config.ts aliases
+
 ### Test Environment Setup
 Required in setupTests.ts:
 ```typescript

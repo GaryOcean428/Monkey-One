@@ -1,16 +1,17 @@
 export interface ModelConfig {
-  provider: string;
+  name: string;
+  apiName: string;
+  provider: 'openai' | 'anthropic' | 'groq' | 'qwen' | 'local';
+  parameters?: number;
   contextWindow: number;
-  maxOutput?: number;
-  modelName: string;
-  releaseDate?: string;
-  keyStrengths?: string[];
-  modelCardUrl?: string;
-  temperature?: number;
-  maxTokens?: number;
-  topP?: number;
-  frequencyPenalty?: number;
-  presencePenalty?: number;
+  maxOutput: number;
+  releaseDate: string;
+  keyStrengths: string[];
+  modelCardLink?: string;
+  quantization?: {
+    bits: number;
+    scheme: string;
+  };
 }
 
 export interface ModelResponse {
@@ -20,21 +21,31 @@ export interface ModelResponse {
     completionTokens: number;
     totalTokens: number;
   };
+  metadata?: {
+    model: string;
+    latency: number;
+    temperature?: number;
+    maxTokens?: number;
+  };
 }
 
 export interface StreamChunk {
   text: string;
-  done: boolean;
+  isComplete: boolean;
+  metadata?: {
+    model: string;
+    latency?: number;
+  };
 }
 
 export interface ModelOptions {
   temperature?: number;
   maxTokens?: number;
+  streamDelay?: number;
+  stopSequences?: string[];
   topP?: number;
   frequencyPenalty?: number;
   presencePenalty?: number;
-  stream?: boolean;
-  [key: string]: any;
 }
 
 export interface ModelMetrics {

@@ -1,11 +1,15 @@
-import { BaseProvider } from './BaseProvider.js';
-import { logger } from '../../utils/logger.js';
+import { BaseProvider } from '@/lib/providers/BaseProvider';
+import { logger } from '@/utils/logger';
 
 export class ProviderRegistry {
   private static instance: ProviderRegistry;
-  private providers: Map<string, BaseProvider> = new Map();
+  private providers: Map<string, BaseProvider>;
+  private initializationPromises: Map<string, Promise<void>>;
 
-  private constructor() {}
+  private constructor() {
+    this.providers = new Map();
+    this.initializationPromises = new Map();
+  }
 
   static getInstance(): ProviderRegistry {
     if (!ProviderRegistry.instance) {
@@ -16,28 +20,73 @@ export class ProviderRegistry {
 
   async registerProvider(name: string, provider: BaseProvider): Promise<void> {
     try {
-      await provider.initialize();
+      if (this.providers.has(name)) {
+        throw new Error(`Provider ${name} is already registered`);
+      }
+
+      // Store the initialization promise
+      const initPromise = provider.initialize();
+      this.initializationPromises.set(name, initPromise);
+
+      // Wait for initialization to complete
+      await initPromise;
+
+      // Only store the provider if initialization succeeds
       this.providers.set(name, provider);
-      logger.info(`Registered provider: ${name}`);
+      logger.info(`Provider ${name} registered successfully`);
     } catch (error) {
-      logger.error(`Error registering provider ${name}:`, error);
+      this.initializationPromises.delete(name);
+      logger.error(`Failed to register provider ${name}:`, error);
       throw error;
     }
   }
 
   async getProvider(name: string): Promise<BaseProvider> {
+    // Wait for initialization if it's still pending
+    const initPromise = this.initializationPromises.get(name);
+    if (initPromise) {
+      await initPromise;
+    }
+
     const provider = this.providers.get(name);
     if (!provider) {
       throw new Error(`Provider ${name} not found`);
     }
-    return provider;
+
+    try {
+      const isAvailable = await provider.isAvailable();
+      if (!isAvailable) {
+        throw new Error(`Provider ${name} is not available`);
+      }
+      return provider;
+    } catch (error) {
+      logger.error(`Error checking provider ${name} availability:`, error);
+      throw error;
+    }
   }
 
   async getAvailableProviders(): Promise<string[]> {
-    return Array.from(this.providers.keys());
+    const availableProviders: string[] = [];
+    
+    for (const [name, provider] of this.providers.entries()) {
+      try {
+        if (await provider.isAvailable()) {
+          availableProviders.push(name);
+        }
+      } catch (error) {
+        logger.warn(`Error checking availability for provider ${name}:`, error);
+      }
+    }
+    
+    return availableProviders;
   }
 
-  async hasProvider(name: string): Promise<boolean> {
+  hasProvider(name: string): boolean {
     return this.providers.has(name);
+  }
+
+  clearProviders(): void {
+    this.providers.clear();
+    this.initializationPromises.clear();
   }
 }
