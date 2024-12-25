@@ -33,7 +33,8 @@ export default defineConfig(({ mode }) => {
     },
     define: {
       global: 'globalThis',
-      // Expose env variables
+      'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(env.VITE_SUPABASE_URL),
+      'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(env.VITE_SUPABASE_ANON_KEY),
       'import.meta.env.VITE_OPENAI_API_KEY': JSON.stringify(env.NEXT_PUBLIC_OPENAI_API_KEY),
       'import.meta.env.VITE_PINECONE_API_KEY': JSON.stringify(env.VITE_PINECONE_API_KEY),
       'import.meta.env.VITE_PINECONE_ENVIRONMENT': JSON.stringify(env.VITE_PINECONE_ENVIRONMENT),
@@ -78,9 +79,7 @@ export default defineConfig(({ mode }) => {
       include: [
         'react',
         'react-dom',
-        '@radix-ui/react-icons',
-        '@radix-ui/react-dialog',
-        '@radix-ui/react-dropdown-menu'
+        '@supabase/supabase-js'
       ]
     },
     server: {
@@ -88,7 +87,7 @@ export default defineConfig(({ mode }) => {
       host: true,
       cors: true,
       hmr: {
-        overlay: true,
+        overlay: false,
         clientPort: 3000,
       },
       watch: {
