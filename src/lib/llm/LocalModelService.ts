@@ -6,14 +6,24 @@ import { logger } from '../../utils/logger';
 // Configure env for optimal performance
 env.backends.onnx.wasm.numThreads = navigator.hardwareConcurrency;
 
+interface ModelInfo {
+  name: string;
+  status: 'not_loaded' | 'loading' | 'ready' | 'error';
+  error?: string;
+}
+
 export class LocalModelService {
   private static instance: LocalModelService;
   private session: InferenceSession | null = null;
   private tokenizer: any = null;
   private isLoading = false;
-  private modelId = 'microsoft/phi-3.5';
-  private modelPath = '/models/phi-3.5-q4';  // Local path to quantized model
-  private maxLength = 128000; // 128K context window
+  private modelId = 'microsoft/phi-2';  
+  private modelPath = '/models/phi-2/model.onnx';  
+  private maxLength = 128000;
+  private modelInfo: ModelInfo = {
+    name: 'Phi-2',
+    status: 'not_loaded'
+  };
 
   private constructor() {}
 
@@ -24,16 +34,39 @@ export class LocalModelService {
     return LocalModelService.instance;
   }
 
+  getModelInfo(): ModelInfo {
+    return { ...this.modelInfo };
+  }
+
+  async checkCache(): Promise<{ isComplete: boolean }> {
+    try {
+      const response = await fetch(this.modelPath, { method: 'HEAD' });
+      return { isComplete: response.ok };
+    } catch (error) {
+      logger.error('Failed to check model cache:', error);
+      return { isComplete: false };
+    }
+  }
+
   async initialize(): Promise<void> {
     if (this.session || this.isLoading) return;
 
     try {
       this.isLoading = true;
-      logger.info(`Initializing Phi-3.5 model`);
+      this.modelInfo.status = 'loading';
+      logger.info(`Initializing ${this.modelInfo.name} model`);
 
-      // Initialize tokenizer
+      const cacheResult = await this.checkCache();
+      if (!cacheResult.isComplete) {
+        throw new Error('Model files not found. Please ensure the model is properly downloaded.');
+      }
+
+      // Initialize tokenizer with local files
       const { AutoTokenizer } = await import('@xenova/transformers');
-      this.tokenizer = await AutoTokenizer.from_pretrained(this.modelId);
+      this.tokenizer = await AutoTokenizer.from_pretrained(this.modelId, {
+        local: true,
+        cache_dir: '/models/phi-2'
+      });
 
       // Create inference session
       this.session = await InferenceSession.create(this.modelPath, {
@@ -50,9 +83,12 @@ export class LocalModelService {
         }
       });
 
-      logger.info('Phi-3.5 initialized successfully');
+      this.modelInfo.status = 'ready';
+      logger.info('Model initialized successfully');
     } catch (error) {
-      logger.error('Failed to initialize Phi-3.5:', error);
+      this.modelInfo.status = 'error';
+      this.modelInfo.error = error instanceof Error ? error.message : 'Unknown error';
+      logger.error('Failed to initialize model:', error);
       throw error;
     } finally {
       this.isLoading = false;

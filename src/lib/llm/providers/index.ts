@@ -31,16 +31,18 @@ class LLMManager {
 
   constructor() {
     this.registerDefaultProviders();
-    this.activeProvider = 'granite'; // Set Granite as default for RAG
+    this.activeProvider = 'phi3.5'; // Set Phi 3.5 as default for local inference
   }
 
   private registerDefaultProviders() {
     const providers: LLMProvider[] = [
-      new XAIProvider(import.meta.env.VITE_XAI_API_KEY),
-      new GroqProvider(import.meta.env.VITE_GROQ_API_KEY),
-      new PerplexityProvider(import.meta.env.VITE_PERPLEXITY_API_KEY),
-      new QwenProvider(import.meta.env.VITE_HUGGINGFACE_TOKEN),
-      new GraniteProvider(import.meta.env.VITE_HUGGINGFACE_TOKEN)
+      // Local provider
+      new LocalProvider(),
+      // Cloud providers
+      new LlamaProvider(import.meta.env.VITE_LLAMA_API_KEY),
+      new GPT4oProvider(import.meta.env.VITE_OPENAI_API_KEY),
+      new ClaudeProvider(import.meta.env.VITE_ANTHROPIC_API_KEY),
+      new O1Provider(import.meta.env.VITE_O1_API_KEY)
     ];
 
     providers.forEach(provider => {

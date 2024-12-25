@@ -34,8 +34,46 @@ export class ModelClient {
   private adaptiveRouting: boolean;
   private routingPreferences: Required<ModelClientConfig>['routingPreferences'];
 
+  // Model version control to prevent using outdated models
+  private readonly MODEL_VERSIONS = {
+    'phi3.5': 'latest',
+    'gpt-4o': '2024-11-06',
+    'gpt-4o-mini': '2024-07-18',
+    'o1': '2024-12-01',
+    'o1-mini': '2024-09-15',
+    'llama-3.3-70b-versatile': '20241225',
+    'claude-3-5-sonnet': 'v2@20241022',
+    'claude-3-5-haiku': '20241022',
+    'qwq-32b': 'preview',
+    'sonar-huge': 'latest',
+    'sonar-large': 'latest',
+    'sonar-small': 'latest'
+  } as const;
+
   private readonly MODEL_CAPABILITIES: Record<ModelProvider, ModelCapabilities> = {
-    o1: {
+    'gpt-4o': {
+      reasoning: 10,
+      creativity: 9,
+      knowledge: 10,
+      coding: 9,
+      search: 9,
+      toolUse: 10,
+      speed: 7,
+      contextWindow: 128000,
+      costPerToken: 0.015
+    },
+    'gpt-4o-mini': {
+      reasoning: 8,
+      creativity: 8,
+      knowledge: 8,
+      coding: 8,
+      search: 8,
+      toolUse: 8,
+      speed: 9,
+      contextWindow: 128000,
+      costPerToken: 0.008
+    },
+    'o1': {
       reasoning: 10,
       creativity: 10,
       knowledge: 10,
@@ -43,87 +81,109 @@ export class ModelClient {
       search: 9,
       toolUse: 9,
       speed: 8,
-      contextWindow: 1000000,
+      contextWindow: 200000,
       costPerToken: 0.015
     },
     'o1-mini': {
-      reasoning: 8,
+      reasoning: 9,
       creativity: 8,
-      knowledge: 8,
-      coding: 8,
-      search: 7,
-      toolUse: 7,
+      knowledge: 9,
+      coding: 9,
+      search: 8,
+      toolUse: 8,
       speed: 9,
       contextWindow: 128000,
-      costPerToken: 0.005
+      costPerToken: 0.008
     },
-    claude: {
+    'llama-3.3-70b-versatile': {
+      reasoning: 9,
+      creativity: 8,
+      knowledge: 9,
+      coding: 9,
+      search: 8,
+      toolUse: 9,
+      speed: 7,
+      contextWindow: 128000,
+      costPerToken: 0.002
+    },
+    'claude-3-5-sonnet': {
       reasoning: 9,
       creativity: 9,
       knowledge: 9,
       coding: 9,
       search: 8,
-      toolUse: 8,
-      speed: 7,
+      toolUse: 9,
+      speed: 8,
       contextWindow: 200000,
       costPerToken: 0.01
     },
-    'claude-haiku': {
+    'claude-3-5-haiku': {
       reasoning: 8,
       creativity: 8,
       knowledge: 8,
       coding: 8,
       search: 7,
-      toolUse: 7,
-      speed: 9,
-      contextWindow: 100000,
-      costPerToken: 0.003
+      toolUse: 8,
+      speed: 10,
+      contextWindow: 200000,
+      costPerToken: 0.006
     },
-    grok: {
+    'qwq-32b': {
+      reasoning: 8,
+      creativity: 7,
+      knowledge: 8,
+      coding: 9,
+      search: 7,
+      toolUse: 7,
+      speed: 8,
+      contextWindow: 32768,
+      costPerToken: 0.001
+    },
+    'sonar-huge': {
       reasoning: 9,
       creativity: 8,
-      knowledge: 9,
-      coding: 9,
-      search: 8,
-      toolUse: 8,
-      speed: 8,
-      contextWindow: 150000,
-      costPerToken: 0.008
-    },
-    'grok-40': {
-      reasoning: 8,
-      creativity: 7,
-      knowledge: 8,
+      knowledge: 10,
       coding: 8,
-      search: 7,
-      toolUse: 7,
-      speed: 9,
-      contextWindow: 100000,
+      search: 10,
+      toolUse: 8,
+      speed: 7,
+      contextWindow: 127072,
       costPerToken: 0.004
     },
-    perplexity: {
-      reasoning: 7,
+    'sonar-large': {
+      reasoning: 8,
       creativity: 7,
-      knowledge: 8,
+      knowledge: 9,
       coding: 7,
       search: 10,
       toolUse: 7,
-      speed: 9,
-      contextWindow: 100000,
-      costPerToken: 0.006
+      speed: 8,
+      contextWindow: 127072,
+      costPerToken: 0.002
     },
-    llama: {
+    'sonar-small': {
+      reasoning: 7,
+      creativity: 6,
+      knowledge: 8,
+      coding: 6,
+      search: 10,
+      toolUse: 6,
+      speed: 9,
+      contextWindow: 127072,
+      costPerToken: 0.001
+    },
+    'phi3.5': {
       reasoning: 7,
       creativity: 7,
       knowledge: 7,
       coding: 8,
       search: 7,
-      toolUse: 10,
-      speed: 8,
-      contextWindow: 100000,
-      costPerToken: 0.002
-    },
-    phi: {
+      toolUse: 7,
+      speed: 10,
+      contextWindow: 128000,
+      costPerToken: 0.001
+    }
+    'phi3.5': {
       reasoning: 7,
       creativity: 7,
       knowledge: 7,
@@ -134,47 +194,91 @@ export class ModelClient {
       contextWindow: 128000,
       costPerToken: 0.001
     },
-    groq: {
-      reasoning: 7,
-      creativity: 7,
-      knowledge: 7,
-      coding: 7,
-      search: 7,
-      toolUse: 7,
-      speed: 9,
-      contextWindow: 100000,
-      costPerToken: 0.003
+    'llama-3.3-70b-versatile': {
+      reasoning: 9,
+      creativity: 8,
+      knowledge: 9,
+      coding: 9,
+      search: 8,
+      toolUse: 9,
+      speed: 7,
+      contextWindow: 128000,
+      costPerToken: 0.002
     },
-    qwen: {
-      reasoning: 7,
+    'llama-3.2-70b': {
+      reasoning: 8,
+      creativity: 8,
+      knowledge: 8,
+      coding: 9,
+      search: 7,
+      toolUse: 8,
+      speed: 7,
+      contextWindow: 128000,
+      costPerToken: 0.002
+    },
+    'llama-3.1-70b': {
+      reasoning: 8,
       creativity: 7,
-      knowledge: 7,
+      knowledge: 8,
       coding: 8,
       search: 7,
       toolUse: 7,
       speed: 8,
-      contextWindow: 80000,
+      contextWindow: 128000,
       costPerToken: 0.002
+    },
+    'gpt-4o': {
+      reasoning: 10,
+      creativity: 9,
+      knowledge: 10,
+      coding: 9,
+      search: 9,
+      toolUse: 10,
+      speed: 7,
+      contextWindow: 128000,
+      costPerToken: 0.015
+    },
+    'claude-3-5-sonnet': {
+      reasoning: 9,
+      creativity: 9,
+      knowledge: 9,
+      coding: 9,
+      search: 8,
+      toolUse: 9,
+      speed: 8,
+      contextWindow: 200000,
+      costPerToken: 0.01
+    },
+    'o1': {
+      reasoning: 10,
+      creativity: 10,
+      knowledge: 10,
+      coding: 10,
+      search: 9,
+      toolUse: 9,
+      speed: 8,
+      contextWindow: 200000,
+      costPerToken: 0.015
     }
   };
 
   constructor(config: ModelClientConfig = {}) {
     this.modelService = LocalModelService.getInstance();
     this.performanceTracker = ModelPerformanceTracker.getInstance();
-    this.currentProvider = config.defaultProvider || 'phi';
-    this.fallbackProviders = config.fallbackProviders || ['claude-haiku', 'o1-mini', 'grok-40'];
+    this.currentProvider = config.defaultProvider || 'phi3.5';
+    this.fallbackProviders = config.fallbackProviders || ['llama-3.1-70b', 'llama-3.2-70b'];
     this.maxRetries = config.maxRetries || 3;
     this.maxLatency = config.maxLatency;
     this.adaptiveRouting = config.adaptiveRouting ?? true;
     
-    // Default routing preferences
+    // Updated routing preferences based on approved models
     this.routingPreferences = {
-      reasoning: ['o1', 'claude', 'grok', 'o1-mini'],
-      creativity: ['o1', 'claude', 'grok', 'claude-haiku'],
-      coding: ['o1', 'claude', 'grok', 'grok-40'],
-      search: ['perplexity', 'o1', 'claude', 'o1-mini'],
-      toolUse: ['llama', 'o1', 'claude', 'grok-40'],
-      general: ['phi', 'groq', 'qwen', 'claude-haiku'],
+      reasoning: ['o1', 'gpt-4o', 'llama-3.3-70b-versatile'],
+      creativity: ['o1', 'claude-3-5-sonnet', 'gpt-4o'],
+      coding: ['o1', 'llama-3.3-70b-versatile', 'claude-3-5-sonnet'],
+      search: ['gpt-4o', 'o1', 'claude-3-5-sonnet'],
+      toolUse: ['gpt-4o', 'o1', 'llama-3.3-70b-versatile'],
+      general: ['phi3.5', 'llama-3.1-70b', 'llama-3.2-70b'],
       ...config.routingPreferences
     };
   }

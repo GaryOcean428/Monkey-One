@@ -7,8 +7,7 @@ import { Brain, Download, CheckCircle, AlertCircle } from 'lucide-react';
 import { useToast } from './ui/use-toast';
 
 export function ModelManager() {
-  const [status, setStatus] = useState<'idle' | 'downloading' | 'ready' | 'error'>('idle');
-  const [progress, setProgress] = useState(0);
+  const [status, setStatus] = useState<'not_loaded' | 'loading' | 'ready' | 'error'>('not_loaded');
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   
@@ -20,97 +19,74 @@ export function ModelManager() {
 
   const checkModelStatus = async () => {
     try {
-      const cacheStatus = await modelService.checkCache();
-      if (cacheStatus.isComplete) {
-        setStatus('ready');
-      }
+      const modelInfo = modelService.getModelInfo();
+      setStatus(modelInfo.status);
+      setError(modelInfo.error || null);
     } catch (err) {
+      setStatus('error');
       setError('Failed to check model status');
     }
   };
 
   const handleInitialize = async () => {
     try {
-      setStatus('downloading');
+      setStatus('loading');
       setError(null);
-
-      await modelService.initialize({
-        onProgress: (progress) => {
-          setProgress(Math.round(progress * 100));
-        },
-        onComplete: () => {
-          setStatus('ready');
-          toast({
-            title: 'Model Ready',
-            description: 'Phi-3.5 model is now ready for local inference',
-          });
-        }
+      await modelService.initialize();
+      await checkModelStatus();
+      toast({
+        title: 'Model Initialized',
+        description: 'The model is ready to use',
+        variant: 'default'
       });
     } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to initialize model';
       setStatus('error');
-      setError('Failed to initialize model');
+      setError(errorMessage);
       toast({
-        title: 'Error',
-        description: 'Failed to initialize model. Please try again.',
-        variant: 'destructive',
+        title: 'Initialization Failed',
+        description: errorMessage,
+        variant: 'destructive'
       });
     }
   };
 
-  const modelInfo = modelService.getModelInfo();
-
   return (
-    <Card className="p-4">
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-medium">Local Model</h3>
-            <p className="text-sm text-muted-foreground">Phi-3.5 (4-bit Quantized)</p>
-          </div>
-          {status === 'ready' ? (
-            <CheckCircle className="w-6 h-6 text-green-500" />
-          ) : status === 'downloading' ? (
-            <Brain className="w-6 h-6 text-blue-500 animate-pulse" />
-          ) : (
-            <Download className="w-6 h-6 text-blue-500" />
-          )}
+    <Card className="p-4 space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <Brain className="w-5 h-5" />
+          <h3 className="text-lg font-semibold">Local Model</h3>
         </div>
+        {status === 'ready' && (
+          <CheckCircle className="w-5 h-5 text-green-500" />
+        )}
+        {status === 'error' && (
+          <AlertCircle className="w-5 h-5 text-red-500" />
+        )}
+      </div>
 
+      {status === 'loading' && (
         <div className="space-y-2">
-          <div className="flex justify-between text-sm">
-            <span>Size: {modelInfo.size}</span>
-            <span>Context: 128K tokens</span>
-          </div>
-
-          {status === 'downloading' && (
-            <div className="space-y-2">
-              <Progress value={progress} />
-              <p className="text-sm text-center text-muted-foreground">
-                Downloading and initializing model... {progress}%
-              </p>
-            </div>
-          )}
-
-          {error && (
-            <div className="flex items-center gap-2 text-red-500 text-sm">
-              <AlertCircle className="w-4 h-4" />
-              <span>{error}</span>
-            </div>
-          )}
+          <Progress value={100} className="w-full" />
+          <p className="text-sm text-muted-foreground">Initializing model...</p>
         </div>
+      )}
 
+      {error && (
+        <p className="text-sm text-red-500">{error}</p>
+      )}
+
+      {status !== 'loading' && status !== 'ready' && (
         <Button
           onClick={handleInitialize}
-          disabled={status === 'downloading' || status === 'ready'}
           className="w-full"
+          disabled={status === 'loading'}
         >
-          {status === 'ready' 
-            ? 'Model Ready' 
-            : status === 'downloading'
-            ? 'Downloading...'
-            : 'Initialize Model'}
+          <Download className="w-4 h-4 mr-2" />
+          Initialize Model
         </Button>
-      </div>
+      )}
     </Card>
   );
 }

@@ -2,6 +2,8 @@ import './polyfills';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { ErrorBoundary } from 'react-error-boundary';
+import { BrowserRouter } from 'react-router-dom';
+import { AuthProvider } from './contexts/AuthContext';
 import App from './App';
 import './index.css';
 import styles from './styles/error.module.css';
@@ -22,9 +24,13 @@ if (!rootElement) {
   ReactDOM.createRoot(rootElement).render(
     <React.StrictMode>
       <ErrorBoundary FallbackComponent={ErrorFallback}>
-        <React.Suspense fallback={<div>Loading...</div>}>
-          <App />
-        </React.Suspense>
+        <BrowserRouter>
+          <AuthProvider>
+            <React.Suspense fallback={<div>Loading...</div>}>
+              <App />
+            </React.Suspense>
+          </AuthProvider>
+        </BrowserRouter>
       </ErrorBoundary>
     </React.StrictMode>
   );
