@@ -25,6 +25,12 @@ export default defineConfig(({ mode }) => {
         ext: '.br',
       }),
     ],
+    resolve: {
+      alias: {
+        '@': resolve(__dirname, './src'),
+        'lib': resolve(__dirname, './src/lib'),
+      }
+    },
     define: {
       global: 'globalThis',
       // Expose env variables
@@ -36,6 +42,9 @@ export default defineConfig(({ mode }) => {
       outDir: 'dist',
       sourcemap: true,
       rollupOptions: {
+        input: {
+          main: resolve(__dirname, 'index.html'),
+        },
         output: {
           manualChunks: {
             'react-vendor': ['react', 'react-dom'],
@@ -50,18 +59,14 @@ export default defineConfig(({ mode }) => {
               '@radix-ui/react-alert-dialog',
               '@radix-ui/react-dialog',
               '@radix-ui/react-dropdown-menu',
-              '@radix-ui/react-icons',
               '@radix-ui/react-label',
-              '@radix-ui/react-progress',
-              '@radix-ui/react-radio-group',
-              '@radix-ui/react-scroll-area',
+              '@radix-ui/react-menubar',
+              '@radix-ui/react-popover',
               '@radix-ui/react-select',
-              '@radix-ui/react-separator',
-              '@radix-ui/react-slot',
+              '@radix-ui/react-slider',
               '@radix-ui/react-switch',
               '@radix-ui/react-tabs',
-              '@radix-ui/react-toast',
-              '@radix-ui/react-tooltip'
+              '@radix-ui/react-toast'
             ]
           }
         }
@@ -78,14 +83,10 @@ export default defineConfig(({ mode }) => {
         '@radix-ui/react-dropdown-menu'
       ]
     },
-    resolve: {
-      alias: {
-        '@': resolve(__dirname, './src')
-      }
-    },
     server: {
       port: 3000,
       host: true,
+      cors: true,
       hmr: {
         overlay: true,
         clientPort: 3000,

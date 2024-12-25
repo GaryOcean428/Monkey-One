@@ -1,8 +1,8 @@
-import { ProviderRegistry, LocalProvider } from './providers';
-import { logger } from '../utils/logger';
-import { analytics } from './monitoring/analytics';
-import { performanceMonitor } from './monitoring/performance';
-import type { ModelResponse, StreamChunk } from './types/models';
+import { BaseProvider, LocalProvider, ProviderRegistry } from '@/lib/providers';
+import { logger } from '@/utils/logger';
+import { analytics } from '@/lib/monitoring/analytics';
+import { performanceMonitor } from '@/lib/monitoring/performance';
+import type { ModelResponse, StreamChunk } from '@/lib/types/models';
 
 interface LLMManagerConfig {
   defaultProvider?: string;

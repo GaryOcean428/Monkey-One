@@ -182,17 +182,6 @@ export class ModelClient {
       speed: 10,
       contextWindow: 128000,
       costPerToken: 0.001
-    }
-    'phi3.5': {
-      reasoning: 7,
-      creativity: 7,
-      knowledge: 7,
-      coding: 8,
-      search: 7,
-      toolUse: 7,
-      speed: 10,
-      contextWindow: 128000,
-      costPerToken: 0.001
     },
     'llama-3.3-70b-versatile': {
       reasoning: 9,
