@@ -1,7 +1,7 @@
-import { BaseProvider } from '@/lib/providers/BaseProvider';
-import { logger } from '@/utils/logger';
-import type { ModelResponse, StreamChunk, ModelOptions } from '@/lib/types/models';
-import { performanceMonitor } from '@/lib/monitoring/performance';
+import { BaseProvider } from './BaseProvider';
+import { logger } from '../../utils/logger';
+import type { ModelResponse, StreamChunk, ModelOptions } from '../types/models';
+import { performanceMonitor } from '../monitoring/performance';
 
 export class LocalProvider extends BaseProvider {
   private modelConfig = {

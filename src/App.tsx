@@ -1,26 +1,28 @@
 import './styles/globals.css';
 import { useEffect, useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { useAuth } from './contexts/AuthContext';
-import { SignIn } from './components/Auth/SignIn';
-import { SignUpForm as SignUp } from './components/Auth/SignUpForm';
-import { ChatContainer as Chat } from './components/chat/ChatContainer';
-import SettingsPanel from './components/panels/SettingsPanel';
-import { MainPanel as Playground } from './components/MainPanel';
-import { useAgentStore } from './store/agentStore';
-import { DashboardLayout } from './components/Layout/DashboardLayout';
-import { ThemeProvider } from './components/ThemeProvider';
-import { LocalModelService } from './lib/llm/LocalModelService';
-import { ModelManager } from './components/ModelManager';
-import { Toaster } from './components/ui/toaster';
-import { useToast } from './components/ui/use-toast';
-import { logger } from './utils/logger';
-import { ErrorBoundary } from './components/ErrorBoundary';
-import { TooltipProvider } from './components/ui/tooltip';
-import { SettingsProvider } from './context/SettingsContext';
-import { AuthProvider } from './contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
+import { SignIn } from '../components/Auth/SignIn';
+import { SignUpForm as SignUp } from '../components/Auth/SignUpForm';
+import { ChatContainer as Chat } from '../components/chat/ChatContainer';
+import SettingsPanel from '../components/panels/SettingsPanel';
+import { MainPanel as Playground } from '../components/MainPanel';
+import { useAgentStore } from '../store/agentStore';
+import { DashboardLayout } from '../components/Layout/DashboardLayout';
+import { ThemeProvider } from '../components/ThemeProvider';
+import { LocalModelService } from '../lib/llm/LocalModelService';
+import { ProviderRegistry } from '../lib/providers';
+import { ModelManager } from '../components/ModelManager';
+import { Toaster } from '../components/ui/toaster';
+import { useToast } from '../components/ui/use-toast';
+import { logger } from '../utils/logger';
+import { ErrorBoundary } from '../components/ErrorBoundary';
+import { TooltipProvider } from '../components/ui/tooltip';
+import { SettingsProvider } from '../context/SettingsContext';
+import { AuthProvider } from '../contexts/AuthContext';
 
 const localModelService = LocalModelService.getInstance();
+const providerRegistry = ProviderRegistry.getInstance();
 
 function App() {
   const { user, isLoading } = useAuth();
@@ -30,22 +32,22 @@ function App() {
   const { toast } = useToast();
 
   useEffect(() => {
-    const initModel = async () => {
+    async function initializeServices() {
       try {
-        await localModelService.initialize();
+        await providerRegistry.registerProvider('local', localModelService);
         setModelInitialized(true);
-        logger.info('Model initialized successfully');
+        logger.info('Model service initialized successfully');
       } catch (error) {
-        logger.error('Failed to initialize model:', error);
+        logger.error('Failed to initialize model service:', error);
         toast({
-          title: 'Model Initialization Failed',
-          description: 'There was an error initializing the model. Please try again.',
-          variant: 'destructive',
+          title: 'Error',
+          description: 'Failed to initialize model service. Some features may be unavailable.',
+          variant: 'destructive'
         });
       }
-    };
+    }
 
-    initModel();
+    initializeServices();
   }, [toast]);
 
   useEffect(() => {
