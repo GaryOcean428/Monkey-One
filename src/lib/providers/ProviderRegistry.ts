@@ -1,5 +1,5 @@
-import { BaseProvider } from '@/lib/providers/BaseProvider';
-import { logger } from '@/utils/logger';
+import { BaseProvider } from './BaseProvider';
+import { logger } from '../../utils/logger';
 
 export class ProviderRegistry {
   private static instance: ProviderRegistry;
