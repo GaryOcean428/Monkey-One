@@ -1,9 +1,9 @@
-import { ProviderRegistry } from './providers';
-import { LocalProvider } from './providers/LocalProvider';
-import { logger } from '../utils/logger';
-import { analytics } from './monitoring/analytics';
-import { performanceMonitor } from './monitoring/performance';
-import type { ModelResponse, StreamChunk } from './types/models';
+import { ProviderRegistry } from './providers/ProviderRegistry.js';
+import { LocalProvider } from './providers/LocalProvider.js';
+import { logger } from '../utils/logger.js';
+import { analytics } from './monitoring/analytics.js';
+import { performanceMonitor } from './monitoring/performance.js';
+import type { ModelResponse, StreamChunk } from './types/models.js';
 
 interface LLMManagerConfig {
   defaultProvider?: string;
@@ -122,5 +122,5 @@ class LLMManager {
 }
 
 export const llmManager = LLMManager.getInstance();
-export { generateResponse, generateStreamingResponse } from './models';
-export type { ModelResponse, StreamChunk } from './types/models';
+export { generateResponse, generateStreamingResponse } from './models.js';
+export type { ModelResponse, StreamChunk } from './types/models.js';
