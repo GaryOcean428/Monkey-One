@@ -9,8 +9,6 @@ import SettingsPanel from './components/panels/SettingsPanel';
 import { MainPanel as Playground } from './components/MainPanel';
 import { useAgentStore } from './store/agentStore';
 import { DashboardLayout } from './components/Layout/DashboardLayout';
-import { TabsContent } from './components/ui/tabs';
-import { useNavigationStore } from './store/navigationStore';
 import { ThemeProvider } from './components/ThemeProvider';
 import { LocalModelService } from './lib/llm/LocalModelService';
 import { ModelManager } from './components/ModelManager';
@@ -22,13 +20,12 @@ import { TooltipProvider } from './components/ui/tooltip';
 import { SettingsProvider } from './context/SettingsContext';
 import { AuthProvider } from './contexts/AuthContext';
 
-const localModelService = new LocalModelService();
+const localModelService = LocalModelService.getInstance();
 
 function App() {
   const { user, isLoading } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
   const initializeAgents = useAgentStore(state => state.initializeAgents);
-  const activeTab = useNavigationStore((state) => state.activeTab);
   const [modelInitialized, setModelInitialized] = useState(false);
   const { toast } = useToast();
 
