@@ -2,7 +2,7 @@ import React, { Suspense } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
 import { LoadingSpinner } from '../ui/loading-spinner';
 import { ToolhouseErrorBoundary } from '../ErrorBoundary/ToolhouseErrorBoundary';
-import { useSettings } from '../../context/SettingsContext';
+import { useSettings } from '../../contexts/SettingsContext';
 import { Switch } from '../ui/switch';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
