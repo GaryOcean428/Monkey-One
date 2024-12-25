@@ -1,7 +1,7 @@
 import './styles/globals.css';
 import { useEffect, useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { useAuth } from './contexts/AuthContext';
+import { useAuth, AuthProvider } from './contexts/AuthContext';
 import { SignIn } from './components/Auth/SignIn';
 import { SignUpForm as SignUp } from './components/Auth/SignUpForm';
 import { ChatContainer as Chat } from './components/chat/ChatContainer';
@@ -18,8 +18,7 @@ import { useToast } from './components/ui/use-toast';
 import { logger } from './utils/logger';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { TooltipProvider } from './components/ui/tooltip';
-import { SettingsProvider } from './context/SettingsContext';
-import { AuthProvider } from './contexts/AuthContext';
+import { SettingsProvider } from './contexts/SettingsContext';
 
 const localModelService = LocalModelService.getInstance();
 const providerRegistry = ProviderRegistry.getInstance();
