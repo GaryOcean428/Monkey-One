@@ -1,3 +1,9 @@
-export { BaseProvider } from './BaseProvider.js';
-export { LocalProvider } from './LocalProvider.js';
-export { ProviderRegistry } from './ProviderRegistry.js';
+import { BaseProvider } from './BaseProvider';
+import { LocalProvider } from './LocalProvider';
+import { ProviderRegistry } from './ProviderRegistry';
+
+// Export types
+export type { BaseProvider };
+
+// Export classes
+export { LocalProvider, ProviderRegistry };
