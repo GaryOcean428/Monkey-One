@@ -1,5 +1,17 @@
 import { logger } from '../../utils/logger';
 
+interface RequestMetrics {
+  success: boolean;
+  latency?: number;
+  tokenUsage?: {
+    promptTokens: number;
+    completionTokens: number;
+    totalTokens: number;
+  };
+  error?: Error;
+  streaming?: boolean;
+}
+
 export interface AnalyticsEvent {
   eventName: string;
   timestamp: number;
@@ -17,7 +29,7 @@ export interface ModelMetrics {
 class Analytics {
   private static instance: Analytics;
   private events: AnalyticsEvent[] = [];
-  private metrics: Map<string, ModelMetrics> = new Map();
+  private metrics: Map<string, any> = new Map();
   private flushInterval: number = 60000; // 1 minute
 
   private constructor() {
@@ -115,6 +127,60 @@ class Analytics {
     } catch (error) {
       logger.error('Error flushing analytics events:', error);
     }
+  }
+
+  recordRequest(modelName: string, metrics: RequestMetrics) {
+    try {
+      const modelMetrics = this.metrics.get(modelName) || {
+        totalRequests: 0,
+        successfulRequests: 0,
+        failedRequests: 0,
+        totalLatency: 0,
+        tokenUsage: {
+          prompt: 0,
+          completion: 0,
+          total: 0
+        }
+      };
+
+      modelMetrics.totalRequests++;
+      
+      if (metrics.success) {
+        modelMetrics.successfulRequests++;
+        if (metrics.latency) {
+          modelMetrics.totalLatency += metrics.latency;
+          modelMetrics.averageLatency = modelMetrics.totalLatency / modelMetrics.successfulRequests;
+        }
+        if (metrics.tokenUsage) {
+          modelMetrics.tokenUsage.prompt += metrics.tokenUsage.promptTokens;
+          modelMetrics.tokenUsage.completion += metrics.tokenUsage.completionTokens;
+          modelMetrics.tokenUsage.total += metrics.tokenUsage.totalTokens;
+        }
+      } else {
+        modelMetrics.failedRequests++;
+      }
+
+      modelMetrics.errorRate = modelMetrics.failedRequests / modelMetrics.totalRequests;
+      modelMetrics.lastUpdated = new Date();
+
+      this.metrics.set(modelName, modelMetrics);
+    } catch (error) {
+      logger.error('Error recording analytics:', error);
+    }
+  }
+
+  getRecordedMetrics(modelName?: string) {
+    if (modelName) {
+      return this.metrics.get(modelName) || {
+        totalRequests: 0,
+        errorRate: 0,
+        cacheHitRate: 0,
+        averageLatency: 0,
+        tokenUsage: { prompt: 0, completion: 0, total: 0 },
+        lastUpdated: new Date()
+      };
+    }
+    return this.metrics;
   }
 }
 

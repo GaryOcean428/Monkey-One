@@ -1,4 +1,4 @@
-import type { ModelConfig } from '../models';
+import type { ModelConfig, ModelResponse, StreamChunk } from '../types/models';
 
 export abstract class BaseProvider {
   protected name: string;
@@ -9,9 +9,9 @@ export abstract class BaseProvider {
 
   abstract initialize(): Promise<void>;
   
-  abstract generate(prompt: string, config: ModelConfig, options?: any): Promise<string>;
+  abstract generate(prompt: string, options?: any): Promise<ModelResponse>;
   
-  abstract generateStream(prompt: string, config: ModelConfig, options?: any): AsyncGenerator<string>;
+  abstract generateStream(prompt: string, options?: any): AsyncGenerator<StreamChunk>;
   
   abstract isAvailable(): Promise<boolean>;
 

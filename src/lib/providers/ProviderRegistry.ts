@@ -1,14 +1,11 @@
 import { BaseProvider } from './BaseProvider';
-import { LocalProvider } from './LocalProvider';
 import { logger } from '../../utils/logger';
 
 export class ProviderRegistry {
   private static instance: ProviderRegistry;
   private providers: Map<string, BaseProvider> = new Map();
 
-  private constructor() {
-    this.registerDefaultProviders();
-  }
+  private constructor() {}
 
   static getInstance(): ProviderRegistry {
     if (!ProviderRegistry.instance) {
@@ -17,15 +14,13 @@ export class ProviderRegistry {
     return ProviderRegistry.instance;
   }
 
-  private async registerDefaultProviders() {
+  async registerProvider(name: string, provider: BaseProvider): Promise<void> {
     try {
-      // Register local provider
-      const localProvider = new LocalProvider();
-      await localProvider.initialize();
-      this.providers.set(localProvider.getName(), localProvider);
-      logger.info(`Registered provider: ${localProvider.getName()}`);
+      await provider.initialize();
+      this.providers.set(name, provider);
+      logger.info(`Registered provider: ${name}`);
     } catch (error) {
-      logger.error('Error registering default providers:', error);
+      logger.error(`Error registering provider ${name}:`, error);
       throw error;
     }
   }
@@ -35,44 +30,14 @@ export class ProviderRegistry {
     if (!provider) {
       throw new Error(`Provider ${name} not found`);
     }
-
-    // Ensure provider is available
-    const isAvailable = await provider.isAvailable();
-    if (!isAvailable) {
-      throw new Error(`Provider ${name} is not available`);
-    }
-
     return provider;
   }
 
-  registerProvider(provider: BaseProvider) {
-    this.providers.set(provider.getName(), provider);
-    logger.info(`Registered provider: ${provider.getName()}`);
-  }
-
-  unregisterProvider(name: string) {
-    if (this.providers.delete(name)) {
-      logger.info(`Unregistered provider: ${name}`);
-    }
-  }
-
-  getAvailableProviders(): string[] {
+  async getAvailableProviders(): Promise<string[]> {
     return Array.from(this.providers.keys());
   }
 
-  async getAvailableProviderInstances(): Promise<BaseProvider[]> {
-    const availableProviders: BaseProvider[] = [];
-    
-    for (const provider of this.providers.values()) {
-      try {
-        if (await provider.isAvailable()) {
-          availableProviders.push(provider);
-        }
-      } catch (error) {
-        logger.warn(`Error checking provider availability: ${provider.getName()}`, error);
-      }
-    }
-
-    return availableProviders;
+  async hasProvider(name: string): Promise<boolean> {
+    return this.providers.has(name);
   }
 }
