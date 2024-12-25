@@ -1,9 +1,8 @@
-import { ProviderRegistry } from './providers/ProviderRegistry.js';
-import { LocalProvider } from './providers/LocalProvider.js';
-import { logger } from '../utils/logger.js';
-import { analytics } from './monitoring/analytics.js';
-import { performanceMonitor } from './monitoring/performance.js';
-import type { ModelResponse, StreamChunk } from './types/models.js';
+import { ProviderRegistry, LocalProvider } from './providers';
+import { logger } from '../utils/logger';
+import { analytics } from './monitoring/analytics';
+import { performanceMonitor } from './monitoring/performance';
+import type { ModelResponse, StreamChunk } from './types/models';
 
 interface LLMManagerConfig {
   defaultProvider?: string;
@@ -11,12 +10,13 @@ interface LLMManagerConfig {
   timeout?: number;
 }
 
-class LLMManager {
+export class LLMManager {
   private static instance: LLMManager;
   private providerRegistry: ProviderRegistry;
   private config: LLMManagerConfig;
+  private initialized: boolean = false;
 
-  constructor(config: LLMManagerConfig = {}) {
+  private constructor(config: LLMManagerConfig = {}) {
     this.config = {
       defaultProvider: 'local',
       maxRetries: 3,
@@ -24,23 +24,26 @@ class LLMManager {
       ...config
     };
     this.providerRegistry = ProviderRegistry.getInstance();
-    this.registerDefaultProviders();
   }
 
-  private async registerDefaultProviders() {
+  private async initialize() {
+    if (this.initialized) return;
+    
     try {
       const localProvider = new LocalProvider();
       await this.providerRegistry.registerProvider('local', localProvider);
       logger.info('Default providers registered successfully');
+      this.initialized = true;
     } catch (error) {
       logger.error('Error registering default providers:', error);
       throw error;
     }
   }
 
-  static getInstance(config?: LLMManagerConfig): LLMManager {
+  static async getInstance(config?: LLMManagerConfig): Promise<LLMManager> {
     if (!LLMManager.instance) {
       LLMManager.instance = new LLMManager(config);
+      await LLMManager.instance.initialize();
     }
     return LLMManager.instance;
   }
@@ -121,6 +124,9 @@ class LLMManager {
   }
 }
 
+// Export a promise that resolves to the LLMManager instance
 export const llmManager = LLMManager.getInstance();
-export { generateResponse, generateStreamingResponse } from './models.js';
-export type { ModelResponse, StreamChunk } from './types/models.js';
+
+// Export other utilities
+export { generateResponse, generateStreamingResponse } from './models';
+export type { ModelResponse, StreamChunk } from './types/models';
