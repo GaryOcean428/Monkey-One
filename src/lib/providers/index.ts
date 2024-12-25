@@ -1,6 +1,6 @@
-import { BaseProvider } from '@/lib/providers/BaseProvider';
-import { LocalProvider } from '@/lib/providers/LocalProvider';
-import { ProviderRegistry } from '@/lib/providers/ProviderRegistry';
+import { BaseProvider } from './BaseProvider';
+import { LocalProvider } from './LocalProvider';
+import { ProviderRegistry } from './ProviderRegistry';
 
 // Export types
 export type { BaseProvider };

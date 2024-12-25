@@ -26,10 +26,10 @@ export default defineConfig(({ mode }) => {
       }),
     ],
     resolve: {
-      alias: {
-        '@': resolve(__dirname, './src'),
-        'lib': resolve(__dirname, './src/lib'),
-      }
+      alias: [
+        { find: '@', replacement: resolve(__dirname, './src') },
+        { find: '~', replacement: resolve(__dirname, './') },
+      ],
     },
     define: {
       global: 'globalThis',
