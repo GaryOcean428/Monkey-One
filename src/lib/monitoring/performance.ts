@@ -23,6 +23,12 @@ class PerformanceMonitor {
   private static instance: PerformanceMonitor;
   private metrics: Map<string, PerformanceMetrics> = new Map();
   private readonly maxDataPoints = 1000;
+  private latencyMetrics: Map<string, {
+    totalLatency: number;
+    requestCount: number;
+    averageLatency: number;
+    lastUpdated: Date;
+  }> = new Map();
 
   private constructor() {
     this.startPeriodicCleanup();
@@ -93,6 +99,26 @@ class PerformanceMonitor {
     this.metrics.set(modelName, modelMetrics);
   }
 
+  recordLatency(modelName: string, latency: number) {
+    try {
+      const currentMetrics = this.latencyMetrics.get(modelName) || {
+        totalLatency: 0,
+        requestCount: 0,
+        averageLatency: 0,
+        lastUpdated: new Date()
+      };
+
+      currentMetrics.totalLatency += latency;
+      currentMetrics.requestCount++;
+      currentMetrics.averageLatency = currentMetrics.totalLatency / currentMetrics.requestCount;
+      currentMetrics.lastUpdated = new Date();
+
+      this.latencyMetrics.set(modelName, currentMetrics);
+    } catch (error) {
+      logger.error('Error recording latency:', error);
+    }
+  }
+
   getDetailedMetrics(modelName: string): DetailedModelMetrics {
     const metrics = this.metrics.get(modelName);
     if (!metrics || metrics.requestLatency.length === 0) {
@@ -149,6 +175,18 @@ class PerformanceMonitor {
       memoryUsage: metrics.memoryUsage.slice(startIndex),
       timestamp: metrics.timestamp.slice(startIndex)
     };
+  }
+
+  getLatencyMetrics(modelName?: string) {
+    if (modelName) {
+      return this.latencyMetrics.get(modelName) || {
+        totalLatency: 0,
+        requestCount: 0,
+        averageLatency: 0,
+        lastUpdated: new Date()
+      };
+    }
+    return this.latencyMetrics;
   }
 }
 

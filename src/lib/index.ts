@@ -1,10 +1,11 @@
-import { ProviderRegistry } from './providers/ProviderRegistry';
+import { ProviderRegistry } from './providers';
+import { LocalProvider } from './providers/LocalProvider';
 import { logger } from '../utils/logger';
 import { analytics } from './monitoring/analytics';
 import { performanceMonitor } from './monitoring/performance';
-import type { ModelConfig } from './models';
+import type { ModelResponse, StreamChunk } from './types/models';
 
-export interface LLMManagerConfig {
+interface LLMManagerConfig {
   defaultProvider?: string;
   maxRetries?: number;
   timeout?: number;
@@ -23,6 +24,18 @@ class LLMManager {
       ...config
     };
     this.providerRegistry = ProviderRegistry.getInstance();
+    this.registerDefaultProviders();
+  }
+
+  private async registerDefaultProviders() {
+    try {
+      const localProvider = new LocalProvider();
+      await this.providerRegistry.registerProvider('local', localProvider);
+      logger.info('Default providers registered successfully');
+    } catch (error) {
+      logger.error('Error registering default providers:', error);
+      throw error;
+    }
   }
 
   static getInstance(config?: LLMManagerConfig): LLMManager {
@@ -41,90 +54,73 @@ class LLMManager {
     }
   }
 
-  async generate(prompt: string, providerName?: string, options: any = {}) {
+  async generate(prompt: string, providerName?: string, options: any = {}): Promise<ModelResponse> {
     const provider = await this.getProvider(providerName);
     const startTime = performance.now();
 
     try {
       const response = await provider.generate(prompt, options);
-      
       const endTime = performance.now();
       const latency = endTime - startTime;
-      
-      // Record metrics
-      performanceMonitor.recordMetrics(
-        providerName || this.config.defaultProvider!,
-        latency,
-        response.length / (latency / 1000), // tokens per second
-        process.memoryUsage().heapUsed
-      );
 
-      analytics.trackEvent('generate', {
-        provider: provider.getName(),
+      analytics.recordRequest(providerName || this.config.defaultProvider!, {
+        success: true,
         latency,
-        success: true
+        tokenUsage: response.usage
       });
+
+      performanceMonitor.recordLatency(providerName || this.config.defaultProvider!, latency);
 
       return response;
     } catch (error) {
-      logger.error('Error generating response:', error);
-      
-      analytics.trackEvent('generate', {
-        provider: provider.getName(),
-        error: error instanceof Error ? error.message : 'Unknown error',
-        success: false
+      analytics.recordRequest(providerName || this.config.defaultProvider!, {
+        success: false,
+        error: error as Error
       });
 
+      logger.error(`Error generating response with provider ${providerName}:`, error);
       throw error;
     }
   }
 
-  async *generateStream(prompt: string, providerName?: string, options: any = {}) {
+  async* generateStream(prompt: string, providerName?: string, options: any = {}): AsyncGenerator<StreamChunk> {
     const provider = await this.getProvider(providerName);
     const startTime = performance.now();
-    let totalTokens = 0;
 
     try {
-      for await (const chunk of provider.generateStream(prompt, options)) {
-        totalTokens += chunk.length;
+      const stream = provider.generateStream(prompt, options);
+      
+      for await (const chunk of stream) {
         yield chunk;
       }
 
       const endTime = performance.now();
       const latency = endTime - startTime;
-      
-      // Record streaming metrics
-      performanceMonitor.recordMetrics(
-        providerName || this.config.defaultProvider!,
-        latency,
-        totalTokens / (latency / 1000),
-        process.memoryUsage().heapUsed
-      );
 
-      analytics.trackEvent('generateStream', {
-        provider: provider.getName(),
+      analytics.recordRequest(providerName || this.config.defaultProvider!, {
+        success: true,
         latency,
-        totalTokens,
-        success: true
+        streaming: true
       });
+
+      performanceMonitor.recordLatency(providerName || this.config.defaultProvider!, latency);
     } catch (error) {
-      logger.error('Error in stream generation:', error);
-      
-      analytics.trackEvent('generateStream', {
-        provider: provider.getName(),
-        error: error instanceof Error ? error.message : 'Unknown error',
-        success: false
+      analytics.recordRequest(providerName || this.config.defaultProvider!, {
+        success: false,
+        error: error as Error,
+        streaming: true
       });
 
+      logger.error(`Error in streaming response with provider ${providerName}:`, error);
       throw error;
     }
   }
 
-  getAvailableProviders(): Promise<string[]> {
-    return Promise.resolve(this.providerRegistry.getAvailableProviders());
+  async getAvailableProviders(): Promise<string[]> {
+    return this.providerRegistry.getAvailableProviders();
   }
 }
 
 export const llmManager = LLMManager.getInstance();
 export { generateResponse, generateStreamingResponse } from './models';
-export type { ModelResponse, StreamChunk } from './api/modelClients';
+export type { ModelResponse, StreamChunk } from './types/models';
