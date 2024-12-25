@@ -17,16 +17,20 @@ export class LocalProvider extends BaseProvider {
     }
   }
 
-  async generate(prompt: string, options?: any): Promise<ModelResponse> {
+  async generate(prompt: string, options: any = {}): Promise<ModelResponse> {
     try {
+      // Use options for response generation
+      const temperature = options.temperature || 0.7;
+      const maxTokens = options.maxTokens || 1000;
+      
       // Estimate token count
       const estimatedTokens = Math.ceil(prompt.length / 4);
       
       return {
-        text: `Local response to: ${prompt}`,
+        text: `Local response to: ${prompt} (temp: ${temperature}, maxTokens: ${maxTokens})`,
         usage: {
           promptTokens: estimatedTokens,
-          completionTokens: estimatedTokens,
+          completionTokens: Math.min(estimatedTokens, maxTokens),
           totalTokens: estimatedTokens * 2
         }
       };
@@ -36,17 +40,26 @@ export class LocalProvider extends BaseProvider {
     }
   }
 
-  async* generateStream(prompt: string, options?: any): AsyncGenerator<StreamChunk> {
+  async* generateStream(prompt: string, options: any = {}): AsyncGenerator<StreamChunk> {
     try {
+      // Use options for stream generation
+      const temperature = options.temperature || 0.7;
+      const streamDelay = options.streamDelay || 50;
+      
       // Simulate streaming response
       const words = prompt.split(' ');
+      
+      yield {
+        text: `[temp: ${temperature}] `,
+        done: false
+      };
       
       for (const word of words) {
         yield {
           text: word + ' ',
           done: false
         };
-        await new Promise(resolve => setTimeout(resolve, 50)); // Add small delay between words
+        await new Promise(resolve => setTimeout(resolve, streamDelay));
       }
 
       yield {
