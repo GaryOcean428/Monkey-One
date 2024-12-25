@@ -6,6 +6,7 @@ import { LoadingSpinner } from '../components/ui/loading-spinner'
 interface AuthContextType {
   user: User | null;
   signIn: (email: string, password: string) => Promise<any>;
+  signUp: (email: string, password: string, options?: { data: any }) => Promise<any>;
   signOut: () => Promise<void>;
   isLoading: boolean;
 }
@@ -48,6 +49,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  const signUp = async (email: string, password: string, options?: { data: any }) => {
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        ...options,
+      })
+
+      if (error) throw error
+      return data
+    } catch (error) {
+      console.error('Error signing up:', error)
+      throw error
+    }
+  }
+
   const signOut = async () => {
     try {
       await supabase.auth.signOut()
@@ -60,6 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const value = {
     user,
     signIn,
+    signUp,
     signOut,
     isLoading: loading
   };
