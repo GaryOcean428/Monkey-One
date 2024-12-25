@@ -1,6 +1,6 @@
-import { BaseProvider } from './BaseProvider';
-import { logger } from '../../utils/logger';
-import type { ModelResponse, StreamChunk } from '../types/models';
+import { BaseProvider } from './BaseProvider.js';
+import { logger } from '../../utils/logger.js';
+import type { ModelResponse, StreamChunk } from '../types/models.js';
 
 export class LocalProvider extends BaseProvider {
   constructor() {
