@@ -34,13 +34,11 @@ global.ResizeObserver = vi.fn().mockImplementation(() => ({
 }));
 
 // Mock TextDecoder
-class CustomTextDecoder {
-  decode(bytes: Uint8Array): string {
-    return new TextDecoder().decode(bytes);
-  }
-}
+const mockTextDecoder = vi.fn().mockImplementation(() => ({
+  decode: vi.fn().mockReturnValue('mocked text')
+}));
 
-global.TextDecoder = CustomTextDecoder as any;
+global.TextDecoder = mockTextDecoder;
 
 // Mock canvas context methods
 const mockCanvasContext = {
@@ -53,33 +51,25 @@ const mockCanvasContext = {
   moveTo: vi.fn(),
   lineTo: vi.fn(),
   stroke: vi.fn(),
-  fill: vi.fn(),
-  arc: vi.fn(),
-  closePath: vi.fn(),
-  scale: vi.fn(),
-  translate: vi.fn(),
-  rotate: vi.fn(),
   clearRect: vi.fn(),
   fillRect: vi.fn(),
-  strokeRect: vi.fn(),
-  createLinearGradient: vi.fn(),
-  createRadialGradient: vi.fn(),
-  createPattern: vi.fn(),
-  setLineDash: vi.fn(),
-  getLineDash: vi.fn(),
-  drawImage: vi.fn(),
-  putImageData: vi.fn(),
-  getImageData: vi.fn(),
-  createImageData: vi.fn(),
+  setTransform: vi.fn(),
+  transform: vi.fn(),
+  translate: vi.fn(),
+  scale: vi.fn(),
+  rotate: vi.fn(),
+  arc: vi.fn(),
+  fill: vi.fn(),
   clip: vi.fn(),
+  drawImage: vi.fn(),
+  createLinearGradient: vi.fn(),
+  createPattern: vi.fn(),
+  createRadialGradient: vi.fn(),
+  getImageData: vi.fn(),
+  putImageData: vi.fn(),
   isPointInPath: vi.fn(),
   isPointInStroke: vi.fn(),
 };
 
 // Mock getContext
-HTMLCanvasElement.prototype.getContext = vi.fn((type) => {
-  if (type === '2d') {
-    return mockCanvasContext;
-  }
-  return null;
-});
+HTMLCanvasElement.prototype.getContext = vi.fn().mockImplementation(() => mockCanvasContext);
