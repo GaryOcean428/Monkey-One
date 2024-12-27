@@ -26,25 +26,25 @@ describe('BrowserTool', () => {
   describe('action validation', () => {
     it('should require an action type', async () => {
       await expect(browser.execute({}))
-        .rejects.toThrow('Invalid browser action');
+        .rejects.toThrow('Action type is required');
     });
 
     it('should validate unknown action types', async () => {
       await expect(browser.execute({ 
         action: { type: 'invalid' } 
-      })).rejects.toThrow(/Unknown browser action/);
+      })).rejects.toThrow('Unsupported browser action: invalid');
     });
 
     it('should require URL for launch action', async () => {
       await expect(browser.execute({ 
         action: { type: 'launch' } 
-      })).rejects.toThrow('URL is required');
+      })).rejects.toThrow('URL is required for launch action');
     });
 
     it('should validate URL format', async () => {
       await expect(browser.execute({ 
         action: { type: 'launch', url: 'invalid-url' } 
-      })).rejects.toThrow('URL must start with http');
+      })).rejects.toThrow('Invalid URL format');
     });
   });
 
@@ -107,8 +107,11 @@ describe('BrowserTool', () => {
 
     it('should validate click coordinates', async () => {
       await expect(browser.execute({
-        action: { type: 'click', coordinates: { x: -1, y: 100 } }
-      })).rejects.toThrow('Coordinates must be positive');
+        action: { 
+          type: 'click',
+          coordinates: { x: -1, y: 0 }
+        }
+      })).rejects.toThrow('Invalid click coordinates');
     });
 
     it('should type text into element', async () => {
@@ -169,8 +172,7 @@ describe('BrowserTool', () => {
       await expect(browser.execute({
         action: { 
           type: 'type',
-          selector: '#input',
-          text: 123
+          text: 123 
         }
       })).rejects.toThrow('Text must be a string');
     });
@@ -178,10 +180,9 @@ describe('BrowserTool', () => {
     it('should handle missing required parameters', async () => {
       await expect(browser.execute({
         action: { 
-          type: 'type',
-          selector: '#input'
+          type: 'type'
         }
-      })).rejects.toThrow('Selector and text required');
+      })).rejects.toThrow('Missing required parameters');
     });
 
     it('should handle scroll amount validation', async () => {
@@ -190,7 +191,7 @@ describe('BrowserTool', () => {
           type: 'scroll',
           scrollAmount: 'invalid'
         }
-      })).rejects.toThrow('Scroll amount must be a number');
+      })).rejects.toThrow('Invalid scroll amount');
     });
 
     it('should include error details in error state', async () => {
@@ -199,13 +200,11 @@ describe('BrowserTool', () => {
           action: { type: 'invalid' }
         });
       } catch (error) {
-        if (error instanceof ToolExecutionError) {
-          expect(error.details).toMatchObject({
-            toolName: 'browser',
-            action: 'invalid',
-            errorType: expect.any(String)
-          });
-        }
+        expect(error).toBeInstanceOf(ToolExecutionError);
+        expect(error.details).toEqual({
+          action: 'invalid',
+          error: 'Unsupported browser action: invalid'
+        });
       }
     });
   });
