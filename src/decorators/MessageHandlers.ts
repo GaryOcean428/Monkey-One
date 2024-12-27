@@ -8,11 +8,15 @@ type Constructor<T> = {
 
 export function MessageHandler(messageType: Constructor<Message>) {
     return function (
-        _target: object,
-        _propertyKey: string,
+        target: any,
+        propertyKey: string,
         descriptor: PropertyDescriptor
     ) {
         const originalMethod = descriptor.value;
+        
+        if (!originalMethod) {
+            throw new Error('MessageHandler decorator can only be used on methods');
+        }
         
         descriptor.value = async function(message: Message, ...args: unknown[]) {
             if (!(message instanceof messageType)) {
