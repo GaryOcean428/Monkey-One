@@ -1,10 +1,12 @@
 import { env } from '@xenova/transformers';
-import { InferenceSession, Tensor } from 'onnxruntime-web';
 import type { Message } from '../types';
 import { logger } from '../../utils/logger';
 import { BaseProvider } from '../providers/BaseProvider';
 import type { ModelResponse, StreamChunk, ModelOptions } from '../types/models';
 import { performanceMonitor } from '../monitoring/performance';
+
+// Lazy load ONNX runtime
+let onnx: typeof import('onnxruntime-web') | null = null;
 
 // Configure env for optimal performance
 env.backends.onnx.wasm.numThreads = navigator.hardwareConcurrency;
@@ -17,7 +19,7 @@ interface ModelInfo {
 
 export class LocalModelService extends BaseProvider {
   private static instance: LocalModelService;
-  private session: InferenceSession | null = null;
+  private session: any = null;
   private tokenizer: any = null;
   private isLoading = false;
   private modelId = 'microsoft/phi-2';
@@ -46,21 +48,36 @@ export class LocalModelService extends BaseProvider {
       this.isLoading = true;
       this.modelInfo.status = 'loading';
 
+      // Lazy load ONNX runtime
+      if (!onnx) {
+        onnx = await import('onnxruntime-web');
+      }
+
       // Initialize ONNX session
-      this.session = await InferenceSession.create(this.modelPath, {
+      this.session = await onnx.InferenceSession.create(this.modelPath, {
         executionProviders: ['wasm'],
-        graphOptimizationLevel: 'all'
+        graphOptimizationLevel: 'all',
+        executionMode: 'sequential',
+        enableCpuMemArena: true,
+        enableMemPattern: true,
+        extra: {
+          session: {
+            set_denormal_as_zero: '1',
+            disable_prepacking: '0',
+          },
+          optimization: {
+            enable_gelu_approximation: '1',
+            enable_layer_normalization: '1',
+          },
+        },
       });
 
-      // Initialize tokenizer
-      // this.tokenizer = await AutoTokenizer.from_pretrained(this.modelId);
-
       this.modelInfo.status = 'ready';
-      logger.info('Local model service initialized successfully');
+      logger.info('Local model initialized successfully');
     } catch (error) {
       this.modelInfo.status = 'error';
-      this.modelInfo.error = error instanceof Error ? error.message : 'Unknown error';
-      logger.error('Failed to initialize local model service:', error);
+      this.modelInfo.error = error.message;
+      logger.error('Failed to initialize local model:', error);
       throw error;
     } finally {
       this.isLoading = false;
