@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom';
-import { expect, afterEach } from 'vitest';
+import { expect, afterEach, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
 import * as matchers from '@testing-library/jest-dom/matchers';
 
@@ -42,28 +42,44 @@ class CustomTextDecoder {
 
 global.TextDecoder = CustomTextDecoder as any;
 
-// Mock canvas
-const canvas = document.createElement('canvas');
-const ctx = canvas.getContext('2d');
-if (ctx) {
-  Object.assign(ctx, {
-    measureText: () => ({
-      width: 100,
-      actualBoundingBoxAscent: 10,
-      actualBoundingBoxDescent: 10,
-      actualBoundingBoxLeft: 0,
-      actualBoundingBoxRight: 100,
-      fontBoundingBoxAscent: 10,
-      fontBoundingBoxDescent: 10,
-      alphabeticBaseline: 0,
-      emHeightAscent: 10,
-      emHeightDescent: 10,
-      hangingBaseline: 0,
-      ideographicBaseline: 10,
-    }),
-    fillText: vi.fn(),
-    strokeText: vi.fn(),
-    save: vi.fn(),
-    restore: vi.fn(),
-  });
-}
+// Mock canvas context methods
+const mockCanvasContext = {
+  measureText: () => ({ width: 100 }),
+  fillText: vi.fn(),
+  strokeText: vi.fn(),
+  save: vi.fn(),
+  restore: vi.fn(),
+  beginPath: vi.fn(),
+  moveTo: vi.fn(),
+  lineTo: vi.fn(),
+  stroke: vi.fn(),
+  fill: vi.fn(),
+  arc: vi.fn(),
+  closePath: vi.fn(),
+  scale: vi.fn(),
+  translate: vi.fn(),
+  rotate: vi.fn(),
+  clearRect: vi.fn(),
+  fillRect: vi.fn(),
+  strokeRect: vi.fn(),
+  createLinearGradient: vi.fn(),
+  createRadialGradient: vi.fn(),
+  createPattern: vi.fn(),
+  setLineDash: vi.fn(),
+  getLineDash: vi.fn(),
+  drawImage: vi.fn(),
+  putImageData: vi.fn(),
+  getImageData: vi.fn(),
+  createImageData: vi.fn(),
+  clip: vi.fn(),
+  isPointInPath: vi.fn(),
+  isPointInStroke: vi.fn(),
+};
+
+// Mock getContext
+HTMLCanvasElement.prototype.getContext = vi.fn((type) => {
+  if (type === '2d') {
+    return mockCanvasContext;
+  }
+  return null;
+});
