@@ -23,6 +23,10 @@ import { SettingsProvider } from './contexts/SettingsContext';
 const localModelService = LocalModelService.getInstance();
 const providerRegistry = ProviderRegistry.getInstance();
 
+/**
+ * Main application component that handles routing and service initialization
+ * Provides authentication, theme, and settings context to the application
+ */
 function App() {
   const { user, isLoading } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
@@ -30,21 +34,27 @@ function App() {
   const [modelInitialized, setModelInitialized] = useState(false);
   const { toast } = useToast();
 
+  /**
+   * Initialize model service and provider registry
+   * Handles errors gracefully with user feedback
+   */
   useEffect(() => {
-    async function initializeServices() {
+    const initializeServices = async () => {
       try {
         await providerRegistry.registerProvider('local', localModelService);
         setModelInitialized(true);
         logger.info('Model service initialized successfully');
       } catch (error) {
-        logger.error('Failed to initialize model service:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        logger.error('Failed to initialize model service:', errorMessage);
         toast({
-          title: 'Error',
-          description: 'Failed to initialize model service. Some features may be unavailable.',
-          variant: 'destructive'
+          title: 'Service Initialization Error',
+          description: 'Failed to initialize model service. Some features may be unavailable. Please try refreshing the page.',
+          variant: 'destructive',
+          duration: 5000
         });
       }
-    }
+    };
 
     initializeServices();
   }, [toast]);
