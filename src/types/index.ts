@@ -169,6 +169,8 @@ export interface WorkflowDefinition {
   status: 'draft' | 'active' | 'archived';
 }
 
+export { LogLevel, AgentStatus, MessageType } from '../constants/enums';
+
 export function createAgent(type: AgentType, config: AgentConstructor): Agent {
   switch (type) {
     case AgentType.Orchestrator: {
