@@ -1,21 +1,36 @@
 import { env } from '@xenova/transformers';
 import { InferenceSession, Tensor } from 'onnxruntime-web';
 import type { Message } from '../types';
-import { logger } from '../utils/logger';
+import { logger } from '../../utils/logger';
+import { BaseProvider } from '../providers/BaseProvider';
+import type { ModelResponse, StreamChunk, ModelOptions } from '../types/models';
+import { performanceMonitor } from '../monitoring/performance';
 
 // Configure env for optimal performance
 env.backends.onnx.wasm.numThreads = navigator.hardwareConcurrency;
 
-export class LocalModelService {
+interface ModelInfo {
+  name: string;
+  status: 'not_loaded' | 'loading' | 'ready' | 'error';
+  error?: string;
+}
+
+export class LocalModelService extends BaseProvider {
   private static instance: LocalModelService;
   private session: InferenceSession | null = null;
   private tokenizer: any = null;
   private isLoading = false;
-  private modelId = 'microsoft/phi-3.5';
-  private modelPath = '/models/phi-3.5-q4';  // Local path to quantized model
-  private maxLength = 128000; // 128K context window
+  private modelId = 'microsoft/phi-2';
+  private modelPath = '/models/phi-2/model.onnx';
+  private maxLength = 128000;
+  private modelInfo: ModelInfo = {
+    name: 'Phi-2',
+    status: 'not_loaded'
+  };
 
-  private constructor() {}
+  private constructor() {
+    super('local');
+  }
 
   static getInstance(): LocalModelService {
     if (!LocalModelService.instance) {
@@ -25,104 +40,107 @@ export class LocalModelService {
   }
 
   async initialize(): Promise<void> {
-    if (this.session || this.isLoading) return;
+    if (this.isLoading || this.session) return;
 
     try {
       this.isLoading = true;
-      logger.info(`Initializing Phi-3.5 model`);
+      this.modelInfo.status = 'loading';
 
-      // Initialize tokenizer
-      const { AutoTokenizer } = await import('@xenova/transformers');
-      this.tokenizer = await AutoTokenizer.from_pretrained(this.modelId);
-
-      // Create inference session
+      // Initialize ONNX session
       this.session = await InferenceSession.create(this.modelPath, {
         executionProviders: ['wasm'],
-        graphOptimizationLevel: 'all',
-        executionMode: 'sequential',
-        enableCpuMemArena: true,
-        enableMemPattern: true,
-        extra: {
-          session: {
-            inter_op_num_threads: navigator.hardwareConcurrency,
-            intra_op_num_threads: navigator.hardwareConcurrency,
-          }
-        }
+        graphOptimizationLevel: 'all'
       });
 
-      logger.info('Phi-3.5 initialized successfully');
+      // Initialize tokenizer
+      // this.tokenizer = await AutoTokenizer.from_pretrained(this.modelId);
+
+      this.modelInfo.status = 'ready';
+      logger.info('Local model service initialized successfully');
     } catch (error) {
-      logger.error('Failed to initialize Phi-3.5:', error);
+      this.modelInfo.status = 'error';
+      this.modelInfo.error = error instanceof Error ? error.message : 'Unknown error';
+      logger.error('Failed to initialize local model service:', error);
       throw error;
     } finally {
       this.isLoading = false;
     }
   }
 
-  async generate(prompt: string, options: {
-    maxNewTokens?: number;
-    temperature?: number;
-    topP?: number;
-    repetitionPenalty?: number;
-  } = {}): Promise<string> {
-    if (!this.session || !this.tokenizer) {
+  async generate(prompt: string, options: ModelOptions = {}): Promise<ModelResponse> {
+    if (!this.session) {
       throw new Error('Model not initialized');
     }
 
-    const {
-      maxNewTokens = 1024,
-      temperature = 0.7,
-      topP = 0.9,
-      repetitionPenalty = 1.1
-    } = options;
+    const startTime = performance.now();
 
     try {
-      // Tokenize input
-      const inputs = await this.tokenizer(prompt, {
-        return_tensors: 'onnx',
-        padding: true,
-        truncation: true,
-        max_length: this.maxLength - maxNewTokens
-      });
+      // Implement actual model inference here
+      // const inputs = await this.tokenizer(prompt, { return_tensors: 'onnx' });
+      // const output = await this.session.run(inputs);
+      // const result = await this.tokenizer.decode(output.logits);
 
-      // Run inference
-      const output = await this.session.run({
-        input_ids: new Tensor('int64', inputs.input_ids.data, inputs.input_ids.dims),
-        attention_mask: new Tensor('int64', inputs.attention_mask.data, inputs.attention_mask.dims)
-      }, {
-        max_length: maxNewTokens,
-        do_sample: temperature > 0,
-        temperature,
-        top_p: topP,
-        repetition_penalty: repetitionPenalty,
-        pad_token_id: this.tokenizer.pad_token_id,
-        eos_token_id: this.tokenizer.eos_token_id
-      });
+      // Temporary mock response
+      const response = {
+        text: `[Local Model] Response to: ${prompt}`,
+        usage: {
+          promptTokens: prompt.length / 4,
+          completionTokens: 50,
+          totalTokens: (prompt.length / 4) + 50
+        },
+        metadata: {
+          model: this.modelId,
+          latency: performance.now() - startTime,
+          temperature: options.temperature,
+          maxTokens: options.maxTokens
+        }
+      };
 
-      // Decode output tokens
-      const generated = await this.tokenizer.decode(output.logits.data, {
-        skip_special_tokens: true
-      });
-
-      return generated;
+      performanceMonitor.recordLatency('local', response.metadata.latency);
+      return response;
     } catch (error) {
-      logger.error('Error generating text:', error);
+      logger.error('Error generating response:', error);
       throw error;
     }
   }
 
-  async processMessage(message: Message): Promise<Message> {
-    // Format prompt according to Phi-3.5's template
-    const prompt = `
-The user said: ${message.content}
-The assistant said: `;
+  async* generateStream(prompt: string, options: ModelOptions = {}): AsyncGenerator<StreamChunk> {
+    if (!this.session) {
+      throw new Error('Model not initialized');
+    }
 
-    const response = await this.generate(prompt);
-    return {
-      id: crypto.randomUUID(),
-      role: 'assistant',
-      content: response,
-      timestamp: Date.now()
-    };
+    const startTime = performance.now();
+    const delay = options.streamDelay ?? 50;
+
+    try {
+      // Mock streaming response for now
+      const words = `[Local Model Stream] Response to: ${prompt}`.split(' ');
+      
+      for (let i = 0; i < words.length; i++) {
+        await new Promise(resolve => setTimeout(resolve, delay));
+        
+        yield {
+          text: words[i] + ' ',
+          isComplete: i === words.length - 1,
+          metadata: {
+            model: this.modelId,
+            latency: performance.now() - startTime
+          }
+        };
+      }
+
+      performanceMonitor.recordLatency('local-stream', performance.now() - startTime);
+    } catch (error) {
+      logger.error('Error in stream generation:', error);
+      throw error;
+    }
+  }
+
+  async isAvailable(): Promise<boolean> {
+    return this.modelInfo.status === 'ready';
+  }
+
+  getModelInfo(): ModelInfo {
+    return this.modelInfo;
   }
 }

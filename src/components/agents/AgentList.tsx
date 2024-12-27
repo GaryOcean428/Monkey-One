@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Bot, Code, Globe, Folder, Plus } from 'lucide-react';
-import { useAgents } from '../../context/AgentContext';
+import { useAgents } from '../../contexts/AgentContext';
 import { Button } from '../ui/button';
 
 export function AgentList() {

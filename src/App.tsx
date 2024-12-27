@@ -1,130 +1,100 @@
 import './styles/globals.css';
-import { useEffect, lazy, Suspense, useState } from 'react';
-import { ErrorBoundary } from './components/ErrorBoundary';
-import { TooltipProvider } from './components/ui/tooltip';
-import { SettingsProvider, useSettings } from './context/SettingsContext';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { LoginForm } from './components/Auth/LoginForm';
-import { SignUpForm } from './components/Auth/SignUpForm';
+import { useEffect, useState } from 'react';
+import { Routes, Route } from 'react-router-dom';
+import { useAuth, AuthProvider } from './contexts/AuthContext';
+import { SignIn } from './components/Auth/SignIn';
+import { SignUpForm as SignUp } from './components/Auth/SignUpForm';
+import { ChatContainer as Chat } from './components/chat/ChatContainer';
+import SettingsPanel from './components/panels/SettingsPanel';
+import { MainPanel as Playground } from './components/MainPanel';
 import { useAgentStore } from './store/agentStore';
 import { DashboardLayout } from './components/Layout/DashboardLayout';
-import { TabsContent } from './components/ui/tabs';
-import { useNavigationStore } from './store/navigationStore';
 import { ThemeProvider } from './components/ThemeProvider';
+import { LocalModelService } from './lib/llm/LocalModelService';
+import { ProviderRegistry } from './lib/providers';
+import { ModelManager } from './components/ModelManager';
+import { Toaster } from './components/ui/toaster';
+import { useToast } from './components/ui/use-toast';
+import { logger } from './utils/logger';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { TooltipProvider } from './components/ui/tooltip';
+import { SettingsProvider } from './contexts/SettingsContext';
 
-// Lazy-loaded components
-const ChatPanel = lazy(() => import('./components/panels/ChatPanel'));
-const AgentDashboard = lazy(() => import('./components/panels/AgentDashboard'));
-const WorkflowPanel = lazy(() => import('./components/panels/WorkflowPanel'));
-const MemoryPanel = lazy(() => import('./components/panels/MemoryPanel'));
-const DocumentsPanel = lazy(() => import('./components/panels/DocumentsPanel'));
-const DashboardPanel = lazy(() => import('./components/panels/DashboardPanel'));
-const ToolsPanel = lazy(() => import('./components/panels/ToolsPanel'));
-const SearchPanel = lazy(() => import('./components/panels/SearchPanel'));
-const VectorStorePanel = lazy(() => import('./components/panels/VectorStorePanel'));
-const GitHubPanel = lazy(() => import('./components/panels/GitHubPanel'));
-const PerformancePanel = lazy(() => import('./components/panels/PerformancePanel'));
+const localModelService = LocalModelService.getInstance();
+const providerRegistry = ProviderRegistry.getInstance();
 
-// Loading fallback
-const LoadingFallback = () => (
-  <div className="flex items-center justify-center h-full">
-    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white"></div>
-  </div>
-);
-
-function AuthenticatedContent() {
-  const { settings } = useSettings();
+function App() {
   const { user, isLoading } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
   const initializeAgents = useAgentStore(state => state.initializeAgents);
-  const { activeTab } = useNavigationStore();
+  const [modelInitialized, setModelInitialized] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
-    document.documentElement.classList.toggle('dark', settings.theme === 'dark');
-  }, [settings.theme]);
-
-  useEffect(() => {
-    if (user) {
-      initializeAgents().catch(console.error);
+    async function initializeServices() {
+      try {
+        await providerRegistry.registerProvider('local', localModelService);
+        setModelInitialized(true);
+        logger.info('Model service initialized successfully');
+      } catch (error) {
+        logger.error('Failed to initialize model service:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to initialize model service. Some features may be unavailable.',
+          variant: 'destructive'
+        });
+      }
     }
-  }, [user, initializeAgents]);
+
+    initializeServices();
+  }, [toast]);
+
+  useEffect(() => {
+    if (user && !isLoading && modelInitialized) {
+      initializeAgents();
+    }
+  }, [user, isLoading, modelInitialized, initializeAgents]);
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="w-full max-w-md space-y-6 p-8 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
-          <LoadingFallback />
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="w-full max-w-md space-y-6 p-8 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
-          {isSignUp ? (
-            <>
-              <SignUpForm />
-              <button
-                onClick={() => setIsSignUp(false)}
-                className="mt-4 w-full text-center text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
-              >
-                Already have an account? Sign in
-              </button>
-            </>
-          ) : (
-            <>
-              <LoginForm />
-              <button
-                onClick={() => setIsSignUp(true)}
-                className="mt-4 w-full text-center text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
-              >
-                Don't have an account? Sign up
-              </button>
-            </>
-          )}
-        </div>
+      <div className="flex h-screen items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   return (
-    <DashboardLayout>
-      <TabsContent value={activeTab} className="h-full m-0 p-0 overflow-hidden">
-        <Suspense fallback={<LoadingFallback />}>
-          {activeTab === 'chat' && <ChatPanel />}
-          {activeTab === 'agents' && <AgentDashboard />}
-          {activeTab === 'workflows' && <WorkflowPanel />}
-          {activeTab === 'memory' && <MemoryPanel />}
-          {activeTab === 'documents' && <DocumentsPanel />}
-          {activeTab === 'dashboard' && <DashboardPanel />}
-          {activeTab === 'tools' && <ToolsPanel />}
-          {activeTab === 'search' && <SearchPanel />}
-          {activeTab === 'vectorstore' && <VectorStorePanel />}
-          {activeTab === 'github' && <GitHubPanel />}
-          {activeTab === 'performance' && <PerformancePanel />}
-        </Suspense>
-      </TabsContent>
-    </DashboardLayout>
-  );
-}
-
-function App() {
-  return (
-    <ThemeProvider>
-      <TooltipProvider>
-        <ErrorBoundary>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <TooltipProvider>
           <SettingsProvider>
             <AuthProvider>
-              <Suspense fallback={<LoadingFallback />}>
-                <AuthenticatedContent />
-              </Suspense>
+              <div className="min-h-screen">
+                {!user ? (
+                  <div className="flex min-h-screen items-center justify-center">
+                    {isSignUp ? (
+                      <SignUp onSwitch={() => setIsSignUp(false)} />
+                    ) : (
+                      <SignIn onSwitch={() => setIsSignUp(true)} />
+                    )}
+                  </div>
+                ) : (
+                  <DashboardLayout>
+                    <Routes>
+                      <Route path="/" element={<Chat />} />
+                      <Route path="/settings" element={<SettingsPanel />} />
+                      <Route path="/playground" element={<Playground />} />
+                    </Routes>
+                  </DashboardLayout>
+                )}
+              </div>
+              <ModelManager />
+              <Toaster />
             </AuthProvider>
           </SettingsProvider>
-        </ErrorBoundary>
-      </TooltipProvider>
-    </ThemeProvider>
+        </TooltipProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }
 

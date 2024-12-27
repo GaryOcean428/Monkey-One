@@ -1,5 +1,5 @@
 import React from 'react';
-import { useSettings } from '../context/SettingsContext';
+import { useSettings } from '../contexts/SettingsContext';
 
 export function Settings() {
   const { settings, updateSettings } = useSettings();

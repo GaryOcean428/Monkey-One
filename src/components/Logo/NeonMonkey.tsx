@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '../../lib/utils';
+import styles from './NeonMonkey.module.css';
 
 interface NeonMonkeyProps {
   className?: string;
@@ -35,8 +36,7 @@ export const NeonMonkey: React.FC<NeonMonkeyProps> = ({
     >
       <svg
         viewBox="0 0 100 100"
-        className="w-full h-full"
-        style={{ filter: 'drop-shadow(0 0 10px rgba(255, 0, 128, 0.5))' }}
+        className={cn("w-full h-full", styles.neonGlow)}
       >
         {/* Outer Circle */}
         <motion.path

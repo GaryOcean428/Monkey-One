@@ -1,0 +1,18 @@
+.confidenceBar {
+  height: 0.25rem;
+  border-radius: 9999px;
+  background-color: rgb(59, 130, 246);
+  transition: width 0.3s ease-in-out;
+}
+
+/* Generate confidence width classes */
+.confidence10 { width: 10%; }
+.confidence20 { width: 20%; }
+.confidence30 { width: 30%; }
+.confidence40 { width: 40%; }
+.confidence50 { width: 50%; }
+.confidence60 { width: 60%; }
+.confidence70 { width: 70%; }
+.confidence80 { width: 80%; }
+.confidence90 { width: 90%; }
+.confidence100 { width: 100%; }

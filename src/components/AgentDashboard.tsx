@@ -3,7 +3,7 @@ import { AgentMonitor } from './AgentMonitor';
 import { AgentWorkflow } from './AgentWorkflow';
 import { PerformanceMetrics } from './PerformanceMetrics';
 import { ObserverPanel } from './ObserverPanel';
-import { useAgents } from '../context/AgentContext';
+import { useAgents } from '../contexts/AgentContext';
 
 export function AgentDashboard() {
   const { agents, activeAgent } = useAgents();

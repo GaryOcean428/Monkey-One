@@ -1,0 +1,13 @@
+.errorContainer {
+  padding: 20px;
+  text-align: center;
+}
+
+.errorMessage {
+  color: red;
+}
+
+.initError {
+  padding: 20px;
+  text-align: center;
+}
