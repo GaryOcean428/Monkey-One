@@ -25,6 +25,14 @@ export default defineConfig(({ mode }) => {
         ext: '.br',
       }),
     ],
+    optimizeDeps: {
+      include: [
+        '@radix-ui/react-slider',
+        '@radix-ui/react-tabs',
+        '@radix-ui/react-switch',
+        '@radix-ui/react-select'
+      ]
+    },
     resolve: {
       alias: [
         { find: '@', replacement: resolve(__dirname, './src') },
@@ -49,10 +57,15 @@ export default defineConfig(({ mode }) => {
         },
         output: {
           manualChunks: {
-            'react-vendor': ['react', 'react-dom'],
-          },
-        },
-      },
+            'radix-ui': [
+              '@radix-ui/react-slider',
+              '@radix-ui/react-tabs',
+              '@radix-ui/react-switch',
+              '@radix-ui/react-select'
+            ]
+          }
+        }
+      }
     },
     server: {
       proxy: {
@@ -62,6 +75,10 @@ export default defineConfig(({ mode }) => {
           secure: false,
         },
       },
-    },
+      port: 3000,
+      open: true,
+      cors: true,
+      force: true // Force the server to re-bundle on startup
+    }
   };
 });
