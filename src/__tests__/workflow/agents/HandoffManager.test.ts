@@ -3,6 +3,7 @@ import { HandoffManager } from '../../../lib/workflow/agents/HandoffManager';
 import { AgentRegistry } from '../../../lib/registry/AgentRegistry';
 import { memoryManager } from '../../../lib/memory';
 import { Agent, AgentCapability, Message } from '../../../types';
+import { MessageType } from '../../../constants/enums';
 
 // Mock agent implementation
 class MockAgent implements Agent {
