@@ -3,6 +3,7 @@ import { LLMProvider, LLMResponse } from './base';
 export class LocalProvider extends LLMProvider {
   private modelName: string;
   private isInitialized: boolean = false;
+  private initError: Error | null = null;
 
   constructor(modelName: string = 'gpt-4o-2024-11-06') {
     super();
@@ -22,20 +23,46 @@ export class LocalProvider extends LLMProvider {
   }
 
   async initialize(): Promise<void> {
-    // Initialize local model here
-    this.isInitialized = true;
+    try {
+      // Check if model file exists and is valid
+      const modelPath = `models/${this.modelName}`;
+      
+      // Add proper model initialization here
+      // For now, we'll simulate initialization
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      this.isInitialized = true;
+      this.initError = null;
+    } catch (error) {
+      this.initError = error instanceof Error ? error : new Error(String(error));
+      this.isInitialized = false;
+      throw this.initError;
+    }
   }
 
   isAvailable(): boolean {
-    return this.isInitialized;
+    return this.isInitialized && !this.initError;
+  }
+
+  getInitializationError(): Error | null {
+    return this.initError;
   }
 
   async generateResponse(prompt: string): Promise<LLMResponse> {
     if (!this.isInitialized) {
-      await this.initialize();
+      try {
+        await this.initialize();
+      } catch (error) {
+        throw new Error(`Failed to initialize local model: ${error.message}`);
+      }
     }
 
-    // Mock response for testing
+    if (!this.isAvailable()) {
+      throw new Error(`Local model is not available: ${this.initError?.message}`);
+    }
+
+    // Implement actual model inference here
+    // For now, return a mock response
     return {
       text: `Response from ${this.modelName}: ${prompt}`,
       usage: {
@@ -48,23 +75,25 @@ export class LocalProvider extends LLMProvider {
 
   async generateStreamingResponse(prompt: string): Promise<ReadableStream> {
     if (!this.isInitialized) {
-      await this.initialize();
+      try {
+        await this.initialize();
+      } catch (error) {
+        throw new Error(`Failed to initialize local model: ${error.message}`);
+      }
     }
 
-    // Create a ReadableStream that yields the response in chunks
+    if (!this.isAvailable()) {
+      throw new Error(`Local model is not available: ${this.initError?.message}`);
+    }
+
+    // Create a ReadableStream that yields chunks of the response
     return new ReadableStream({
       async start(controller) {
-        const response = `Response from ${prompt}`;
-        const encoder = new TextEncoder();
-        
-        // Split response into chunks and send
-        const chunkSize = 10;
-        for (let i = 0; i < response.length; i += chunkSize) {
-          const chunk = response.slice(i, i + chunkSize);
-          controller.enqueue(encoder.encode(chunk));
+        const chunks = [`Response`, ` from`, ` ${this.modelName}:`, ` ${prompt}`];
+        for (const chunk of chunks) {
+          controller.enqueue(new TextEncoder().encode(chunk));
           await new Promise(resolve => setTimeout(resolve, 100)); // Simulate delay
         }
-        
         controller.close();
       }
     });
