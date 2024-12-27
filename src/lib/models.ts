@@ -1,311 +1,195 @@
-import { HfInference } from '@huggingface/inference';
+/**
+ * Model configuration and types for supported LLM providers
+ */
 
-const hf = new HfInference(import.meta.env.VITE_HUGGINGFACE_TOKEN);
+import { logger } from '../utils/logger';
+import type { ModelOptions, ModelResponse, StreamChunk } from './types/models';
 
-export interface ModelConfig {
-  id: string;
-  name: string;
-  provider: 'meta' | 'anthropic' | 'groq' | 'xai';
-  modelId: string;
-  contextWindow: number;
-  maxOutputTokens: number;
-  temperature?: number;
-  topP?: number;
-  capabilities?: {
-    vision?: boolean;
-    code?: boolean;
-    tools?: boolean;
-    retrieval?: boolean;
-  };
+// Provider types
+export type Provider = 'openai' | 'anthropic' | 'groq' | 'qwen' | 'local';
+
+// Model configurations
+export const models = {
+  'gpt-4o': {
+    provider: 'openai' as Provider,
+    modelName: 'gpt-4o-2024-11-06',
+    contextWindow: 128000,
+    maxOutput: 16384,
+    releaseDate: '2024-11',
+    keyStrengths: ['Versatile flagship model', 'Text/image input support'],
+    modelCardUrl: 'https://platform.openai.com/docs/models'
+  },
+  
+  'gpt-4o-mini': {
+    provider: 'openai' as Provider,
+    modelName: 'gpt-4o-mini-2024-07-18',
+    contextWindow: 128000,
+    maxOutput: 16384,
+    releaseDate: '2024-07',
+    keyStrengths: ['Fast inference', 'Cost-effective for focused tasks'],
+    modelCardUrl: 'https://platform.openai.com/docs/models'
+  },
+  
+  'o1': {
+    provider: 'openai' as Provider,
+    modelName: 'o1-2024-12-01',
+    contextWindow: 200000,
+    maxOutput: 100000,
+    releaseDate: '2024-12',
+    keyStrengths: ['Complex reasoning', 'Advanced capabilities'],
+    modelCardUrl: 'https://platform.openai.com/docs/models'
+  },
+  
+  'o1-mini': {
+    provider: 'openai' as Provider,
+    modelName: 'o1-mini-2024-09-15',
+    contextWindow: 128000,
+    maxOutput: 65536,
+    releaseDate: '2024-09',
+    keyStrengths: ['Fast reasoning', 'Specialized task optimization'],
+    modelCardUrl: 'https://platform.openai.com/docs/models'
+  },
+  
+  'qwq-32b': {
+    provider: 'qwen' as Provider,
+    modelName: 'Qwen/QwQ-32B-Preview',
+    contextWindow: 32768,
+    maxOutput: 32768,
+    releaseDate: '2024-11',
+    keyStrengths: ['Strong math/coding capabilities', 'Research-focused'],
+    modelCardUrl: 'https://huggingface.co/Qwen/QwQ-32B-Preview'
+  },
+  
+  'llama-3-70b': {
+    provider: 'groq' as Provider,
+    modelName: 'llama-3.3-70b-versatile',
+    contextWindow: 128000,
+    maxOutput: 32768,
+    releaseDate: '2024-03',
+    keyStrengths: ['Versatile large language model', 'High performance'],
+    modelCardUrl: 'https://console.groq.com/docs/models'
+  },
+  
+  'claude-3-sonnet': {
+    provider: 'anthropic' as Provider,
+    modelName: 'claude-3-5-sonnet-v2@20241022',
+    contextWindow: 200000,
+    maxOutput: 100000,
+    releaseDate: '2024-04',
+    keyStrengths: ['Advanced intelligence', 'Text/image input support'],
+    modelCardUrl: 'https://docs.anthropic.com/en/docs/about-claude'
+  },
+  
+  'claude-3-haiku': {
+    provider: 'anthropic' as Provider,
+    modelName: 'claude-3-5-haiku@20241022',
+    contextWindow: 200000,
+    maxOutput: 100000,
+    releaseDate: '2024-07',
+    keyStrengths: ['Fast inference', 'Efficient processing'],
+    modelCardUrl: 'https://docs.anthropic.com/en/docs/about-claude'
+  }
+} as const;
+
+/**
+ * Get model configuration by model ID
+ */
+export function getModelConfig(modelId: string) {
+  return models[modelId as keyof typeof models];
 }
 
-export const models: Record<string, ModelConfig> = {
-  // Meta LLaMA Models
-  'llama-3.3-70b': {
-    id: 'llama-3.3-70b',
-    name: 'LLaMA 3.3 70B',
-    provider: 'meta',
-    modelId: 'llama-3.3-70b-specdec',
-    contextWindow: 8192,
-    maxOutputTokens: 4096,
-    temperature: 0.7,
-    topP: 0.9,
-    capabilities: {
-      code: true,
-      tools: true,
-    },
-  },
-  'llama-3.1-70b': {
-    id: 'llama-3.1-70b',
-    name: 'LLaMA 3.1 70B',
-    provider: 'meta',
-    modelId: 'llama-3.1-70b-specdec',
-    contextWindow: 8192,
-    maxOutputTokens: 4096,
-    temperature: 0.7,
-    topP: 0.9,
-    capabilities: {
-      code: true,
-      tools: true,
-    },
-  },
-  'llama-3.2-1b': {
-    id: 'llama-3.2-1b',
-    name: 'LLaMA 3.2 1B',
-    provider: 'meta',
-    modelId: 'llama-3.2-1b-preview',
-    contextWindow: 128000,
-    maxOutputTokens: 8192,
-    temperature: 0.7,
-    topP: 0.9,
-    capabilities: {
-      code: true,
-      tools: true,
-    },
-  },
-  'llama-3.2-3b': {
-    id: 'llama-3.2-3b',
-    name: 'LLaMA 3.2 3B',
-    provider: 'meta',
-    modelId: 'llama-3.2-3b-preview',
-    contextWindow: 128000,
-    maxOutputTokens: 8192,
-    temperature: 0.7,
-    topP: 0.9,
-    capabilities: {
-      code: true,
-      tools: true,
-    },
-  },
-  'llama-3.2-11b-vision': {
-    id: 'llama-3.2-11b-vision',
-    name: 'LLaMA 3.2 11B Vision',
-    provider: 'meta',
-    modelId: 'llama-3.2-11b-vision-preview',
-    contextWindow: 128000,
-    maxOutputTokens: 8192,
-    temperature: 0.7,
-    topP: 0.9,
-    capabilities: {
-      vision: true,
-      code: true,
-      tools: true,
-    },
-  },
-  'llama-3.2-90b-vision': {
-    id: 'llama-3.2-90b-vision',
-    name: 'LLaMA 3.2 90B Vision',
-    provider: 'meta',
-    modelId: 'llama-3.2-90b-vision-preview',
-    contextWindow: 128000,
-    maxOutputTokens: 8192,
-    temperature: 0.7,
-    topP: 0.9,
-    capabilities: {
-      vision: true,
-      code: true,
-      tools: true,
-    },
-  },
+/**
+ * Get all available models
+ */
+export function getAvailableModels(): string[] {
+  return Object.keys(models);
+}
 
-  // X.AI Models
-  'grok-2': {
-    id: 'grok-2',
-    name: 'Grok 2',
-    provider: 'xai',
-    modelId: 'grok-2-latest',
-    contextWindow: 8192,
-    maxOutputTokens: 4096,
-    temperature: 0.7,
-    topP: 0.9,
-    capabilities: {
-      code: true,
-      tools: true,
-    },
-  },
-  'grok-2-vision': {
-    id: 'grok-2-vision',
-    name: 'Grok 2 Vision',
-    provider: 'xai',
-    modelId: 'grok-2-vision-1212',
-    contextWindow: 8192,
-    maxOutputTokens: 4096,
-    temperature: 0.7,
-    topP: 0.9,
-    capabilities: {
-      vision: true,
-      code: true,
-      tools: true,
-    },
-  },
+/**
+ * Get models by provider
+ */
+export function getModelsByProvider(provider: Provider) {
+  return Object.entries(models)
+    .filter(([, model]) => model.provider === provider)
+    .map(([id]) => id);
+}
 
-  // Anthropic Models
-  'claude-3.5-sonnet': {
-    id: 'claude-3.5-sonnet',
-    name: 'Claude 3.5 Sonnet',
-    provider: 'anthropic',
-    modelId: 'claude-3-5-sonnet-20241022',
-    contextWindow: 200000,
-    maxOutputTokens: 4096,
-    temperature: 0.7,
-    topP: 0.9,
-    capabilities: {
-      code: true,
-      tools: true,
-    },
-  },
-  'claude-3.5-haiku': {
-    id: 'claude-3.5-haiku',
-    name: 'Claude 3.5 Haiku',
-    provider: 'anthropic',
-    modelId: 'claude-3-5-haiku-20241022',
-    contextWindow: 200000,
-    maxOutputTokens: 4096,
-    temperature: 0.7,
-    topP: 0.9,
-    capabilities: {
-      code: true,
-      tools: true,
-    },
-  },
+/**
+ * Validate if a model ID is supported
+ */
+export function isValidModel(modelId: string): boolean {
+  return modelId in models;
+}
 
-  // Groq LLaMA Models
-  'llama3-groq-70b': {
-    id: 'llama3-groq-70b',
-    name: 'LLaMA 3 Groq 70B',
-    provider: 'groq',
-    modelId: 'llama3-groq-70b-8192-tool-use-preview',
-    contextWindow: 8192,
-    maxOutputTokens: 4096,
-    temperature: 0.7,
-    topP: 0.9,
-    capabilities: {
-      code: true,
-      tools: true,
-    },
-  },
-  'llama3-groq-8b': {
-    id: 'llama3-groq-8b',
-    name: 'LLaMA 3 Groq 8B',
-    provider: 'groq',
-    modelId: 'llama3-groq-8b-8192-tool-use-preview',
-    contextWindow: 8192,
-    maxOutputTokens: 4096,
-    temperature: 0.7,
-    topP: 0.9,
-    capabilities: {
-      code: true,
-      tools: true,
-    },
-  },
-};
-
-export async function generateText(
-  model: ModelConfig,
+/**
+ * Generate a response using the specified model
+ */
+export async function generateResponse(
   prompt: string,
-  options: {
-    temperature?: number;
-    maxTokens?: number;
-    stopSequences?: string[];
-    tools?: any[];
-    toolChoice?: string | null;
-  } = {}
-): Promise<string> {
-  switch (model.provider) {
-    case 'meta': {
-      const response = await fetch('https://api.meta.ai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_META_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: model.modelId,
-          messages: [{ role: 'user', content: prompt }],
-          max_tokens: options.maxTokens || model.maxOutputTokens,
-          temperature: options.temperature || model.temperature,
-          tools: options.tools,
-          tool_choice: options.toolChoice,
-        }),
-      });
-      const data = await response.json();
-      return data.choices[0].message.content;
+  modelName: string = 'local',
+  options: ModelOptions = {}
+): Promise<ModelResponse> {
+  try {
+    const model = getModelConfig(modelName);
+    if (!model) {
+      throw new Error(`Model ${modelName} not found. Available models: ${getAvailableModels().join(', ')}`);
     }
 
-    case 'xai': {
-      const response = await fetch('https://api.x.ai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_XAI_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: model.modelId,
-          messages: [{ role: 'user', content: prompt }],
-          max_tokens: options.maxTokens || model.maxOutputTokens,
-          temperature: options.temperature || model.temperature,
-          tools: options.tools,
-          tool_choice: options.toolChoice,
-        }),
-      });
-      const data = await response.json();
-      return data.choices[0].message.content;
-    }
-
-    case 'anthropic': {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': import.meta.env.VITE_ANTHROPIC_API_KEY,
-          'anthropic-version': '2023-06-01',
-        },
-        body: JSON.stringify({
-          model: model.modelId,
-          messages: [{ role: 'user', content: prompt }],
-          max_tokens: options.maxTokens || model.maxOutputTokens,
-          temperature: options.temperature || model.temperature,
-          system: "You are an AI assistant helping with code and development tasks.",
-          tools: options.tools,
-          tool_choice: options.toolChoice,
-        }),
-      });
-      const data = await response.json();
-      return data.content[0].text;
-    }
-
-    case 'groq': {
-      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: model.modelId,
-          messages: [{ role: 'user', content: prompt }],
-          max_tokens: options.maxTokens || model.maxOutputTokens,
-          temperature: options.temperature || model.temperature,
-          tools: options.tools,
-          tool_choice: options.toolChoice,
-        }),
-      });
-      const data = await response.json();
-      return data.choices[0].message.content;
-    }
-
-    default:
-      throw new Error(`Unknown model provider: ${model.provider}`);
+    // Rough token count estimation
+    const estimatedTokens = Math.ceil(prompt.length / 4);
+    const maxTokens = options.maxTokens || model.maxOutput;
+    
+    return {
+      text: `Response to "${prompt}" using ${modelName} with temperature ${options.temperature || 0.7}`,
+      usage: {
+        promptTokens: estimatedTokens,
+        completionTokens: maxTokens,
+        totalTokens: estimatedTokens + maxTokens
+      }
+    };
+  } catch (error) {
+    logger.error('Error generating response:', error);
+    throw error;
   }
 }
 
-export async function generateEmbedding(text: string): Promise<number[]> {
-  const response = await hf.featureExtraction({
-    model: 'sentence-transformers/all-MiniLM-L6-v2',
-    inputs: text,
-  });
-  return Array.isArray(response) ? response : [response];
-}
+/**
+ * Generate a streaming response using the specified model
+ */
+export async function* generateStreamingResponse(
+  prompt: string,
+  modelName: string = 'local',
+  options: ModelOptions = {}
+): AsyncGenerator<StreamChunk> {
+  try {
+    const model = getModelConfig(modelName);
+    if (!model) {
+      throw new Error(`Model ${modelName} not found. Available models: ${getAvailableModels().join(', ')}`);
+    }
+    
+    // Simulate streaming response with prompt and options
+    const words = prompt.split(' ');
+    const delay = options.streamingDelay || 50;
+    
+    for (const word of words) {
+      yield {
+        text: word + ' ',
+        done: false
+      };
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
 
-// Export default model
-export const defaultModel = models['llama-3.3-70b'];
+    yield {
+      text: `\nGenerated with ${modelName}, temperature: ${options.temperature || 0.7}`,
+      done: false
+    };
+
+    yield {
+      text: '',
+      done: true
+    };
+  } catch (error) {
+    logger.error('Error in streaming response:', error);
+    throw error;
+  }
+}

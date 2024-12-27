@@ -25,9 +25,16 @@ export default defineConfig(({ mode }) => {
         ext: '.br',
       }),
     ],
+    resolve: {
+      alias: [
+        { find: '@', replacement: resolve(__dirname, './src') },
+        { find: '~', replacement: resolve(__dirname, './') },
+      ],
+    },
     define: {
       global: 'globalThis',
-      // Expose env variables
+      'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(env.VITE_SUPABASE_URL),
+      'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(env.VITE_SUPABASE_ANON_KEY),
       'import.meta.env.VITE_OPENAI_API_KEY': JSON.stringify(env.NEXT_PUBLIC_OPENAI_API_KEY),
       'import.meta.env.VITE_PINECONE_API_KEY': JSON.stringify(env.VITE_PINECONE_API_KEY),
       'import.meta.env.VITE_PINECONE_ENVIRONMENT': JSON.stringify(env.VITE_PINECONE_ENVIRONMENT),
@@ -36,6 +43,9 @@ export default defineConfig(({ mode }) => {
       outDir: 'dist',
       sourcemap: true,
       rollupOptions: {
+        input: {
+          main: resolve(__dirname, 'index.html'),
+        },
         output: {
           manualChunks: {
             'react-vendor': ['react', 'react-dom'],
@@ -50,28 +60,34 @@ export default defineConfig(({ mode }) => {
               '@radix-ui/react-alert-dialog',
               '@radix-ui/react-dialog',
               '@radix-ui/react-dropdown-menu',
+              '@radix-ui/react-label',
+              '@radix-ui/react-menubar',
+              '@radix-ui/react-popover',
               '@radix-ui/react-select',
               '@radix-ui/react-slider',
-              '@radix-ui/react-slot',
               '@radix-ui/react-switch',
               '@radix-ui/react-tabs',
-              '@radix-ui/react-tooltip'
+              '@radix-ui/react-toast'
             ]
           }
         }
       },
-      chunkSizeWarningLimit: 1000
+      target: 'esnext',
+      minify: 'esbuild'
     },
-    resolve: {
-      alias: {
-        '@': resolve(__dirname, './src')
-      }
+    optimizeDeps: {
+      include: [
+        'react',
+        'react-dom',
+        '@supabase/supabase-js'
+      ]
     },
     server: {
       port: 3000,
       host: true,
+      cors: true,
       hmr: {
-        overlay: true,
+        overlay: false,
         clientPort: 3000,
       },
       watch: {
