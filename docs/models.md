@@ -175,6 +175,165 @@ async function generateResponse(prompt: string, chosenModel?: string) {
 - For **any** specialized tasks not covered by the above list, consult the team lead before adding a new model.  
 - Always **log model usage** for traceability and debugging purposes.
 
----
+granite3-moe
+The IBM Granite 1B and 3B models are the first mixture of experts (MoE) Granite models from IBM designed for low latency usage.
+tools
+1b
+3b
+21.4K
+ Pulls
+Updated 
+5 weeks ago
 
-**End of System Prompt**
+
+1b
+33 Tags
+ollama run granite3-moe
+
+Updated 5 weeks ago
+
+d84e1e38ee39 · 822MB
+
+model
+arch
+granitemoe
+·
+parameters
+1.33B
+·
+quantization
+Q4_K_M
+822MB
+params
+{ "num_gpu": 23 }
+15B
+system
+You are Granite, an AI language model developed by IBM in 2024.
+63B
+template
+{{- if .Tools }}<|start_of_role|>available_tools<|end_of_role|> {{- range .Tools }} {{ . }} {{ end }
+664B
+license
+Apache License Version 2.0, January 2004
+11kB
+Readme
+An illustration of Ollama holding a beautiful flower with the IBM Rebus logo of the Eye, Bee and M, made by Paul Rand.
+
+Granite mixture of experts models
+The IBM Granite 1B and 3B models are the first mixture of experts (MoE) Granite models from IBM designed for low latency usage.
+
+The models are trained on over 10 trillion tokens of data, the Granite MoE models are ideal for deployment in on-device applications or situations requiring instantaneous inference.
+
+Parameter Sizes
+1B:
+
+ollama run granite3-moe:1b
+
+3B:
+
+ollama run granite3-moe:3b
+
+Supported Languages
+English, German, Spanish, French, Japanese, Portuguese, Arabic, Czech, Italian, Korean, Dutch, Chinese (Simplified)
+
+Capabilities
+Summarization
+Text classification
+Text extraction
+Question-answering
+Retrieval Augmented Generation (RAG)
+Code related
+Function-calling
+Multilingual dialog use cases
+Granite dense models
+The Granite dense models are available in 2B and 8B parameter sizes designed to support tool-based use cases and for retrieval augmented generation (RAG), streamlining code generation, translation and bug fixing.
+
+See model page
+
+Learn more
+Developers: IBM Research
+GitHub Repository: ibm-granite/granite-3.0-language-models
+Website: Granite Docs
+Release Date: October 21st, 2024
+License: Apache 2.0.
+© 2024 Ollama
+Blog
+
+granite3-dense
+The IBM Granite 2B and 8B models are designed to support tool-based use cases and support for retrieval augmented generation (RAG), streamlining code generation, translation and bug fixing.
+tools
+2b
+8b
+33K
+ Pulls
+Updated 
+5 weeks ago
+
+
+2b
+33 Tags
+ollama run granite3-dense:2b
+
+Updated 5 weeks ago
+
+5c2e6f3112f4 · 1.6GB
+
+model
+arch
+granite
+·
+parameters
+2.63B
+·
+quantization
+Q4_K_M
+1.6GB
+system
+You are Granite, an AI language model developed by IBM in 2024.
+63B
+template
+{{- if .Tools }}<|start_of_role|>available_tools<|end_of_role|> {{- range .Tools }} {{ . }} {{ end }
+664B
+license
+Apache License Version 2.0, January 2004
+11kB
+Readme
+An illustration of Ollama holding a beautiful flower with the IBM Rebus logo of the Eye, Bee and M, made by Paul Rand.
+
+Granite dense models
+The IBM Granite 2B and 8B models are text-only dense LLMs trained on over 12 trillion tokens of data, demonstrated significant improvements over their predecessors in performance and speed in IBM’s initial testing. Granite-8B-Instruct now rivals Llama 3.1 8B-Instruct across both OpenLLM Leaderboard v1 and OpenLLM Leaderboard v2 benchmarks.
+
+They are designed to support tool-based use cases and for retrieval augmented generation (RAG), streamlining code generation, translation and bug fixing.
+
+Parameter Sizes
+2B:
+
+ollama run granite3-dense:2b
+
+8B:
+
+ollama run granite3-dense:8b
+
+Supported Languages
+English, German, Spanish, French, Japanese, Portuguese, Arabic, Czech, Italian, Korean, Dutch, Chinese (Simplified)
+
+Capabilities
+Summarization
+Text classification
+Text extraction
+Question-answering
+Retrieval Augmented Generation (RAG)
+Code related
+Function-calling
+Multilingual dialog use cases
+Granite mixture of experts models
+The Granite mixture of experts models are available in 1B and 3B parameter sizes designed for low latency usage.
+
+See model page
+
+Learn more
+Developers: IBM Research
+GitHub Repository: ibm-granite/granite-3.0-language-models
+Website: Granite Docs
+Release Date: October 21st, 2024
+License: Apache 2.0.
