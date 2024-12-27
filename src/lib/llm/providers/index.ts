@@ -3,6 +3,11 @@ import { GroqProvider } from './groq';
 import { PerplexityProvider } from './perplexity';
 import { QwenProvider } from './qwen';
 import { GraniteProvider } from './granite';
+import { LocalProvider } from './local';
+import { LlamaProvider } from './llama';
+import { GPT4oProvider } from './gpt4o';
+import { ClaudeProvider } from './claude';
+import { O1Provider } from './o1';
 import type { Message } from '../../../types';
 
 export interface LLMProvider {
@@ -31,18 +36,18 @@ class LLMManager {
 
   constructor() {
     this.registerDefaultProviders();
-    this.activeProvider = 'phi3.5'; // Set Phi 3.5 as default for local inference
+    this.activeProvider = 'local'; // Set local provider as default
   }
 
   private registerDefaultProviders() {
     const providers: LLMProvider[] = [
       // Local provider
       new LocalProvider(),
-      // Cloud providers
-      new LlamaProvider(import.meta.env.VITE_LLAMA_API_KEY),
-      new GPT4oProvider(import.meta.env.VITE_OPENAI_API_KEY),
-      new ClaudeProvider(import.meta.env.VITE_ANTHROPIC_API_KEY),
-      new O1Provider(import.meta.env.VITE_O1_API_KEY)
+      // Cloud providers - only initialize if API keys are available
+      ...(import.meta.env.VITE_LLAMA_API_KEY ? [new LlamaProvider(import.meta.env.VITE_LLAMA_API_KEY)] : []),
+      ...(import.meta.env.VITE_OPENAI_API_KEY ? [new GPT4oProvider(import.meta.env.VITE_OPENAI_API_KEY)] : []),
+      ...(import.meta.env.VITE_ANTHROPIC_API_KEY ? [new ClaudeProvider(import.meta.env.VITE_ANTHROPIC_API_KEY)] : []),
+      ...(import.meta.env.VITE_O1_API_KEY ? [new O1Provider(import.meta.env.VITE_O1_API_KEY)] : [])
     ];
 
     providers.forEach(provider => {
@@ -65,16 +70,21 @@ class LLMManager {
     return provider;
   }
 
-  async sendMessage(
-    message: string,
-    context?: Message[],
-    options?: {
-      useRag?: boolean;
-      documents?: string[];
-      maxTokens?: number;
+  async sendMessage(message: string, context?: Message[], options?: {
+    useRag?: boolean;
+    documents?: string[];
+    maxTokens?: number;
+  }): Promise<string> {
+    const provider = this.getActiveProvider();
+    return provider.sendMessage(message, context, options);
+  }
+
+  async generateEmbedding(text: string): Promise<number[]> {
+    const provider = this.getActiveProvider();
+    if (!provider.generateEmbedding) {
+      throw new Error('Current provider does not support embeddings');
     }
-  ): Promise<string> {
-    return this.getActiveProvider().sendMessage(message, context, options);
+    return provider.generateEmbedding(text);
   }
 
   async streamResponse(
@@ -88,7 +98,7 @@ class LLMManager {
   ): Promise<void> {
     const provider = this.getActiveProvider();
     if (!provider.streamResponse) {
-      throw new Error('Active provider does not support streaming');
+      throw new Error('Current provider does not support streaming');
     }
     return provider.streamResponse(message, onChunk, options);
   }

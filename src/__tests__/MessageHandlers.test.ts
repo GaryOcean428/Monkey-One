@@ -1,6 +1,7 @@
 import { MessageHandler } from '../decorators/MessageHandlers';
 import type { Message } from '../types';
 import { MessageType } from '../types';
+import { describe, it, expect, beforeEach } from 'vitest';
 
 // Create concrete Message class for testing
 class TestMessage implements Message {

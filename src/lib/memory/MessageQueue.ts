@@ -1,8 +1,10 @@
+import { Message } from '../../types';
+
 export class MessageQueue<T> {
   private queue: T[] = [];
   private maxSize: number;
   private listeners: ((message: T) => void)[] = [];
-  private isProcessing = false;
+  private _isProcessing: boolean = false;
 
   constructor(maxSize = 1000) {
     this.maxSize = maxSize;
@@ -61,11 +63,11 @@ export class MessageQueue<T> {
     return [...this.queue];
   }
 
-  setProcessing(value: boolean): void {
-    this.isProcessing = value;
+  get isProcessing(): boolean {
+    return this._isProcessing;
   }
 
-  isProcessing(): boolean {
-    return this.isProcessing;
+  set isProcessing(value: boolean) {
+    this._isProcessing = value;
   }
-}
+}
