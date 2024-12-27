@@ -1,6 +1,7 @@
 import { BaseAgent } from '../agents/base';
 import { Message } from '../../types';
 import { AgentRegistry } from '../registry/AgentRegistry';
+import { LogLevel } from '../../constants/enums';
 
 export interface HostRuntimeConfig {
   logLevel: LogLevel;
@@ -49,4 +50,4 @@ export class HostAgentRuntime {
     console.info('Shutting down runtime:', { timeout });
     // Implementation details...
   }
-}
+}
