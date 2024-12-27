@@ -10,8 +10,8 @@ import { MainPanel as Playground } from './components/MainPanel';
 import { useAgentStore } from './store/agentStore';
 import { DashboardLayout } from './components/Layout/DashboardLayout';
 import { ThemeProvider } from './components/ThemeProvider';
-import { LocalModelService } from './lib/llm/LocalModelService';
 import { ProviderRegistry } from './lib/providers';
+import { LocalProvider } from './lib/llm/providers/local';
 import { ModelManager } from './components/ModelManager';
 import { Toaster } from './components/ui/toaster';
 import { useToast } from './components/ui/use-toast';
@@ -20,7 +20,6 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { TooltipProvider } from './components/ui/tooltip';
 import { SettingsProvider } from './contexts/SettingsContext';
 
-const localModelService = LocalModelService.getInstance();
 const providerRegistry = ProviderRegistry.getInstance();
 
 /**
@@ -41,7 +40,8 @@ function App() {
   useEffect(() => {
     const initializeServices = async () => {
       try {
-        await providerRegistry.registerProvider('local', localModelService);
+        const localProvider = new LocalProvider();
+        await providerRegistry.registerProvider('local', localProvider);
         setModelInitialized(true);
         logger.info('Model service initialized successfully');
       } catch (error) {
