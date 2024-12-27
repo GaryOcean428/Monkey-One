@@ -19,10 +19,11 @@ export class LocalProvider extends LLMProvider {
   private initError: Error | null = null;
   private ollamaEndpoint: string;
 
-  constructor(modelName: string = 'phi3.5:latest', ollamaEndpoint?: string) {
+  constructor(modelName: string = 'llama3.2:1b-instruct-q2_K', ollamaEndpoint?: string) {
     super();
     // Map model IDs to Ollama model names
     const modelMap: { [key: string]: string } = {
+      'llama3.2-1b': 'llama3.2:1b-instruct-q2_K',
       'phi3.5': 'phi3.5:latest',
       'sonar-small': 'llama-3.1-sonar-small-128k-online',
       'sonar-large': 'llama-3.1-sonar-large-128k-online',
@@ -87,9 +88,16 @@ export class LocalProvider extends LLMProvider {
 
     // Model-specific options
     const modelOptions: { [key: string]: Record<string, any> } = {
+      'llama3.2:1b-instruct-q2_K': {
+        ...defaultOptions,
+        temperature: 0.7,
+        top_p: 0.9,
+        repeat_penalty: 1.1,
+        context_length: 4096,
+      },
       'phi3.5:latest': {
         ...defaultOptions,
-        temperature: 0.1, // Lower temperature for more focused responses
+        temperature: 0.1,
         top_p: 0.95,
         repeat_penalty: 1.2,
       },
@@ -114,7 +122,9 @@ export class LocalProvider extends LLMProvider {
   }
 
   private formatPrompt(prompt: string, modelName: string): string {
-    // Add any model-specific prompt formatting here
+    if (modelName.startsWith('llama3.2')) {
+      return `[INST] ${prompt} [/INST]`;
+    }
     if (modelName.startsWith('phi3.5')) {
       return `Instruct: ${prompt}\nOutput:`;
     }
