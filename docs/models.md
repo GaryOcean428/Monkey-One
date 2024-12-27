@@ -1,4 +1,3 @@
-```json
 {
   "thoughts": [
     "We need to create a consolidated system prompt that ensures only the specified models are used",
@@ -42,6 +41,7 @@ Use the following table to reference the **exact** naming conventions, parameter
 
 | **Model Name**                 | **API Model Name**                           | **Provider**   | **Parameters** | **Context Window** | **Max Output** | **Release Date** | **Key Strengths**                                                 | **Model Card Link (Example)**                                          |
 |--------------------------------|----------------------------------------------|----------------|----------------|--------------------|---------------:|------------------|--------------------------------------------------------------------|---------------------------------------------------------------------------|
+| **Llama 3.2 1B**              | `llama3.2:1b-instruct-q2_K`                 | Ollama         | 1B             | 4096              | Not specified  | Current          | Default local model, fast inference                                | [Llama 3.2](https://ollama.com/library/llama3.2)                      |
 | **GPT-4o**                     | `gpt-4o-2024-11-06`                          | OpenAI         | Not disclosed  | 128K               | 16,384         | 2024-11          | Versatile flagship model with text/image input                     | [GPT-4o Model Card](https://platform.openai.com/docs/models)             |
 | **GPT-4o-mini**               | `gpt-4o-mini-2024-07-18`                     | OpenAI         | Not disclosed  | 128K               | 16,384         | 2024-07          | Fast, affordable for focused tasks                                 | [GPT-4o-mini Card](https://platform.openai.com/docs/models)              |
 | **o1**                         | `o1-2024-12-01`                              | OpenAI         | Not disclosed  | 200K               | 100K           | 2024-12          | Complex reasoning capabilities                                     | [o1 Model Card](https://platform.openai.com/docs/models)                 |
@@ -57,13 +57,13 @@ Use the following table to reference the **exact** naming conventions, parameter
 
 ---
 
-### **2. Default Local Model: Phi 3.5**
+### **2. Default Local Model: Llama 3.2 1B**
 
-- **Phi 3.5** (`phi3.5:latest`) should be used **locally** as the default model.  
-- Hosted with **ONNX** runtime or via Ollama.  
+- **Llama 3.2 1B** (`llama3.2:1b-instruct-q2_K`) should be used **locally** as the default model.  
+- Hosted via Ollama.  
 - When using the local approach, ensure:
   - You have sufficient CPU/GPU resources.
-  - The model is in ONNX format (if using ONNXRuntime) or `.bin` for Ollama.
+  - Ollama is running and accessible.
 
 **Phi-4** is currently **unavailable** for public download.
 
@@ -103,7 +103,7 @@ Use the following table to reference the **exact** naming conventions, parameter
 ### **4. Best Practices**
 
 1. **Model Selection**  
-   - Default to **Phi 3.5** for local inference.  
+   - Default to **Llama 3.2 1B** for local inference.  
    - Switch to a specialized model only if needed (e.g., GPT-4o for multimodal input).  
    - Use **Sonar** series for **search-augmented** tasks.
 
@@ -133,7 +133,7 @@ Use the following table to reference the **exact** naming conventions, parameter
 ```typescript
 // Example environment configuration
 const config = {
-  defaultLocalModel: "phi3.5:latest",
+  defaultLocalModel: "llama3.2:1b-instruct-q2_K",
   fallbackModel: "llama-3.3-70b-versatile",
   availableModels: [
     "gpt-4o-2024-11-06",
@@ -151,7 +151,7 @@ const config = {
   ]
 };
 
-// Utility to select a model, defaulting to local Phi 3.5
+// Utility to select a model, defaulting to local Llama 3.2 1B
 function getModel(modelName?: string) {
   if (!modelName || !config.availableModels.includes(modelName)) {
     return config.defaultLocalModel;
