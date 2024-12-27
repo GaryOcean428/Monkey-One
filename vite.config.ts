@@ -56,16 +56,35 @@ export default defineConfig(({ mode }) => {
           main: resolve(__dirname, 'index.html'),
         },
         output: {
-          manualChunks: {
-            'radix-ui': [
-              '@radix-ui/react-slider',
-              '@radix-ui/react-tabs',
-              '@radix-ui/react-switch',
-              '@radix-ui/react-select'
-            ]
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              if (id.includes('@radix-ui')) {
+                return 'vendor-radix';
+              }
+              if (id.includes('react')) {
+                return 'vendor-react';
+              }
+              return 'vendor';
+            }
+            if (id.includes('src/components/ui')) {
+              return 'ui';
+            }
+            if (id.includes('src/components/panels')) {
+              return 'panels';
+            }
+            if (id.includes('src/components/chat')) {
+              return 'chat';
+            }
+            if (id.includes('src/store')) {
+              return 'store';
+            }
+            if (id.includes('src/lib')) {
+              return 'lib';
+            }
           }
         }
-      }
+      },
+      chunkSizeWarningLimit: 1000
     },
     server: {
       proxy: {
