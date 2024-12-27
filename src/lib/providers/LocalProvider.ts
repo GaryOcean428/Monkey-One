@@ -5,17 +5,17 @@ import { performanceMonitor } from '../monitoring/performance';
 
 export class LocalProvider extends BaseProvider {
   private modelConfig = {
-    name: 'Phi-3.5',
-    apiName: 'phi-3.5',
+    name: 'Granite-3-Dense-GPU',
+    apiName: 'granite3-dense-gpu',
     provider: 'local' as const,
-    parameters: 3800000000,
+    parameters: 2630000000,
     contextWindow: 4096,
     maxOutput: 2048,
-    releaseDate: '2024-12',
-    keyStrengths: ['Local inference', 'Fast response', 'Privacy focused'],
+    releaseDate: '2024-10',
+    keyStrengths: ['GPU Acceleration', 'Code generation', 'RAG support', 'Fast response'],
     quantization: {
       bits: 4,
-      scheme: 'Q4_0'
+      scheme: 'Q4_K_M'
     }
   };
 
