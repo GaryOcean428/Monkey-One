@@ -19,12 +19,14 @@ export class LocalProvider extends LLMProvider {
   private initError: Error | null = null;
   private ollamaEndpoint: string;
 
-  constructor(modelName: string = 'llama3.2:1b-instruct-q2_K', ollamaEndpoint?: string) {
+  constructor(modelName: string = 'phi3.5:latest', ollamaEndpoint?: string) {
     super();
     // Map model IDs to Ollama model names
     const modelMap: { [key: string]: string } = {
-      'phi4-gpu': 'vanilj/Phi-4:latest',
-      'llama3.2-1b': 'llama3.2:1b-instruct-q2_K'
+      'phi3.5': 'phi3.5:latest',
+      'sonar-small': 'llama-3.1-sonar-small-128k-online',
+      'sonar-large': 'llama-3.1-sonar-large-128k-online',
+      'sonar-huge': 'llama-3.1-sonar-huge-128k-online'
     };
     this.modelName = modelMap[modelName] || modelName;
     
@@ -55,35 +57,18 @@ export class LocalProvider extends LLMProvider {
         },
         body: JSON.stringify({
           name: this.modelName,
-          insecure: true // Allow pulling from Ollama library
         }),
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to pull model: ${response.statusText}`);
-      }
-
-      // Check if model is ready
-      const modelResponse = await fetch(`${this.ollamaEndpoint}/api/show`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: this.modelName,
-        }),
-      });
-
-      if (!modelResponse.ok) {
-        throw new Error(`Failed to check model status: ${modelResponse.statusText}`);
+        const errorText = await response.text();
+        throw new Error(`Failed to pull model: ${errorText}`);
       }
 
       this.isInitialized = true;
-      this.initError = null;
     } catch (error) {
-      this.initError = error instanceof Error ? error : new Error(String(error));
-      this.isInitialized = false;
-      throw this.initError;
+      this.initError = error;
+      throw error;
     }
   }
 
@@ -91,56 +76,49 @@ export class LocalProvider extends LLMProvider {
     return this.isInitialized && !this.initError;
   }
 
-  getInitializationError(): Error | null {
-    return this.initError;
-  }
-
-  private getModelOptions(modelId: string) {
-    const baseOptions = {
+  private getModelOptions(modelName: string): Record<string, any> {
+    const defaultOptions = {
       temperature: 0.7,
       top_p: 0.9,
+      repeat_penalty: 1.1,
       top_k: 40,
-      repeat_penalty: 1.1
+      num_predict: -1,
     };
 
     // Model-specific options
-    const modelOptions = {
-      'phi4-gpu': {
-        ...baseOptions,
-        gpu: true,
-        numa: true,
-        threads: 4,
-        context_length: 8192
+    const modelOptions: { [key: string]: Record<string, any> } = {
+      'phi3.5:latest': {
+        ...defaultOptions,
+        temperature: 0.1, // Lower temperature for more focused responses
+        top_p: 0.95,
+        repeat_penalty: 1.2,
       },
-      'llama3.2-1b': {
-        ...baseOptions,
-        gpu: true,
-        numa: true,
-        threads: 4,
-        context_length: 4096,
-        repeat_last_n: 256
-      }
+      'llama-3.1-sonar-small-128k-online': {
+        ...defaultOptions,
+        temperature: 0.8,
+        top_k: 50,
+      },
+      'llama-3.1-sonar-large-128k-online': {
+        ...defaultOptions,
+        temperature: 0.7,
+        top_k: 45,
+      },
+      'llama-3.1-sonar-huge-128k-online': {
+        ...defaultOptions,
+        temperature: 0.6,
+        top_k: 40,
+      },
     };
 
-    return modelOptions[modelId] || baseOptions;
+    return modelOptions[modelName] || defaultOptions;
   }
 
-  private formatPrompt(prompt: string, modelId: string): string {
-    if (modelId.includes('phi4')) {
+  private formatPrompt(prompt: string, modelName: string): string {
+    // Add any model-specific prompt formatting here
+    if (modelName.startsWith('phi3.5')) {
       return `Instruct: ${prompt}\nOutput:`;
     }
-    
-    if (modelId.includes('llama3.2')) {
-      return `[INST] ${prompt} [/INST]`;
-    }
-    
-    return `<|start_header_id|>system<|end_header_id|>
-You are a helpful AI assistant focused on providing accurate and helpful responses.
-
-<|start_header_id|>user<|end_header_id|>
-${prompt}
-
-<|start_header_id|>assistant<|end_header_id|>`;
+    return prompt;
   }
 
   async generateResponse(prompt: string): Promise<LLMResponse> {
@@ -160,7 +138,7 @@ ${prompt}
       const options = this.getModelOptions(this.modelName);
       const formattedPrompt = this.formatPrompt(prompt, this.modelName);
       
-      const response = await fetch(`${this.ollamaEndpoint}/generate`, {
+      const response = await fetch(`${this.ollamaEndpoint}/api/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -192,68 +170,5 @@ ${prompt}
       console.error('Error generating response:', error);
       throw error;
     }
-  }
-
-  async generateStreamingResponse(prompt: string): Promise<ReadableStream> {
-    if (!this.isInitialized) {
-      try {
-        await this.initialize();
-      } catch (error) {
-        throw new Error(`Failed to initialize local model: ${error.message}`);
-      }
-    }
-
-    if (!this.isAvailable()) {
-      throw new Error(`Local model is not available: ${this.initError?.message}`);
-    }
-
-    const response = await fetch(`${this.ollamaEndpoint}/api/generate`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: this.modelName,
-        prompt: this.formatPrompt(prompt, this.modelName),
-        stream: true,
-        options: this.getModelOptions(this.modelName)
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to generate streaming response: ${response.statusText}`);
-    }
-
-    const reader = response.body!.getReader();
-    const decoder = new TextDecoder();
-
-    return new ReadableStream({
-      async start(controller) {
-        try {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-
-            const chunk = decoder.decode(value);
-            const lines = chunk.split('\n').filter(line => line.trim());
-
-            for (const line of lines) {
-              try {
-                const response = JSON.parse(line) as OllamaResponse;
-                if (response.response) {
-                  controller.enqueue(new TextEncoder().encode(response.response));
-                }
-                if (response.done) break;
-              } catch (e) {
-                console.error('Error parsing streaming response:', e);
-              }
-            }
-          }
-          controller.close();
-        } catch (error) {
-          controller.error(error);
-        }
-      },
-    });
   }
 }
