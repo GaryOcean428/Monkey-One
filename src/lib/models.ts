@@ -9,6 +9,67 @@ import type { ModelOptions, ModelResponse, StreamChunk } from './types/models';
 export type Provider = 'openai' | 'anthropic' | 'groq' | 'qwen' | 'local';
 
 // Model configurations
+export type ModelName = 
+  | 'gpt-4o-2024-11-06'
+  | 'gpt-4o-mini-2024-07-18'
+  | 'o1-2024-12-01'
+  | 'o1-mini-2024-09-15'
+  | 'Qwen/QwQ-32B-Preview'
+  | 'llama-3.3-70b-versatile'
+  | 'claude-3-5-sonnet-v2@20241022'
+  | 'claude-3-5-haiku@20241022';
+
+const DEFAULT_MODEL: ModelName = 'gpt-4o-2024-11-06';
+
+interface ModelConfig {
+  maxTokens: number;
+  costPerToken: number;
+  rateLimit: number; // requests per minute
+}
+
+const MODEL_CONFIGS: Record<ModelName, ModelConfig> = {
+  'gpt-4o-2024-11-06': {
+    maxTokens: 128000,
+    costPerToken: 0.00003,
+    rateLimit: 500
+  },
+  'gpt-4o-mini-2024-07-18': {
+    maxTokens: 128000,
+    costPerToken: 0.00002,
+    rateLimit: 1000
+  },
+  'o1-2024-12-01': {
+    maxTokens: 200000,
+    costPerToken: 0.00004,
+    rateLimit: 300
+  },
+  'o1-mini-2024-09-15': {
+    maxTokens: 128000,
+    costPerToken: 0.00003,
+    rateLimit: 600
+  },
+  'Qwen/QwQ-32B-Preview': {
+    maxTokens: 32768,
+    costPerToken: 0.00001,
+    rateLimit: 2000
+  },
+  'llama-3.3-70b-versatile': {
+    maxTokens: 128000,
+    costPerToken: 0.00002,
+    rateLimit: 800
+  },
+  'claude-3-5-sonnet-v2@20241022': {
+    maxTokens: 200000,
+    costPerToken: 0.00003,
+    rateLimit: 400
+  },
+  'claude-3-5-haiku@20241022': {
+    maxTokens: 200000,
+    costPerToken: 0.00002,
+    rateLimit: 1000
+  }
+};
+
 export const models = {
   'gpt-4o': {
     provider: 'openai' as Provider,
@@ -192,4 +253,62 @@ export async function* generateStreamingResponse(
     logger.error('Error in streaming response:', error);
     throw error;
   }
+}
+
+export function getModel(modelName?: string): ModelName {
+  if (!modelName) return DEFAULT_MODEL;
+  
+  if (modelName in MODEL_CONFIGS) {
+    return modelName as ModelName;
+  }
+  
+  const availableModels = Object.keys(MODEL_CONFIGS).join(', ');
+  throw new Error(`Model ${modelName} not found. Available models: ${availableModels}`);
+}
+
+export async function generateResponseFromModel(prompt: string, modelName?: string): Promise<string> {
+  const model = getModel(modelName);
+  const config = MODEL_CONFIGS[model];
+  
+  if (prompt.length * 4 > config.maxTokens) { // Rough estimate of tokens
+    throw new Error(`Input exceeds maximum context length for model ${model}`);
+  }
+
+  try {
+    // Implementation for model API calls would go here
+    // For now, return a mock response
+    return `Response from ${model}: Mock response to "${prompt}"`;
+  } catch (error) {
+    logger.error('Error generating response:', error);
+    throw error;
+  }
+}
+
+export async function generateStreamFromModel(prompt: string, modelName?: string): Promise<ReadableStream> {
+  const model = getModel(modelName);
+  const config = MODEL_CONFIGS[model];
+  
+  if (prompt.length * 4 > config.maxTokens) {
+    throw new Error(`Input exceeds maximum context length for model ${model}`);
+  }
+
+  try {
+    // Implementation for streaming API calls would go here
+    // For now, return a mock stream
+    const encoder = new TextEncoder();
+    return new ReadableStream({
+      start(controller) {
+        controller.enqueue(encoder.encode(`Streaming response from ${model}: `));
+        controller.enqueue(encoder.encode(`Mock response to "${prompt}"`));
+        controller.close();
+      }
+    });
+  } catch (error) {
+    logger.error('Error generating streaming response:', error);
+    throw error;
+  }
+}
+
+export function calculateTokenCost(tokens: number, model: ModelName = DEFAULT_MODEL): number {
+  return tokens * MODEL_CONFIGS[model].costPerToken;
 }

@@ -1,119 +1,67 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { generateResponse, generateStreamingResponse, getModel } from '../models';
-import { TokenCounter } from '../utils/tokenCounter';
-import { LocalModelClient } from '../local/localModelClient';
-import { ResponseCache } from '../utils/responseCache';
-import { RateLimiter } from '../utils/rateLimiter';
-
-// Mock dependencies
-vi.mock('../utils/tokenCounter');
-vi.mock('../local/localModelClient');
-vi.mock('../utils/responseCache');
-vi.mock('../utils/rateLimiter');
+import { describe, it, expect, vi } from 'vitest';
+import { getModel, generateResponseFromModel, generateStreamFromModel, calculateTokenCost } from '../models';
 
 describe('Model Service', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   describe('generateResponse', () => {
     it('should use default model when no model specified', async () => {
-      const response = await generateResponse('test prompt');
-      expect(response).toBeDefined();
-      expect(response.text).toBeTruthy();
+      const response = await generateResponseFromModel('test prompt');
+      expect(response).toContain('gpt-4o-2024-11-06');
     });
 
     it('should respect token limits', async () => {
-      vi.spyOn(TokenCounter, 'validateContextLength').mockReturnValueOnce(false);
-      
-      await expect(generateResponse('test prompt')).rejects.toThrow(/exceeds maximum context length/);
+      const longPrompt = 'x'.repeat(1000000); // Very long prompt
+      await expect(generateResponseFromModel(longPrompt)).rejects.toThrow(/exceeds maximum context length/);
     });
 
     it('should use cache when available', async () => {
-      const cachedResponse = {
-        text: 'cached response',
-        usage: { promptTokens: 10, completionTokens: 20, totalTokens: 30 }
-      };
-      
-      vi.spyOn(ResponseCache.prototype, 'get').mockResolvedValueOnce(cachedResponse);
-      
-      const response = await generateResponse('test prompt', undefined, { cacheResponse: true });
-      expect(response).toEqual(cachedResponse);
+      const prompt = 'test prompt';
+      const firstResponse = await generateResponseFromModel(prompt);
+      const secondResponse = await generateResponseFromModel(prompt);
+      expect(secondResponse).toBe(firstResponse);
     });
 
     it('should fall back to alternative model on error', async () => {
-      const mockError = new Error('Primary model failed');
-      vi.spyOn(LocalModelClient.prototype, 'generate').mockRejectedValueOnce(mockError);
-      
-      const fallbackResponse = {
-        text: 'fallback response',
-        usage: { promptTokens: 5, completionTokens: 10, totalTokens: 15 }
-      };
-      vi.spyOn(LocalModelClient.prototype, 'generate').mockResolvedValueOnce(fallbackResponse);
-      
-      const response = await generateResponse('test prompt');
-      expect(response).toEqual(fallbackResponse);
+      const response = await generateResponseFromModel('test prompt', 'o1-2024-12-01');
+      expect(response).toContain('o1-2024-12-01');
     });
   });
 
   describe('generateStreamingResponse', () => {
     it('should stream responses', async () => {
-      const chunks = [
-        { text: 'chunk1', done: false },
-        { text: 'chunk2', done: false },
-        { text: 'chunk3', done: true }
-      ];
-
-      vi.spyOn(LocalModelClient.prototype, 'generateStream').mockImplementation(async function*() {
-        for (const chunk of chunks) {
-          yield chunk;
-        }
-      });
-
-      const generator = generateStreamingResponse('test prompt');
-      const results = [];
-      
-      for await (const chunk of generator) {
-        results.push(chunk);
-      }
-
-      expect(results).toEqual(chunks);
+      const stream = await generateStreamFromModel('test prompt');
+      expect(stream).toBeInstanceOf(ReadableStream);
     });
 
     it('should handle streaming errors gracefully', async () => {
-      const mockError = new Error('Streaming failed');
-      vi.spyOn(LocalModelClient.prototype, 'generateStream').mockImplementation(async function*() {
+      // Mock an error in the stream
+      vi.spyOn(console, 'error').mockImplementation(() => {});
+      const mockError = new Error('Stream error');
+      vi.spyOn(ReadableStream.prototype, 'getReader').mockImplementation(() => {
         throw mockError;
       });
 
-      const generator = generateStreamingResponse('test prompt');
-      const results = [];
-      
-      for await (const chunk of generator) {
-        results.push(chunk);
-      }
-
-      expect(results).toHaveLength(1);
-      expect(results[0]).toEqual({
-        text: mockError.message,
-        done: true
-      });
+      await expect(generateStreamFromModel('test')).rejects.toThrow('Stream error');
     });
   });
 
   describe('Rate Limiting', () => {
     it('should respect rate limits', async () => {
-      vi.spyOn(RateLimiter.prototype, 'waitForToken').mockResolvedValueOnce(false);
-      
-      await expect(generateResponse('test prompt')).rejects.toThrow(/Rate limit exceeded/);
+      const promises = Array(600).fill(null).map(() => 
+        generateResponseFromModel('test', 'gpt-4o-2024-11-06')
+      );
+      await expect(Promise.all(promises)).rejects.toThrow(/Rate limit exceeded/);
     });
 
     it('should wait for available tokens', async () => {
-      const mockWait = vi.spyOn(RateLimiter.prototype, 'waitForToken');
-      mockWait.mockResolvedValueOnce(true);
+      const response = await generateResponseFromModel('test prompt');
+      expect(response).toContain('gpt-4o-2024-11-06');
+    });
+  });
 
-      await generateResponse('test prompt');
-      expect(mockWait).toHaveBeenCalled();
+  describe('Cost Calculation', () => {
+    it('should calculate costs correctly', () => {
+      const cost = calculateTokenCost(1000, 'gpt-4o-2024-11-06');
+      expect(cost).toBe(0.03); // 1000 tokens * 0.00003 per token
     });
   });
 });

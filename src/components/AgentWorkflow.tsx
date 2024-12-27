@@ -1,9 +1,8 @@
 import React from 'react';
-import { BasePanel } from './panels/BasePanel';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { Play, Plus, Save } from 'lucide-react';
+import { Plus, Play, Save } from 'lucide-react';
 import { useWorkflow } from '../hooks/useWorkflow';
 import { WorkflowVisualizer } from './workflow/WorkflowVisualizer';
 
@@ -12,40 +11,44 @@ export function AgentWorkflow() {
   const activeWorkflow = workflows[0]; // For now, just show the first workflow
 
   return (
-    <BasePanel
-      title="Agent Workflow"
-      description="Visualize and manage agent workflows"
-      headerActions={
+    <div className="h-full p-6 overflow-y-auto">
+      <div className="mb-6 flex justify-between items-start">
+        <div>
+          <h2 className="text-2xl font-bold">Agent Workflow</h2>
+          <p className="text-muted-foreground mt-1">Visualize and manage agent workflows</p>
+        </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm">
+          <Button variant="outline">
             <Plus className="w-4 h-4 mr-2" />
             New
           </Button>
-          <Button variant="outline" size="sm">
+          <Button variant="outline">
             <Play className="w-4 h-4 mr-2" />
             Run
           </Button>
-          <Button variant="outline" size="sm">
+          <Button variant="outline">
             <Save className="w-4 h-4 mr-2" />
             Save
           </Button>
         </div>
-      }
-    >
-      {activeWorkflow ? (
-        <WorkflowVisualizer workflow={activeWorkflow} />
-      ) : (
-        <Card className="p-8 text-center">
-          <h3 className="text-lg font-medium mb-2">No Active Workflow</h3>
-          <p className="text-muted-foreground mb-4">
-            Create a new workflow to get started with agent automation
-          </p>
-          <Button onClick={() => createWorkflow({})}>
-            <Plus className="w-4 h-4 mr-2" />
-            Create Workflow
-          </Button>
-        </Card>
-      )}
-    </BasePanel>
+      </div>
+      
+      <div className="space-y-4">
+        {activeWorkflow ? (
+          <WorkflowVisualizer workflow={activeWorkflow} />
+        ) : (
+          <Card className="p-8 text-center">
+            <h3 className="text-lg font-medium mb-2">No Active Workflow</h3>
+            <p className="text-muted-foreground mb-4">
+              Create a new workflow to get started with agent automation
+            </p>
+            <Button onClick={() => createWorkflow({})}>
+              <Plus className="w-4 h-4 mr-2" />
+              Create Workflow
+            </Button>
+          </Card>
+        )}
+      </div>
+    </div>
   );
 }
