@@ -39,12 +39,6 @@ export default defineConfig(({ mode }) => {
       'import.meta.env.VITE_PINECONE_API_KEY': JSON.stringify(env.VITE_PINECONE_API_KEY),
       'import.meta.env.VITE_PINECONE_ENVIRONMENT': JSON.stringify(env.VITE_PINECONE_ENVIRONMENT),
     },
-    optimizeDeps: {
-      include: ['onnxruntime-web'],
-      esbuildOptions: {
-        target: 'esnext',
-      },
-    },
     build: {
       outDir: 'dist',
       sourcemap: true,
@@ -56,23 +50,11 @@ export default defineConfig(({ mode }) => {
         output: {
           manualChunks: {
             'react-vendor': ['react', 'react-dom'],
-            'onnx-vendor': ['onnxruntime-web'],
           },
         },
       },
     },
     server: {
-      port: 3000,
-      host: true,
-      cors: true,
-      hmr: {
-        overlay: false,
-        clientPort: 3000,
-      },
-      watch: {
-        usePolling: true,
-        interval: 100,
-      },
       proxy: {
         '/api/ollama': {
           target: 'http://localhost:3001',
@@ -81,9 +63,5 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
-    preview: {
-      port: 3000,
-      host: true
-    }
   };
 });
