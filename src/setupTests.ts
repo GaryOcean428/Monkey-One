@@ -34,11 +34,16 @@ global.ResizeObserver = vi.fn().mockImplementation(() => ({
 }));
 
 // Mock TextDecoder
-const mockTextDecoder = vi.fn().mockImplementation(() => ({
-  decode: vi.fn().mockReturnValue('mocked text')
-}));
+class MockTextDecoder {
+  decode(data: Uint8Array | ArrayBuffer): string {
+    if (data instanceof Uint8Array) {
+      return Buffer.from(data).toString('utf-8');
+    }
+    return Buffer.from(new Uint8Array(data)).toString('utf-8');
+  }
+}
 
-global.TextDecoder = mockTextDecoder;
+global.TextDecoder = MockTextDecoder as any;
 
 // Mock canvas context methods
 const mockCanvasContext = {

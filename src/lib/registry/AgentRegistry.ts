@@ -1,11 +1,14 @@
-import { BaseAgent } from '../agents/base';
+import { AgentType, AgentCapability } from '../../types';
+import { BaseAgent } from '../agents/BaseAgent';
+import { RuntimeError } from '../errors/AgentErrors';
 
 export class AgentRegistry {
   private static instance: AgentRegistry;
-  private registry: Map<string, () => BaseAgent>;
+  private agentTypes: Map<AgentType, typeof BaseAgent>;
 
   private constructor() {
-    this.registry = new Map();
+    this.agentTypes = new Map();
+    this.registerDefaultAgents();
   }
 
   static getInstance(): AgentRegistry {
@@ -15,26 +18,31 @@ export class AgentRegistry {
     return AgentRegistry.instance;
   }
 
-  register(type: string, factory: () => BaseAgent) {
-    this.registry.set(type, factory);
+  private registerDefaultAgents(): void {
+    // Register the base agent type
+    this.registerAgentType(AgentType.BASE, BaseAgent);
   }
 
-  create(type: string): BaseAgent {
-    const factory = this.registry.get(type);
-    if (!factory) {
-      throw new Error(`Agent type ${type} not registered.`);
+  registerAgentType(type: AgentType, agentClass: typeof BaseAgent): void {
+    if (this.agentTypes.has(type)) {
+      throw new RuntimeError(`Agent type ${type} is already registered`);
     }
-    return factory();
+    this.agentTypes.set(type, agentClass);
   }
 
-  unregister(type: string) {
-    if (!this.registry.has(type)) {
-      throw new Error(`Agent type ${type} not registered.`);
+  createAgent(type: AgentType, capabilities: AgentCapability[] = []): BaseAgent {
+    const AgentClass = this.agentTypes.get(type);
+    if (!AgentClass) {
+      throw new RuntimeError(`Agent type ${type} not registered`);
     }
-    this.registry.delete(type);
+    return new AgentClass(capabilities);
   }
 
-  reset() {
-    this.registry.clear();
+  getAgentTypes(): AgentType[] {
+    return Array.from(this.agentTypes.keys());
   }
-}
+
+  isRegistered(type: AgentType): boolean {
+    return this.agentTypes.has(type);
+  }
+}
