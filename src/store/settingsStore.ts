@@ -14,9 +14,9 @@ const defaultSettings: Settings = {
   notifications: true,
   apiEndpoint: import.meta.env.VITE_API_ENDPOINT || 'http://localhost:3000',
   llm: {
-    defaultModel: 'gpt-4-o1',
+    defaultModel: 'llama3.2:1b-instruct-q2_K',
     temperature: 0.7,
-    maxTokens: 1000,
+    maxTokens: 4096,
     streamResponses: true,
     contextLength: 4096,
     topP: 0.9,
