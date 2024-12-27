@@ -19,6 +19,9 @@ import { logger } from './utils/logger';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { TooltipProvider } from './components/ui/tooltip';
 import { SettingsProvider } from './contexts/SettingsContext';
+import PerformancePanel from './components/panels/PerformancePanel';
+import GithubPanel from './components/panels/GithubPanel';
+import ToolsPanel from './components/panels/ToolsPanel';
 
 const providerRegistry = ProviderRegistry.getInstance();
 
@@ -91,9 +94,15 @@ function App() {
                 ) : (
                   <DashboardLayout>
                     <Routes>
-                      <Route path="/" element={<Chat />} />
-                      <Route path="/settings" element={<SettingsPanel />} />
-                      <Route path="/playground" element={<Playground />} />
+                      <Route element={<DashboardLayout />}>
+                        <Route index element={<Chat />} />
+                        <Route path="chat" element={<Chat />} />
+                        <Route path="settings" element={<SettingsPanel />} />
+                        <Route path="performance" element={<PerformancePanel />} />
+                        <Route path="github" element={<GithubPanel />} />
+                        <Route path="tools" element={<ToolsPanel />} />
+                        <Route path="playground" element={<Playground />} />
+                      </Route>
                     </Routes>
                   </DashboardLayout>
                 )}
