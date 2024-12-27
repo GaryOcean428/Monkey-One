@@ -39,9 +39,16 @@ export default defineConfig(({ mode }) => {
       'import.meta.env.VITE_PINECONE_API_KEY': JSON.stringify(env.VITE_PINECONE_API_KEY),
       'import.meta.env.VITE_PINECONE_ENVIRONMENT': JSON.stringify(env.VITE_PINECONE_ENVIRONMENT),
     },
+    optimizeDeps: {
+      include: ['onnxruntime-web'],
+      esbuildOptions: {
+        target: 'esnext',
+      },
+    },
     build: {
       outDir: 'dist',
       sourcemap: true,
+      target: 'esnext',
       rollupOptions: {
         input: {
           main: resolve(__dirname, 'index.html'),
@@ -49,38 +56,10 @@ export default defineConfig(({ mode }) => {
         output: {
           manualChunks: {
             'react-vendor': ['react', 'react-dom'],
-            'firebase-vendor': [
-              'firebase/app',
-              'firebase/auth',
-              'firebase/firestore',
-              'firebase/storage',
-              'firebase/database'
-            ],
-            'ui-vendor': [
-              '@radix-ui/react-alert-dialog',
-              '@radix-ui/react-dialog',
-              '@radix-ui/react-dropdown-menu',
-              '@radix-ui/react-label',
-              '@radix-ui/react-menubar',
-              '@radix-ui/react-popover',
-              '@radix-ui/react-select',
-              '@radix-ui/react-slider',
-              '@radix-ui/react-switch',
-              '@radix-ui/react-tabs',
-              '@radix-ui/react-toast'
-            ]
-          }
-        }
+            'onnx-vendor': ['onnxruntime-web'],
+          },
+        },
       },
-      target: 'esnext',
-      minify: 'esbuild'
-    },
-    optimizeDeps: {
-      include: [
-        'react',
-        'react-dom',
-        '@supabase/supabase-js'
-      ]
     },
     server: {
       port: 3000,
@@ -93,6 +72,13 @@ export default defineConfig(({ mode }) => {
       watch: {
         usePolling: true,
         interval: 100,
+      },
+      proxy: {
+        '/api/ollama': {
+          target: 'http://localhost:3001',
+          changeOrigin: true,
+          secure: false,
+        },
       },
     },
     preview: {
