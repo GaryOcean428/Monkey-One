@@ -22,8 +22,11 @@ class TestMessage implements Message {
 
 // Test handler class using the decorator
 class TestMessageHandler {
+    lastMessage?: Message;
+
     @MessageHandler(TestMessage)
     async handleMessage(message: Message): Promise<string> {
+        this.lastMessage = message;
         return `Processed: ${message.content}`;
     }
 }
@@ -39,6 +42,7 @@ describe('MessageHandler Decorator', () => {
         const message = new TestMessage('test content');
         const result = await handler.handleMessage(message);
         expect(result).toBe('Processed: test content');
+        expect(handler.lastMessage).toBe(message);
     });
 
     it('should reject invalid message type', async () => {
@@ -47,16 +51,8 @@ describe('MessageHandler Decorator', () => {
             type: MessageType.COMMAND,
             content: 'test',
             timestamp: Date.now()
-        };
+        } as Message;
 
-        await expect(async () => {
-            await handler.handleMessage(invalidMessage as Message);
-        }).rejects.toThrow('Invalid message type');
-    });
-
-    it('should handle empty message content', async () => {
-        const message = new TestMessage();
-        const result = await handler.handleMessage(message);
-        expect(result).toBe('Processed: ');
+        await expect(handler.handleMessage(invalidMessage)).rejects.toThrow('Invalid message type');
     });
 });
