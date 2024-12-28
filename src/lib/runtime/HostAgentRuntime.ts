@@ -2,6 +2,8 @@ import { BaseAgent } from '../agents/base';
 import { Message } from '../../types';
 import { AgentRegistry } from '../registry/AgentRegistry';
 import { LogLevel } from '../../constants/enums';
+import { logger } from '../../utils/logger';
+import { RuntimeError } from '../errors/AgentErrors';
 
 export interface HostRuntimeConfig {
   logLevel: LogLevel;
@@ -10,9 +12,6 @@ export interface HostRuntimeConfig {
 }
 
 export class HostAgentRuntime {
-  public async broadcast(message: Message): Promise<void> {
-    // Broadcast implementation
-  }
   private agents: Map<string, BaseAgent> = new Map();
   private registry: AgentRegistry;
 
@@ -21,24 +20,34 @@ export class HostAgentRuntime {
   }
 
   async createAgent(type: string, capabilities: string[] = []): Promise<BaseAgent> {
-    console.info('Creating agent:', { type, capabilities });
-    const agent = this.registry.create(type);
-    this.agents.set(agent.id, agent);
-    return agent;
+    logger.info('Creating agent:', { type, capabilities });
+    
+    try {
+      const agent = await this.registry.createAgent(type) as BaseAgent;
+      capabilities.forEach(cap => agent.addCapability(cap));
+      await agent.initialize();
+      this.agents.set(agent.id, agent);
+      return agent;
+    } catch (error) {
+      throw new RuntimeError(`Failed to create agent: ${error.message}`);
+    }
   }
 
   async cloneAgent(agentId: string, newCapabilities?: string[]): Promise<BaseAgent> {
-    console.info('Cloning agent:', { agentId, newCapabilities });
     const sourceAgent = this.agents.get(agentId);
     if (!sourceAgent) {
-      throw new Error(`Agent ${agentId} not found`);
+      throw new RuntimeError(`Agent ${agentId} not found`);
     }
-    // Implementation details...
-    return sourceAgent;
+
+    const clonedAgent = await this.createAgent(
+      sourceAgent.type,
+      newCapabilities || sourceAgent.capabilities
+    );
+    
+    return clonedAgent;
   }
 
   async broadcastMessage(message: Message, filter?: (agent: BaseAgent) => boolean): Promise<void> {
-    console.info('Broadcasting message:', { message, filter: !!filter });
     const targets = filter ? 
       Array.from(this.agents.values()).filter(filter) :
       Array.from(this.agents.values());
@@ -47,7 +56,16 @@ export class HostAgentRuntime {
   }
 
   async shutdown(timeout = 5000): Promise<void> {
-    console.info('Shutting down runtime:', { timeout });
-    // Implementation details...
+    const shutdownPromises = Array.from(this.agents.values()).map(agent => {
+      return Promise.race([
+        agent.shutdown(),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Shutdown timeout')), timeout)
+        )
+      ]);
+    });
+
+    await Promise.all(shutdownPromises);
+    this.agents.clear();
   }
 }

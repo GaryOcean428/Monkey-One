@@ -44,18 +44,18 @@ export class AdvancedRouter {
   }
 
   private selectModel(taskType: TaskType, complexity: number): LLMProvider {
-    if (complexity > 0.8 || taskType === 'system_design') {
-      // Superior tier for very complex tasks
-      return {
-        id: 'o1-2024-12-01',
-        name: 'O1',
-        sendMessage: async () => 'Not implemented'
-      };
-    } else if (complexity > this.complexityThreshold || taskType === 'coding') {
-      // High tier for complex tasks
+    if (complexity > this.complexityThreshold || taskType === 'coding') {
+      // Use high-tier model for complex tasks
       return {
         id: 'claude-3-5-sonnet-v2@20241022',
         name: 'Claude 3.5 Sonnet',
+        sendMessage: async () => 'Not implemented'
+      };
+    } else if (taskType === 'system_design') {
+      // Use superior tier for system design
+      return {
+        id: 'o1-2024-12-01',
+        name: 'O1',
         sendMessage: async () => 'Not implemented'
       };
     } else if (complexity > 0.3) {

@@ -1,14 +1,23 @@
-import { AgentType, AgentCapability } from '../../types';
-import { BaseAgent } from '../agents/BaseAgent';
+import { Agent, AgentType } from '../types/core';
 import { RuntimeError } from '../errors/AgentErrors';
+import { logger } from '../../utils/logger';
+import { BaseAgent } from '../agents/base';
 
 export class AgentRegistry {
   private static instance: AgentRegistry;
-  private agentTypes: Map<AgentType, typeof BaseAgent>;
+  private agents: Map<string, () => Promise<Agent>>;
 
   private constructor() {
-    this.agentTypes = new Map();
-    this.registerDefaultAgents();
+    this.agents = new Map();
+    this.registerBaseAgent();
+  }
+
+  private registerBaseAgent() {
+    this.agents.set('BASE', async () => {
+      const agent = new BaseAgent('base-agent', 'Base Agent');
+      await agent.initialize();
+      return agent;
+    });
   }
 
   static getInstance(): AgentRegistry {
@@ -18,39 +27,39 @@ export class AgentRegistry {
     return AgentRegistry.instance;
   }
 
-  private registerDefaultAgents(): void {
-    // Register all default agent types
-    this.registerAgentType(AgentType.ORCHESTRATOR, BaseAgent);
-    this.registerAgentType(AgentType.WORKER, BaseAgent);
-    this.registerAgentType(AgentType.SPECIALIST, BaseAgent);
-    
-    // Create default orchestrator agent
-    const orchestrator = this.createAgent(AgentType.ORCHESTRATOR, [
-      { name: 'chat', description: 'Basic chat capability' }
-    ]);
-    orchestrator.initialize();
-  }
-
-  registerAgentType(type: AgentType, agentClass: typeof BaseAgent): void {
-    if (this.agentTypes.has(type)) {
+  async register(type: string, factory: () => Promise<Agent>): Promise<void> {
+    if (this.agents.has(type)) {
       throw new RuntimeError(`Agent type ${type} is already registered`);
     }
-    this.agentTypes.set(type, agentClass);
+    this.agents.set(type, factory);
+    logger.info(`Agent type ${type} registered`);
   }
 
-  createAgent(type: AgentType, capabilities: AgentCapability[] = []): BaseAgent {
-    const AgentClass = this.agentTypes.get(type);
-    if (!AgentClass) {
+  async unregister(type: string): Promise<void> {
+    if (!this.agents.has(type)) {
       throw new RuntimeError(`Agent type ${type} not registered`);
     }
-    return new AgentClass(capabilities);
+    this.agents.delete(type);
   }
 
-  getAgentTypes(): AgentType[] {
-    return Array.from(this.agentTypes.keys());
+  async createAgent(type: string): Promise<Agent> {
+    const factory = this.agents.get(type);
+    if (!factory) {
+      throw new RuntimeError(`Agent type ${type} not found`);
+    }
+    return factory();
   }
 
-  isRegistered(type: AgentType): boolean {
-    return this.agentTypes.has(type);
+  hasAgent(type: string): boolean {
+    return this.agents.has(type);
+  }
+
+  reset(): void {
+    this.agents.clear();
+    this.registerBaseAgent();
+  }
+
+  getRegisteredTypes(): string[] {
+    return Array.from(this.agents.keys());
   }
 }

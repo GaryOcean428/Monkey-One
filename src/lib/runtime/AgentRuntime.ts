@@ -4,14 +4,14 @@ import { MessageQueue } from '../memory/MessageQueue';
 
 export class AgentRuntime {
   private agent: BaseAgent;
-  public messageQueue: MessageQueue;
+  private messageQueue: MessageQueue;
   private isProcessing: boolean = false;
   private processingTimeout: number | null = null;
   private abortController: AbortController | null = null;
 
   constructor(agent: BaseAgent) {
     this.agent = agent;
-    this.queue = new MessageQueue();
+    this.messageQueue = new MessageQueue();
     this.startProcessing();
   }
 
@@ -22,15 +22,15 @@ export class AgentRuntime {
     this.processQueue();
   }
 
-  protected async processQueue() {
+  private async processQueue() {
     if (this.abortController) {
       this.abortController.abort();
     }
     this.abortController = new AbortController();
 
-    while (this.isProcessing && this.queue.hasMessages()) {
+    while (this.isProcessing && this.messageQueue.size() > 0) {
       try {
-        const message = await this.queue.next();
+        const message = await this.messageQueue.dequeue();
         if (message) {
           await this.agent.processMessage(message);
         }
@@ -55,7 +55,7 @@ export class AgentRuntime {
   }
 
   enqueueMessage(message: Message) {
-    this.queue.add(message);
+    this.messageQueue.enqueue(message);
     if (!this.isProcessing) {
       this.startProcessing();
     }
@@ -71,7 +71,7 @@ export class AgentRuntime {
       this.abortController.abort();
       this.abortController = null;
     }
-    await this.queue.clear();
+    await this.messageQueue.clear();
   }
 
   getAgent(): BaseAgent {
@@ -81,4 +81,4 @@ export class AgentRuntime {
   isActive(): boolean {
     return this.isProcessing;
   }
-}
+}
