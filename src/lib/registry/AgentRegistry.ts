@@ -2,6 +2,7 @@ import { Agent, AgentType } from '../types/core';
 import { RuntimeError } from '../errors/AgentErrors';
 import { logger } from '../../utils/logger';
 import { BaseAgent } from '../agents/base';
+import { v4 as uuidv4 } from 'uuid';
 
 export class AgentRegistry {
   private static instance: AgentRegistry;
@@ -14,7 +15,7 @@ export class AgentRegistry {
 
   private registerBaseAgent() {
     this.agents.set('BASE', async () => {
-      const agent = new BaseAgent('base-agent', 'Base Agent');
+      const agent = new BaseAgent(uuidv4(), 'Base Agent');
       await agent.initialize();
       return agent;
     });

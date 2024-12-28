@@ -10,7 +10,7 @@ export class MessageQueue {
     this.notifyListeners(message);
   }
 
-  async dequeue(): Promise<Message | undefined> {
+  dequeue(): Message | undefined {
     return this.queue.shift();
   }
 
