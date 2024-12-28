@@ -47,21 +47,21 @@ export class AdvancedRouter {
     if (complexity > this.complexityThreshold || taskType === 'coding') {
       // Use high-tier model for complex tasks
       return {
-        id: 'llama-3.3-70b',
-        name: 'Llama 70B',
+        id: 'granite3.1-dense:2b',
+        name: 'Granite 3.1 Dense 2B',
         sendMessage: async () => 'Not implemented'
       };
     } else if (taskType === 'system_design') {
       return {
-        id: 'grok-2',
-        name: 'Grok 2',
+        id: 'claude-3-5-sonnet-v2@20241022',
+        name: 'Claude 3.5 Sonnet',
         sendMessage: async () => 'Not implemented'
       };
     } else {
       // Use efficient model for simple tasks
       return {
-        id: 'llama3-groq-8b',
-        name: 'Llama 8B',
+        id: 'granite3.1-dense:2b',
+        name: 'Granite 3.1 Dense 2B',
         sendMessage: async () => 'Not implemented'
       };
     }

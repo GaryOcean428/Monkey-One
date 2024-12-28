@@ -1,5 +1,6 @@
-import { LLMProvider } from './base';
+import { BaseProvider } from '../providers/BaseProvider';
 import { useSettingsStore } from '../../../store/settingsStore';
+import { ModelResponse, StreamChunk } from '../types/models';
 
 interface OllamaResponse {
   model: string;
@@ -14,29 +15,11 @@ interface OllamaResponse {
   eval_count?: number;
 }
 
-export class LocalProvider implements LLMProvider {
-  id = 'local';
-  name = 'Local';
-  private modelName: string;
-  private isInitialized: boolean = false;
-  private initError: Error | null = null;
-  private ollamaEndpoint: string;
-
-  constructor(modelName: string = 'llama3.2:1b-instruct-q2_K', ollamaEndpoint?: string) {
+export class LocalProvider extends BaseProvider {
+  constructor(modelName: string = 'granite3.1-dense:2b', ollamaEndpoint?: string) {
+    super('local');
     this.modelName = modelName;
     this.ollamaEndpoint = ollamaEndpoint || 'http://localhost:11434';
-  }
-
-  private async checkOllamaConnection(): Promise<boolean> {
-    try {
-      const response = await fetch(`${this.ollamaEndpoint}/api/tags`);
-      if (!response.ok) throw new Error('Failed to connect to Ollama');
-      const data = await response.json();
-      return data.models?.some((model: any) => model.name === this.modelName) || false;
-    } catch (error) {
-      console.error('Ollama connection error:', error);
-      return false;
-    }
   }
 
   async initialize(): Promise<void> {
@@ -51,11 +34,22 @@ export class LocalProvider implements LLMProvider {
     this.isInitialized = true;
   }
 
-  async sendMessage(
+  private async checkOllamaConnection(): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.ollamaEndpoint}/api/tags`);
+      if (!response.ok) throw new Error('Failed to connect to Ollama');
+      const data = await response.json();
+      return data.models?.some((model: any) => model.name === this.modelName) || false;
+    } catch (error) {
+      console.error('Ollama connection error:', error);
+      return false;
+    }
+  }
+
+  async generate(
     message: string,
-    context: any[] = [],
     options: { useRag?: boolean; documents?: string[]; maxTokens?: number } = {}
-  ): Promise<string> {
+  ): Promise<ModelResponse> {
     if (!this.isInitialized) {
       await this.initialize();
     }
@@ -87,18 +81,17 @@ export class LocalProvider implements LLMProvider {
       }
 
       const data: OllamaResponse = await response.json();
-      return data.response;
+      return { text: data.response };
     } catch (error) {
-      console.error('Error in LocalProvider.sendMessage:', error);
+      console.error('Error in LocalProvider.generate:', error);
       throw new Error('Failed to get response from Ollama');
     }
   }
 
-  async streamResponse(
+  async *generateStream(
     message: string,
-    onChunk: (chunk: string) => void,
     options: { useRag?: boolean; documents?: string[]; maxTokens?: number } = {}
-  ): Promise<void> {
+  ): AsyncGenerator<StreamChunk> {
     if (!this.isInitialized) {
       await this.initialize();
     }
@@ -144,7 +137,7 @@ export class LocalProvider implements LLMProvider {
           try {
             const data: OllamaResponse = JSON.parse(line);
             if (data.response) {
-              onChunk(data.response);
+              yield { text: data.response };
             }
           } catch (e) {
             console.warn('Failed to parse streaming response:', e);
@@ -152,8 +145,19 @@ export class LocalProvider implements LLMProvider {
         }
       }
     } catch (error) {
-      console.error('Error in LocalProvider.streamResponse:', error);
+      console.error('Error in LocalProvider.generateStream:', error);
       throw new Error('Failed to stream response from Ollama');
+    }
+  }
+
+  async isAvailable(): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.ollamaEndpoint}/api/tags`);
+      if (!response.ok) return false;
+      const data = await response.json();
+      return data.models?.some((model: any) => model.name === this.modelName) || false;
+    } catch (error) {
+      return false;
     }
   }
 }

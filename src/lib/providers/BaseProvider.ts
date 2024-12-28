@@ -1,7 +1,11 @@
-import type { ModelConfig, ModelResponse, StreamChunk } from '../types/models';
+import type { ModelResponse, StreamChunk } from '../types/models';
 
 export abstract class BaseProvider {
   protected name: string;
+  protected modelName: string = '';
+  protected ollamaEndpoint: string = '';
+  protected isInitialized: boolean = false;
+  protected initError: Error | null = null;
 
   constructor(name: string) {
     this.name = name;

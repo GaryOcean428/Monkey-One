@@ -1,92 +1,91 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { useSettingsStore } from '../../store/settingsStore';
-import { useChatStore } from '../../store/chatStore';
-import { useAgentStore } from '../../store/agentStore';
-import { Message } from '../../types';
-import { ChatInput } from './ChatInput';
+import React, { useRef, useState } from 'react';
+import { useChat } from '../../hooks/useChat';
 import { ChatMessage } from './ChatMessage';
-import { ErrorBoundary } from '../ErrorBoundary';
+import { ChatInput } from './ChatInput';
+import { SystemThoughts } from '../SystemThoughts';
+import { Integrations } from '../Integrations';
 import { LoadingSpinner } from '../ui/loading-spinner';
 import { Alert } from '../ui/alert';
-import { ChatInterface } from './ChatInterface';
-import { TaskPanel } from './TaskPanel';
-import { IntegrationsBar } from './IntegrationsBar';
-import { useChat } from '../../hooks/useChat';
-import { TooltipProvider } from '../ui/tooltip';
 
-export function ChatContainer() {
+export const ChatContainer: React.FC = () => {
+  const { messages, isLoading, error, sendMessage, hasActiveAgent } = useChat();
+  const [showThoughts, setShowThoughts] = useState(true);
+  const [showIntegrations, setShowIntegrations] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [error, setError] = useState<string | null>(null);
-  const { messages, isProcessing, sendMessage } = useChatStore();
-  const { activeAgent } = useAgentStore();
-  const { settings } = useSettingsStore();
-  const { activeTask, tasks } = useChat();
 
-  const pendingActions = tasks
-    .filter(t => t.status === 'pending')
-    .map(t => ({
-      id: t.id,
-      type: 'task',
-      description: t.title,
-      status: 'pending',
-      payload: t
-    }));
-
-  useEffect(() => {
+  const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  };
 
-  const handleSendMessage = async (content: string) => {
+  const handleSend = async (content: string) => {
     try {
-      setError(null);
-      if (!activeAgent) {
-        throw new Error('No active agent selected');
-      }
-      await sendMessage(content, activeAgent.id);
+      await sendMessage(content);
+      scrollToBottom();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to send message');
       console.error('Error sending message:', err);
     }
   };
 
   return (
-    <ErrorBoundary>
-      <TooltipProvider>
-        <div className="flex h-full">
-          <div className="flex-1 flex flex-col relative">
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {messages.map((message: Message) => (
-                <ChatMessage
-                  key={message.id}
-                  message={message}
-                  settings={settings}
-                />
-              ))}
-              {isProcessing && (
-                <div className="flex justify-center">
-                  <LoadingSpinner />
-                </div>
-              )}
-              {error && (
-                <Alert variant="error" className="mb-4">
-                  {error}
-                </Alert>
-              )}
-              <div ref={messagesEndRef} />
+    <div className="flex h-full">
+      {/* Main chat area */}
+      <div className="flex-1 flex flex-col h-full">
+        {/* Messages area */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {messages.map((message, index) => (
+            <ChatMessage key={index} message={message} />
+          ))}
+          {isLoading && (
+            <div className="flex justify-center">
+              <LoadingSpinner />
             </div>
-            <div className="p-4 border-t border-border">
-              <ChatInput
-                onSendMessage={handleSendMessage}
-                disabled={isProcessing || !activeAgent}
-                placeholder={!activeAgent ? 'Select an agent to start chatting' : 'Type a message...'}
-              />
-            </div>
-            <ChatInterface />
-            {activeTask && <TaskPanel task={activeTask} actions={pendingActions} />}
-          </div>
-          <IntegrationsBar />
+          )}
+          {error && (
+            <Alert variant="destructive" className="mb-4">
+              {error}
+            </Alert>
+          )}
+          <div ref={messagesEndRef} />
         </div>
-      </TooltipProvider>
-    </ErrorBoundary>
+
+        {/* Input area */}
+        <div className="p-4 border-t border-border">
+          <ChatInput 
+            onSubmit={handleSend} 
+            disabled={isLoading || !hasActiveAgent}
+            placeholder={!hasActiveAgent ? 'Select an agent to start chatting' : 'Type a message...'}
+          />
+        </div>
+      </div>
+
+      {/* Right sidebars */}
+      <div className="flex">
+        {/* System Thoughts */}
+        <div className={`border-l border-border transition-all duration-300 ${showThoughts ? 'w-80' : 'w-0'}`}>
+          {showThoughts && <SystemThoughts />}
+        </div>
+
+        {/* Integrations */}
+        <div className={`border-l border-border transition-all duration-300 ${showIntegrations ? 'w-80' : 'w-0'}`}>
+          {showIntegrations && <Integrations />}
+        </div>
+
+        {/* Toggle buttons */}
+        <div className="flex flex-col gap-2 p-2 border-l border-border">
+          <button
+            onClick={() => setShowThoughts(!showThoughts)}
+            className="p-2 rounded hover:bg-accent/50"
+          >
+            {showThoughts ? '>' : '<'}
+          </button>
+          <button
+            onClick={() => setShowIntegrations(!showIntegrations)}
+            className="p-2 rounded hover:bg-accent/50"
+          >
+            {showIntegrations ? '>' : '<'}
+          </button>
+        </div>
+      </div>
+    </div>
   );
-}
+};
