@@ -13,7 +13,8 @@ export class BrowserTool {
   }): Promise<any> {
     if (!args.action) {
       throw new ToolExecutionError('Action type is required', {
-        toolName: 'browser'
+        toolName: 'browser',
+        state: { error: 'Missing action type' }
       });
     }
 
@@ -21,12 +22,14 @@ export class BrowserTool {
       case 'launch':
         if (!args.url) {
           throw new ToolExecutionError('URL is required for launch action', {
-            toolName: 'browser'
+            toolName: 'browser',
+            state: { action: args.action, error: 'Missing URL' }
           });
         }
         if (!args.url.match(/^https?:\/\/.+/)) {
           throw new ToolExecutionError('Invalid URL format', {
-            toolName: 'browser'
+            toolName: 'browser',
+            state: { action: args.action, url: args.url }
           });
         }
         return { url: args.url };
@@ -35,12 +38,14 @@ export class BrowserTool {
         if (args.x !== undefined && args.y !== undefined) {
           if (typeof args.x !== 'number' || typeof args.y !== 'number') {
             throw new ToolExecutionError('Invalid click coordinates', {
-              toolName: 'browser'
+              toolName: 'browser',
+              state: { action: args.action, x: args.x, y: args.y }
             });
           }
         } else if (!args.selector) {
           throw new ToolExecutionError('Missing required parameters', {
-            toolName: 'browser'
+            toolName: 'browser',
+            state: { action: args.action, error: 'Missing selector or coordinates' }
           });
         }
         return { clicked: args.selector || `${args.x},${args.y}` };
@@ -48,7 +53,8 @@ export class BrowserTool {
       case 'type':
         if (!args.text || typeof args.text !== 'string') {
           throw new ToolExecutionError('Text must be a string', {
-            toolName: 'browser'
+            toolName: 'browser',
+            state: { action: args.action, error: 'Invalid text' }
           });
         }
         return { typed: args.text };
@@ -56,12 +62,14 @@ export class BrowserTool {
       case 'scroll':
         if (!args.amount) {
           throw new ToolExecutionError('Missing required parameters', {
-            toolName: 'browser'
+            toolName: 'browser',
+            state: { action: args.action, error: 'Missing scroll amount' }
           });
         }
         if (typeof args.amount !== 'number') {
           throw new ToolExecutionError('Invalid scroll amount', {
-            toolName: 'browser'
+            toolName: 'browser',
+            state: { action: args.action, amount: args.amount }
           });
         }
         return { scrolled: args.amount };

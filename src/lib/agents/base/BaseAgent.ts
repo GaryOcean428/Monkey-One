@@ -1,14 +1,17 @@
-import { Agent, AgentType, AgentStatus, Message } from '../../../types/core';
+import { Agent, AgentType, AgentStatus, Message, AgentCapability } from '../../../types/core';
 import { logger } from '../../../utils/logger';
+import { v4 as uuidv4 } from 'uuid';
 
 export class BaseAgent implements Agent {
   id: string;
+  name: string;
   type: AgentType;
-  capabilities: string[];
+  capabilities: AgentCapability[];
   status: AgentStatus;
 
-  constructor(id: string, name: string) {
+  constructor(id: string = uuidv4(), name: string = 'Base Agent') {
     this.id = id;
+    this.name = name;
     this.type = AgentType.SPECIALIST;
     this.capabilities = [];
     this.status = AgentStatus.AVAILABLE;
@@ -20,7 +23,7 @@ export class BaseAgent implements Agent {
 
   async processMessage(message: Message): Promise<Message> {
     return {
-      id: 'response',
+      id: uuidv4(),
       type: message.type,
       role: 'assistant',
       content: 'Base agent response',
@@ -33,21 +36,21 @@ export class BaseAgent implements Agent {
     logger.info('Base agent shutdown', { id: this.id });
   }
 
-  getCapabilities(): string[] {
-    return this.capabilities;
+  getCapabilities(): AgentCapability[] {
+    return [...this.capabilities];
   }
 
   hasCapability(name: string): boolean {
-    return this.capabilities.includes(name);
+    return this.capabilities.some(cap => cap.name === name);
   }
 
-  addCapability(capability: string): void {
-    if (!this.hasCapability(capability)) {
+  addCapability(capability: AgentCapability): void {
+    if (!this.hasCapability(capability.name)) {
       this.capabilities.push(capability);
     }
   }
 
   removeCapability(name: string): void {
-    this.capabilities = this.capabilities.filter(cap => cap !== name);
+    this.capabilities = this.capabilities.filter(cap => cap.name !== name);
   }
 }

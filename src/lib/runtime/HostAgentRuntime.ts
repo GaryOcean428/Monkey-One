@@ -1,9 +1,10 @@
 import { BaseAgent } from '../agents/base';
-import { Message } from '../../types';
+import { Message, AgentCapability } from '../../types';
 import { AgentRegistry } from '../registry/AgentRegistry';
 import { LogLevel } from '../../constants/enums';
 import { logger } from '../../utils/logger';
 import { RuntimeError } from '../errors/AgentErrors';
+import { v4 as uuidv4 } from 'uuid';
 
 export interface HostRuntimeConfig {
   logLevel: LogLevel;
@@ -24,7 +25,10 @@ export class HostAgentRuntime {
     
     try {
       const agent = await this.registry.createAgent(type) as BaseAgent;
-      capabilities.forEach(cap => agent.addCapability(cap));
+      capabilities.forEach(cap => agent.addCapability({
+        name: cap,
+        description: `Capability ${cap}`
+      }));
       await agent.initialize();
       this.agents.set(agent.id, agent);
       return agent;
@@ -39,11 +43,10 @@ export class HostAgentRuntime {
       throw new RuntimeError(`Agent ${agentId} not found`);
     }
 
-    const clonedAgent = await this.createAgent(
-      sourceAgent.type,
-      newCapabilities || sourceAgent.capabilities
-    );
+    const capabilities = newCapabilities || 
+      sourceAgent.getCapabilities().map(cap => cap.name);
     
+    const clonedAgent = await this.createAgent(sourceAgent.type, capabilities);
     return clonedAgent;
   }
 

@@ -196,7 +196,7 @@ export const models = {
     modelName: 'phi3.5:latest',
     contextWindow: 128000,
     maxOutput: 32768,
-    releaseDate: '2024-Q1',
+    releaseDate: '2024-01',
     keyStrengths: ['Lightweight', 'Strong performance'],
     modelCardUrl: 'https://ollama.com/library/phi3.5'
   },
@@ -206,7 +206,7 @@ export const models = {
     modelName: 'llama-3.1-sonar-small-128k-online',
     contextWindow: 127072,
     maxOutput: 32768,
-    releaseDate: '2024-Q1',
+    releaseDate: '2024-01',
     keyStrengths: ['Fast online search capabilities'],
     modelCardUrl: 'https://docs.perplexity.ai/guides/model-cards'
   },
@@ -216,7 +216,7 @@ export const models = {
     modelName: 'llama-3.1-sonar-large-128k-online',
     contextWindow: 127072,
     maxOutput: 32768,
-    releaseDate: '2024-Q1',
+    releaseDate: '2024-01',
     keyStrengths: ['Advanced reasoning with integrated search'],
     modelCardUrl: 'https://docs.perplexity.ai/guides/model-cards'
   },
@@ -226,7 +226,7 @@ export const models = {
     modelName: 'llama-3.1-sonar-huge-128k-online',
     contextWindow: 127072,
     maxOutput: 32768,
-    releaseDate: '2024-Q1',
+    releaseDate: '2024-01',
     keyStrengths: ['Most powerful search-augmented model'],
     modelCardUrl: 'https://docs.perplexity.ai/guides/model-cards'
   }
