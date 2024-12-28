@@ -83,6 +83,7 @@ export class AgentState {
   dispose(): void {
     if (this.timeoutHandle) {
       clearTimeout(this.timeoutHandle);
+      this.timeoutHandle = undefined;
     }
     this.states.clear();
     this.transitionHistory = [];
@@ -92,7 +93,6 @@ export class AgentState {
     if (!Array.isArray(config.allowedTransitions)) {
       throw new RuntimeError('Invalid state configuration');
     }
-    // Add additional validation as needed
   }
 
   private async executeTransition(from: AgentStatus, to: AgentStatus, context: StateConfig): Promise<void> {
@@ -145,7 +145,7 @@ export class AgentState {
 
     } catch (error) {
       // Transition failed, set error state
-      this.agent.status = AgentStatus.ERROR;
+      this.agent.status = AgentStatus.OFFLINE;
       throw error instanceof Error ? error : new RuntimeError(String(error));
     }
   }
@@ -180,11 +180,11 @@ export class AgentState {
     if (timeout) {
       this.timeoutHandle = setTimeout(async () => {
         try {
-          await this.transition(AgentStatus.ERROR);
+          await this.transition(AgentStatus.OFFLINE);
         } catch (error) {
           console.error('Timeout transition failed:', error);
         }
       }, timeout);
     }
   }
-}
+}

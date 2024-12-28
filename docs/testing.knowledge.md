@@ -35,10 +35,12 @@
 - Simulate error conditions
 
 ### Assertions
-- Use Vitest expect statements
-- Test both success and failure cases
-- Verify state changes
-- Check error handling
+- Use ToolExecutionError for tool failures
+- Include toolName and state in error details
+- Validate all required parameters
+- Check parameter types explicitly
+- Throw early with clear error messages
+- Handle cleanup in error cases
 
 ### Test Environment
 - Configure jsdom for UI tests
@@ -335,8 +337,27 @@ Important:
 - MessageType values must be uppercase (e.g., MessageType.USER, MessageType.SYSTEM)
 - Available MessageTypes: USER, SYSTEM, TASK, RESPONSE, ERROR, BROADCAST, HANDOFF
 
+### Agent System Architecture
+- Agent Registry manages agent types and creation
+  - Must register BASE agent type first
+  - All agents extend BaseAgent
+  - Registry is singleton pattern
+  - Supports dynamic agent registration
+- Agent State handles state transitions and timeouts
+  - Transitions to OFFLINE on timeout
+  - Cleans up timeouts on dispose
+  - Validates state transitions
+- Agent Runtime manages message processing and lifecycle
+  - Uses MessageQueue for async processing
+  - Handles graceful shutdown
+  - Supports message filtering
+- Host Runtime manages multiple agents and broadcasting
+  - Coordinates agent lifecycle
+  - Handles agent creation/cloning
+  - Manages broadcast messaging
+
 ### Agent Testing
-When working with agents, always use the proper enums and implement all required interface methods:
+When working with agents:
 
 ### Agent Initialization
 - AgentRegistry must be initialized before AgentContext
@@ -345,6 +366,9 @@ When working with agents, always use the proper enums and implement all required
 - Agent types: ORCHESTRATOR, WORKER, SPECIALIST
 - Each agent needs at least one capability
 - Agent names default to "Agent {id}" if not provided
+- Agent states must transition to OFFLINE on timeout
+- Agent runtime must clean up resources on shutdown
+- Host runtime must handle agent creation and cleanup
 
 - Use `AgentType` enum for agent types:
   - `AgentType.ORCHESTRATOR`

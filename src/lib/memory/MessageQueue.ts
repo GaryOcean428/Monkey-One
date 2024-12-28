@@ -1,29 +1,17 @@
-import { Message } from '../types/core';
+import type { Message } from '../../types';
 
 export class MessageQueue {
   private queue: Message[] = [];
-  private maxSize: number;
   private listeners: ((message: Message) => void)[] = [];
-  private _isProcessing: boolean = false;
-
-  constructor(maxSize = 1000) {
-    this.maxSize = maxSize;
-  }
+  private processing: boolean = false;
 
   enqueue(message: Message): void {
-    if (this.queue.length >= this.maxSize) {
-      throw new Error(`Queue size limit (${this.maxSize}) reached`);
-    }
     this.queue.push(message);
     this.notifyListeners(message);
   }
 
-  dequeue(): Message | undefined {
-    const message = this.queue.shift();
-    if (message) {
-      this.notifyListeners(message);
-    }
-    return message;
+  async dequeue(): Promise<Message | undefined> {
+    return this.queue.shift();
   }
 
   peek(): Message | undefined {
@@ -43,9 +31,6 @@ export class MessageQueue {
   }
 
   on(listener: (message: Message) => void): void {
-    if (typeof listener !== 'function') {
-      throw new Error('Listener must be a function');
-    }
     this.listeners.push(listener);
   }
 
@@ -63,11 +48,7 @@ export class MessageQueue {
     return [...this.queue];
   }
 
-  get isProcessing(): boolean {
-    return this._isProcessing;
-  }
-
-  set isProcessing(value: boolean) {
-    this._isProcessing = value;
+  isProcessing(): boolean {
+    return this.processing;
   }
 }
