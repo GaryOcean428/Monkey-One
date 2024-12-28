@@ -57,9 +57,19 @@ export class VectorStoreManager {
   async storeVectorsBatch(vectors: Array<{ vector: number[]; metadata: Record<string, any> }>, namespace?: string) {
     const startTime = Date.now();
     try {
-      for (let i = 0; i < vectors.length; i += this.BATCH_SIZE) {
-        const batch = vectors.slice(i, i + this.BATCH_SIZE);
-        await retry(async () => {
+      // Deduplicate vectors
+      const uniqueVectors = vectors.filter((v, i, self) =>
+        i === self.findIndex(t => 
+          t.vector.length === v.vector.length && 
+          t.vector.every((val, j) => val === v.vector[j])
+        )
+      );
+
+      // Process in optimized batch sizes
+      const batchPromises = [];
+      for (let i = 0; i < uniqueVectors.length; i += this.BATCH_SIZE) {
+        const batch = uniqueVectors.slice(i, i + this.BATCH_SIZE);
+        const promise = retry(async () => {
           await this.pinecone.upsert({
             indexName: this.PINECONE_INDEX,
             vectors: batch.map(v => ({
@@ -70,9 +80,22 @@ export class VectorStoreManager {
             namespace
           });
         }, this.MAX_RETRIES);
+        batchPromises.push(promise);
+
+        // Process batches in parallel but with limits
+        if (batchPromises.length >= 5) {
+          await Promise.all(batchPromises);
+          batchPromises.length = 0;
+        }
+      }
+
+      // Process any remaining batches
+      if (batchPromises.length > 0) {
+        await Promise.all(batchPromises);
       }
       
       monitoring.recordVectorOperation('batch_store', Date.now() - startTime);
+      logger.info(`Stored ${uniqueVectors.length} unique vectors in ${Date.now() - startTime}ms`);
     } catch (error) {
       monitoring.recordError('vector_store', 'batch_store_failed');
       throw error;

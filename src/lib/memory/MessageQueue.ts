@@ -1,16 +1,16 @@
-import { Message } from '../../types';
+import { Message } from '../types/core';
 
-export class MessageQueue<T> {
-  private queue: T[] = [];
+export class MessageQueue {
+  private queue: Message[] = [];
   private maxSize: number;
-  private listeners: ((message: T) => void)[] = [];
+  private listeners: ((message: Message) => void)[] = [];
   private _isProcessing: boolean = false;
 
   constructor(maxSize = 1000) {
     this.maxSize = maxSize;
   }
 
-  enqueue(message: T): void {
+  enqueue(message: Message): void {
     if (this.queue.length >= this.maxSize) {
       throw new Error(`Queue size limit (${this.maxSize}) reached`);
     }
@@ -18,7 +18,7 @@ export class MessageQueue<T> {
     this.notifyListeners(message);
   }
 
-  dequeue(): T | undefined {
+  dequeue(): Message | undefined {
     const message = this.queue.shift();
     if (message) {
       this.notifyListeners(message);
@@ -26,7 +26,7 @@ export class MessageQueue<T> {
     return message;
   }
 
-  peek(): T | undefined {
+  peek(): Message | undefined {
     return this.queue[0];
   }
 
@@ -42,14 +42,14 @@ export class MessageQueue<T> {
     return this.queue.length === 0;
   }
 
-  on(listener: (message: T) => void): void {
+  on(listener: (message: Message) => void): void {
     if (typeof listener !== 'function') {
       throw new Error('Listener must be a function');
     }
     this.listeners.push(listener);
   }
 
-  private notifyListeners(message: T): void {
+  private notifyListeners(message: Message): void {
     this.listeners.forEach(listener => {
       try {
         listener(message);
@@ -59,7 +59,7 @@ export class MessageQueue<T> {
     });
   }
 
-  toArray(): T[] {
+  toArray(): Message[] {
     return [...this.queue];
   }
 

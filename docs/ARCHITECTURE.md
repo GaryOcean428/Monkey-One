@@ -48,8 +48,8 @@ src/
 - Rate limiting and caching
 
 #### AI Integration
-- Local model inference (Phi-3.5)
-- Cloud model integration (GPT-4, Claude)
+- Local model inference (granite3.1-dense:2b)
+- Cloud model integration (claude-3-5-sonnet, o1)
 - Model quantization and optimization
 - Streaming responses
 

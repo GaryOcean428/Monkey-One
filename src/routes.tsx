@@ -13,7 +13,7 @@ const AgentsPanel = lazy(() => import('./components/panels/AgentsPanel'));
 const WorkflowPanel = lazy(() => import('./components/panels/WorkflowPanel'));
 const DocumentsPanel = lazy(() => import('./components/panels/DocumentsPanel'));
 const ToolsPanel = lazy(() => import('./components/panels/ToolsPanel'));
-const GithubPanel = lazy(() => import('./components/panels/GithubPanel'));
+const GitHubPanel = lazy(() => import('./components/panels/GitHubPanel'));
 const PerformancePanel = lazy(() => import('./components/panels/PerformancePanel'));
 const ChatPanel = lazy(() => import('./components/chat/ChatContainer').then(module => ({ default: module.ChatContainer })));
 

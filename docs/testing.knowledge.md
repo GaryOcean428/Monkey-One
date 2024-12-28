@@ -53,10 +53,146 @@
 
 ### Model Configuration
 - Always use models specified in models.md
+- Model tiers:
+  - Low tier (simple tasks): granite3.1-dense:2b
+  - Mid tier (moderate tasks): claude-3-5-haiku@20241022
+  - High tier (complex/coding tasks): claude-3-5-sonnet-v2@20241022
+  - Superior tier (very complex/system design): o1-2024-12-01
 - Default to granite3.1-dense:2b for local development
-- Use claude-3-5-haiku for mid-tier tasks
-- Use claude-3-5-sonnet for high complexity tasks
 - Never use models not listed in models.md
+- Model selection based on:
+  - Task complexity (0-1 scale)
+  - Task type (coding, system_design, analysis, general)
+  - Context length
+  - Performance requirements
+
+### Type Organization
+- Keep all core types in src/lib/types/core.ts
+- Re-export types from a single location (src/types/index.ts)
+- Use core types consistently across the codebase
+- Avoid duplicate type definitions
+- When using types in tests, always import from core types
+- Ensure mock implementations fully satisfy interfaces
+- Use type assertions sparingly and only in test utilities
+- Keep type definitions close to their implementations
+
+### Type Consistency Rules
+- Always import Message type from lib/types/core
+- Always import Agent interfaces from lib/types/core
+- Use enums (MessageType, AgentType, AgentStatus) from core
+- Avoid creating duplicate or parallel type definitions
+- Update all related files when changing core types
+- Keep all core types in src/lib/types/core.ts
+- Re-export types from a single location (src/types/index.ts)
+- Use core types consistently across the codebase
+- Avoid duplicate type definitions
+
+### Test Setup and Utilities
+- Project uses Vitest, not Jest
+- Import test utilities from 'vitest' not 'jest'
+- Use vi.fn() instead of jest.fn()
+- Use vi.mock() instead of jest.mock()
+- Use vi.spyOn() instead of jest.spyOn()
+- Test files must import { expect, describe, it, beforeEach } from 'vitest'
+- Use test utilities from src/test/test-utils.ts for common mocks
+- Mock agents should extend MockAgent from test-utils
+- Mock messages should use createMockMessage from test-utils
+- Mock network calls using mockFetch, mockResponse, mockErrorResponse
+
+### Type Organization
+- Keep all core types in src/lib/types/core.ts
+- Re-export types from a single location (src/types/index.ts)
+- Use core types consistently across the codebase
+- Avoid duplicate type definitions
+- When using types in tests, always import from core types
+- Ensure mock implementations fully satisfy interfaces
+- Use type assertions sparingly and only in test utilities
+- Keep type definitions close to their implementations
+
+### Store Testing
+- Mock store modules using vi.mock()
+- Return mock state and functions from store mocks
+- Use act() when updating store state in tests
+- Test store subscriptions cleanup
+- Mock only the minimum required store functionality
+- Keep store mocks close to actual store shape
+
+### Monitoring and Metrics
+- Track agent metrics in a central monitor
+- Use mutex locks for thread safety
+- Implement periodic cleanup of old data
+- Track message counts, errors, response times
+- Use consistent metric types across codebase
+- Implement proper cleanup in dispose methods
+- Project uses Vitest, not Jest
+- Import test utilities from 'vitest' not 'jest'
+- Use vi.fn() instead of jest.fn()
+- Use vi.mock() instead of jest.mock()
+- Use vi.spyOn() instead of jest.spyOn()
+- Test files must import { expect, describe, it, beforeEach } from 'vitest'
+- Use test utilities from src/test/test-utils.ts for common mocks
+- Mock agents should extend MockAgent from test-utils
+- Mock messages should use createMockMessage from test-utils
+- Mock network calls using mockFetch, mockResponse, mockErrorResponse
+
+### Store Testing
+- Mock store modules using vi.mock()
+- Return mock state and functions from store mocks
+- Use act() when updating store state in tests
+- Test store subscriptions cleanup
+- Mock only the minimum required store functionality
+- Keep store mocks close to actual store shape
+
+### Monitoring and Metrics
+- Track agent metrics in a central monitor
+- Use mutex locks for thread safety
+- Implement periodic cleanup of old data
+- Track message counts, errors, response times
+- Use consistent metric types across codebase
+- Implement proper cleanup in dispose methods
+- Mock store modules using vi.mock()
+- Return mock state and functions from store mocks
+- Use act() when updating store state in tests
+- Test store subscriptions cleanup
+- Mock only the minimum required store functionality
+- Keep store mocks close to actual store shape
+- Project uses Vitest, not Jest
+- Import test utilities from 'vitest' not 'jest'
+- Use vi.fn() instead of jest.fn()
+- Use vi.mock() instead of jest.mock()
+- Use vi.spyOn() instead of jest.spyOn()
+- Test files must import { expect, describe, it, beforeEach } from 'vitest'
+- Use test utilities from src/test/test-utils.ts for common mocks
+- Mock agents should extend MockAgent from test-utils
+- Mock messages should use createMockMessage from test-utils
+- Mock network calls using mockFetch, mockResponse, mockErrorResponse
+- Type errors in test files do not prevent dev server from running
+- Build commands may timeout in development environment
+- Consider running specific test suites rather than full suite
+- Use --max-old-space-size=4096 for large builds
+- Split test runs into smaller chunks
+- Run targeted linting on specific directories
+- Consider using parallel test execution
+
+### Test Mocking Best Practices
+- Use vi.fn() for simple function mocks
+- Use vi.mock() for module mocks
+- Use vi.spyOn() for method spies
+- Mock at the lowest possible level
+- Reset mocks in beforeEach
+- Clear all mocks in afterEach
+- Use strong typing for mocked functions
+- Project uses Vitest, not Jest
+- Import test utilities from 'vitest' not 'jest'
+- Use vi.fn() instead of jest.fn()
+- Use vi.mock() instead of jest.mock()
+- Use vi.spyOn() instead of jest.spyOn()
+- Test files must import { expect, describe, it, beforeEach } from 'vitest'
+- Use test utilities from src/test/test-utils.ts for common mocks
+- Mock agents should extend MockAgent from test-utils
+- Mock messages should use createMockMessage from test-utils
+- Mock network calls using mockFetch, mockResponse, mockErrorResponse
+- Type errors in test files do not prevent dev server from running
 
 ### Test Setup
 - Project uses Vitest, not Jest
@@ -159,6 +295,24 @@ global.ResizeObserver = vi.fn().mockImplementation(...);
   - Input for numbers with min/max
   - Input for text with validation
 
+### Panel Component Structure
+- Split complex panels into Content/Container pattern
+- Use Tabs for organizing multiple features
+- Include refresh functionality for data-driven panels
+- Show loading overlay for long operations
+- Provide clear error states with recovery options
+- Group related controls with Card components
+- Use consistent spacing (space-y-4)
+- Include aria-labels for accessibility
+- Implement proper error boundaries
+- Use ToolhouseErrorBoundary for error handling
+- Show LoadingSpinner during loading states
+- Use Card components to group related content
+- Include proper headings and subheadings
+- Add descriptive text for empty states
+- Use consistent button patterns (Plus icon for add, etc.)
+- Implement responsive layouts with grid/flex
+
 ### Message Testing
 When creating test messages, always include all required fields:
 ```typescript
@@ -173,8 +327,24 @@ const testMessage = {
 };
 ```
 
+Important:
+- Always import Message type from lib/types/core
+- Always use MessageType enum from lib/types/core
+- Include all required fields
+- Optional fields: metadata, status, sender, recipient
+- MessageType values must be uppercase (e.g., MessageType.USER, MessageType.SYSTEM)
+- Available MessageTypes: USER, SYSTEM, TASK, RESPONSE, ERROR, BROADCAST, HANDOFF
+
 ### Agent Testing
 When working with agents, always use the proper enums and implement all required interface methods:
+
+### Agent Initialization
+- AgentRegistry must be initialized before AgentContext
+- Default agents must be registered in registerDefaultAgents()
+- At least one agent must be registered for chat to work
+- Agent types: ORCHESTRATOR, WORKER, SPECIALIST
+- Each agent needs at least one capability
+- Agent names default to "Agent {id}" if not provided
 
 - Use `AgentType` enum for agent types:
   - `AgentType.ORCHESTRATOR`
@@ -244,6 +414,10 @@ All agents must implement:
 - Use type assertions for empty arrays: `[] as Type[]`
 - Use union types for string literals: `type Status = 'available' | 'busy' | 'offline'`
 - Define constants as `const NAME = {...} as const` instead of `enum`
+- Enum values should be uppercase (e.g., MessageType.USER instead of 'user')
+- Import types from src/lib/types/core.ts to ensure consistency
+- Mock implementations must fully satisfy interfaces
+- Use type assertions only in test utilities
 
 ### Test Assertions
 - Use toEqual() for object comparisons instead of individual property checks
@@ -262,9 +436,16 @@ const testMessage = {
   role: 'user' | 'assistant' | 'system';
   content: string;
   timestamp: number;
+  status?: 'sending' | 'sent' | 'error';
   metadata?: Record<string, unknown>;
 };
 ```
+
+Important:
+- Always import Message type from lib/types/core
+- Always use MessageType enum from lib/types/core
+- Include all required fields
+- Optional fields: metadata, status, sender, recipient
 
 ### Agent Metrics Testing
 When testing agent metrics:
@@ -304,6 +485,38 @@ class MockAgent implements Agent {
 ```
 
 ### CI/CD Integration
+- Run tests in GitHub Actions
+- Generate coverage reports
+- Enforce minimum coverage
+- Block merges on test failures
+- Use GH_TOKEN instead of GITHUB_TOKEN for Vercel deployments to avoid conflicts
+
+### Build and Test Performance
+- Build commands may timeout in development environment
+- Consider running specific test suites rather than full suite
+- Use --max-old-space-size=4096 for large builds
+- Split test runs into smaller chunks
+- Run targeted linting on specific directories
+- Consider using parallel test execution
+
+### Performance Optimization Patterns
+- Use LRU cache eviction for memory management
+- Implement batch processing with size limits
+- Pre-fetch frequently accessed data
+- Use parallel processing with concurrency limits
+- Monitor and log performance metrics
+- Clean up old cache entries periodically
+- Deduplicate data before processing
+- Trigger cleanup when memory usage is high
+- Use batched metrics collection
+- Log performance issues for monitoring
+
+### Development Server
+- Dev server runs on port 3000
+- Proxy server runs on port 3001
+- Check for port conflicts with `lsof -i :PORT`
+- Kill conflicting processes with `kill PID`
+- Always verify both Vite and proxy server start successfully
 - Run tests in GitHub Actions
 - Generate coverage reports
 - Enforce minimum coverage

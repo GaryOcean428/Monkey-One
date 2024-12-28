@@ -1,4 +1,4 @@
-import { BaseProvider } from '../providers/BaseProvider';
+import { BaseProvider } from '../../providers/BaseProvider';
 import { useSettingsStore } from '../../../store/settingsStore';
 import { ModelResponse, StreamChunk } from '../types/models';
 

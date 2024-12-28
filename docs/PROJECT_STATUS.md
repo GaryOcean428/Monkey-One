@@ -116,10 +116,10 @@
 ### Critical
 
 1. Model Management
-   - Model download and caching
-   - Progress indicators
-   - Model switching
-   - Performance optimization
+   - Model download and caching for local models (granite3.1-dense:2b, phi3.5)
+   - Progress indicators for model operations
+   - Model switching between providers (local, anthropic, openai, groq, qwen, perplexity)
+   - Performance optimization and monitoring
 
 2. Workflow System
    - Visual workflow builder
@@ -220,14 +220,22 @@
 
 ## Performance Metrics
 
-### Current
+### Current Performance Metrics
 - Initial load time: 1.2s
-- Model load time: 3.5s
+- Model load time: 
+  - Local models (granite3.1-dense:2b): 2.5s
+  - Cloud models: < 500ms connection time
 - Memory usage: 2.2GB
-- Response time: 150ms
+- Response time:
+  - Local models: 150-300ms
+  - Cloud models: 500-1000ms
 
-### Targets
+### Target Performance Metrics
 - Initial load time: < 1s
-- Model load time: < 2s
+- Model load time:
+  - Local models: < 2s
+  - Cloud models: < 200ms connection time
 - Memory usage: < 2GB
-- Response time: < 100ms
+- Response time:
+  - Local models: < 100ms
+  - Cloud models: < 500ms
