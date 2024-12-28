@@ -9,11 +9,6 @@ interface ChatInputProps {
   placeholder?: string;
 }
 
-/**
- * ChatInput component for handling user message input
- * @param {ChatInputProps} props - Component props
- * @returns {JSX.Element} Rendered chat input component
- */
 export const ChatInput: React.FC<ChatInputProps> = ({ 
   onSendMessage, 
   disabled = false,

@@ -54,12 +54,24 @@ abstract class BaseModelClient {
     if (options.stream || !options.cacheResponse) {
       return null;
     }
-    return responseCache.get(prompt, this.config.apiEndpoint!, options);
+    
+    const cacheKey = `${this.config.provider}-${this.config.apiEndpoint}-${prompt}`;
+    const cachedResponse = await responseCache.get(cacheKey, options);
+    
+    if (cachedResponse) {
+      logger.info(`Cache hit for ${cacheKey}`);
+      return cachedResponse;
+    }
+    
+    logger.info(`Cache miss for ${cacheKey}`);
+    return null;
   }
 
   protected async cacheResponse(prompt: string, options: ModelClientOptions, response: ModelResponse): Promise<void> {
     if (!options.stream && options.cacheResponse) {
-      responseCache.set(prompt, this.config.apiEndpoint!, options, response);
+      const cacheKey = `${this.config.provider}-${this.config.apiEndpoint}-${prompt}`;
+      await responseCache.set(cacheKey, options, response);
+      logger.info(`Cached response for ${cacheKey}`);
     }
   }
 

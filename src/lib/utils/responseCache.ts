@@ -15,6 +15,7 @@ interface CacheConfig {
 export class ResponseCache {
   private cache: Map<string, CacheEntry>;
   private config: CacheConfig;
+  private readonly cleanupInterval: number = 1000 * 60 * 5; // Cleanup every 5 minutes
 
   constructor(config: Partial<CacheConfig> = {}) {
     this.cache = new Map();
@@ -23,17 +24,19 @@ export class ResponseCache {
       maxSize: 1000,       // Default max size
       ...config
     };
+    
+    // Start periodic cleanup
+    setInterval(() => this.cleanup(), this.cleanupInterval);
   }
 
-  private generateKey(prompt: string, modelName: string, options: any): string {
+  private generateKey(cacheKey: string, options: any): string {
     const sortedOptions = Object.keys(options).sort().reduce((acc, key) => {
       acc[key] = options[key];
       return acc;
     }, {} as any);
 
     return JSON.stringify({
-      prompt,
-      modelName,
+      cacheKey,
       options: sortedOptions
     });
   }
@@ -43,17 +46,20 @@ export class ResponseCache {
   }
 
   private cleanup(): void {
-    const now = Date.now();
+    logger.info('Starting cache cleanup');
+    let cleanedCount = 0;
+    
     for (const [key, entry] of this.cache.entries()) {
       if (this.isExpired(entry)) {
         this.cache.delete(key);
+        cleanedCount++;
       }
     }
+    
+    logger.info(`Cleaned up ${cleanedCount} expired cache entries`);
   }
 
-  set(prompt: string, modelName: string, options: any, response: ModelResponse): void {
-    this.cleanup();
-
+  set(cacheKey: string, options: any, response: ModelResponse): void {
     // If cache is full, remove oldest entries
     if (this.cache.size >= this.config.maxSize) {
       const entries = Array.from(this.cache.entries());
@@ -62,7 +68,7 @@ export class ResponseCache {
       entriesToRemove.forEach(([key]) => this.cache.delete(key));
     }
 
-    const key = this.generateKey(prompt, modelName, options);
+    const key = this.generateKey(cacheKey, options);
     this.cache.set(key, {
       response,
       timestamp: Date.now(),
@@ -72,10 +78,8 @@ export class ResponseCache {
     logger.debug(`Cached response for key: ${key.substring(0, 50)}...`);
   }
 
-  get(prompt: string, modelName: string, options: any): ModelResponse | null {
-    this.cleanup();
-    
-    const key = this.generateKey(prompt, modelName, options);
+  get(cacheKey: string, options: any): ModelResponse | null {
+    const key = this.generateKey(cacheKey, options);
     const entry = this.cache.get(key);
 
     if (!entry) {

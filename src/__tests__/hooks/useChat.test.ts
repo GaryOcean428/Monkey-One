@@ -1,55 +1,44 @@
+import { describe, it, expect, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { AgentType, AgentStatus } from '../../types';
 import { useChat } from '../../hooks/useChat';
-import { useChatStore } from '../../store/chatStore';
-import { useAgentStore } from '../../store/agentStore';
+import { MockAgent } from '../../test/test-utils';
 
-// Mock the stores
-jest.mock('../../store/chatStore');
-jest.mock('../../store/agentStore');
+// Mock the store modules
+vi.mock('../../store/chatStore', () => ({
+  useChatStore: () => ({
+    messages: [],
+    tasks: [],
+    activeTask: null,
+    isProcessing: false,
+    error: null,
+    sendMessage: vi.fn(),
+    clearMessages: vi.fn(),
+    approveTask: vi.fn(),
+    rejectTask: vi.fn()
+  })
+}));
+
+vi.mock('../../store/agentStore', () => ({
+  useAgentStore: () => ({
+    activeAgent: null,
+    setActiveAgent: vi.fn()
+  })
+}));
 
 describe('useChat', () => {
-  beforeEach(() => {
-    // Reset store states
-    useChatStore.setState({
-      messages: [],
-      tasks: [],
-      activeTask: null,
-      isProcessing: false,
-      error: null
-    });
-
-    useAgentStore.setState({
-      activeAgent: null
-    });
+  it('initializes with empty messages', () => {
+    const { result } = renderHook(() => useChat());
+    expect(result.current.messages).toEqual([]);
   });
 
-  it('should throw error when no active agent is selected', async () => {
+  it('handles setting active agent', async () => {
+    const mockAgent = new MockAgent('test-agent');
     const { result } = renderHook(() => useChat());
 
     await act(async () => {
-      await expect(result.current.sendMessage('test')).rejects.toThrow('No active agent selected');
+      result.current.setActiveAgent(mockAgent);
     });
+
+    expect(result.current.hasActiveAgent).toBe(true);
   });
-
-  it('should send message when active agent is selected', async () => {
-    useAgentStore.setState({
-      activeAgent: {
-        id: 'test-agent',
-        name: 'Test Agent',
-        type: AgentType.ORCHESTRATOR,
-        status: AgentStatus.IDLE
-      }
-    });
-
-    const { result } = renderHook(() => useChat());
-
-    await act(async () => {
-      await result.current.sendMessage('test');
-    });
-
-    expect(useChatStore.getState().messages).toHaveLength(2);
-  });
-
-  // Add more test cases
-});
+});

@@ -1,62 +1,35 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { BaseAgent } from '../../lib/agents/base';
-import { AgentCapability, Message, MessageType } from '../../types';
-
-// Create test agent class
-class TestAgent extends BaseAgent {
-  constructor() {
-    super('test-agent', 'Test Agent', 'tester', [
-      {
-        name: 'test',
-        description: 'Test capability',
-        version: '1.0.0'
-      }
-    ]);
-  }
-
-  async processMessage() {
-    // Test implementation
-    return {
-      id: 'test',
-      type: MessageType.RESPONSE,
-      role: 'assistant',
-      content: 'test response',
-      timestamp: Date.now()
-    };
-  }
-}
+import { AgentType, AgentStatus, type AgentCapability } from '../../lib/types/core';
+import { MockAgent, createMockMessage } from '../../test/test-utils';
 
 describe('BaseAgent', () => {
-  let agent: TestAgent;
+  class TestAgent extends MockAgent {
+    constructor(id: string) {
+      super(id, AgentType.WORKER);
+    }
+  }
 
-  beforeEach(() => {
-    agent = new TestAgent();
+  it('initializes with correct properties', () => {
+    const agent = new TestAgent('test-agent');
+    expect(agent.id).toBe('test-agent');
+    expect(agent.type).toBe(AgentType.WORKER);
+    expect(agent.status).toBe(AgentStatus.AVAILABLE);
+    expect(agent.capabilities).toEqual([]);
   });
 
-  describe('initialization', () => {
-    it('should initialize with correct properties', () => {
-      expect(agent.id).toBe('test-agent');
-      expect(agent.role).toBe('tester');
-      expect(agent.capabilities).toHaveLength(1);
-      expect(agent.capabilities[0].name).toBe('test');
-      expect(agent.subordinates).toEqual([]);
-    });
-  });
+  it('manages capabilities correctly', () => {
+    const agent = new TestAgent('test-agent');
+    const capability: AgentCapability = {
+      name: 'test-capability',
+      description: 'Test capability'
+    };
 
-  describe('capability management', () => {
-    it('should register new capabilities', () => {
-      const newCapability: AgentCapability = {
-        name: 'new-capability',
-        description: 'A new test capability',
-        version: '1.0.0'
-      };
-      agent.capabilities.push(newCapability);
-      expect(agent.capabilities).toContain(newCapability);
-    });
+    agent.addCapability(capability);
+    expect(agent.hasCapability('test-capability')).toBe(true);
+    expect(agent.getCapabilities()).toContainEqual(capability);
 
-    it('should check capability existence', () => {
-      expect(agent.hasCapability('test')).toBe(true);
-      expect(agent.hasCapability('non-existent')).toBe(false);
-    });
+    agent.removeCapability('test-capability');
+    expect(agent.hasCapability('test-capability')).toBe(false);
   });
 });

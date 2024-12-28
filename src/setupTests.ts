@@ -1,12 +1,12 @@
 import '@testing-library/jest-dom';
-import { expect, afterEach, vi } from 'vitest';
+import { expect, afterEach } from 'vitest';
 import { cleanup } from '@testing-library/react';
 import * as matchers from '@testing-library/jest-dom/matchers';
 
-// Extend Vitest's expect with jest-dom matchers
+// Extend Vitest's expect
 expect.extend(matchers);
 
-// Run cleanup after each test case
+// Cleanup after each test
 afterEach(() => {
   cleanup();
 });
@@ -34,47 +34,6 @@ global.ResizeObserver = vi.fn().mockImplementation(() => ({
 }));
 
 // Mock TextDecoder
-class MockTextDecoder {
-  decode(data: Uint8Array | ArrayBuffer): string {
-    if (data instanceof Uint8Array) {
-      return Buffer.from(data).toString('utf-8');
-    }
-    return Buffer.from(new Uint8Array(data)).toString('utf-8');
-  }
-}
-
-global.TextDecoder = MockTextDecoder as any;
-
-// Mock canvas context methods
-const mockCanvasContext = {
-  measureText: () => ({ width: 100 }),
-  fillText: vi.fn(),
-  strokeText: vi.fn(),
-  save: vi.fn(),
-  restore: vi.fn(),
-  beginPath: vi.fn(),
-  moveTo: vi.fn(),
-  lineTo: vi.fn(),
-  stroke: vi.fn(),
-  clearRect: vi.fn(),
-  fillRect: vi.fn(),
-  setTransform: vi.fn(),
-  transform: vi.fn(),
-  translate: vi.fn(),
-  scale: vi.fn(),
-  rotate: vi.fn(),
-  arc: vi.fn(),
-  fill: vi.fn(),
-  clip: vi.fn(),
-  drawImage: vi.fn(),
-  createLinearGradient: vi.fn(),
-  createPattern: vi.fn(),
-  createRadialGradient: vi.fn(),
-  getImageData: vi.fn(),
-  putImageData: vi.fn(),
-  isPointInPath: vi.fn(),
-  isPointInStroke: vi.fn(),
-};
-
-// Mock getContext
-HTMLCanvasElement.prototype.getContext = vi.fn().mockImplementation(() => mockCanvasContext);
+global.TextDecoder = vi.fn().mockImplementation(() => ({
+  decode: vi.fn(),
+}));

@@ -176,10 +176,10 @@ graph LR
     B -->|Complex| E[High Tier]
     B -->|Very Complex| F[Superior Tier]
     
-    C -->|llama3-groq-8b| G[Result]
-    D -->|llama-3.2-3b| G
-    E -->|llama-3.3-70b| G
-    F -->|grok-2| G
+    C -->|granite3.1-dense:2b| G[Result]
+    D -->|claude-3-5-haiku| G
+    E -->|claude-3-5-sonnet| G
+    F -->|o1| G
 ```
 
 ## Response Strategies

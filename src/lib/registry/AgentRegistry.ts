@@ -19,8 +19,16 @@ export class AgentRegistry {
   }
 
   private registerDefaultAgents(): void {
-    // Register the base agent type
-    this.registerAgentType(AgentType.BASE, BaseAgent);
+    // Register all default agent types
+    this.registerAgentType(AgentType.ORCHESTRATOR, BaseAgent);
+    this.registerAgentType(AgentType.WORKER, BaseAgent);
+    this.registerAgentType(AgentType.SPECIALIST, BaseAgent);
+    
+    // Create default orchestrator agent
+    const orchestrator = this.createAgent(AgentType.ORCHESTRATOR, [
+      { name: 'chat', description: 'Basic chat capability' }
+    ]);
+    orchestrator.initialize();
   }
 
   registerAgentType(type: AgentType, agentClass: typeof BaseAgent): void {

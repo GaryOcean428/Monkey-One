@@ -19,17 +19,41 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // Initialize agents
-    const initialAgents = agentManager.getAllAgents().map(agent => ({
-      id: agent.id,
-      name: agent.name,
-      type: agent.role.toLowerCase() as Agent['type'],
-      status: 'idle'
-    }));
-    setAgents(initialAgents);
-    if (initialAgents.length > 0) {
-      setActiveAgent(initialAgents[0]);
-    }
-  }, []);
+    const loadAgents = async () => {
+      try {
+        // Ensure registry is initialized
+        const registry = agentManager.getRegistry();
+        if (!registry) {
+          console.error('Agent registry not initialized');
+          return;
+        }
+
+        // Get all available agents
+        const initialAgents = await agentManager.getAllAgents();
+        console.log('Loaded agents:', initialAgents);
+
+        // Map agents to UI format
+        const mappedAgents = initialAgents.map(agent => ({
+          id: agent.id,
+          name: agent.name || `Agent ${agent.id}`,
+          type: agent.type.toLowerCase() as Agent['type'],
+          status: agent.status || 'idle'
+        }));
+
+        setAgents(mappedAgents);
+
+        // Set first agent as active if none selected
+        if (mappedAgents.length > 0 && !activeAgent) {
+          console.log('Setting active agent:', mappedAgents[0]);
+          setActiveAgent(mappedAgents[0]);
+        }
+      } catch (error) {
+        console.error('Failed to load agents:', error);
+      }
+    };
+
+    void loadAgents();
+  }, [activeAgent]);
 
   const sendMessage = async (content: string): Promise<Message> => {
     if (!activeAgent) {
