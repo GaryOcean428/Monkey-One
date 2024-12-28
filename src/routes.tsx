@@ -1,14 +1,21 @@
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import { LoadingFallback } from './components/LoadingFallback';
-import { DashboardLayout } from './components/Layout/DashboardLayout';
 import { ToolhouseProvider } from './providers/ToolhouseProvider';
+import App from './App';
 
 // Lazy-loaded components
 const DashboardHome = lazy(() => import('./pages/Dashboard/DashboardHome').then(module => ({ default: module.DashboardHome })));
 const MemoryManager = lazy(() => import('./components/Memory/MemoryManager').then(module => ({ default: module.MemoryManager })));
 const Settings = lazy(() => import('./components/Settings').then(module => ({ default: module.Settings })));
 const ProfileManager = lazy(() => import('./components/Profile/ProfileManager').then(module => ({ default: module.ProfileManager })));
+const AgentsPanel = lazy(() => import('./components/panels/AgentsPanel'));
+const WorkflowPanel = lazy(() => import('./components/panels/WorkflowPanel'));
+const DocumentsPanel = lazy(() => import('./components/panels/DocumentsPanel'));
+const ToolsPanel = lazy(() => import('./components/panels/ToolsPanel'));
+const GithubPanel = lazy(() => import('./components/panels/GithubPanel'));
+const PerformancePanel = lazy(() => import('./components/panels/PerformancePanel'));
+const ChatPanel = lazy(() => import('./components/chat/ChatContainer').then(module => ({ default: module.ChatContainer })));
 
 const withSuspense = (Component: React.ComponentType) => (
   <Suspense fallback={<LoadingFallback />}>
@@ -18,43 +25,59 @@ const withSuspense = (Component: React.ComponentType) => (
 
 const withProviders = (element: React.ReactNode) => (
   <ToolhouseProvider>
-    <DashboardLayout>
-      {element}
-    </DashboardLayout>
+    {element}
   </ToolhouseProvider>
 );
 
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: withProviders(withSuspense(DashboardHome)),
+    element: <App />,
+    children: [
+      {
+        index: true,
+        element: withProviders(withSuspense(ChatPanel)),
+      },
+      {
+        path: 'agents',
+        element: withProviders(withSuspense(AgentsPanel)),
+      },
+      {
+        path: 'workflow',
+        element: withProviders(withSuspense(WorkflowPanel)),
+      },
+      {
+        path: 'memory',
+        element: withProviders(withSuspense(MemoryManager)),
+      },
+      {
+        path: 'documents',
+        element: withProviders(withSuspense(DocumentsPanel)),
+      },
+      {
+        path: 'tools',
+        element: withProviders(withSuspense(ToolsPanel)),
+      },
+      {
+        path: 'github',
+        element: withProviders(withSuspense(GithubPanel)),
+      },
+      {
+        path: 'performance',
+        element: withProviders(withSuspense(PerformancePanel)),
+      },
+      {
+        path: 'settings',
+        element: withProviders(withSuspense(Settings)),
+      },
+      {
+        path: 'profile',
+        element: withProviders(withSuspense(ProfileManager)),
+      },
+      {
+        path: '*',
+        element: <Navigate to="/" replace />,
+      },
+    ],
   },
-  {
-    path: '/memory',
-    element: withProviders(withSuspense(MemoryManager)),
-  },
-  {
-    path: '/profile',
-    element: withProviders(withSuspense(ProfileManager)),
-  },
-  {
-    path: '/settings',
-    element: withProviders(withSuspense(Settings)),
-  },
-  {
-    path: '*',
-    element: withProviders(
-      <div className="flex items-center justify-center h-[80vh]">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold">404</h1>
-          <p className="text-muted-foreground mt-2">Page not found</p>
-        </div>
-      </div>
-    ),
-  },
-], {
-  future: {
-    v7_startTransition: true,
-    v7_relativeSplatPath: true
-  }
-});
+]);

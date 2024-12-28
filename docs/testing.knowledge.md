@@ -51,6 +51,13 @@
 - @tensorflow/tfjs for ML-related tests
 - firebase/storage and firebase/firestore for Firebase tests
 
+### Model Configuration
+- Always use models specified in models.md
+- Default to granite3.1-dense:2b for local development
+- Use claude-3-5-haiku for mid-tier tasks
+- Use claude-3-5-sonnet for high complexity tasks
+- Never use models not listed in models.md
+
 ### Test Setup
 - Project uses Vitest, not Jest
 - Import test utilities from 'vitest' not 'jest'

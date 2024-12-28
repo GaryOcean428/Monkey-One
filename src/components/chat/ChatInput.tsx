@@ -1,10 +1,12 @@
-import React, { useState, KeyboardEvent, useCallback } from 'react';
-import { useChatStore } from '../../store/chatStore';
+import React, { useState, useRef, useCallback } from 'react';
+import { Textarea } from '../ui/textarea';
+import { Button } from '../ui/button';
+import { Send } from 'lucide-react';
 
 interface ChatInputProps {
-  onSubmit?: (message: string) => void;
-  placeholder?: string;
+  onSendMessage: (message: string) => void;
   disabled?: boolean;
+  placeholder?: string;
 }
 
 /**
@@ -12,57 +14,61 @@ interface ChatInputProps {
  * @param {ChatInputProps} props - Component props
  * @returns {JSX.Element} Rendered chat input component
  */
-export const ChatInput: React.FC<ChatInputProps> = ({
-  onSubmit,
-  placeholder = 'Type your message...',
+export const ChatInput: React.FC<ChatInputProps> = ({ 
+  onSendMessage, 
   disabled = false,
+  placeholder = 'Type a message...'
 }) => {
   const [message, setMessage] = useState('');
-  const addMessage = useChatStore((state) => state.addMessage);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const handleSubmit = useCallback(() => {
-    if (message.trim()) {
-      onSubmit?.(message);
-      addMessage({
-        role: 'user',
-        content: message,
-        timestamp: new Date().toISOString(),
-      });
+  const handleSubmit = useCallback((e: React.FormEvent) => {
+    e.preventDefault();
+    if (message.trim() && !disabled) {
+      onSendMessage(message.trim());
       setMessage('');
+      if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto';
+      }
     }
-  }, [message, onSubmit, addMessage]);
+  }, [message, onSendMessage, disabled]);
 
-  const handleKeyPress = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSubmit();
+      handleSubmit(e);
     }
-  };
+  }, [handleSubmit]);
+
+  const handleInput = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setMessage(e.target.value);
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, []);
 
   return (
-    <div className="flex items-center gap-2 p-4 border-t border-gray-200 dark:border-gray-700">
-      <textarea
-        className="flex-1 min-h-[40px] max-h-[120px] p-2 rounded-md border border-gray-300 
-                   dark:border-gray-600 dark:bg-gray-800 dark:text-white resize-none
-                   focus:outline-none focus:ring-2 focus:ring-blue-500"
+    <form onSubmit={handleSubmit} className="flex items-center gap-2 p-4 border-t border-gray-200 dark:border-gray-700">
+      <Textarea
+        ref={textareaRef}
         value={message}
-        onChange={(e) => setMessage(e.target.value)}
-        onKeyPress={handleKeyPress}
+        onChange={handleInput}
+        onKeyDown={handleKeyDown}
         placeholder={placeholder}
         disabled={disabled}
+        className="min-h-[40px] max-h-[200px] resize-none"
         rows={1}
         aria-label="Chat input"
       />
-      <button
-        className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 
-                   disabled:bg-gray-400 disabled:cursor-not-allowed
-                   focus:outline-none focus:ring-2 focus:ring-blue-500"
-        onClick={handleSubmit}
-        disabled={disabled || !message.trim()}
-        aria-label="Send message"
+      <Button 
+        type="submit" 
+        disabled={!message.trim() || disabled}
+        variant="ghost"
+        size="icon"
       >
-        Send
-      </button>
-    </div>
+        <Send className="h-5 w-5" />
+      </Button>
+    </form>
   );
 };

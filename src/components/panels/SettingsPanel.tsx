@@ -134,7 +134,7 @@ function SettingsContent() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="llama3.2:1b-instruct-q2_K">Llama 3.2 1B (Default)</SelectItem>
+                    <SelectItem value="granite3.1-dense:2b">Granite 3.1 Dense 2B (Default)</SelectItem>
                     <SelectItem value="llama-3.3-70b-versatile">Llama 3.3 70B</SelectItem>
                     <SelectItem value="gpt-4o-2024-11-06">GPT-4o</SelectItem>
                     <SelectItem value="gpt-4o-mini-2024-07-18">GPT-4o Mini</SelectItem>
@@ -142,7 +142,7 @@ function SettingsContent() {
                     <SelectItem value="o1-mini-2024-09-15">O1 Mini</SelectItem>
                     <SelectItem value="Qwen/QwQ-32B-Preview">Qwen QwQ 32B</SelectItem>
                     <SelectItem value="claude-3-5-sonnet-v2@20241022">Claude 3.5 Sonnet</SelectItem>
-                    <SelectItem value="claude-3-5-haiku@20241022">Claude 3.5 Haiku</SelectItem>
+                    <SelectItem value="claude-3.5-haiku@20241022">Claude 3.5 Haiku</SelectItem>
                     <SelectItem value="llama-3.1-sonar-small-128k-online">Sonar Small</SelectItem>
                     <SelectItem value="llama-3.1-sonar-large-128k-online">Sonar Large</SelectItem>
                     <SelectItem value="llama-3.1-sonar-huge-128k-online">Sonar Huge</SelectItem>

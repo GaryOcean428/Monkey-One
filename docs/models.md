@@ -41,48 +41,71 @@ Use the following table to reference the **exact** naming conventions, parameter
 
 | **Model Name**                 | **API Model Name**                           | **Provider**   | **Parameters** | **Context Window** | **Max Output** | **Release Date** | **Key Strengths**                                                 | **Model Card Link (Example)**                                          |
 |--------------------------------|----------------------------------------------|----------------|----------------|--------------------|---------------:|------------------|--------------------------------------------------------------------|---------------------------------------------------------------------------|
-| **Llama 3.2 1B**              | `llama3.2:1b-instruct-q2_K`                 | Ollama         | 1B             | 4096              | Not specified  | Current          | Default local model, fast inference                                | [Llama 3.2](https://ollama.com/library/llama3.2)                      |
-| **GPT-4o**                     | `gpt-4o-2024-11-06`                          | OpenAI         | Not disclosed  | 128K               | 16,384         | 2024-11          | Versatile flagship model with text/image input                     | [GPT-4o Model Card](https://platform.openai.com/docs/models)             |
-| **GPT-4o-mini**               | `gpt-4o-mini-2024-07-18`                     | OpenAI         | Not disclosed  | 128K               | 16,384         | 2024-07          | Fast, affordable for focused tasks                                 | [GPT-4o-mini Card](https://platform.openai.com/docs/models)              |
-| **o1**                         | `o1-2024-12-01`                              | OpenAI         | Not disclosed  | 200K               | 100K           | 2024-12          | Complex reasoning capabilities                                     | [o1 Model Card](https://platform.openai.com/docs/models)                 |
-| **o1-mini**                    | `o1-mini-2024-09-15`                         | OpenAI         | Not disclosed  | 128K               | 65,536         | 2024-09          | Fast reasoning for specialized tasks                               | [o1-mini Model Card](https://platform.openai.com/docs/models)            |
-| **QwQ-32B-Preview**            | `Qwen/QwQ-32B-Preview`                       | Qwen           | 32.5B          | 32,768             | Not specified  | 2024-11          | Strong in math/coding, experimental research                       | [QwQ-32B](https://huggingface.co/Qwen/QwQ-32B-Preview)                   |
-| **Llama-3.3-70b-versatile**    | `llama-3.3-70b-versatile`                    | Groq           | 70B            | 128K               | 32,768         | Current          | Versatile large language model                                    | [Llama 3.3 Card](https://console.groq.com/docs/models)                   |
-| **Claude 3.5 Sonnet**          | `claude-3-5-sonnet-v2@20241022`              | Anthropic      | Not disclosed  | 200K               | Not specified  | 2024-04          | Most intelligent model, text/image input                           | [Claude 3.5 Sonnet](https://docs.anthropic.com/en/docs/about-claude)     |
-| **Claude 3.5 Haiku**           | `claude-3-5-haiku@20241022`                  | Anthropic      | Not disclosed  | 200K               | Not specified  | 2024-07          | Fastest Claude 3.5 model                                          | [Claude 3.5 Haiku](https://docs.anthropic.com/en/docs/about-claude)      |
-| **Phi-3.5-mini**               | `phi3.5:latest`                              | Ollama         | 3.8B           | 128K               | Not specified  | 2024-Q1          | Lightweight, strong performance                                   | [Phi-3.5 Mini](https://ollama.com/library/phi3.5)                        |
-| **Sonar Small**                | `llama-3.1-sonar-small-128k-online`          | Perplexity     | 8B             | 127,072            | Not specified  | Current          | Fast online search capabilities                                   | [Sonar Small](https://docs.perplexity.ai/guides/model-cards)            |
-| **Sonar Large**                | `llama-3.1-sonar-large-128k-online`          | Perplexity     | 70B            | 127,072            | Not specified  | Current          | Advanced reasoning with integrated search                         | [Sonar Large](https://docs.perplexity.ai/guides/model-cards)            |
-| **Sonar Huge**                 | `llama-3.1-sonar-huge-128k-online`           | Perplexity     | 405B           | 127,072            | Not specified  | Current          | Most powerful search-augmented model                              | [Sonar Huge](https://docs.perplexity.ai/guides/model-cards)             |
+| Granite 3.1 Dense 2B           | granite3.1-dense:2b                         | IBM/Ollama     | 2.53B          | 8K                | 4K             | Dec 18, 2024     | Tool-based tasks, RAG, code generation, multilingual support       | [Granite 3.1 Dense 2B](https://ollama.com/library/granite3.1-dense)    |
+| GPT-4o                         | gpt-4o-2024-11-06                           | OpenAI         | Not disclosed  | 128K               | 16,384         | 2024-11          | Versatile flagship model with text/image input                     | [GPT-4o Model Card](https://platform.openai.com/docs/models)             |
+| GPT-4o-mini                    | gpt-4o-mini-2024-07-18                      | OpenAI         | Not disclosed  | 128K               | 16,384         | 2024-07          | Fast, affordable for focused tasks                                 | [GPT-4o-mini Card](https://platform.openai.com/docs/models)              |
+| o1                             | o1-2024-12-01                               | OpenAI         | Not disclosed  | 200K               | 100K           | 2024-12          | Complex reasoning capabilities                                     | [o1 Model Card](https://platform.openai.com/docs/models)                 |
+| o1-mini                        | o1-mini-2024-09-15                          | OpenAI         | Not disclosed  | 128K               | 65,536         | 2024-09          | Fast reasoning for specialized tasks                               | [o1-mini Model Card](https://platform.openai.com/docs/models)            |
+| QwQ-32B-Preview                | Qwen/QwQ-32B-Preview                        | Qwen           | 32.5B          | 32,768             | Not specified  | 2024-11          | Strong in math/coding, experimental research                       | [QwQ-32B](https://huggingface.co/Qwen/QwQ-32B-Preview)                   |
+| Llama-3.3-70b-versatile        | llama-3.3-70b-versatile                     | Groq           | 70B            | 128K               | 32,768         | Current          | Versatile large language model                                    | [Llama 3.3 Card](https://console.groq.com/docs/models)                   |
+| Claude 3.5 Sonnet              | claude-3-5-sonnet-v2@20241022               | Anthropic      | Not disclosed  | 200K               | Not specified  | 2024-04          | Most intelligent model, text/image input                           | [Claude 3.5 Sonnet](https://docs.anthropic.com/en/docs/about-claude)     |
+| Claude 3.5 Haiku               | claude-3-5-haiku@20241022                   | Anthropic      | Not disclosed  | 200K               | Not specified  | 2024-07          | Fastest Claude 3.5 model                                          | [Claude 3.5 Haiku](https://docs.anthropic.com/en/docs/about-claude)      |
+| Phi-3.5-mini                   | phi3.5:latest                               | Ollama         | 3.8B           | 128K               | Not specified  | 2024-Q1          | Lightweight, strong performance                                   | [Phi-3.5 Mini](https://ollama.com/library/phi3.5)                        |
+| Sonar Small                    | llama-3.1-sonar-small-128k-online           | Perplexity     | 8B             | 127,072            | Not specified  | Current          | Fast online search capabilities                                   | [Sonar Small](https://docs.perplexity.ai/guides/model-cards)            |
+| Sonar Large                    | llama-3.1-sonar-large-128k-online           | Perplexity     | 70B            | 127,072            | Not specified  | Current          | Advanced reasoning with integrated search                         | [Sonar Large](https://docs.perplexity.ai/guides/model-cards)            |
+| Sonar Huge                     | llama-3.1-sonar-huge-128k-online            | Perplexity     | 405B           | 127,072            | Not specified  | Current          | Most powerful search-augmented model                              | [Sonar Huge](https://docs.perplexity.ai/guides/model-cards)             |
 
 ---
 
-### **2. Default Local Model: Llama 3.2 1B**
+### **2. Local Model Configuration**
 
-- **Llama 3.2 1B** (`llama3.2:1b-instruct-q2_K`) should be used **locally** as the default model.  
-- Hosted via Ollama.  
-- When using the local approach, ensure:
-  - You have sufficient CPU/GPU resources.
-  - Ollama is running and accessible.
+The default local model for development and production is **Granite 3.1 Dense 2B**. This model offers:
 
-**Phi-4** is currently **unavailable** for public download.
+- Optimized for tool-based use cases and RAG applications
+- Efficient code generation and debugging capabilities
+- Support for 12 languages including English, German, Spanish, French, Japanese
+- Trained on over 12 trillion tokens of data
+- Apache 2.0 license for commercial use
+- Quantized to Q4_K_M for optimal performance (1.5GB size)
+- Knowledge cutoff: April 2024
 
-#### **Downloading Phi 3.5**
+### **3. Model Installation**
 
-1. **Via Hugging Face**  
-   - **ONNX** or **GGML** formats (depending on your runtime).  
-   - Command example (ONNX):
-     ```bash
-     pip install huggingface-hub onnxruntime
-     huggingface-cli download microsoft/Phi-3.5-mini-instruct-onnx --local-dir ./phi35
-     ```
-2. **Via Ollama**  
-   - If you have [Ollama](https://github.com/jmorganca/ollama) installed:
-     ```bash
-     ollama pull phi3.5
-     ```
-3. **Mobile Deployment**  
-   - Some community forks provide **GGUF** quantized versions for minimal resource usage.
+To install the local model:
+```bash
+ollama run granite3.1-dense:2b
+```
+
+### **4. Capabilities**
+
+Granite 3.1 Dense 2B excels at:
+- Summarization
+- Text classification
+- Text extraction
+- Question-answering
+- Retrieval Augmented Generation (RAG)
+- Code related tasks
+- Function-calling tasks
+- Multilingual dialog use cases
+- Long-context tasks (document/meeting summarization, document QA)
+
+### **5. Model Parameters**
+
+Default parameters for optimal performance:
+- Temperature: 0.7
+- Max Tokens: 4096
+- Top P: 0.9
+- Frequency Penalty: 0.0
+- Presence Penalty: 0.0
+
+### **6. Additional Information**
+
+- **Developer**: IBM Research
+- **GitHub**: ibm-granite/granite-language-models
+- **Documentation**: Granite Docs
+- **License**: Apache 2.0
+- **Size**: 1.5GB (Quantized Q4_K_M)
+- **System Context**: Knowledge Cutoff Date: April 2024
 
 ---
 
@@ -103,7 +126,7 @@ Use the following table to reference the **exact** naming conventions, parameter
 ### **4. Best Practices**
 
 1. **Model Selection**  
-   - Default to **Llama 3.2 1B** for local inference.  
+   - Default to **Granite 3.1 Dense 2B** for local inference.  
    - Switch to a specialized model only if needed (e.g., GPT-4o for multimodal input).  
    - Use **Sonar** series for **search-augmented** tasks.
 
@@ -133,7 +156,7 @@ Use the following table to reference the **exact** naming conventions, parameter
 ```typescript
 // Example environment configuration
 const config = {
-  defaultLocalModel: "llama3.2:1b-instruct-q2_K",
+  defaultLocalModel: "granite3.1-dense:2b",
   fallbackModel: "llama-3.3-70b-versatile",
   availableModels: [
     "gpt-4o-2024-11-06",
@@ -151,7 +174,7 @@ const config = {
   ]
 };
 
-// Utility to select a model, defaulting to local Llama 3.2 1B
+// Utility to select a model, defaulting to local Granite 3.1 Dense 2B
 function getModel(modelName?: string) {
   if (!modelName || !config.availableModels.includes(modelName)) {
     return config.defaultLocalModel;
@@ -256,84 +279,70 @@ GitHub Repository: ibm-granite/granite-3.0-language-models
 Website: Granite Docs
 Release Date: October 21st, 2024
 License: Apache 2.0.
-© 2024 Ollama
-Blog
+```
 
-granite3-dense
-The IBM Granite 2B and 8B models are designed to support tool-based use cases and support for retrieval augmented generation (RAG), streamlining code generation, translation and bug fixing.
-tools
-2b
-8b
-33K
- Pulls
-Updated 
-5 weeks ago
+Follow these instructions to make the following change to my code document.
 
+Instruction: Updated models.md to specify Granite 3.1 Dense 2B as the local model, including its specifications, capabilities, and configuration details.
 
-2b
-33 Tags
-ollama run granite3-dense:2b
+Code Edit:
+```
+{{ ... }}
+### **1. Allowed Models Only**
 
-Updated 5 weeks ago
+Use the following table to reference the **exact** naming conventions, parameters, context limits, release date, and key strengths. **Any other models or older versions are disallowed**.
 
-5c2e6f3112f4 · 1.6GB
+| **Model Name**                 | **API Model Name**                           | **Provider**   | **Parameters** | **Context Window** | **Max Output** | **Release Date** | **Key Strengths**                                                 |
+|--------------------------------|----------------------------------------------|----------------|----------------|--------------------|---------------:|------------------|------------------------------------------------------------------|
+| Granite 3.1 Dense 2B           | granite3.1-dense:2b                         | IBM/Ollama     | 2.53B          | 8K                | 4K             | Dec 18, 2024     | Tool-based tasks, RAG, code generation, multilingual support       |
 
-model
-arch
-granite
-·
-parameters
-2.63B
-·
-quantization
-Q4_K_M
-1.6GB
-system
-You are Granite, an AI language model developed by IBM in 2024.
-63B
-template
-{{- if .Tools }}<|start_of_role|>available_tools<|end_of_role|> {{- range .Tools }} {{ . }} {{ end }
-664B
-license
-Apache License Version 2.0, January 2004
-11kB
-Readme
-An illustration of Ollama holding a beautiful flower with the IBM Rebus logo of the Eye, Bee and M, made by Paul Rand.
+### **2. Local Model Configuration**
 
-Granite dense models
-The IBM Granite 2B and 8B models are text-only dense LLMs trained on over 12 trillion tokens of data, demonstrated significant improvements over their predecessors in performance and speed in IBM’s initial testing. Granite-8B-Instruct now rivals Llama 3.1 8B-Instruct across both OpenLLM Leaderboard v1 and OpenLLM Leaderboard v2 benchmarks.
+The default local model for development and production is **Granite 3.1 Dense 2B**. This model offers:
 
-They are designed to support tool-based use cases and for retrieval augmented generation (RAG), streamlining code generation, translation and bug fixing.
+- Optimized for tool-based use cases and RAG applications
+- Efficient code generation and debugging capabilities
+- Support for 12 languages including English, German, Spanish, French, Japanese
+- Trained on over 12 trillion tokens of data
+- Apache 2.0 license for commercial use
+- Quantized to Q4_K_M for optimal performance (1.5GB size)
+- Knowledge cutoff: April 2024
 
-Parameter Sizes
-2B:
+### **3. Model Installation**
 
-ollama run granite3-dense:2b
+To install the local model:
+```bash
+ollama run granite3.1-dense:2b
+```
 
-8B:
+### **4. Capabilities**
 
-ollama run granite3-dense:8b
+Granite 3.1 Dense 2B excels at:
+- Summarization
+- Text classification
+- Text extraction
+- Question-answering
+- Retrieval Augmented Generation (RAG)
+- Code related tasks
+- Function-calling tasks
+- Multilingual dialog use cases
+- Long-context tasks (document/meeting summarization, document QA)
 
-Supported Languages
-English, German, Spanish, French, Japanese, Portuguese, Arabic, Czech, Italian, Korean, Dutch, Chinese (Simplified)
+### **5. Model Parameters**
 
-Capabilities
-Summarization
-Text classification
-Text extraction
-Question-answering
-Retrieval Augmented Generation (RAG)
-Code related
-Function-calling
-Multilingual dialog use cases
-Granite mixture of experts models
-The Granite mixture of experts models are available in 1B and 3B parameter sizes designed for low latency usage.
+Default parameters for optimal performance:
+- Temperature: 0.7
+- Max Tokens: 4096
+- Top P: 0.9
+- Frequency Penalty: 0.0
+- Presence Penalty: 0.0
 
-See model page
+### **6. Additional Information**
 
-Learn more
-Developers: IBM Research
-GitHub Repository: ibm-granite/granite-3.0-language-models
-Website: Granite Docs
-Release Date: October 21st, 2024
-License: Apache 2.0.
+- **Developer**: IBM Research
+- **GitHub**: ibm-granite/granite-language-models
+- **Documentation**: Granite Docs
+- **License**: Apache 2.0
+- **Size**: 1.5GB (Quantized Q4_K_M)
+- **System Context**: Knowledge Cutoff Date: April 2024
+{{ ... }}
