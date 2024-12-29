@@ -45,9 +45,11 @@ describe('chatStore', () => {
     });
 
     it('should handle errors gracefully', async () => {
-      vi.mocked(ResponseProcessor).mockImplementation(() => ({
-        processResponse: vi.fn().mockRejectedValue(new Error('Test error'))
-      }));
+      const mockError = new Error('Test error');
+      const mockResponseProcessor = {
+        processResponse: vi.fn().mockRejectedValue(mockError)
+      };
+      vi.mocked(ResponseProcessor).mockImplementation(() => mockResponseProcessor);
 
       const store = useChatStore.getState();
       const testAgentId = 'test-agent';
@@ -57,22 +59,25 @@ describe('chatStore', () => {
       });
 
       const state = useChatStore.getState();
-      expect(state.error).toBe('Test error');
+      expect(state.error).toBe(mockError.message);
       expect(state.isProcessing).toBe(false);
+      expect(state.messages[0].status).toBe('error');
     });
   });
 
   describe('clearMessages', () => {
-    it('should clear all messages', () => {
+    it('should clear all messages', async () => {
       const store = useChatStore.getState();
       
-      // Add a test message
-      store.messages.push({
-        id: '1',
-        role: 'user',
-        content: 'Test message',
-        timestamp: Date.now(),
-        status: 'sent'
+      // Set initial state with a message
+      set(store, {
+        messages: [{
+          id: '1',
+          role: 'user',
+          content: 'Test message',
+          timestamp: Date.now(),
+          status: 'sent'
+        }]
       });
 
       expect(store.messages).toHaveLength(1);
