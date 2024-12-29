@@ -1,20 +1,25 @@
+// Import vi first
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { act } from 'react';  // Import from react instead of react-dom/test-utils
-import { useChatStore } from '../../store/chatStore';
-import { ResponseProcessor } from '../../lib/llm/ResponseProcessor';
+import { act } from 'react';
 
-// Mock dependencies
-vi.mock('../../lib/llm/ResponseProcessor', () => ({
-  ResponseProcessor: vi.fn().mockImplementation(() => ({
-    processResponse: vi.fn().mockResolvedValue('Processed response')
-  }))
-}));
+// Mock dependencies before any imports that use them
+vi.mock('../../lib/llm/ResponseProcessor', () => {
+  return {
+    ResponseProcessor: vi.fn().mockImplementation(() => ({
+      processResponse: vi.fn().mockResolvedValue('Processed response')
+    }))
+  };
+});
 
 vi.mock('../../lib/memory', () => ({
   memoryManager: {
     storeConversation: vi.fn().mockResolvedValue(undefined)
   }
 }));
+
+// Import after mocks
+import { useChatStore } from '../../store/chatStore';
+import { ResponseProcessor } from '../../lib/llm/ResponseProcessor';
 
 describe('chatStore', () => {
   beforeEach(() => {
@@ -26,6 +31,11 @@ describe('chatStore', () => {
       error: null
     });
     vi.clearAllMocks();
+    
+    // Reset the mock implementation for each test
+    vi.mocked(ResponseProcessor).mockImplementation(() => ({
+      processResponse: vi.fn().mockResolvedValue('Processed response')
+    }));
   });
 
   describe('sendMessage', () => {
@@ -38,18 +48,20 @@ describe('chatStore', () => {
       });
 
       const state = useChatStore.getState();
-      expect(state.messages).toHaveLength(1); // Only user message since response processing is mocked
+      const mockInstance = vi.mocked(new ResponseProcessor());
+      expect(mockInstance.processResponse).toHaveBeenCalled();
+      expect(state.messages).toHaveLength(1);
       expect(state.messages[0].role).toBe('user');
       expect(state.messages[0].content).toBe('Test message');
       expect(state.isProcessing).toBe(false);
     });
 
     it('should handle errors gracefully', async () => {
+      // Setup error case
       const mockError = new Error('Test error');
-      const mockResponseProcessor = {
-        processResponse: vi.fn().mockRejectedValue(mockError)
-      };
-      vi.mocked(ResponseProcessor).mockImplementation(() => mockResponseProcessor);
+      vi.mocked(ResponseProcessor).mockImplementation(() => ({
+        processResponse: vi.fn().mockRejectedValueOnce(mockError)
+      }));
 
       const store = useChatStore.getState();
       const testAgentId = 'test-agent';
@@ -59,7 +71,9 @@ describe('chatStore', () => {
       });
 
       const state = useChatStore.getState();
-      expect(state.error).toBe(mockError.message);
+      const mockInstance = vi.mocked(new ResponseProcessor());
+      expect(mockInstance.processResponse).toHaveBeenCalled();
+      expect(state.error).toBe('Test error');
       expect(state.isProcessing).toBe(false);
       expect(state.messages[0].status).toBe('error');
     });
