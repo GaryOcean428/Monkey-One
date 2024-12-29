@@ -126,6 +126,13 @@ Critical areas needing test coverage:
   - Always use npx when running tsc directly
   - Use simple patterns to avoid glob issues
   - Change directory first to use relative paths
+- Type errors in test files do not prevent dev server from running
+- Build commands may timeout in development environment
+- Consider running specific test suites rather than full suite
+- Use --max-old-space-size=4096 for large builds
+- Split test runs into smaller chunks
+- Run targeted linting on specific directories
+- Consider using parallel test execution
 - Consider using project references to split compilation
 - Mock Supabase responses must be valid JSON
 - Clean up test data in afterEach blocks
