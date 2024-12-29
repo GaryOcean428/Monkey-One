@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { act } from '@testing-library/react';
+import { act } from 'react';  // Import from react instead of react-dom/test-utils
 import { useChatStore } from '../../store/chatStore';
 import { ResponseProcessor } from '../../lib/llm/ResponseProcessor';
 
@@ -8,6 +8,12 @@ vi.mock('../../lib/llm/ResponseProcessor', () => ({
   ResponseProcessor: vi.fn().mockImplementation(() => ({
     processResponse: vi.fn().mockResolvedValue('Processed response')
   }))
+}));
+
+vi.mock('../../lib/memory', () => ({
+  memoryManager: {
+    storeConversation: vi.fn().mockResolvedValue(undefined)
+  }
 }));
 
 describe('chatStore', () => {

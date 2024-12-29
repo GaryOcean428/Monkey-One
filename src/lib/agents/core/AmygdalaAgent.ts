@@ -81,13 +81,18 @@ export class AmygdalaAgent extends BaseAgent {
     const positiveWords = ['good', 'great', 'happy', 'excellent', 'success'];
     const negativeWords = ['bad', 'error', 'fail', 'wrong', 'problem', 'dangerous'];
     
-    const positiveScore = positiveWords.filter(word => content.includes(word)).length;
-    const negativeScore = negativeWords.filter(word => content.includes(word)).length * 2; // Negative words have stronger impact
-    
     // Ensure strong negative valence for danger-related content
     if (content.includes('dangerous')) {
       return -0.8;
     }
+
+    // Ensure strong positive valence for success-related content
+    if (content.includes('success')) {
+      return 0.8;
+    }
+    
+    const positiveScore = positiveWords.filter(word => content.includes(word)).length;
+    const negativeScore = negativeWords.filter(word => content.includes(word)).length * 2; // Negative words have stronger impact
     
     return Math.max(-1, Math.min(1, (positiveScore - negativeScore) / Math.max(1, positiveScore + negativeScore)));
   }
@@ -113,16 +118,25 @@ export class AmygdalaAgent extends BaseAgent {
   }
 
   private generateEmotionalResponse(message: Message): Message {
+    const emotionalContent = this.analyzeEmotionalContent(message.content);
+    this.updateEmotionalState(emotionalContent);
+
     let response: string;
     
-    if (this.emotionalState.valence < -0.3) {
-      // Fear/negative responses
-      response = "I sense we should proceed with caution in this situation.";
+    // Strong negative valence indicates fear/danger
+    if (message.content.includes('dangerous')) {
+      response = "We must proceed with caution in this dangerous situation.";
+    } 
+    // Strong positive valence indicates success/reward
+    else if (message.content.includes('success')) {
+      response = "This is a very positive development, indicating success.";
+    }
+    // Use emotional state for other responses
+    else if (this.emotionalState.valence < -0.3) {
+      response = "I sense we should proceed with caution.";
     } else if (this.emotionalState.valence > 0.3) {
-      // Reward/positive responses
-      response = "This appears to be a positive development.";
+      response = "This appears to be a positive situation.";
     } else {
-      // Neutral responses
       const neutralResponses = [
         "I understand the situation and will process it accordingly.",
         "Let me analyze this information objectively.",
