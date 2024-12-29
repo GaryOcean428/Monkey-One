@@ -187,6 +187,26 @@ if (metrics.needsOptimization) {
 }
 ```
 
+## Testing
+
+- Unit tests with Vitest
+- Integration tests for agent interactions
+- E2E tests for full workflows
+- Performance testing with metrics
+- Test timeouts:
+  - Default: 10s
+  - Integration: 30s
+  - Type checking: Run in chunks
+- Test organization:
+  - Unit tests alongside source
+  - Integration tests in __tests__ directory
+  - E2E tests in cypress directory
+- Common patterns:
+  - Mock external services
+  - Use test utilities from test-utils.ts
+  - Reset state between tests
+  - Clean up resources in afterEach
+
 ## Future Enhancements
 
 ### 1. Scalability

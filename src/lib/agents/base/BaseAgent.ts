@@ -1,4 +1,4 @@
-import { Agent, AgentType, AgentStatus, Message, AgentCapability } from '../../../types/core';
+import { Agent, AgentType, AgentStatus, Message, AgentCapability } from '../../../lib/types/core';
 import { logger } from '../../../utils/logger';
 import { v4 as uuidv4 } from 'uuid';
 

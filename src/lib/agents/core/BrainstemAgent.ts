@@ -41,4 +41,23 @@ export class BrainstemAgent extends BaseAgent {
     this.initializeBrainstem();
   }
 
-  // Rest of the implementation remains the same...
+  private async initializeBrainstem(): Promise<void> {
+    // Initialize vital signs monitoring
+    this.updateTimer = setInterval(() => {
+      this.monitorVitalSigns();
+    }, this.UPDATE_INTERVAL);
+  }
+
+  private async monitorVitalSigns(): Promise<void> {
+    // Monitor and update vital signs
+    const currentTime = Date.now();
+    this.systemState.vitalSigns = this.systemState.vitalSigns.filter(
+      sign => currentTime - sign.timestamp < 5000 // Keep last 5 seconds
+    );
+  }
+
+  async shutdown(): Promise<void> {
+    clearInterval(this.updateTimer);
+    await super.shutdown();
+  }
+}

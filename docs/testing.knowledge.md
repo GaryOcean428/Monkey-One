@@ -90,6 +90,47 @@
 - Avoid duplicate type definitions
 
 ### Test Setup and Utilities
+
+### Known Test Issues
+- React test utils deprecation: Use `act` from 'react' instead of 'react-dom/test-utils'
+- Supabase tests require valid JSON in responses
+- Some test timeouts occur after 10s - may need timeout adjustment
+- Type checking can be slow on large codebases - consider running in chunks
+- AmygdalaAgent emotional response tests need exact string matches
+- Several test files have no tests implemented yet
+
+### Common Test Failures
+- AmygdalaAgent emotional responses not matching expected strings
+- chatStore message handling and clearing issues
+- useChat agent activation issues
+- ActivityMonitor event emission timing issues
+
+### Test Coverage Gaps
+Critical areas needing test coverage:
+- OrchestratorAgent
+- ToolPipeline
+- PerformanceOptimizer
+- HostAgentRuntime
+- BrainCore
+- AgentRegistry
+- MLService
+
+### Test Infrastructure
+- Default test timeout: 10s
+- Use longer timeouts for integration tests and type checking (>10s)
+- Type checking can be slow on large codebases
+- Run type checking in chunks:
+  - Check specific directories: `cd src/lib/agents && npx tsc --noEmit *.ts`
+  - Check core types first: `cd src/lib/types && npx tsc --noEmit *.ts`
+  - Check tests separately: `cd src/__tests__ && npx tsc --noEmit *.ts`
+  - Always use npx when running tsc directly
+  - Use simple patterns to avoid glob issues
+  - Change directory first to use relative paths
+- Consider using project references to split compilation
+- Mock Supabase responses must be valid JSON
+- Clean up test data in afterEach blocks
+- Reset mocks between tests
+
 - Project uses Vitest, not Jest
 - Import test utilities from 'vitest' not 'jest'
 - Use vi.fn() instead of jest.fn()
