@@ -214,3 +214,91 @@ async function generateResponse(prompt: string, chosenModel?: string) {
 - For specialized tasks not covered by the above list, consult your team lead before adding new models  
 
 **This completes the updated `models.md` document with the new table and Granite 3.1 Dense 2B as the default local model.**
+
+Gemini Developer API
+Get a Gemini API Key
+Get a Gemini API key and make your first API request in minutes.
+
+https://ai.google.dev/gemini-api/docs/models/gemini#gemini-2.0-flash
+
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+
+const genAI = new GoogleGenerativeAI("YOUR_API_KEY");
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+const prompt = "Explain how AI works";
+
+const result = await model.generateContent(prompt);
+console.log(result.response.text());
+
+Model details
+Property	Description
+Model code	models/gemini-2.0-flash-exp
+Supported data types
+Inputs
+
+Audio, images, video, and text
+
+Output
+
+Audio (coming soon), images (coming soon), and text
+
+Token limits[*]
+Input token limit
+
+1,048,576
+
+Output token limit
+
+8,192
+
+Rate limits[**]
+10 RPM
+4 million TPM
+1,500 RPD
+Capabilities
+Structured outputs
+
+Supported
+
+Caching
+
+Not supported
+
+Tuning
+
+Not supported
+
+Function calling
+
+Supported
+
+Code execution
+
+Supported
+
+Search
+
+Supported
+
+Image generation
+
+Supported
+
+Native tool use
+
+Supported
+
+Audio generation
+
+Supported
+
+Multimodal Live API
+
+Supported
+
+Versions	
+Read the model version patterns for more details.
+Latest: gemini-2.0-flash-exp
+Latest update	December 2024
+Knowledge cutoff	August 2024

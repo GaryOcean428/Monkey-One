@@ -15,34 +15,66 @@ import { ProviderRegistry } from './lib/providers';
 import { LocalProvider } from './lib/llm/providers/local';
 import { ModelManager } from './components/ModelManager';
 import { toast } from './components/ui/use-toast';
+import { useAgentStore } from './store/agentStore';
+import { LLMManager } from './lib/llm/providers';
+import { DashboardPanel } from './components/panels/DashboardPanel';
+import { AgentsPanel } from './components/panels/AgentsPanel';
+import { WorkflowPanel } from './components/panels/WorkflowPanel';
+import { MemoryPanel } from './components/panels/MemoryPanel';
+import { DocumentsPanel } from './components/panels/DocumentsPanel';
+import { ToolsPanel } from './components/panels/ToolsPanel';
+import { SearchPanel } from './components/panels/SearchPanel';
+import { VectorStorePanel } from './components/panels/VectorStorePanel';
+import { SettingsPanel } from './components/panels/SettingsPanel';
+import { PerformancePanel } from './components/panels/PerformancePanel';
 
 const providerRegistry = ProviderRegistry.getInstance();
 
 export const App: React.FC = () => {
   const { user, isLoading } = useAuth();
+  const setActiveAgent = useAgentStore(state => state.setActiveAgent);
+  const llmManager = React.useMemo(() => new LLMManager(), []);
 
   // Initialize services
   React.useEffect(() => {
     const initializeServices = async () => {
       try {
-        const localProvider = new LocalProvider();
-        await providerRegistry.registerProvider('local', localProvider);
+        // Initialize local provider if not already registered
+        if (!llmManager.getActiveProvider()) {
+          const localProvider = new LocalProvider();
+          await localProvider.initialize();
+          llmManager.registerProvider('local', localProvider);
+          llmManager.setActiveProvider('local');
+        }
+
+        setActiveAgent({
+          id: 'default-agent',
+          name: 'Local Agent',
+          description: 'Default local agent using Ollama',
+          provider: 'local',
+          capabilities: ['chat', 'rag'],
+          settings: {}
+        });
+
         toast({
           title: 'Success',
-          description: 'Local provider registered successfully',
+          description: 'Local provider and agent initialized successfully',
+          status: 'success',
+          duration: 3000,
+          isClosable: true,
         });
       } catch (error) {
-        console.error('Failed to initialize services:', error);
+        console.error('Error initializing services:', error);
         toast({
           title: 'Error',
-          description: 'Failed to initialize services',
+          description: error instanceof Error ? error.message : 'Failed to initialize services',
           variant: 'destructive',
         });
       }
     };
 
     initializeServices();
-  }, []);
+  }, [setActiveAgent, llmManager]);
 
   if (isLoading) {
     return (
@@ -68,18 +100,18 @@ export const App: React.FC = () => {
                 element={user ? <DashboardLayout /> : <Navigate to="/login" />}
               >
                 <Route index element={<Navigate to="/dashboard" />} />
-                <Route path="dashboard" element={<div>Dashboard</div>} />
+                <Route path="dashboard" element={<DashboardPanel />} />
                 <Route path="chat" element={<ChatContainer />} />
-                <Route path="agents" element={<div>Agents</div>} />
-                <Route path="workflows" element={<div>Workflows</div>} />
-                <Route path="memory" element={<div>Memory</div>} />
-                <Route path="documents" element={<div>Documents</div>} />
-                <Route path="tools" element={<div>Tools</div>} />
-                <Route path="search" element={<div>Search</div>} />
-                <Route path="vector-store" element={<div>Vector Store</div>} />
+                <Route path="agents" element={<AgentsPanel />} />
+                <Route path="workflows" element={<WorkflowPanel />} />
+                <Route path="memory" element={<MemoryPanel />} />
+                <Route path="documents" element={<DocumentsPanel />} />
+                <Route path="tools" element={<ToolsPanel />} />
+                <Route path="search" element={<SearchPanel />} />
+                <Route path="vector-store" element={<VectorStorePanel />} />
                 <Route path="github" element={<div>GitHub</div>} />
-                <Route path="performance" element={<div>Performance</div>} />
-                <Route path="settings" element={<div>Settings</div>} />
+                <Route path="performance" element={<PerformancePanel />} />
+                <Route path="settings" element={<SettingsPanel />} />
               </Route>
             </Routes>
             <ModelManager />

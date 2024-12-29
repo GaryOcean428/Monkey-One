@@ -181,372 +181,286 @@
 - View preferences
 - Workspace presets
 
-## UI/UX Documentation
+## UI/UX Guidelines
 
-## Overview
+### Panel System Architecture
 
-Monkey One uses a modern, responsive UI built with React and Tailwind CSS. The interface is designed to be intuitive, accessible, and efficient for both novice and expert users.
+#### Core Principles
+1. **Consistency**: Maintain uniform design and behavior across all panels
+2. **Performance**: Optimize for speed and responsiveness
+3. **Accessibility**: Ensure WCAG 2.1 compliance
+4. **Modularity**: Keep components reusable and maintainable
 
-## Core Components
+#### Panel Components
 
-### Layout Structure
-- `DashboardLayout`: Main application layout with sidebar navigation
-- `MainPanel`: Central content area with tab-based navigation
-- `Sidebar`: Collapsible navigation menu
-- `SettingsPanel`: Universal settings interface (modal and route versions)
+##### Dashboard Panel
+```typescript
+interface DashboardMetrics {
+  activeAgents: number;
+  completedTasks: number;
+  memoryUsage: number;
+  apiCalls: number;
+}
 
-### Navigation
+interface SystemStatus {
+  status: 'healthy' | 'warning' | 'error';
+  lastUpdate: string;
+  metrics: DashboardMetrics;
+}
+```
 
-#### Sidebar Navigation
-- Collapsible sidebar with icon and text labels
-- Primary navigation items for main features
-- Secondary navigation items for user-specific features
-- Visual indicators for active sections
+**Key Features**:
+- Real-time metrics display
+- System health monitoring
+- Resource usage tracking
+- Activity timeline
 
-#### Tab Navigation
-- Context-aware tab system in MainPanel
-- Smooth transitions between different views
-- Persistent state management
+##### Agents Panel
+```typescript
+interface Agent {
+  id: string;
+  name: string;
+  type: AgentType;
+  status: 'active' | 'inactive' | 'error';
+  capabilities: string[];
+  lastActive: string;
+}
+```
 
-### Panels and Modals
+**Key Features**:
+- Agent CRUD operations
+- Status monitoring
+- Capability management
+- Type configuration
 
-#### Settings Panel
-The settings panel is implemented as a universal component that works in two modes:
-1. **Modal Mode** (`isModal={true}`):
-   - Appears as an overlay
-   - Darkened background
-   - Centered on screen
-   - Dismissible with close button or click outside
+##### Memory Panel
+```typescript
+interface MemoryStats {
+  totalSize: number;
+  usedSize: number;
+  items: number;
+  lastBackup: string;
+}
+```
 
-2. **Route Mode** (`isModal={false}`):
-   - Full-page view
-   - Integrated with browser navigation
-   - Accessible via URL
-   - Maintains navigation history
+**Key Features**:
+- Memory usage visualization
+- Item management
+- Backup controls
+- Performance metrics
 
-Common features across both modes:
-- Tabbed interface for different setting categories
-- Consistent styling and interactions
-- Shared state management
-- Responsive layout
+##### Documents Panel
+```typescript
+interface Document {
+  id: string;
+  name: string;
+  type: string;
+  size: number;
+  modified: string;
+  tags: string[];
+}
+```
 
-#### Other Panels
-- `WorkflowPanel`: Workflow management interface
-- `MemoryPanel`: Memory and context management
-- `AgentPanel`: Agent configuration and monitoring
-- `ChatPanel`: Main chat interface
-- `ToolsPanel`: Tool management and creation
+**Key Features**:
+- File upload/download
+- Document management
+- Version tracking
+- Tag system
 
-### Interactive Elements
+##### Search Panel
+```typescript
+interface SearchOptions {
+  query: string;
+  type: string;
+  filters: Record<string, any>;
+  sort: string;
+  page: number;
+}
+```
 
-#### Buttons and Controls
-- Primary actions: Solid background, high contrast
-- Secondary actions: Outlined style
-- Tertiary actions: Text only
-- Icon buttons: Clear purpose with tooltips
+**Key Features**:
+- Advanced search
+- Filter system
+- Result categorization
+- Sort functionality
 
-#### Forms and Inputs
-- Clear labeling and grouping
-- Immediate validation feedback
-- Consistent styling across forms
-- Accessible form controls
+##### Workflow Panel
+```typescript
+interface Workflow {
+  id: string;
+  name: string;
+  type: string;
+  status: 'active' | 'paused' | 'completed' | 'failed';
+  lastRun: string;
+  nextRun?: string;
+}
+```
 
-#### Modals and Dialogs
-- Clear purpose and actions
-- Keyboard navigation support
-- Focus management
-- Escape key dismissal
+**Key Features**:
+- Workflow management
+- Status tracking
+- Scheduling
+- Error handling
 
-### Theme System
+## Component Library
 
-#### Color Schemes
-- Light and dark mode support
-- System preference detection
-- Runtime theme switching
-- Consistent contrast ratios
+### Base Components
 
-#### Typography
-- Clear hierarchy
-- Responsive sizing
-- Consistent line heights
-- Readable font choices
+#### Button
+```typescript
+interface ButtonProps {
+  variant: 'default' | 'outline' | 'ghost';
+  size: 'sm' | 'md' | 'lg';
+  loading?: boolean;
+  disabled?: boolean;
+}
+```
 
-### Accessibility
+#### Input
+```typescript
+interface InputProps {
+  type: string;
+  value: string;
+  onChange: (value: string) => void;
+  error?: string;
+  placeholder?: string;
+}
+```
 
-#### ARIA Support
-- Proper role attributes
-- State management
-- Focus management
-- Screen reader support
+#### Card
+```typescript
+interface CardProps {
+  title?: string;
+  description?: string;
+  footer?: React.ReactNode;
+  children: React.ReactNode;
+}
+```
 
-#### Keyboard Navigation
-- Logical tab order
-- Keyboard shortcuts
-- Focus indicators
-- Skip links
+### Layout Components
 
-### Responsive Design
+#### Panel
+```typescript
+interface PanelProps {
+  title: string;
+  actions?: React.ReactNode;
+  children: React.ReactNode;
+}
+```
 
-#### Breakpoints
-- Mobile: < 640px
-- Tablet: 640px - 1024px
-- Desktop: > 1024px
+#### ScrollArea
+```typescript
+interface ScrollAreaProps {
+  height?: string | number;
+  className?: string;
+  children: React.ReactNode;
+}
+```
 
-#### Adaptive Layouts
-- Collapsible sidebar
-- Responsive grids
-- Flexible containers
-- Mobile-first approach
+## State Management
 
-## Best Practices
+### Panel State
+```typescript
+interface PanelState {
+  isLoading: boolean;
+  error: Error | null;
+  data: any;
+}
+```
 
-### State Management
-- Centralized settings state
-- Local component state when appropriate
-- Persistent storage for preferences
-- Clear state update patterns
+### Global State
+```typescript
+interface AppState {
+  theme: 'light' | 'dark';
+  panels: Record<string, PanelState>;
+  user: UserState;
+}
+```
 
-### Performance
-- Lazy loading of components
-- Memoization where beneficial
-- Efficient re-rendering
-- Asset optimization
+## Performance Guidelines
 
-### Error Handling
-- Clear error messages
-- Fallback UI components
-- Recovery options
-- Error boundaries
+1. **Code Splitting**
+   - Lazy load panels
+   - Dynamic imports
+   - Route-based splitting
 
-### Testing
-- Component unit tests
-- Integration tests
-- Accessibility tests
-- Visual regression tests
+2. **Render Optimization**
+   - Use React.memo
+   - Implement useMemo
+   - Optimize useEffect
 
-## Future Improvements
+3. **State Management**
+   - Local state when possible
+   - Memoized selectors
+   - Batch updates
 
-### Planned Enhancements
-- Advanced theme customization
-- User preference sync
-- Enhanced keyboard shortcuts
-- Improved mobile experience
+## Accessibility Guidelines
 
-### Experimental Features
-- Gesture controls
-- Voice commands
-- Progressive web app
-- Offline capabilities
-
-## Contributing
-
-### Style Guide
-- Follow existing component patterns
-- Maintain accessibility standards
-- Document new components
-- Include test coverage
-
-### Development Process
-- Component-first development
-- Storybook documentation
-- Peer review process
-- Performance benchmarking
-
-## Current Implementation Status (as of Dec 24, 2024)
-
-### Completed Components
-1. **Core Infrastructure**
-   - ToolhouseProvider for global configuration ✓
-   - Error boundaries with retry functionality ✓
-   - Loading states and components ✓
-   - React Query integration for caching ✓
-   - Theme system (light/dark) ✓
-   - Navigation system ✓
-
-2. **Panel Components**
-   - ChatPanel ✓
-   - AgentDashboard ✓
-   - WorkflowPanel ✓
-   - MemoryPanel ✓
-   - DocumentsPanel ✓
-   - DashboardPanel ✓
-   - ToolsPanel ✓
-   - SearchPanel ✓
-   - VectorStorePanel ✓
-   - GitHubPanel ✓
-   - PerformancePanel ✓
-
-3. **Base Components**
-   - Error boundaries ✓
-   - Loading indicators ✓
-   - Basic form elements ✓
-   - Card components ✓
-   - Button variants ✓
-   - Input components ✓
-
-### In Progress
-1. **Panel Functionality**
-   - Loading states for each panel
-   - Error handling per panel
-   - Data fetching integration
-   - Real-time updates
-   - Panel-specific features
-
-2. **Testing Coverage**
-   - Unit tests for panels
-   - Integration tests
-   - Accessibility tests
-   - Theme switching tests
-   - Responsive design tests
-
-3. **Navigation Enhancements**
-   - Keyboard shortcuts
-   - Breadcrumbs
-   - Panel state persistence
-   - Tab history
-   - Deep linking
-
-4. **Accessibility**
-   - ARIA labels
-   - Keyboard navigation
+1. **Keyboard Navigation**
    - Focus management
-   - Screen reader optimization
-   - Color contrast compliance
+   - Tab order
+   - Keyboard shortcuts
 
-### Next Steps
-1. **Immediate Tasks**
-   - Add loading states to all panels
-   - Implement error boundaries per panel
-   - Add accessibility attributes
-   - Write unit tests for panels
+2. **Screen Readers**
+   - ARIA labels
+   - Role attributes
+   - Semantic HTML
 
-2. **Short-term Goals**
-   - Panel-specific functionality
-   - Data integration
-   - Real-time updates
-   - Enhanced error handling
+3. **Visual Accessibility**
+   - Color contrast
+   - Font scaling
+   - Focus indicators
 
-3. **Medium-term Goals**
-   - Advanced navigation features
-   - State persistence
-   - Performance optimization
-   - Analytics integration
+## Error Handling
 
-### In Progress
-1. **Enhanced UI Components**
-   - Memory visualization
-   - Analytics dashboard
-   - Advanced search interface
-   - Real-time updates
+1. **User Feedback**
+   - Error messages
+   - Loading states
+   - Success notifications
 
-2. **Toolhouse Integration**
-   - Tool status indicators
-   - Usage metrics
-   - Configuration interface
+2. **Recovery**
+   - Retry mechanisms
+   - Fallback UI
+   - Error boundaries
 
-## Immediate UI Implementation Plan
+## Testing Strategy
 
-### Phase 1: Core UI Enhancement (Current Sprint)
-1. **Memory Manager Improvements**
-   - Add memory categorization
-   - Implement memory tags
-   - Add bulk operations
-   - Enhance search filters
-   - Add memory visualization
+1. **Unit Tests**
+   - Component testing
+   - Hook testing
+   - Utility testing
 
-2. **Dashboard Layout**
-   - Create main navigation
-   - Implement sidebar
-   - Add breadcrumbs
-   - Create workspace tabs
+2. **Integration Tests**
+   - Panel integration
+   - State management
+   - API integration
 
-3. **Tool Interface**
-   - Tool selection interface
-   - Configuration panels
-   - Usage statistics
-   - Status indicators
+3. **E2E Tests**
+   - User flows
+   - Panel interactions
+   - System integration
 
-### Phase 2: Advanced Features
-1. **Analytics & Monitoring**
-   - Memory usage graphs
-   - Performance metrics
-   - Tool usage statistics
-   - Error rate tracking
+## Development Workflow
 
-2. **Search & Filter**
-   - Advanced search options
-   - Filter combinations
-   - Saved searches
-   - Search history
+1. **Component Development**
+   ```bash
+   # Create new component
+   src/components/[type]/[ComponentName].tsx
+   src/components/[type]/[ComponentName].test.tsx
+   ```
 
-3. **Batch Operations**
-   - Multi-select interface
-   - Bulk actions
-   - Operation queue
-   - Progress tracking
+2. **State Management**
+   ```bash
+   # Create new store
+   src/store/[storeName].ts
+   src/store/[storeName].test.ts
+   ```
 
-## Implementation Guidelines
+3. **Panel Development**
+   ```bash
+   # Create new panel
+   src/components/panels/[PanelName].tsx
+   src/components/panels/[PanelName].test.tsx
+   ```
 
-### 8.1 Component Structure
-- Use functional components with hooks
-- Implement proper error boundaries
-- Add loading states for async operations
-- Use React Query for data management
-
-### 8.2 State Management
-- Utilize React Query for server state
-- Use local state for UI-only state
-- Implement proper caching strategies
-- Add optimistic updates
-
-### 8.3 Performance Optimization
-- Implement code splitting
-- Use proper memoization
-- Optimize re-renders
-- Add proper loading states
-
-### 8.4 Testing Strategy
-- Unit tests for hooks
-- Component testing
-- Integration tests
-- Performance testing
-
-## Next Steps
-
-### 9.1 Immediate Tasks
-1. Enhance Memory Manager UI
-   - Add visualization components
-   - Implement advanced filters
-   - Add bulk operations
-   - Enhance search interface
-
-2. Create Main Dashboard
-   - Implement navigation
-   - Add tool management
-   - Create analytics section
-   - Add configuration panels
-
-3. Improve Error Handling
-   - Add more detailed error messages
-   - Implement recovery flows
-   - Add error tracking
-   - Enhance error reporting
-
-### 9.2 Future Improvements
-1. Advanced Features
-   - Memory visualization
-   - Real-time updates
-   - Advanced analytics
-   - Custom dashboards
-
-2. Performance Enhancements
-   - Optimize large lists
-   - Improve search performance
-   - Add better caching
-   - Implement virtual scrolling
-
-3. User Experience
-   - Add keyboard shortcuts
-   - Improve accessibility
-   - Add more customization options
-   - Enhance mobile support
+Last Updated: 2024-12-29
