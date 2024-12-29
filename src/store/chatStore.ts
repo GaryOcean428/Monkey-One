@@ -4,8 +4,6 @@ import type { Message, Task } from '../types';
 import { ResponseProcessor } from '../lib/llm/ResponseProcessor';
 import { memoryManager } from '../lib/memory';
 
-const responseProcessor = new ResponseProcessor();
-
 interface ChatState {
   messages: Message[];
   tasks: Task[];
@@ -22,104 +20,110 @@ interface ChatActions {
 }
 
 export const useChatStore = create<ChatState & ChatActions>()(
-  immer((set, get) => ({
-    messages: [],
-    tasks: [],
-    activeTask: null,
-    isProcessing: false,
-    error: null,
+  immer((set, get) => {
+    // Initialize ResponseProcessor instance for better testability
+    const responseProcessor = new ResponseProcessor();
 
-    sendMessage: async (content: string, agentId: string) => {
-      if (!content.trim()) return;
+    return {
+      messages: [],
+      tasks: [],
+      activeTask: null,
+      isProcessing: false,
+      error: null,
 
-      const userMessage = {
-        id: crypto.randomUUID(),
-        role: 'user',
-        content,
-        timestamp: Date.now(),
-        status: 'sending'
-      };
+      sendMessage: async (content: string, agentId: string) => {
+        if (!content.trim()) return;
 
-      set({
-        messages: [userMessage],
-        tasks: [],
-        activeTask: null,
-        isProcessing: true,
-        error: null
-      });
+        const userMessage = {
+          id: crypto.randomUUID(),
+          role: 'user',
+          content,
+          timestamp: Date.now(),
+          status: 'sending'
+        };
 
-      try {
-        const response = await responseProcessor.processResponse(content, agentId);
+        set({
+          messages: [userMessage],
+          tasks: [],
+          activeTask: null,
+          isProcessing: true,
+          error: null
+        });
 
-        if (process.env.NODE_ENV !== 'test') {
-          const assistantMessage = {
-            id: crypto.randomUUID(),
-            role: 'assistant',
-            content: response,
-            timestamp: Date.now(),
-            status: 'sent'
-          };
+        try {
+          const response = await responseProcessor.processResponse(content, agentId);
 
-          set(state => ({
-            ...state,
-            messages: [{ ...userMessage, status: 'sent' }, assistantMessage],
-            isProcessing: false
-          }));
+          if (process.env.NODE_ENV !== 'test') {
+            const assistantMessage = {
+              id: crypto.randomUUID(),
+              role: 'assistant',
+              content: response,
+              timestamp: Date.now(),
+              status: 'sent'
+            };
 
-          try {
-            await memoryManager.storeConversation({
-              userMessage,
-              assistantMessage,
-              agentId
-            });
-          } catch (memoryError) {
-            console.error('Failed to store conversation:', memoryError);
+            set(state => ({
+              ...state,
+              messages: [{ ...userMessage, status: 'sent' }, assistantMessage],
+              isProcessing: false
+            }));
+
+            try {
+              await memoryManager.storeConversation({
+                userMessage,
+                assistantMessage,
+                agentId
+              });
+            } catch (memoryError) {
+              console.error('Failed to store conversation:', memoryError);
+            }
+          } else {
+            set(state => ({
+              ...state,
+              messages: [{ ...userMessage, status: 'sent' }],
+              isProcessing: false
+            }));
           }
-        } else {
+        } catch (error) {
+          // Ensure error is set before updating other state
+          const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
           set(state => ({
-            ...state,
-            messages: [{ ...userMessage, status: 'sent' }],
-            isProcessing: false
+            messages: [{ ...userMessage, status: 'error' }],
+            tasks: [],
+            activeTask: null,
+            isProcessing: false,
+            error: errorMessage
           }));
         }
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+      },
+
+      clearMessages: () => {
         set({
-          messages: [{ ...userMessage, status: 'error' }],
+          messages: [],
           tasks: [],
           activeTask: null,
           isProcessing: false,
-          error: errorMessage
+          error: null
         });
-      }
-    },
+      },
 
-    clearMessages: () => {
-      set({
-        messages: [],
-        tasks: [],
-        activeTask: null,
-        isProcessing: false,
-        error: null
-      });
-    },
+      approveTask: async (taskId: string) => {
+        set((state) => {
+          const task = state.tasks.find((t) => t.id === taskId);
+          if (task) {
+            task.status = 'approved';
+          }
+        });
+      },
 
-    approveTask: async (taskId: string) => {
-      set((state) => {
-        const task = state.tasks.find((t) => t.id === taskId);
-        if (task) {
-          task.status = 'approved';
-        }
-      });
-    },
-
-    rejectTask: async (taskId: string) => {
-      set((state) => {
-        const task = state.tasks.find((t) => t.id === taskId);
-        if (task) {
-          task.status = 'rejected';
-        }
-      });
-    },
-  }))
+      rejectTask: async (taskId: string) => {
+        set((state) => {
+          const task = state.tasks.find((t) => t.id === taskId);
+          if (task) {
+            task.status = 'rejected';
+          }
+        });
+      },
+    };
+  })
 );

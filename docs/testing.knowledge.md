@@ -172,6 +172,10 @@ Critical areas needing test coverage:
 - Test store subscriptions cleanup
 - Mock only the minimum required store functionality
 - Keep store mocks close to actual store shape
+- Clear mocks before each test that uses them
+- Use mockRejectedValueOnce for one-time error cases
+- Use setState directly to set up test state
+- Get fresh state after each action with getState()
 
 ### Monitoring and Metrics
 - Track agent metrics in a central monitor
@@ -231,6 +235,78 @@ Critical areas needing test coverage:
 - Consider using parallel test execution
 
 ### Test Mocking Best Practices
+- Mock class constructors by returning a mock factory function
+- Avoid referencing mock functions during module initialization
+- Create mock instances only when needed in tests
+- Reset mock implementations in beforeEach
+- Define mock functions at module level for consistent reference
+- Reset mock implementations in beforeEach
+- Mock at module boundary rather than implementation detail
+- Place vi.mock() calls before imports
+- Define mock implementations before they're used
+- Keep module mocks at top of test file
+- Import vi before any mocks
+- Avoid accessing mock variables in vi.mock() factory
+- Use vi.mocked() for type-safe mocking
+- Mock class methods through constructor
+- Reset mock implementations in beforeEach
+- Avoid shared state between tests
+- Mock at the lowest possible level
+- Mock classes by returning a class with shared mock methods
+- Define mock functions at module level for consistent reference
+- Reset mock implementations in beforeEach
+- Mock at module boundary rather than implementation detail
+- Place vi.mock() calls before imports
+- Define mock implementations before they're used
+- Keep module mocks at top of test file
+- Import vi before any mocks
+- Avoid accessing mock variables in vi.mock() factory
+- Define mock functions at module level for consistent reference
+- Reset mock implementations in beforeEach
+- Mock at module boundary rather than implementation detail
+- Place vi.mock() calls before imports
+- Define mock implementations before they're used
+- Keep module mocks at top of test file
+- Import vi before any mocks
+- Avoid accessing mock variables in vi.mock() factory
+- Use vi.mocked() for type-safe mocking
+- Mock class methods through constructor
+- Reset mock implementations in beforeEach
+- Avoid shared state between tests
+- Use mockRejectedValueOnce for one-time error cases
+- Keep reference to mock function for error assertions
+- Verify error state is properly set in store
+- Define mock functions at module level for consistent reference
+- Reset mock implementations in beforeEach
+- Mock at module boundary rather than implementation detail
+- Place vi.mock() calls before imports
+- Define mock implementations before they're used
+- Keep module mocks at top of test file
+- Import vi before any mocks
+- Avoid accessing mock variables in vi.mock() factory
+- Use vi.mocked() for type-safe mocking
+- Mock class methods through constructor
+- Reset mock implementations in beforeEach
+- Avoid shared state between tests
+- Mock at the lowest possible level
+- Use descriptive names for mock functions (e.g., processResponseMock instead of mockProcessResponse)
+- Avoid singletons in code that needs testing
+- Initialize dependencies inside store/class constructors
+- Use dependency injection when possible
+- Create fresh instances in tests
+- Mock class constructors by returning mock instance
+- Define mock functions at module level for consistent reference
+- Reset mock implementations in beforeEach
+- Mock at module boundary rather than implementation detail
+- Place vi.mock() calls before imports
+- Define mock implementations before they're used
+- Keep module mocks at top of test file
+- Import vi before any mocks
+- Avoid accessing mock variables in vi.mock() factory
+- Define mock functions outside test cases for better scoping
+- Reset mock implementations between tests
+- Mock class methods through constructor
+- Verify mock calls in assertions
 - Use vi.fn() for simple function mocks
 - Use vi.mock() for module mocks
 - Use vi.spyOn() for method spies
@@ -238,6 +314,15 @@ Critical areas needing test coverage:
 - Reset mocks in beforeEach
 - Clear all mocks in afterEach
 - Use strong typing for mocked functions
+- Define mock functions inside test cases for better scoping
+- Reset mock implementations between tests
+- Mock class methods through constructor
+- Verify mock calls in assertions
+- Place vi.mock() calls before imports
+- Define mock implementations before they're used
+- Keep module mocks at top of test file
+- Import vi before any mocks
+- Avoid shared mock variables between tests
 - Project uses Vitest, not Jest
 - Import test utilities from 'vitest' not 'jest'
 - Use vi.fn() instead of jest.fn()
