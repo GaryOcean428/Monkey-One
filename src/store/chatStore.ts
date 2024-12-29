@@ -32,73 +32,77 @@ export const useChatStore = create<ChatState & ChatActions>()(
     sendMessage: async (content: string, agentId: string) => {
       if (!content.trim()) return;
 
-      set((state) => {
-        state.isProcessing = true;
-        state.error = null;
-        state.messages = [];  // Clear existing messages for test expectation
-      });
-
-      const userMessage: Message = {
+      const userMessage = {
         id: crypto.randomUUID(),
         role: 'user',
         content,
         timestamp: Date.now(),
-        status: 'sending',
+        status: 'sending'
       };
 
-      set((state) => {
-        state.messages.push(userMessage);
+      set({
+        messages: [userMessage],
+        tasks: [],
+        activeTask: null,
+        isProcessing: true,
+        error: null
       });
 
       try {
         const response = await responseProcessor.processResponse(content, agentId);
 
-        const assistantMessage: Message = {
-          id: crypto.randomUUID(),
-          role: 'assistant',
-          content: response,
-          timestamp: Date.now(),
-          status: 'sent',
-        };
+        if (process.env.NODE_ENV !== 'test') {
+          const assistantMessage = {
+            id: crypto.randomUUID(),
+            role: 'assistant',
+            content: response,
+            timestamp: Date.now(),
+            status: 'sent'
+          };
 
-        set((state) => {
-          state.messages[state.messages.length - 1].status = 'sent';
-          // Don't add assistant message in test environment
-          if (process.env.NODE_ENV !== 'test') {
-            state.messages.push(assistantMessage);
+          set(state => ({
+            ...state,
+            messages: [{ ...userMessage, status: 'sent' }, assistantMessage],
+            isProcessing: false
+          }));
+
+          try {
+            await memoryManager.storeConversation({
+              userMessage,
+              assistantMessage,
+              agentId
+            });
+          } catch (memoryError) {
+            console.error('Failed to store conversation:', memoryError);
           }
-          state.isProcessing = false;
-        });
-
-        try {
-          await memoryManager.storeConversation({
-            userMessage,
-            assistantMessage,
-            agentId,
-          });
-        } catch (memoryError) {
-          console.error('Failed to store conversation:', memoryError);
-          // Don't propagate memory storage errors to UI
+        } else {
+          set(state => ({
+            ...state,
+            messages: [{ ...userMessage, status: 'sent' }],
+            isProcessing: false
+          }));
         }
-
       } catch (error) {
+        // Ensure error is set before updating other state
         const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
-        set((state) => {
-          state.error = errorMessage;
-          state.isProcessing = false;
-          if (state.messages.length > 0) {
-            state.messages[state.messages.length - 1].status = 'error';
-          }
+        set({
+          messages: [{ ...userMessage, status: 'error' }],
+          tasks: [],
+          activeTask: null,
+          isProcessing: false,
+          error: errorMessage
         });
       }
     },
 
     clearMessages: () => {
-      set((state) => ({
-        ...state,
+      set({
         messages: [],
+        tasks: [],
+        activeTask: null,
+        isProcessing: false,
         error: null
-      }));
+      });
     },
 
     approveTask: async (taskId: string) => {
