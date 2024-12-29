@@ -1,6 +1,6 @@
 import { expect, describe, it, vi, beforeEach } from 'vitest';
 import { AgentSession } from '../../lib/sessions/AgentSession';
-import { Agent, AgentStatus, Message, MemoryItem } from '../../types/core';
+import { Agent, Message, MemoryItem } from '../../types/core';
 
 describe('AgentSession', () => {
   let session: AgentSession;
@@ -11,7 +11,7 @@ describe('AgentSession', () => {
       id: 'test-agent',
       type: 'SPECIALIST',
       capabilities: [],
-      status: AgentStatus.AVAILABLE,
+      status: 'AVAILABLE',
       initialize: vi.fn(),
       processMessage: vi.fn(),
       getCapabilities: vi.fn(),
@@ -20,7 +20,7 @@ describe('AgentSession', () => {
       removeCapability: vi.fn(),
       shutdown: vi.fn()
     };
-    session = new AgentSession(mockAgent);
+    session = new AgentSession(mockAgent, { saveInterval: 1000 }); // Add saveInterval to test cleanup
   });
 
   describe('message handling', () => {
@@ -71,6 +71,7 @@ describe('AgentSession', () => {
       const clearIntervalSpy = vi.spyOn(global, 'clearInterval');
       session.dispose();
       expect(clearIntervalSpy).toHaveBeenCalled();
+      clearIntervalSpy.mockRestore();
     });
   });
 });

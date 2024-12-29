@@ -87,6 +87,15 @@ src/
 
 ## Technical Stack
 
+### Type System Organization
+- Core types in src/lib/types/core.ts
+- Re-exports through src/types/index.ts
+- Enums for message types, agent types, and status
+- Strict interface implementations
+- No duplicate type definitions
+- Import from core types directly
+- Use type assertions only in tests
+
 ### Frontend
 - React 18
 - TypeScript 5

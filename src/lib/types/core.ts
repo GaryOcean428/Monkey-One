@@ -5,7 +5,8 @@ export enum MessageType {
   RESPONSE = 'RESPONSE',
   ERROR = 'ERROR',
   BROADCAST = 'BROADCAST',
-  HANDOFF = 'HANDOFF'
+  HANDOFF = 'HANDOFF',
+  COMMAND = 'COMMAND'  // Adding missing COMMAND type
 }
 
 export enum AgentType {
@@ -54,7 +55,7 @@ export interface Agent {
   status: AgentStatus;
   
   initialize(): Promise<void>;
-  processMessage(message: Message): Promise<void>;
+  processMessage(message: Message): Promise<Message>;
   getCapabilities(): AgentCapability[];
   hasCapability(name: string): boolean;
   addCapability(capability: AgentCapability): void;
