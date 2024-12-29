@@ -96,8 +96,14 @@
 - Supabase tests require valid JSON in responses
 - Some test timeouts occur after 10s - may need timeout adjustment
 - Type checking can be slow on large codebases - consider running in chunks
-- AmygdalaAgent emotional response tests need exact string matches
 - Several test files have no tests implemented yet
+
+### Testing Emotional Processing
+- Match exact trigger words ('dangerous' -> 'caution', 'success' -> 'positive')
+- Check emotional state changes before response generation
+- Test both direct triggers and emotional state effects
+- Use specific test messages to avoid random neutral responses
+- Verify emotional memory storage after processing
 
 ### Common Test Failures
 - AmygdalaAgent emotional responses not matching expected strings
