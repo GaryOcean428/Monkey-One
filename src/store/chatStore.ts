@@ -83,7 +83,6 @@ export const useChatStore = create<ChatState & ChatActions>()(
           }));
         }
       } catch (error) {
-        // Ensure error is set before updating other state
         const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
         set({
           messages: [{ ...userMessage, status: 'error' }],
