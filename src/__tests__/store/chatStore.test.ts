@@ -69,8 +69,9 @@ describe('chatStore', () => {
     it('should clear all messages', async () => {
       const store = useChatStore.getState();
       
-      // Set initial state with a message
-      set(store, {
+      // Add a test message through the store's setState
+      useChatStore.setState({
+        ...store,
         messages: [{
           id: '1',
           role: 'user',
@@ -80,12 +81,12 @@ describe('chatStore', () => {
         }]
       });
 
-      expect(store.messages).toHaveLength(1);
+      expect(useChatStore.getState().messages).toHaveLength(1);
 
       // Clear messages
       store.clearMessages();
 
-      expect(store.messages).toHaveLength(0);
+      expect(useChatStore.getState().messages).toHaveLength(0);
     });
   });
 });
