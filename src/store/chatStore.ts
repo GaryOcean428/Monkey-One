@@ -42,55 +42,42 @@ export const useChatStore = create<ChatState & ChatActions>()(
           status: 'sending'
         };
 
-        set({
-          messages: [userMessage],
-          tasks: [],
-          activeTask: null,
+        set((state) => ({
+          messages: [...state.messages, userMessage],
           isProcessing: true,
           error: null
-        });
+        }));
 
         try {
-          const response = await responseProcessor.processResponse(content, agentId);
+          // Get previous messages for context
+          const previousMessages = get().messages;
+          const response = await responseProcessor.processResponse(content, agentId, previousMessages);
 
-          if (process.env.NODE_ENV !== 'test') {
+          if (response.content) {
             const assistantMessage = {
               id: crypto.randomUUID(),
               role: 'assistant',
-              content: response,
+              content: response.content,
               timestamp: Date.now(),
-              status: 'sent'
+              status: 'sent',
+              metadata: response.metadata
             };
 
             set(state => ({
-              ...state,
-              messages: [{ ...userMessage, status: 'sent' }, assistantMessage],
+              messages: [...state.messages, { ...userMessage, status: 'sent' }, assistantMessage],
               isProcessing: false
             }));
 
-            try {
-              await memoryManager.storeConversation({
-                userMessage,
-                assistantMessage,
-                agentId
-              });
-            } catch (memoryError) {
-              console.error('Failed to store conversation:', memoryError);
-            }
           } else {
             set(state => ({
-              ...state,
-              messages: [{ ...userMessage, status: 'sent' }],
+              messages: [...state.messages, { ...userMessage, status: 'sent' }],
               isProcessing: false
             }));
           }
         } catch (error) {
-          // Ensure error is set before updating other state
           const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
           set(state => ({
-            messages: [{ ...userMessage, status: 'error' }],
-            tasks: [],
-            activeTask: null,
+            messages: [...state.messages, { ...userMessage, status: 'error' }],
             isProcessing: false,
             error: errorMessage
           }));

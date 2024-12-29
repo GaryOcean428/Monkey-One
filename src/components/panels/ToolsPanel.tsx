@@ -8,7 +8,7 @@ import { Label } from '../ui/label';
 import { LoadingSpinner } from '../ui/loading-spinner';
 import { ToolhouseErrorBoundary } from '../ErrorBoundary/ToolhouseErrorBoundary';
 
-export default function ToolsPanel() {
+const ToolsPanel: React.FC = () => {
   const [isLoading, setIsLoading] = React.useState(false);
   const [toolName, setToolName] = React.useState('');
   const [toolType, setToolType] = React.useState('');
@@ -62,4 +62,6 @@ export default function ToolsPanel() {
       )}
     </div>
   );
-}
+}
+
+export { ToolsPanel };

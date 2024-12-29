@@ -25,13 +25,14 @@ export interface LLMProvider {
   ): Promise<void>;
 }
 
-class LLMManager {
-  private providers: Map<string, LLMProvider> = new Map();
-  private activeProvider: string;
+export class LLMManager {
+  private providers: Map<string, LLMProvider>;
+  private activeProvider: string | null;
 
   constructor() {
+    this.providers = new Map();
+    this.activeProvider = null;
     this.registerDefaultProviders();
-    this.activeProvider = 'local'; // Set local provider as default
   }
 
   private registerDefaultProviders() {
@@ -48,24 +49,38 @@ class LLMManager {
       ] : [])
     ];
 
+    // Register providers and set first available as active
     providers.forEach(provider => {
       this.providers.set(provider.id, provider);
+      if (!this.activeProvider) {
+        this.activeProvider = provider.id;
+      }
     });
   }
 
-  setActiveProvider(providerId: string) {
-    if (!this.providers.has(providerId)) {
-      throw new Error(`Provider ${providerId} not found`);
+  public registerProvider(id: string, provider: LLMProvider) {
+    this.providers.set(id, provider);
+    if (!this.activeProvider) {
+      this.activeProvider = id;
     }
-    this.activeProvider = providerId;
   }
 
-  getActiveProvider(): LLMProvider {
-    const provider = this.providers.get(this.activeProvider);
-    if (!provider) {
+  public getActiveProvider(): LLMProvider {
+    if (!this.activeProvider) {
       throw new Error('No active provider set');
     }
+    const provider = this.providers.get(this.activeProvider);
+    if (!provider) {
+      throw new Error('Active provider not found');
+    }
     return provider;
+  }
+
+  public setActiveProvider(id: string) {
+    if (!this.providers.has(id)) {
+      throw new Error(`Provider ${id} not found`);
+    }
+    this.activeProvider = id;
   }
 
   async sendMessage(message: string, context?: Message[], options?: {
