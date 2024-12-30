@@ -408,7 +408,7 @@ function SettingsContent() {
   );
 }
 
-export default function SettingsPanel() {
+export function SettingsPanel() {
   return (
     <ToolhouseErrorBoundary>
       <Suspense fallback={<LoadingSpinner />}>

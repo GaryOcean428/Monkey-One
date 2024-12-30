@@ -165,7 +165,7 @@ function VectorStoreContent() {
   );
 }
 
-export default function VectorStorePanel() {
+export function VectorStorePanel() {
   return (
     <div 
       className="h-full p-4 bg-background overflow-auto"
