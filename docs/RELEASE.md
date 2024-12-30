@@ -1,9 +1,11 @@
 # Release Management Guide
 
 ## Overview
+
 This document outlines the release management process for Monkey-One, including versioning, release procedures, and deployment strategies.
 
 ## Table of Contents
+
 1. [Version Control](#version-control)
 2. [Release Process](#release-process)
 3. [Deployment Strategy](#deployment-strategy)
@@ -13,6 +15,7 @@ This document outlines the release management process for Monkey-One, including 
 ## Version Control
 
 ### Versioning Schema
+
 We follow [Semantic Versioning](https://semver.org/) (MAJOR.MINOR.PATCH):
 
 ```typescript
@@ -23,7 +26,8 @@ interface Version {
 }
 ```
 
-Example versions:
+### Version Examples
+
 - 1.0.0 - Initial release
 - 1.1.0 - New feature added
 - 1.1.1 - Bug fix
@@ -337,6 +341,7 @@ class DatabaseRollbackManager {
 ## Release Checklist
 
 ### Pre-Release
+
 - [ ] All tests passing
 - [ ] Code review completed
 - [ ] Documentation updated
@@ -349,6 +354,7 @@ class DatabaseRollbackManager {
 - [ ] Monitoring configured
 
 ### Release
+
 - [ ] Version bumped
 - [ ] Changelog generated
 - [ ] Release branch created
@@ -361,6 +367,7 @@ class DatabaseRollbackManager {
 - [ ] Production deployment scheduled
 
 ### Post-Release
+
 - [ ] Production deployment successful
 - [ ] Monitoring active
 - [ ] Alerts configured
@@ -371,6 +378,7 @@ class DatabaseRollbackManager {
 - [ ] Metrics baseline captured
 
 ### Emergency Procedures
+
 - [ ] Rollback procedure tested
 - [ ] Backup restoration verified
 - [ ] Emergency contacts updated

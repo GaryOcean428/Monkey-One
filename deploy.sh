@@ -46,16 +46,17 @@ else
 fi
 
 # Check required environment variables
-required_vars=(
+required_env_vars=(
+    "VITE_GITHUB_TOKEN"
+    "VITE_SUPABASE_URL"
+    "VITE_SUPABASE_ANON_KEY"
     "VITE_PINECONE_API_KEY"
     "VITE_PINECONE_ENVIRONMENT"
-    "VITE_FIREBASE_API_KEY"
-    "VITE_FIREBASE_PROJECT_ID"
-    "GRAFANA_ADMIN_PASSWORD"
+    "VITE_REDIS_URL"
 )
 
 echo "Checking required variables..."
-for var in "${required_vars[@]}"; do
+for var in "${required_env_vars[@]}"; do
     echo "Checking $var..."
     if [ -z "${!var}" ]; then
         echo "Error: $var is not set"
