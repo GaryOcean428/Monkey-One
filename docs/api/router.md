@@ -21,6 +21,83 @@ graph TD
     G --> J[Response Strategy]
 ```
 
+## Type Definitions
+
+```typescript
+// Core Types
+interface RouterConfig {
+  modelId: string;
+  parameters: ModelParameters;
+  strategy: ResponseStrategy;
+  contextWindow: number;
+}
+
+interface ModelParameters {
+  temperature: number;
+  topP: number;
+  maxTokens: number;
+  presencePenalty: number;
+  frequencyPenalty: number;
+}
+
+interface XAIMessage {
+  role: 'system' | 'user' | 'assistant';
+  content: string;
+  timestamp: string;
+  metadata?: MessageMetadata;
+}
+
+interface MessageMetadata {
+  taskId?: string;
+  contextId?: string;
+  indicators?: CodeIndicator[];
+  techStacks?: TechStack[];
+}
+
+// Enums
+enum TechStack {
+  REACT = 'react',
+  NODE = 'node',
+  PYTHON = 'python',
+  TYPESCRIPT = 'typescript',
+  DOCKER = 'docker',
+  KUBERNETES = 'kubernetes'
+}
+
+enum CodeIndicator {
+  COMPLEXITY_HIGH = 'complexity_high',
+  COMPLEXITY_MEDIUM = 'complexity_medium',
+  COMPLEXITY_LOW = 'complexity_low',
+  REQUIRES_OPTIMIZATION = 'requires_optimization',
+  SECURITY_SENSITIVE = 'security_sensitive',
+  PERFORMANCE_CRITICAL = 'performance_critical'
+}
+
+enum TaskType {
+  CODE_GENERATION = 'code_generation',
+  CODE_REVIEW = 'code_review',
+  DEBUGGING = 'debugging',
+  OPTIMIZATION = 'optimization',
+  DOCUMENTATION = 'documentation',
+  EXPLANATION = 'explanation'
+}
+
+enum QuestionType {
+  FACTUAL = 'factual',
+  CONCEPTUAL = 'conceptual',
+  PROCEDURAL = 'procedural',
+  PROBLEM_SOLVING = 'problem_solving'
+}
+
+enum ResponseStrategy {
+  DETAILED = 'detailed',
+  CONCISE = 'concise',
+  STEP_BY_STEP = 'step_by_step',
+  CODE_FOCUSED = 'code_focused',
+  EXPLANATION_FOCUSED = 'explanation_focused'
+}
+```
+
 ## Core Components
 
 ### AdvancedRouter
@@ -29,18 +106,32 @@ Main router class that coordinates analysis and decision-making.
 
 ```typescript
 class AdvancedRouter {
-  constructor(threshold?: number);
-  route(query: string, history: XAIMessage[]): RouterConfig;
+  constructor(config: RouterConfig);
+  
+  async route(query: string, history: XAIMessage[]): Promise<RouterConfig> {
+    const techStacks = await TechStackAnalyzer.analyze(query);
+    const codeComplexity = await CodeAnalyzer.analyzeComplexity(query);
+    const taskType = await ContextAnalyzer.identifyTaskType(query);
+    const questionType = await ContextAnalyzer.classifyQuestion(query);
+    const strategy = await ResponseStrategySelector.selectStrategy(questionType, taskType);
+    
+    return this.generateConfig(techStacks, codeComplexity, taskType, strategy);
+  }
+
+  private generateConfig(
+    techStacks: TechStack[],
+    complexity: number,
+    taskType: TaskType,
+    strategy: ResponseStrategy
+  ): RouterConfig;
 }
 ```
 
 ### TechStackAnalyzer
 
-Analyzes queries for technology stack references.
-
 ```typescript
 class TechStackAnalyzer {
-  static analyze(query: string): TechStack[];
+  static async analyze(query: string): Promise<TechStack[]>;
   static hasTechStack(query: string, stack: TechStack): boolean;
   static getComplexityMultiplier(stacks: TechStack[]): number;
 }
@@ -48,11 +139,9 @@ class TechStackAnalyzer {
 
 ### CodeAnalyzer
 
-Analyzes code complexity and patterns.
-
 ```typescript
 class CodeAnalyzer {
-  static analyzeComplexity(query: string): number;
+  static async analyzeComplexity(query: string): Promise<number>;
   static getIndicators(query: string): CodeIndicator[];
   static hasIndicator(query: string, indicator: CodeIndicator): boolean;
   static getIndicatorWeight(indicator: CodeIndicator): number;
@@ -61,12 +150,10 @@ class CodeAnalyzer {
 
 ### ContextAnalyzer
 
-Analyzes conversation context and query characteristics.
-
 ```typescript
 class ContextAnalyzer {
-  static identifyTaskType(query: string): TaskType;
-  static classifyQuestion(query: string): QuestionType;
+  static async identifyTaskType(query: string): Promise<TaskType>;
+  static async classifyQuestion(query: string): Promise<QuestionType>;
   static calculateContextLength(history: XAIMessage[]): number;
   static assessComplexity(query: string): number;
   static hasRapidExchanges(history: XAIMessage[]): boolean;
@@ -76,20 +163,121 @@ class ContextAnalyzer {
 
 ### ResponseStrategySelector
 
-Selects and adjusts response strategies.
-
 ```typescript
 class ResponseStrategySelector {
-  static selectStrategy(
+  static async selectStrategy(
     questionType: QuestionType,
     taskType: TaskType
-  ): ResponseStrategy;
+  ): Promise<ResponseStrategy>;
+  
   static getTokenMultiplier(strategy: ResponseStrategy): number;
+  
   static adjustStrategy(
     strategy: ResponseStrategy,
     contextLength: number,
     isRapidExchange: boolean
   ): ResponseStrategy;
+}
+```
+
+## Sequence Diagrams
+
+### Basic Routing Flow
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant R as Router
+    participant TA as TechStackAnalyzer
+    participant CA as CodeAnalyzer
+    participant CT as ContextAnalyzer
+    participant RS as ResponseStrategySelector
+
+    C->>R: route(query, history)
+    R->>TA: analyze(query)
+    TA-->>R: techStacks[]
+    R->>CA: analyzeComplexity(query)
+    CA-->>R: complexity
+    R->>CT: identifyTaskType(query)
+    CT-->>R: taskType
+    R->>CT: classifyQuestion(query)
+    CT-->>R: questionType
+    R->>RS: selectStrategy(questionType, taskType)
+    RS-->>R: strategy
+    R->>R: generateConfig()
+    R-->>C: RouterConfig
+```
+
+### Complex Analysis Flow
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant R as Router
+    participant TA as TechStackAnalyzer
+    participant CA as CodeAnalyzer
+    participant CT as ContextAnalyzer
+    
+    C->>R: route(query, history)
+    par Tech Stack Analysis
+        R->>TA: analyze(query)
+        TA->>TA: detectFrameworks()
+        TA->>TA: detectLanguages()
+        TA-->>R: techStacks[]
+    and Code Analysis
+        R->>CA: analyzeComplexity(query)
+        CA->>CA: tokenize()
+        CA->>CA: measureComplexity()
+        CA->>CA: detectPatterns()
+        CA-->>R: complexity
+    and Context Analysis
+        R->>CT: identifyTaskType(query)
+        CT->>CT: analyzeIntent()
+        CT->>CT: checkHistory()
+        CT-->>R: taskType
+    end
+    R->>R: generateConfig()
+    R-->>C: RouterConfig
+```
+
+## Performance Considerations
+
+1. **Caching Strategy**
+   - Cache analysis results
+   - Cache common patterns
+   - Store frequent configurations
+
+2. **Optimization Techniques**
+   - Parallel analysis when possible
+   - Early termination for simple queries
+   - Progressive complexity analysis
+
+3. **Resource Management**
+   - Token usage optimization
+   - Memory-efficient processing
+   - Background task scheduling
+
+## Error Handling
+
+```typescript
+class RouterError extends Error {
+  constructor(
+    message: string,
+    public code: string,
+    public details?: object
+  ) {
+    super(message);
+  }
+}
+
+// Error handling example
+try {
+  const config = await router.route(query, history);
+} catch (error) {
+  if (error instanceof RouterError) {
+    console.error(`Router error: ${error.code} - ${error.message}`);
+    // Handle specific error cases
+  }
 }
 ```
 
@@ -122,50 +310,6 @@ sequenceDiagram
     Router-->>Client: RouterConfig
 ```
 
-## Types
-
-### RouterConfig
-
-Configuration for processing a query.
-
-```typescript
-interface RouterConfig {
-  model: ModelConfig;
-  maxTokens: number;
-  temperature: number;
-  responseStrategy: ResponseStrategy;
-  routingExplanation: string;
-  questionType?: QuestionType;
-}
-```
-
-### TokenEstimate
-
-Token usage estimation.
-
-```typescript
-interface TokenEstimate {
-  promptTokens: number;
-  expectedResponseTokens: number;
-  totalTokens: number;
-}
-```
-
-### RouterContext
-
-Context information for routing decisions.
-
-```typescript
-interface RouterContext {
-  complexity: number;
-  contextLength: number;
-  taskType: TaskType;
-  questionType: QuestionType;
-  techStack: TechStack[];
-  codeComplexity: number;
-}
-```
-
 ## Model Tiers
 
 ```mermaid
@@ -195,43 +339,6 @@ graph TD
     B -->|Open Ended| H[Open Discussion]
 ```
 
-## Error Handling
-
-The system implements comprehensive error handling:
-
-```typescript
-try {
-  const config = router.route(query, history);
-} catch (error) {
-  if (error instanceof RouterError) {
-    // Handle routing-specific errors
-  } else if (error instanceof ModelError) {
-    // Handle model-specific errors
-  } else {
-    // Handle unexpected errors
-  }
-}
-```
-
-## Performance Optimization
-
-The router implements several optimization strategies:
-
-1. **Caching**
-   - Tech stack detection results
-   - Code complexity scores
-   - Token estimates
-
-2. **Early Returns**
-   - Quick response for casual queries
-   - Cached results when available
-   - Simple queries to efficient models
-
-3. **Parallel Processing**
-   - Concurrent analysis when possible
-   - Async token estimation
-   - Background complexity calculation
-
 ## Usage Examples
 
 ### Basic Usage
@@ -240,7 +347,7 @@ The router implements several optimization strategies:
 import { AdvancedRouter } from './lib/router';
 
 const router = new AdvancedRouter();
-const config = router.route('How do I use React hooks?', []);
+const config = await router.route('How do I use React hooks?', []);
 
 console.log(config);
 // {
@@ -260,7 +367,7 @@ const history = [
   { role: 'assistant', content: 'TypeScript is a typed superset...' },
 ];
 
-const config = router.route(
+const config = await router.route(
   'How do I implement a generic interface?',
   history
 );

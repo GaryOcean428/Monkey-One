@@ -1,4 +1,4 @@
-```json
+# ```json
 {
   "thoughts": [
     "We will present a unified table with all columns: Name, API Model Name, Provider, Parameters, Context Window, Max Output, Release Date, Key Strengths, Model Card Link, and Docs Link.",
@@ -24,13 +24,13 @@
 
 ---
 
-## **Consolidated Models Document (Complete Table)**
+### **Consolidated Models Document (Complete Table)**
 
 Below is the updated `models.md` with the new table of models (including Qwen2.5-Coder-32B-Instruct and llama3-groq-70b-8192-tool-use-preview). **Granite 3.1 Dense 2B** remains the default local model.
 
 ---
 
-### **1. Allowed Models Only**
+#### **1. Allowed Models Only**
 
 Use the table below to reference the **exact** naming conventions, parameters, context limits, release date, and key strengths. **Any other models or older versions are disallowed**.
 
