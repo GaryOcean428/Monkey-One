@@ -2,9 +2,9 @@ import React from 'react';
 import { Card } from '../ui/card';
 import { LoadingSpinner } from '../ui/loading-spinner';
 import { ToolhouseErrorBoundary } from '../ErrorBoundary/ToolhouseErrorBoundary';
-import { Clock, Memory, Cpu, Activity } from 'lucide-react';
+import { Clock, CircuitBoard, Cpu, Activity } from 'lucide-react';
 
-export default function PerformancePanel() {
+export function PerformancePanel() {
   const [isLoading, setIsLoading] = React.useState(false);
 
   return (
@@ -23,7 +23,7 @@ export default function PerformancePanel() {
 
         <Card className="p-4">
           <div className="flex items-center gap-2 mb-2">
-            <Memory className="w-4 h-4 text-green-500" />
+            <CircuitBoard className="w-4 h-4 text-green-500" />
             <h3 className="text-sm font-medium">Memory Usage</h3>
           </div>
           <p className="text-2xl font-bold">512MB</p>
@@ -56,4 +56,4 @@ export default function PerformancePanel() {
       )}
     </div>
   );
-}
+}

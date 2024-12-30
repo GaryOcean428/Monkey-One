@@ -1,7 +1,7 @@
 import React from 'react';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
-import { Search, Filter, FileText, User, Tool, GitBranch, Calendar, Tag } from 'lucide-react';
+import { Search, Filter, FileText, User, Wrench, GitBranch, Calendar, Tag } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../ui/select';
 import { LoadingSpinner } from '../ui/loading-spinner';
@@ -60,7 +60,7 @@ export const SearchPanel: React.FC = () => {
       case 'agent':
         return <User className="w-5 h-5" />;
       case 'tool':
-        return <Tool className="w-5 h-5" />;
+        return <Wrench className="w-5 h-5" />;
       case 'workflow':
         return <GitBranch className="w-5 h-5" />;
       default:
