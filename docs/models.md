@@ -1,26 +1,96 @@
-# ```json
+# Model Documentation
+
+```json
 {
   "thoughts": [
     "We will present a unified table with all columns: Name, API Model Name, Provider, Parameters, Context Window, Max Output, Release Date, Key Strengths, Model Card Link, and Docs Link.",
-    "We’ll keep Granite 3.1 Dense 2B as the local default model, but also preserve the details of all listed models."
+    "This structure ensures consistency and easy comparison across models."
   ],
-  "tool_name": "no_tool_used",
-  "tool_args": {},
-  "next_steps": [
-    "Provide a final consolidated models.md with the updated table",
-    "Ensure we keep the local model configuration referencing Granite 3.1 Dense 2B"
+  "decisions": [
+    "Use markdown tables for better readability",
+    "Include all relevant model information",
+    "Maintain consistent formatting"
   ],
-  "additional_info": {
-    "explanations": [
-      "This includes the newly provided Qwen2.5-Coder-32B-Instruct and llama3-groq-70b-8192-tool-use-preview models"
-    ],
-    "resources": [
-      "https://docs.x.ai/docs/overview",
-      "https://platform.openai.com/docs/models#current-model-aliases"
-    ]
-  }
+  "actions": [
+    "Create comprehensive model documentation",
+    "Add usage examples",
+    "Include performance metrics"
+  ]
 }
 ```
+
+## Model Overview
+
+Here's a comprehensive overview of our supported models:
+
+### Base Models
+
+{{ ... }}
+
+## Model Details
+
+### Model Information
+
+| Property | Description |
+|----------|-------------|
+| Model code | models/gemini-2.0-flash-exp |
+
+### Supported Data Types
+
+#### Inputs
+
+| Property | Value |
+|----------|--------|
+| Audio    | Supported |
+| Images   | Supported |
+| Video    | Supported |
+| Text     | Supported |
+
+#### Output
+
+| Property | Value |
+|----------|--------|
+| Audio    | Coming soon |
+| Images   | Coming soon |
+| Text     | Supported |
+
+### Token Limits
+
+| Property | Value |
+|----------|--------|
+| Input token limit | 1,048,576 |
+| Output token limit | 8,192 |
+
+### Rate Limits
+
+| Property | Value |
+|----------|--------|
+| RPM      | 10 |
+| TPM      | 4 million |
+| RPD      | 1,500 |
+
+### Capabilities
+
+| Property | Value |
+|----------|--------|
+| Structured outputs | Supported |
+| Caching | Not supported |
+| Tuning | Not supported |
+| Function calling | Supported |
+| Code execution | Supported |
+| Search | Supported |
+| Image generation | Supported |
+| Native tool use | Supported |
+| Audio generation | Supported |
+| Multimodal Live API | Supported |
+
+### Version Information
+
+| Property | Value |
+|----------|--------|
+| Latest   | gemini-2.0-flash-exp |
+| Latest update | December 2024 |
+| Knowledge cutoff | August 2024 |
 
 ---
 
@@ -41,7 +111,7 @@ GPT-4o-mini gpt-4o-mini OpenAI Not disclosed 128K 16,384 2024-07 Fast, affordabl
 o1 o1 OpenAI Not disclosed 200K 100K 2024-12 Complex reasoning capabilities o1 Model Card <https://platform.openai.com/docs/models#current-model-aliases>
 o1-mini o1-mini OpenAI Not disclosed 128K 65,536 2024-09 Fast reasoning for specialized tasks o1-mini Model Card <https://platform.openai.com/docs/models#current-model-aliases>
 gpt-4o-realtime-preview gpt-4o-realtime-preview OpenAI Not disclosed 128K 4096  These models are capable of responding to audio and text inputs in realtime over WebRTC or a WebSocket interface. <https://platform.openai.com/docs/models#gpt-4o-realtime> <https://platform.openai.com/docs/quickstart>
-Qwen2.5-Coder-32B-Instruct Qwen2.5-Coder-32B-Instruct Qwen 32.5B 32,768 Not specified 2024-11 Strong in math/coding, experimental research <https://huggingface.co/Qwen/Qwen2.5-Coder-32B-Instruct> 
+Qwen2.5-Coder-32B-Instruct Qwen2.5-Coder-32B-Instruct Qwen 32.5B 32,768 Not specified 2024-11 Strong in math/coding, experimental research <https://huggingface.co/Qwen/Qwen2.5-Coder-32B-Instruct>
 Llama-3.3-70b-versatile llama-3.3-70b-versatile Groq 70B 128K 32,768 Current Versatile large language model Llama 3.3 Card <https://console.groq.com/docs/models>
 Claude 3.5 Sonnet claude-3-5-sonnet-latest Anthropic Not disclosed 200K Not specified 2024-04 Most intelligent model, text/image input Claude 3.5 Sonnet <https://docs.anthropic.com/en/docs/about-claude/models>
 Claude 3.5 Haiku claude-3-5-haiku-latest Anthropic Not disclosed 200K Not specified 2024-07 Fastest Claude 3.5 model Claude 3.5 Haiku <https://docs.anthropic.com/en/docs/about-claude/models>
@@ -72,6 +142,7 @@ The **default local model** for **development** and **production** is **Granite 
 ### **3. Model Installation**
 
 To install this local model:
+
 ```bash
 ollama run granite3.1-dense:2b
 ```
@@ -95,6 +166,7 @@ ollama run granite3.1-dense:2b
 ### **5. Model Parameters**
 
 Default parameters for optimal performance:
+
 - **Temperature**: 0.7  
 - **Max Tokens**: 4096  
 - **Top P**: 0.9  
@@ -219,7 +291,7 @@ Gemini Developer API
 Get a Gemini API Key
 Get a Gemini API key and make your first API request in minutes.
 
-https://ai.google.dev/gemini-api/docs/models/gemini#gemini-2.0-flash
+<https://ai.google.dev/gemini-api/docs/models/gemini#gemini-2.0-flash>
 
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
@@ -232,73 +304,64 @@ const result = await model.generateContent(prompt);
 console.log(result.response.text());
 
 Model details
-Property	Description
-Model code	models/gemini-2.0-flash-exp
+
+| Property | Description |
+|----------|-------------|
+| Model code | models/gemini-2.0-flash-exp |
+
 Supported data types
 Inputs
 
-Audio, images, video, and text
+| Property | Value |
+|----------|--------|
+| Audio    | Supported |
+| Images   | Supported |
+| Video    | Supported |
+| Text     | Supported |
 
 Output
 
-Audio (coming soon), images (coming soon), and text
+| Property | Value |
+|----------|--------|
+| Audio    | Coming soon |
+| Images   | Coming soon |
+| Text     | Supported |
 
-Token limits[*]
-Input token limit
+Token limits
 
-1,048,576
+| Property | Value |
+|----------|--------|
+| Input token limit | 1,048,576 |
+| Output token limit | 8,192 |
 
-Output token limit
+Rate limits
 
-8,192
+| Property | Value |
+|----------|--------|
+| RPM      | 10 |
+| TPM      | 4 million |
+| RPD      | 1,500 |
 
-Rate limits[**]
-10 RPM
-4 million TPM
-1,500 RPD
 Capabilities
-Structured outputs
 
-Supported
+| Property | Value |
+|----------|--------|
+| Structured outputs | Supported |
+| Caching | Not supported |
+| Tuning | Not supported |
+| Function calling | Supported |
+| Code execution | Supported |
+| Search | Supported |
+| Image generation | Supported |
+| Native tool use | Supported |
+| Audio generation | Supported |
+| Multimodal Live API | Supported |
 
-Caching
-
-Not supported
-
-Tuning
-
-Not supported
-
-Function calling
-
-Supported
-
-Code execution
-
-Supported
-
-Search
-
-Supported
-
-Image generation
-
-Supported
-
-Native tool use
-
-Supported
-
-Audio generation
-
-Supported
-
-Multimodal Live API
-
-Supported
-
-Versions	
+Versions
 Read the model version patterns for more details.
-Latest: gemini-2.0-flash-exp
-Latest update	December 2024
-Knowledge cutoff	August 2024
+
+| Property | Value |
+|----------|--------|
+| Latest   | gemini-2.0-flash-exp |
+| Latest update | December 2024 |
+| Knowledge cutoff | August 2024 |

@@ -33,7 +33,7 @@ jobs:
     - name: Security scan
       uses: snyk/actions/node@master
       env:
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        SNYK_TOKEN: ${{ env.SNYK_TOKEN }}
     
     - name: Run SAST
       uses: github/codeql-action/analyze@v2
@@ -120,8 +120,10 @@ jobs:
     
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
+      env:
+        CODECOV_TOKEN: ${{ env.CODECOV_TOKEN }}
       with:
-        token: ${{ secrets.CODECOV_TOKEN }}
+        token: ${{ env.CODECOV_TOKEN }}
         files: ./coverage/lcov.info
         fail_ci_if_error: true
 
@@ -136,13 +138,13 @@ jobs:
     - name: SonarCloud Scan
       uses: SonarSource/sonarcloud-github-action@master
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets['GITHUB_TOKEN'] }}
+        SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
     
     - name: Check bundle size
       uses: preactjs/compressed-size-action@v2
       with:
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        repo-token: ${{ secrets['GITHUB_TOKEN'] }}
         pattern: './dist/**/*.{js,css,html}'
 
   build:
@@ -195,14 +197,17 @@ jobs:
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ secrets.AWS_REGION }}
+        aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
     
     - name: Deploy to staging
       run: |
-        aws s3 sync dist/ s3://${{ secrets.STAGING_BUCKET }}
-        aws cloudfront create-invalidation --distribution-id ${{ secrets.STAGING_DISTRIBUTION_ID }} --paths "/*"
+        aws s3 sync dist/ "s3://${STAGING_BUCKET}"
+        aws cloudfront create-invalidation --distribution-id "${STAGING_DISTRIBUTION_ID}" --paths "/*"
+      env:
+        STAGING_BUCKET: ${{ env.STAGING_BUCKET }}
+        STAGING_DISTRIBUTION_ID: ${{ env.STAGING_DISTRIBUTION_ID }}
 
   deploy-production:
     needs: [build]
@@ -220,14 +225,17 @@ jobs:
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ secrets.AWS_REGION }}
+        aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
     
     - name: Deploy to production
       run: |
-        aws s3 sync dist/ s3://${{ secrets.PRODUCTION_BUCKET }}
-        aws cloudfront create-invalidation --distribution-id ${{ secrets.PRODUCTION_DISTRIBUTION_ID }} --paths "/*"
+        aws s3 sync dist/ "s3://${PRODUCTION_BUCKET}"
+        aws cloudfront create-invalidation --distribution-id "${PRODUCTION_DISTRIBUTION_ID}" --paths "/*"
+      env:
+        PRODUCTION_BUCKET: ${{ env.PRODUCTION_BUCKET }}
+        PRODUCTION_DISTRIBUTION_ID: ${{ env.PRODUCTION_DISTRIBUTION_ID }}
 
   notify:
     needs: [deploy-staging, deploy-production]
@@ -237,8 +245,8 @@ jobs:
     steps:
     - name: Notify Slack
       uses: 8398a7/action-slack@v3
+      env:
+        SLACK_WEBHOOK_URL: ${{ env.SLACK_WEBHOOK_URL }}
       with:
         status: ${{ job.status }}
         fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
-      env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

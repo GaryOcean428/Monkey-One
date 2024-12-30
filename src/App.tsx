@@ -1,6 +1,6 @@
 import './styles/globals.css';
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import { LoginPage } from './components/auth/LoginPage';
 import { DashboardLayout } from './components/Layout/DashboardLayout';
@@ -27,6 +27,8 @@ import { SearchPanel } from './components/panels/SearchPanel';
 import { VectorStorePanel } from './components/panels/VectorStorePanel';
 import { SettingsPanel } from './components/panels/SettingsPanel';
 import { PerformancePanel } from './components/panels/PerformancePanel';
+import { AuthProvider } from './components/auth/AuthProvider';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
 
 const providerRegistry = ProviderRegistry.getInstance();
 
@@ -85,40 +87,48 @@ export const App: React.FC = () => {
   }
 
   return (
-    <ThemeProvider>
-      <TooltipProvider>
-        <SettingsProvider>
-          <ErrorBoundary>
-            <Routes>
-              <Route 
-                path="/login" 
-                element={user ? <Navigate to="/dashboard" /> : <LoginPage />} 
-              />
-              
-              <Route
-                path="/"
-                element={user ? <DashboardLayout /> : <Navigate to="/login" />}
-              >
-                <Route index element={<Navigate to="/dashboard" />} />
-                <Route path="dashboard" element={<DashboardPanel />} />
-                <Route path="chat" element={<ChatContainer />} />
-                <Route path="agents" element={<AgentsPanel />} />
-                <Route path="workflows" element={<WorkflowPanel />} />
-                <Route path="memory" element={<MemoryPanel />} />
-                <Route path="documents" element={<DocumentsPanel />} />
-                <Route path="tools" element={<ToolsPanel />} />
-                <Route path="search" element={<SearchPanel />} />
-                <Route path="vector-store" element={<VectorStorePanel />} />
-                <Route path="github" element={<div>GitHub</div>} />
-                <Route path="performance" element={<PerformancePanel />} />
-                <Route path="settings" element={<SettingsPanel />} />
-              </Route>
-            </Routes>
-            <ModelManager />
-            <Toaster />
-          </ErrorBoundary>
-        </SettingsProvider>
-      </TooltipProvider>
-    </ThemeProvider>
+    <Router>
+      <AuthProvider>
+        <ThemeProvider>
+          <TooltipProvider>
+            <SettingsProvider>
+              <ErrorBoundary>
+                <Routes>
+                  {/* Public routes */}
+                  <Route path="/login" element={
+                    <ProtectedRoute requireAuth={false}>
+                      <LoginPage />
+                    </ProtectedRoute>
+                  } />
+
+                  {/* Protected routes */}
+                  <Route path="/" element={
+                    <ProtectedRoute>
+                      <DashboardLayout />
+                    </ProtectedRoute>
+                  }>
+                    <Route index element={<Navigate to="/dashboard" />} />
+                    <Route path="dashboard" element={<DashboardPanel />} />
+                    <Route path="chat" element={<ChatContainer />} />
+                    <Route path="agents" element={<AgentsPanel />} />
+                    <Route path="workflows" element={<WorkflowPanel />} />
+                    <Route path="memory" element={<MemoryPanel />} />
+                    <Route path="documents" element={<DocumentsPanel />} />
+                    <Route path="tools" element={<ToolsPanel />} />
+                    <Route path="search" element={<SearchPanel />} />
+                    <Route path="vector-store" element={<VectorStorePanel />} />
+                    <Route path="github" element={<div>GitHub</div>} />
+                    <Route path="performance" element={<PerformancePanel />} />
+                    <Route path="settings" element={<SettingsPanel />} />
+                  </Route>
+                </Routes>
+                <ModelManager />
+                <Toaster />
+              </ErrorBoundary>
+            </SettingsProvider>
+          </TooltipProvider>
+        </ThemeProvider>
+      </AuthProvider>
+    </Router>
   );
 };
