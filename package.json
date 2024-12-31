@@ -26,7 +26,8 @@
     "ollama:status": "tsx scripts/manage-ollama.ts status",
     "ollama:start": "tsx scripts/manage-ollama.ts start",
     "ollama:stop": "tsx scripts/manage-ollama.ts stop",
-    "ollama:restart": "tsx scripts/manage-ollama.ts restart"
+    "ollama:restart": "tsx scripts/manage-ollama.ts restart",
+    "sync-secrets": "./scripts/sync-secrets.sh"
   },
   "dependencies": {
     "@huggingface/inference": "^2.8.1",
