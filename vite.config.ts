@@ -1,17 +1,23 @@
-import { defineConfig, loadEnv } from 'vite';
-import react from '@vitejs/plugin-react';
-import { resolve } from 'path';
-import dotenv from 'dotenv';
-import compression from 'vite-plugin-compression';
+/// <reference types="node" />
+import { defineConfig, loadEnv } from 'vite'
+import react from '@vitejs/plugin-react'
+import { resolve } from 'path'
+import dotenv from 'dotenv'
+import compression from 'vite-plugin-compression'
+import { fileURLToPath } from 'url'
+import { dirname } from 'path'
 
 // Load environment variables
-dotenv.config();
-dotenv.config({ path: '.env.local' });
+dotenv.config()
+dotenv.config({ path: '.env.local' })
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   // Load env file based on mode
-  const env = loadEnv(mode, process.cwd(), '');
+  const env = loadEnv(mode, __dirname, '')
 
   return {
     plugins: [
@@ -30,74 +36,52 @@ export default defineConfig(({ mode }) => {
         '@radix-ui/react-slider',
         '@radix-ui/react-tabs',
         '@radix-ui/react-switch',
-        '@radix-ui/react-select'
-      ]
+        '@radix-ui/react-select',
+      ],
     },
     resolve: {
-      alias: [
-        { find: '@', replacement: resolve(__dirname, './src') },
-        { find: '~', replacement: resolve(__dirname, './') },
-      ],
+      alias: {
+        '@': resolve(__dirname, './src'),
+        '~': resolve(__dirname, './'),
+      },
     },
     define: {
       global: 'globalThis',
-      'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(env.VITE_SUPABASE_URL),
-      'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(env.VITE_SUPABASE_ANON_KEY),
-      'import.meta.env.VITE_OPENAI_API_KEY': JSON.stringify(env.NEXT_PUBLIC_OPENAI_API_KEY),
-      'import.meta.env.VITE_PINECONE_API_KEY': JSON.stringify(env.VITE_PINECONE_API_KEY),
-      'import.meta.env.VITE_PINECONE_ENVIRONMENT': JSON.stringify(env.VITE_PINECONE_ENVIRONMENT),
+      ...Object.keys(env).reduce<Record<string, string>>((acc: Record<string, string>, key) => {
+        if (key.startsWith('VITE_')) {
+          acc[`import.meta.env.${key}`] = JSON.stringify(env[key])
+        }
+        return acc
+      }, {}),
     },
     build: {
       outDir: 'dist',
       sourcemap: true,
-      target: 'esnext',
       rollupOptions: {
-        input: {
-          main: resolve(__dirname, 'index.html'),
-        },
         output: {
-          manualChunks(id) {
-            if (id.includes('node_modules')) {
-              if (id.includes('@radix-ui')) {
-                return 'vendor-radix';
-              }
-              if (id.includes('react')) {
-                return 'vendor-react';
-              }
-              return 'vendor';
-            }
-            if (id.includes('src/components/ui')) {
-              return 'ui';
-            }
-            if (id.includes('src/components/panels')) {
-              return 'panels';
-            }
-            if (id.includes('src/components/chat')) {
-              return 'chat';
-            }
-            if (id.includes('src/store')) {
-              return 'store';
-            }
-            if (id.includes('src/lib')) {
-              return 'lib';
-            }
-          }
-        }
+          manualChunks: {
+            vendor: [
+              'react',
+              'react-dom',
+              'react-router-dom',
+              '@radix-ui/react-slider',
+              '@radix-ui/react-tabs',
+              '@radix-ui/react-switch',
+              '@radix-ui/react-select',
+            ],
+          },
+        },
       },
-      chunkSizeWarningLimit: 1000
+      chunkSizeWarningLimit: 1000,
     },
     server: {
-      proxy: {
-        '/api/ollama': {
-          target: 'http://localhost:3001',
-          changeOrigin: true,
-          secure: false,
-        },
-      },
       port: 3000,
-      open: true,
-      cors: true,
-      force: true // Force the server to re-bundle on startup
-    }
-  };
-});
+      host: true,
+      strictPort: true,
+      watch: {
+        usePolling: true,
+        interval: 100,
+      },
+    },
+  }
+})
