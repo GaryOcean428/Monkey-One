@@ -11,14 +11,16 @@ dist/
 build/
 .vite
 
-# Environment Variables
+# Environment files
 .env
+.env.vercel
 .env.local
 .env.development
 .env.test
 .env.production
 .env.*.local
 !.env.example
+!.env.template
 
 # AI/ML
 .ai-cache
@@ -60,4 +62,4 @@ model-cache/
 .vscode/
 .idea/
 /project/
-/likeprojects/*
+/likeprojects/

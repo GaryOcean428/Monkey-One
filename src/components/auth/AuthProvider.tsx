@@ -1,5 +1,5 @@
 import { createContext, useContext, ReactNode } from 'react'
-import { useAuth } from '../../lib/supabase/hooks/useAuth'
+import { useAuth } from '@/lib/supabase/hooks/useAuth'
 import type { User } from '@supabase/supabase-js'
 
 interface AuthContextType {
