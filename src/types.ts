@@ -12,7 +12,6 @@ export type WorkerStatus = {
   lastHeartbeat?: Date;
 };
 
-// Convert AgentType from type to enum
 export enum AgentType {
   BASE = 'BASE',
   ORCHESTRATOR = 'orchestrator',
@@ -39,48 +38,51 @@ export interface Tool {
   execute(args: Record<string, unknown>): Promise<unknown>;
 }
 
-// Convert to enum
 export enum AgentStatus {
   IDLE = 'IDLE',
   BUSY = 'BUSY',
-  ERROR = 'ERROR'
+  ERROR = 'ERROR',
+  OFFLINE = 'OFFLINE'
 }
 
-// Convert to enum 
 export enum MessageType {
   USER = 'USER',
   SYSTEM = 'SYSTEM',
-  TASK = 'TASK',
+  COMMAND = 'COMMAND',
   RESPONSE = 'RESPONSE',
-  COMMAND = 'COMMAND'
+  ERROR = 'ERROR'
 }
 
-// Update Message type
-export type Message = {
+export interface Message {
   id: string;
   type: MessageType;
-  content: string; 
+  content: string;
   sender?: string;
   recipient?: string;
   timestamp?: number | Date;
   status?: string;
   role?: string;
-};
+}
 
-// Update Agent interface
+export type AgentCapability = string;
+
 export interface Agent {
   id: string;
   type: AgentType;
   status: AgentStatus;
-  subordinates?: Agent[];
-  capabilities: Array<{name: string, description?: string}>;
-  getCapabilities(): Array<{name: string, description?: string}>;
-  registerCapability(cap: {name: string, description?: string}): void;
-  handleMessage(message: Message): Promise<Message>;
+  capabilities: AgentCapability[];
+  name?: string;
+  description?: string;
+  
+  getCapabilities(): AgentCapability[];
+  hasCapability(capability: AgentCapability): boolean;
+  addCapability(capability: AgentCapability): void;
+  removeCapability(capability: AgentCapability): void;
+  processMessage(message: Message): Promise<void>;
   initialize(): Promise<void>;
+  shutdown(): Promise<void>;
 }
 
-// Add MemoryItem and MemoryType
 export interface MemoryItem {
   id: string;
   type: MemoryType;
@@ -94,7 +96,6 @@ export enum MemoryType {
   TASK = 'task'
 }
 
-// Update State interfaces
 export interface StateConfig {
   allowedTransitions: Array<{
     from: AgentStatus;
@@ -114,9 +115,6 @@ export interface StateContext {
   message?: Message;
 }
 
-// Remove duplicate AgentStatus type declaration
-// export type AgentStatus = 'IDLE' | 'BUSY' | 'ERROR';
-
 export interface AgentMetrics {
   totalMessages: number;
   averageResponseTime: number;
@@ -125,6 +123,6 @@ export interface AgentMetrics {
   status: string;
 }
 
-export type TaskMessage = Message & {
+export interface TaskMessage extends Message {
   task?: any;
-};
+}

@@ -25,6 +25,14 @@ export default defineConfig(({ mode }) => {
         ext: '.br',
       }),
     ],
+    optimizeDeps: {
+      include: [
+        '@radix-ui/react-slider',
+        '@radix-ui/react-tabs',
+        '@radix-ui/react-switch',
+        '@radix-ui/react-select'
+      ]
+    },
     resolve: {
       alias: [
         { find: '@', replacement: resolve(__dirname, './src') },
@@ -42,62 +50,54 @@ export default defineConfig(({ mode }) => {
     build: {
       outDir: 'dist',
       sourcemap: true,
+      target: 'esnext',
       rollupOptions: {
         input: {
           main: resolve(__dirname, 'index.html'),
         },
         output: {
-          manualChunks: {
-            'react-vendor': ['react', 'react-dom'],
-            'firebase-vendor': [
-              'firebase/app',
-              'firebase/auth',
-              'firebase/firestore',
-              'firebase/storage',
-              'firebase/database'
-            ],
-            'ui-vendor': [
-              '@radix-ui/react-alert-dialog',
-              '@radix-ui/react-dialog',
-              '@radix-ui/react-dropdown-menu',
-              '@radix-ui/react-label',
-              '@radix-ui/react-menubar',
-              '@radix-ui/react-popover',
-              '@radix-ui/react-select',
-              '@radix-ui/react-slider',
-              '@radix-ui/react-switch',
-              '@radix-ui/react-tabs',
-              '@radix-ui/react-toast'
-            ]
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              if (id.includes('@radix-ui')) {
+                return 'vendor-radix';
+              }
+              if (id.includes('react')) {
+                return 'vendor-react';
+              }
+              return 'vendor';
+            }
+            if (id.includes('src/components/ui')) {
+              return 'ui';
+            }
+            if (id.includes('src/components/panels')) {
+              return 'panels';
+            }
+            if (id.includes('src/components/chat')) {
+              return 'chat';
+            }
+            if (id.includes('src/store')) {
+              return 'store';
+            }
+            if (id.includes('src/lib')) {
+              return 'lib';
+            }
           }
         }
       },
-      target: 'esnext',
-      minify: 'esbuild'
-    },
-    optimizeDeps: {
-      include: [
-        'react',
-        'react-dom',
-        '@supabase/supabase-js'
-      ]
+      chunkSizeWarningLimit: 1000
     },
     server: {
+      proxy: {
+        '/api/ollama': {
+          target: 'http://localhost:3001',
+          changeOrigin: true,
+          secure: false,
+        },
+      },
       port: 3000,
-      host: true,
+      open: true,
       cors: true,
-      hmr: {
-        overlay: false,
-        clientPort: 3000,
-      },
-      watch: {
-        usePolling: true,
-        interval: 100,
-      },
-    },
-    preview: {
-      port: 3000,
-      host: true
+      force: true // Force the server to re-bundle on startup
     }
   };
 });

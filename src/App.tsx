@@ -1,101 +1,134 @@
 import './styles/globals.css';
-import { useEffect, useState } from 'react';
-import { Routes, Route } from 'react-router-dom';
-import { useAuth, AuthProvider } from './contexts/AuthContext';
-import { SignIn } from './components/Auth/SignIn';
-import { SignUpForm as SignUp } from './components/Auth/SignUpForm';
-import { ChatContainer as Chat } from './components/chat/ChatContainer';
-import SettingsPanel from './components/panels/SettingsPanel';
-import { MainPanel as Playground } from './components/MainPanel';
-import { useAgentStore } from './store/agentStore';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { useAuth } from './contexts/AuthContext';
+import { LoginPage } from './components/auth/LoginPage';
 import { DashboardLayout } from './components/Layout/DashboardLayout';
-import { ThemeProvider } from './components/ThemeProvider';
-import { LocalModelService } from './lib/llm/LocalModelService';
-import { ProviderRegistry } from './lib/providers';
-import { ModelManager } from './components/ModelManager';
+import { ChatContainer } from './components/chat/ChatContainer';
+import { LoadingSpinner } from './components/ui/loading-spinner';
 import { Toaster } from './components/ui/toaster';
-import { useToast } from './components/ui/use-toast';
-import { logger } from './utils/logger';
+import { ThemeProvider } from './components/ThemeProvider';
+import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { TooltipProvider } from './components/ui/tooltip';
 import { SettingsProvider } from './contexts/SettingsContext';
+import { ProviderRegistry } from './lib/providers';
+import { LocalProvider } from './lib/llm/providers/local';
+import { ModelManager } from './components/ModelManager';
+import { toast } from './components/ui/use-toast';
+import { useAgentStore } from './store/agentStore';
+import { LLMManager } from './lib/llm/providers';
+import { DashboardPanel } from './components/panels/DashboardPanel';
+import { AgentsPanel } from './components/panels/AgentsPanel';
+import { WorkflowPanel } from './components/panels/WorkflowPanel';
+import { MemoryPanel } from './components/panels/MemoryPanel';
+import { DocumentsPanel } from './components/panels/DocumentsPanel';
+import { ToolsPanel } from './components/panels/ToolsPanel';
+import { SearchPanel } from './components/panels/SearchPanel';
+import { VectorStorePanel } from './components/panels/VectorStorePanel';
+import { SettingsPanel } from './components/panels/SettingsPanel';
+import { PerformancePanel } from './components/panels/PerformancePanel';
+import { AuthProvider } from './components/auth/AuthProvider';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
 
-const localModelService = LocalModelService.getInstance();
 const providerRegistry = ProviderRegistry.getInstance();
 
-function App() {
+export const App: React.FC = () => {
   const { user, isLoading } = useAuth();
-  const [isSignUp, setIsSignUp] = useState(false);
-  const initializeAgents = useAgentStore(state => state.initializeAgents);
-  const [modelInitialized, setModelInitialized] = useState(false);
-  const { toast } = useToast();
+  const setActiveAgent = useAgentStore(state => state.setActiveAgent);
+  const llmManager = React.useMemo(() => new LLMManager(), []);
 
-  useEffect(() => {
-    async function initializeServices() {
+  // Initialize services
+  React.useEffect(() => {
+    const initializeServices = async () => {
       try {
-        await providerRegistry.registerProvider('local', localModelService);
-        setModelInitialized(true);
-        logger.info('Model service initialized successfully');
+        // Initialize local provider if not already registered
+        if (!llmManager.getActiveProvider()) {
+          const localProvider = new LocalProvider();
+          await localProvider.initialize();
+          llmManager.registerProvider('local', localProvider);
+          llmManager.setActiveProvider('local');
+        }
+
+        setActiveAgent({
+          id: 'default-agent',
+          name: 'Local Agent',
+          description: 'Default local agent using Ollama',
+          provider: 'local',
+          capabilities: ['chat', 'rag'],
+          settings: {}
+        });
+
+        toast({
+          title: 'Success',
+          description: 'Local provider and agent initialized successfully',
+          status: 'success',
+          duration: 3000,
+          isClosable: true,
+        });
       } catch (error) {
-        logger.error('Failed to initialize model service:', error);
+        console.error('Error initializing services:', error);
         toast({
           title: 'Error',
-          description: 'Failed to initialize model service. Some features may be unavailable.',
-          variant: 'destructive'
+          description: error instanceof Error ? error.message : 'Failed to initialize services',
+          variant: 'destructive',
         });
       }
-    }
+    };
 
     initializeServices();
-  }, [toast]);
-
-  useEffect(() => {
-    if (user && !isLoading && modelInitialized) {
-      initializeAgents();
-    }
-  }, [user, isLoading, modelInitialized, initializeAgents]);
+  }, [setActiveAgent, llmManager]);
 
   if (isLoading) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-primary"></div>
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingSpinner size="lg" />
       </div>
     );
   }
 
   return (
-    <ErrorBoundary>
-      <ThemeProvider>
-        <TooltipProvider>
-          <SettingsProvider>
-            <AuthProvider>
-              <div className="min-h-screen">
-                {!user ? (
-                  <div className="flex min-h-screen items-center justify-center">
-                    {isSignUp ? (
-                      <SignUp onSwitch={() => setIsSignUp(false)} />
-                    ) : (
-                      <SignIn onSwitch={() => setIsSignUp(true)} />
-                    )}
-                  </div>
-                ) : (
-                  <DashboardLayout>
-                    <Routes>
-                      <Route path="/" element={<Chat />} />
-                      <Route path="/settings" element={<SettingsPanel />} />
-                      <Route path="/playground" element={<Playground />} />
-                    </Routes>
-                  </DashboardLayout>
-                )}
-              </div>
-              <ModelManager />
-              <Toaster />
-            </AuthProvider>
-          </SettingsProvider>
-        </TooltipProvider>
-      </ThemeProvider>
-    </ErrorBoundary>
-  );
-}
+    <Router>
+      <AuthProvider>
+        <ThemeProvider>
+          <TooltipProvider>
+            <SettingsProvider>
+              <ErrorBoundary>
+                <Routes>
+                  {/* Public routes */}
+                  <Route path="/login" element={
+                    <ProtectedRoute requireAuth={false}>
+                      <LoginPage />
+                    </ProtectedRoute>
+                  } />
 
-export default App;
+                  {/* Protected routes */}
+                  <Route path="/" element={
+                    <ProtectedRoute>
+                      <DashboardLayout />
+                    </ProtectedRoute>
+                  }>
+                    <Route index element={<Navigate to="/dashboard" />} />
+                    <Route path="dashboard" element={<DashboardPanel />} />
+                    <Route path="chat" element={<ChatContainer />} />
+                    <Route path="agents" element={<AgentsPanel />} />
+                    <Route path="workflows" element={<WorkflowPanel />} />
+                    <Route path="memory" element={<MemoryPanel />} />
+                    <Route path="documents" element={<DocumentsPanel />} />
+                    <Route path="tools" element={<ToolsPanel />} />
+                    <Route path="search" element={<SearchPanel />} />
+                    <Route path="vector-store" element={<VectorStorePanel />} />
+                    <Route path="github" element={<div>GitHub</div>} />
+                    <Route path="performance" element={<PerformancePanel />} />
+                    <Route path="settings" element={<SettingsPanel />} />
+                  </Route>
+                </Routes>
+                <ModelManager />
+                <Toaster />
+              </ErrorBoundary>
+            </SettingsProvider>
+          </TooltipProvider>
+        </ThemeProvider>
+      </AuthProvider>
+    </Router>
+  );
+};

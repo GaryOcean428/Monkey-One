@@ -8,11 +8,13 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=development
+      - VITE_GITHUB_TOKEN=${VITE_GITHUB_TOKEN}
+      - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
+      - VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
       - VITE_PINECONE_API_KEY=${VITE_PINECONE_API_KEY}
       - VITE_PINECONE_ENVIRONMENT=${VITE_PINECONE_ENVIRONMENT}
-      - VITE_FIREBASE_API_KEY=${VITE_FIREBASE_API_KEY}
-      - VITE_FIREBASE_PROJECT_ID=${VITE_FIREBASE_PROJECT_ID}
+      - VITE_REDIS_URL=${VITE_REDIS_URL}
     depends_on:
       - prometheus
       - grafana

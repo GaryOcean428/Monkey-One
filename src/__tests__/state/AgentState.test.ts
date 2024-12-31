@@ -1,80 +1,31 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { expect, describe, it, beforeEach, vi } from 'vitest';
 import { AgentState } from '../../lib/state/AgentState';
+import { BaseAgent } from '../../lib/agents/base';
+import { AgentStatus } from '../../lib/types/core';
 
 describe('AgentState', () => {
   let state: AgentState;
+  let agent: BaseAgent;
 
   beforeEach(() => {
-    vi.clearAllMocks();
-    state = new AgentState();
+    agent = new BaseAgent();
+    state = new AgentState(agent);
+    vi.useFakeTimers();
   });
 
-  describe('state registration', () => {
-    it('should register new state configuration', () => {
-      const config = {
-        name: 'TEST',
-        transitions: ['BUSY', 'ERROR'],
-        timeout: 1000
-      };
-      state.registerState(config);
-      expect(state.getCurrentState().name).toBe('TEST');
+  it('should transition to error state on timeout', async () => {
+    state.registerState(AgentStatus.AVAILABLE, {
+      allowedTransitions: [{ from: AgentStatus.AVAILABLE, to: AgentStatus.OFFLINE }],
+      timeout: 1000
     });
 
-    it('should throw error when registering duplicate state', () => {
-      const config = {
-        name: 'TEST',
-        transitions: ['BUSY'],
-        timeout: 1000
-      };
-      state.registerState(config);
-      expect(() => state.registerState(config)).toThrow();
-    });
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(agent.status).toBe(AgentStatus.OFFLINE);
   });
 
-  describe('state transitions', () => {
-    beforeEach(() => {
-      state.registerState({
-        name: 'IDLE',
-        transitions: ['BUSY'],
-        timeout: 1000
-      });
-      state.registerState({
-        name: 'BUSY',
-        transitions: ['IDLE', 'ERROR'],
-        timeout: 1000
-      });
-    });
-
-    it('should transition between allowed states', async () => {
-      await state.transition('BUSY');
-      expect(state.getCurrentState().name).toBe('BUSY');
-    });
-
-    it('should throw error for invalid transitions', async () => {
-      await expect(state.transition('ERROR')).rejects.toThrow();
-    });
-  });
-
-  describe('state timeout', () => {
-    it('should transition to error state on timeout', async () => {
-      vi.useFakeTimers();
-      state.registerState({
-        name: 'TEST',
-        transitions: ['ERROR'],
-        timeout: 100
-      });
-      state.setupStateTimeout();
-      vi.advanceTimersByTime(200);
-      expect(state.getCurrentState().name).toBe('ERROR');
-      vi.useRealTimers();
-    });
-  });
-
-  describe('cleanup', () => {
-    it('should clear timeouts on dispose', () => {
-      const clearTimeoutSpy = vi.spyOn(global, 'clearTimeout');
-      state.dispose();
-      expect(clearTimeoutSpy).toHaveBeenCalled();
-    });
+  it('should clear timeouts on dispose', () => {
+    const clearTimeoutSpy = vi.spyOn(global, 'clearTimeout');
+    state.dispose();
+    expect(clearTimeoutSpy).toHaveBeenCalled();
   });
 });

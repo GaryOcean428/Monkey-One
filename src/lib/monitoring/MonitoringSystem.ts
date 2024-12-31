@@ -73,19 +73,54 @@ export class MonitoringSystem extends EventEmitter {
    * Collects system-wide metrics
    */
   private collectSystemMetrics(): void {
-    // Memory metrics
-    const memUsage = process.memoryUsage();
-    memoryUsage.set({ type: 'heap' }, memUsage.heapUsed);
-    memoryUsage.set({ type: 'rss' }, memUsage.rss);
-    memoryUsage.set({ type: 'external' }, memUsage.external);
+    try {
+      // Memory metrics with thresholds
+      const memUsage = process.memoryUsage();
+      const heapUsed = memUsage.heapUsed;
+      memoryUsage.set({ type: 'heap' }, heapUsed);
+      memoryUsage.set({ type: 'rss' }, memUsage.rss);
+      memoryUsage.set({ type: 'external' }, memUsage.external);
 
-    // Cache metrics
-    const cacheStats = this.getCacheStats();
-    cacheSize.set(cacheStats.size);
-    cacheOperations.inc({ operation: 'cleanup', status: 'success' });
+      // Trigger cleanup if memory usage is high
+      if (heapUsed > 1024 * 1024 * 1024) { // 1GB
+        this.cleanupOldMetrics();
+        global.gc?.(); // Optional GC if available
+      }
 
-    // Brain activity metrics
-    this.collectBrainMetrics();
+      // Cache metrics with optimization
+      const cacheStats = this.getCacheStats();
+      if (cacheStats.size > 10000) { // Too many entries
+        this.optimizeCache();
+      }
+      cacheSize.set(cacheStats.size);
+      cacheOperations.inc({ operation: 'cleanup', status: 'success' });
+
+      // Brain activity metrics with batching
+      this.collectBrainMetrics();
+
+      // Log performance issues
+      if (this.metrics.get('latency') > 1000) {
+        logger.warn('High latency detected');
+      }
+    } catch (error) {
+      logger.error('Failed to collect metrics:', error);
+      captureException(error);
+    }
+  }
+
+  private optimizeCache(): void {
+    const now = Date.now();
+    let cleanedCount = 0;
+    
+    // Remove old entries
+    for (const [key, value] of this.metrics.entries()) {
+      if (now - value.timestamp > 3600000) { // 1 hour
+        this.metrics.delete(key);
+        cleanedCount++;
+      }
+    }
+    
+    logger.info(`Cleaned ${cleanedCount} old cache entries`);
   }
 
   /**

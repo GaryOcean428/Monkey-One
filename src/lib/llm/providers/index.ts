@@ -3,6 +3,7 @@ import { GroqProvider } from './groq';
 import { PerplexityProvider } from './perplexity';
 import { QwenProvider } from './qwen';
 import { GraniteProvider } from './granite';
+import { LocalProvider } from './local';
 import type { Message } from '../../../types';
 
 export interface LLMProvider {
@@ -13,7 +14,6 @@ export interface LLMProvider {
     documents?: string[];
     maxTokens?: number;
   }): Promise<string>;
-  generateEmbedding?(text: string): Promise<number[]>;
   streamResponse?(
     message: string,
     onChunk: (chunk: string) => void,
@@ -25,56 +25,71 @@ export interface LLMProvider {
   ): Promise<void>;
 }
 
-class LLMManager {
-  private providers: Map<string, LLMProvider> = new Map();
-  private activeProvider: string;
+export class LLMManager {
+  private providers: Map<string, LLMProvider>;
+  private activeProvider: string | null;
 
   constructor() {
+    this.providers = new Map();
+    this.activeProvider = null;
     this.registerDefaultProviders();
-    this.activeProvider = 'phi3.5'; // Set Phi 3.5 as default for local inference
   }
 
   private registerDefaultProviders() {
     const providers: LLMProvider[] = [
       // Local provider
       new LocalProvider(),
-      // Cloud providers
-      new LlamaProvider(import.meta.env.VITE_LLAMA_API_KEY),
-      new GPT4oProvider(import.meta.env.VITE_OPENAI_API_KEY),
-      new ClaudeProvider(import.meta.env.VITE_ANTHROPIC_API_KEY),
-      new O1Provider(import.meta.env.VITE_O1_API_KEY)
+      // Cloud providers - only initialize if API keys are available
+      ...(import.meta.env.VITE_XAI_API_KEY ? [new XAIProvider(import.meta.env.VITE_XAI_API_KEY)] : []),
+      ...(import.meta.env.VITE_GROQ_API_KEY ? [new GroqProvider(import.meta.env.VITE_GROQ_API_KEY)] : []),
+      ...(import.meta.env.VITE_PERPLEXITY_API_KEY ? [new PerplexityProvider(import.meta.env.VITE_PERPLEXITY_API_KEY)] : []),
+      ...(import.meta.env.VITE_HF_API_KEY ? [
+        new QwenProvider(import.meta.env.VITE_HF_API_KEY),
+        new GraniteProvider(import.meta.env.VITE_HF_API_KEY)
+      ] : [])
     ];
 
+    // Register providers and set first available as active
     providers.forEach(provider => {
       this.providers.set(provider.id, provider);
+      if (!this.activeProvider) {
+        this.activeProvider = provider.id;
+      }
     });
   }
 
-  setActiveProvider(providerId: string) {
-    if (!this.providers.has(providerId)) {
-      throw new Error(`Provider ${providerId} not found`);
+  public registerProvider(id: string, provider: LLMProvider) {
+    this.providers.set(id, provider);
+    if (!this.activeProvider) {
+      this.activeProvider = id;
     }
-    this.activeProvider = providerId;
   }
 
-  getActiveProvider(): LLMProvider {
+  public getActiveProvider(): LLMProvider {
+    if (!this.activeProvider) {
+      throw new Error('No active provider set');
+    }
     const provider = this.providers.get(this.activeProvider);
     if (!provider) {
-      throw new Error('No active provider set');
+      throw new Error('Active provider not found');
     }
     return provider;
   }
 
-  async sendMessage(
-    message: string,
-    context?: Message[],
-    options?: {
-      useRag?: boolean;
-      documents?: string[];
-      maxTokens?: number;
+  public setActiveProvider(id: string) {
+    if (!this.providers.has(id)) {
+      throw new Error(`Provider ${id} not found`);
     }
-  ): Promise<string> {
-    return this.getActiveProvider().sendMessage(message, context, options);
+    this.activeProvider = id;
+  }
+
+  async sendMessage(message: string, context?: Message[], options?: {
+    useRag?: boolean;
+    documents?: string[];
+    maxTokens?: number;
+  }): Promise<string> {
+    const provider = this.getActiveProvider();
+    return provider.sendMessage(message, context, options);
   }
 
   async streamResponse(
@@ -88,7 +103,7 @@ class LLMManager {
   ): Promise<void> {
     const provider = this.getActiveProvider();
     if (!provider.streamResponse) {
-      throw new Error('Active provider does not support streaming');
+      throw new Error('Current provider does not support streaming');
     }
     return provider.streamResponse(message, onChunk, options);
   }

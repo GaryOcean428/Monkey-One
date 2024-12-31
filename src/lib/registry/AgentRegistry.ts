@@ -1,11 +1,24 @@
+import { Agent, AgentType } from '../types/core';
+import { RuntimeError } from '../errors/AgentErrors';
+import { logger } from '../../utils/logger';
 import { BaseAgent } from '../agents/base';
+import { v4 as uuidv4 } from 'uuid';
 
 export class AgentRegistry {
   private static instance: AgentRegistry;
-  private registry: Map<string, () => BaseAgent>;
+  private agents: Map<string, () => Promise<Agent>>;
 
   private constructor() {
-    this.registry = new Map();
+    this.agents = new Map();
+    this.registerBaseAgent();
+  }
+
+  private registerBaseAgent() {
+    this.agents.set('BASE', async () => {
+      const agent = new BaseAgent(uuidv4(), 'Base Agent');
+      await agent.initialize();
+      return agent;
+    });
   }
 
   static getInstance(): AgentRegistry {
@@ -15,26 +28,39 @@ export class AgentRegistry {
     return AgentRegistry.instance;
   }
 
-  register(type: string, factory: () => BaseAgent) {
-    this.registry.set(type, factory);
+  async register(type: string, factory: () => Promise<Agent>): Promise<void> {
+    if (this.agents.has(type)) {
+      throw new RuntimeError(`Agent type ${type} is already registered`);
+    }
+    this.agents.set(type, factory);
+    logger.info(`Agent type ${type} registered`);
   }
 
-  create(type: string): BaseAgent {
-    const factory = this.registry.get(type);
+  async unregister(type: string): Promise<void> {
+    if (!this.agents.has(type)) {
+      throw new RuntimeError(`Agent type ${type} not registered`);
+    }
+    this.agents.delete(type);
+  }
+
+  async createAgent(type: string): Promise<Agent> {
+    const factory = this.agents.get(type);
     if (!factory) {
-      throw new Error(`Agent type ${type} not registered.`);
+      throw new RuntimeError(`Agent type ${type} not found`);
     }
     return factory();
   }
 
-  unregister(type: string) {
-    if (!this.registry.has(type)) {
-      throw new Error(`Agent type ${type} not registered.`);
-    }
-    this.registry.delete(type);
+  hasAgent(type: string): boolean {
+    return this.agents.has(type);
   }
 
-  reset() {
-    this.registry.clear();
+  reset(): void {
+    this.agents.clear();
+    this.registerBaseAgent();
   }
-}
+
+  getRegisteredTypes(): string[] {
+    return Array.from(this.agents.keys());
+  }
+}

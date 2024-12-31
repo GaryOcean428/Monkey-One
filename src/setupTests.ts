@@ -3,10 +3,10 @@ import { expect, afterEach } from 'vitest';
 import { cleanup } from '@testing-library/react';
 import * as matchers from '@testing-library/jest-dom/matchers';
 
-// Extend Vitest's expect with jest-dom matchers
+// Extend Vitest's expect
 expect.extend(matchers);
 
-// Run cleanup after each test case
+// Cleanup after each test
 afterEach(() => {
   cleanup();
 });
@@ -34,36 +34,6 @@ global.ResizeObserver = vi.fn().mockImplementation(() => ({
 }));
 
 // Mock TextDecoder
-class CustomTextDecoder {
-  decode(bytes: Uint8Array): string {
-    return new TextDecoder().decode(bytes);
-  }
-}
-
-global.TextDecoder = CustomTextDecoder as any;
-
-// Mock canvas
-const canvas = document.createElement('canvas');
-const ctx = canvas.getContext('2d');
-if (ctx) {
-  Object.assign(ctx, {
-    measureText: () => ({
-      width: 100,
-      actualBoundingBoxAscent: 10,
-      actualBoundingBoxDescent: 10,
-      actualBoundingBoxLeft: 0,
-      actualBoundingBoxRight: 100,
-      fontBoundingBoxAscent: 10,
-      fontBoundingBoxDescent: 10,
-      alphabeticBaseline: 0,
-      emHeightAscent: 10,
-      emHeightDescent: 10,
-      hangingBaseline: 0,
-      ideographicBaseline: 10,
-    }),
-    fillText: vi.fn(),
-    strokeText: vi.fn(),
-    save: vi.fn(),
-    restore: vi.fn(),
-  });
-}
+global.TextDecoder = vi.fn().mockImplementation(() => ({
+  decode: vi.fn(),
+}));

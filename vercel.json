@@ -6,6 +6,10 @@
   "framework": "vite",
   "outputDirectory": "dist",
   "rewrites": [
+    { 
+      "source": "/api/ollama/(.*)", 
+      "destination": "http://localhost:11434/api/$1"
+    },
     { "source": "/(.*)", "destination": "/" }
   ],
   "headers": [

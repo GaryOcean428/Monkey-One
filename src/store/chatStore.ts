@@ -4,8 +4,6 @@ import type { Message, Task } from '../types';
 import { ResponseProcessor } from '../lib/llm/ResponseProcessor';
 import { memoryManager } from '../lib/memory';
 
-const responseProcessor = new ResponseProcessor();
-
 interface ChatState {
   messages: Message[];
   tasks: Task[];
@@ -22,91 +20,97 @@ interface ChatActions {
 }
 
 export const useChatStore = create<ChatState & ChatActions>()(
-  immer((set, get) => ({
-    messages: [],
-    tasks: [],
-    activeTask: null,
-    isProcessing: false,
-    error: null,
+  immer((set, get) => {
+    // Initialize ResponseProcessor instance for better testability
+    const responseProcessor = new ResponseProcessor();
 
-    sendMessage: async (content: string, agentId: string) => {
-      if (!content.trim()) return;
+    return {
+      messages: [],
+      tasks: [],
+      activeTask: null,
+      isProcessing: false,
+      error: null,
 
-      set((state) => {
-        state.isProcessing = true;
-        state.error = null;
-      });
+      sendMessage: async (content: string, agentId: string) => {
+        if (!content.trim()) return;
 
-      const userMessage: Message = {
-        id: crypto.randomUUID(),
-        role: 'user',
-        content,
-        timestamp: Date.now(),
-        status: 'sending',
-      };
-
-      set((state) => {
-        state.messages.push(userMessage);
-      });
-
-      try {
-        const response = await responseProcessor.processResponse(content, agentId);
-
-        const assistantMessage: Message = {
+        const userMessage = {
           id: crypto.randomUUID(),
-          role: 'assistant',
-          content: response,
+          role: 'user',
+          content,
           timestamp: Date.now(),
-          status: 'sent',
+          status: 'sending'
         };
 
-        set((state) => {
-          state.messages[state.messages.length - 1].status = 'sent';
-          state.messages.push(assistantMessage);
-          state.isProcessing = false;
-        });
+        set((state) => ({
+          messages: [...state.messages, userMessage],
+          isProcessing: true,
+          error: null
+        }));
 
-        // Store conversation in memory
-        await memoryManager.storeConversation({
-          userMessage,
-          assistantMessage,
-          agentId,
-        });
+        try {
+          // Get previous messages for context
+          const previousMessages = get().messages;
+          const response = await responseProcessor.processResponse(content, agentId, previousMessages);
 
-      } catch (error) {
+          if (response.content) {
+            const assistantMessage = {
+              id: crypto.randomUUID(),
+              role: 'assistant',
+              content: response.content,
+              timestamp: Date.now(),
+              status: 'sent',
+              metadata: response.metadata
+            };
+
+            set(state => ({
+              messages: [...state.messages, { ...userMessage, status: 'sent' }, assistantMessage],
+              isProcessing: false
+            }));
+
+          } else {
+            set(state => ({
+              messages: [...state.messages, { ...userMessage, status: 'sent' }],
+              isProcessing: false
+            }));
+          }
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+          set(state => ({
+            messages: [...state.messages, { ...userMessage, status: 'error' }],
+            isProcessing: false,
+            error: errorMessage
+          }));
+        }
+      },
+
+      clearMessages: () => {
+        set({
+          messages: [],
+          tasks: [],
+          activeTask: null,
+          isProcessing: false,
+          error: null
+        });
+      },
+
+      approveTask: async (taskId: string) => {
         set((state) => {
-          state.error = error instanceof Error ? error.message : 'An unknown error occurred';
-          state.isProcessing = false;
-          if (state.messages.length > 0) {
-            state.messages[state.messages.length - 1].status = 'error';
+          const task = state.tasks.find((t) => t.id === taskId);
+          if (task) {
+            task.status = 'approved';
           }
         });
-      }
-    },
+      },
 
-    clearMessages: () => {
-      set((state) => {
-        state.messages = [];
-        state.error = null;
-      });
-    },
-
-    approveTask: async (taskId: string) => {
-      set((state) => {
-        const task = state.tasks.find((t) => t.id === taskId);
-        if (task) {
-          task.status = 'approved';
-        }
-      });
-    },
-
-    rejectTask: async (taskId: string) => {
-      set((state) => {
-        const task = state.tasks.find((t) => t.id === taskId);
-        if (task) {
-          task.status = 'rejected';
-        }
-      });
-    },
-  }))
+      rejectTask: async (taskId: string) => {
+        set((state) => {
+          const task = state.tasks.find((t) => t.id === taskId);
+          if (task) {
+            task.status = 'rejected';
+          }
+        });
+      },
+    };
+  })
 );

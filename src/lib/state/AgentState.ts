@@ -1,4 +1,4 @@
-import { Agent, AgentStatus, Message } from '../../types';
+import { Agent, AgentStatus, Message } from '../../types/core';
 import { RuntimeError } from '../errors/AgentErrors';
 
 export interface StateContext {
@@ -50,12 +50,10 @@ export class AgentState {
     const currentState = this.states.get(fromStatus);
     const targetState = this.states.get(to);
 
-    // Validate transition
     if (!this.isTransitionAllowed(fromStatus, to)) {
       throw new RuntimeError('Invalid state transition');
     }
 
-    // Execute transition
     await this.executeTransition(fromStatus, to, context);
   }
 
@@ -83,6 +81,7 @@ export class AgentState {
   dispose(): void {
     if (this.timeoutHandle) {
       clearTimeout(this.timeoutHandle);
+      this.timeoutHandle = undefined;
     }
     this.states.clear();
     this.transitionHistory = [];
@@ -92,7 +91,6 @@ export class AgentState {
     if (!Array.isArray(config.allowedTransitions)) {
       throw new RuntimeError('Invalid state configuration');
     }
-    // Add additional validation as needed
   }
 
   private async executeTransition(from: AgentStatus, to: AgentStatus, context: StateConfig): Promise<void> {
@@ -104,48 +102,39 @@ export class AgentState {
     }
 
     try {
-      // Execute exit hook
       if (currentState.onExit) {
         currentState.onExit();
       }
 
-      // Find transition
       const transition = currentState.allowedTransitions.find(t => t.from === from && t.to === to);
       if (!transition) {
         throw new RuntimeError(`No transition defined from ${from} to ${to}`);
       }
 
-      // Check condition
       if (transition.condition && !transition.condition()) {
         throw new RuntimeError('Transition condition not met');
       }
 
-      // Execute transition action
       if (transition.action) {
         await this.executeWithRetry(transition.action, context.maxRetries || 0);
       }
 
-      // Update agent status
       this.agent.status = to;
 
-      // Execute enter hook
       if (targetState.onEnter) {
         targetState.onEnter();
       }
 
-      // Record transition
       this.transitionHistory.push({
         from,
         to,
         timestamp: new Date()
       });
 
-      // Set timeout if configured
       this.setupStateTimeout(to, targetState.timeout);
 
     } catch (error) {
-      // Transition failed, set error state
-      this.agent.status = AgentStatus.ERROR;
+      this.agent.status = AgentStatus.OFFLINE;
       throw error instanceof Error ? error : new RuntimeError(String(error));
     }
   }
@@ -175,16 +164,17 @@ export class AgentState {
   private setupStateTimeout(state: AgentStatus, timeout?: number): void {
     if (this.timeoutHandle) {
       clearTimeout(this.timeoutHandle);
+      this.timeoutHandle = undefined;
     }
 
     if (timeout) {
       this.timeoutHandle = setTimeout(async () => {
         try {
-          await this.transition(AgentStatus.ERROR);
+          await this.transition(AgentStatus.OFFLINE);
         } catch (error) {
           console.error('Timeout transition failed:', error);
         }
       }, timeout);
     }
   }
-}
+}

@@ -1,6 +1,8 @@
 import { LocalModelService } from '../llm/LocalModelService';
-import { logger } from '../utils/logger';
+import { logger } from '../../utils/logger';
 import { ModelPerformanceTracker, ModelProvider, TaskType } from '../llm/ModelPerformanceTracker';
+import { ProviderRegistry } from '../providers';
+import { LocalProvider } from '../providers';
 
 type ModelCapabilities = 
   | 'reasoning'      // 0-10 reasoning capability
@@ -24,6 +26,16 @@ interface ModelClientConfig {
   adaptiveRouting?: boolean; // Whether to use performance-based routing
 }
 
+interface ModelResponse {
+  content: string;
+  model: string;
+  usage?: {
+    prompt_tokens: number;
+    completion_tokens: number;
+    total_tokens: number;
+  };
+}
+
 export class ModelClient {
   private modelService: LocalModelService;
   private performanceTracker: ModelPerformanceTracker;
@@ -33,6 +45,7 @@ export class ModelClient {
   private maxLatency?: number;
   private adaptiveRouting: boolean;
   private routingPreferences: Required<ModelClientConfig>['routingPreferences'];
+  private provider: LocalProvider;
 
   // Model version control to prevent using outdated models
   private readonly MODEL_VERSIONS = {
@@ -251,25 +264,22 @@ export class ModelClient {
     }
   };
 
-  constructor(config: ModelClientConfig = {}) {
+  private constructor() {
     this.modelService = LocalModelService.getInstance();
     this.performanceTracker = ModelPerformanceTracker.getInstance();
-    this.currentProvider = config.defaultProvider || 'phi3.5';
-    this.fallbackProviders = config.fallbackProviders || ['llama-3.1-70b', 'llama-3.2-70b'];
-    this.maxRetries = config.maxRetries || 3;
-    this.maxLatency = config.maxLatency;
-    this.adaptiveRouting = config.adaptiveRouting ?? true;
-    
-    // Updated routing preferences based on approved models
+    this.currentProvider = 'phi3.5';
+    this.fallbackProviders = ['llama-3.1-70b', 'llama-3.2-70b'];
+    this.maxRetries = 3;
+    this.adaptiveRouting = true;
     this.routingPreferences = {
       reasoning: ['o1', 'gpt-4o', 'llama-3.3-70b-versatile'],
       creativity: ['o1', 'claude-3-5-sonnet', 'gpt-4o'],
       coding: ['o1', 'llama-3.3-70b-versatile', 'claude-3-5-sonnet'],
       search: ['gpt-4o', 'o1', 'claude-3-5-sonnet'],
       toolUse: ['gpt-4o', 'o1', 'llama-3.3-70b-versatile'],
-      general: ['phi3.5', 'llama-3.1-70b', 'llama-3.2-70b'],
-      ...config.routingPreferences
+      general: ['phi3.5', 'llama-3.1-70b', 'llama-3.2-70b']
     };
+    this.provider = new LocalProvider();
   }
 
   private detectTaskType(messages: Array<{ role: string; content: string }> | string): TaskType {
@@ -348,7 +358,7 @@ export class ModelClient {
   private async useLocalModel(prompt: string) {
     const startTime = Date.now();
     try {
-      const result = await this.modelService.generate(prompt);
+      const result = await this.provider.generateResponse(prompt);
       const latency = Date.now() - startTime;
       
       this.performanceTracker.recordLatency('phi', latency);

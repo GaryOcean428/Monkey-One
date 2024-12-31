@@ -1,7 +1,8 @@
 import { ModelClient } from '../clients/ModelClient';
 import { GitClient } from '../clients/GitClient';
-import { logger } from '../utils/logger';
-import { LocalModelService } from '../llm/LocalModelService';
+import { logger } from '../../utils/logger';
+import { ProviderRegistry } from '../providers';
+import { LocalProvider } from '../providers';
 import { ModelPerformanceTracker } from '../llm/ModelPerformanceTracker';
 
 interface ImprovementSuggestion {
@@ -39,23 +40,21 @@ interface CodeAnalysisResult {
 
 export class SelfImprovementManager {
   private static instance: SelfImprovementManager;
-  private modelClient: ModelClient;
+  private provider: LocalProvider;
   private gitClient: GitClient;
   private performanceTracker: ModelPerformanceTracker;
-  private localModel: LocalModelService;
+  private isInitialized: boolean = false;
   private suggestions: Map<string, ImprovementSuggestion>;
   private analysisHistory: CodeAnalysisResult[];
   private readonly ANALYSIS_INTERVAL = 24 * 60 * 60 * 1000; // Daily
   private readonly MAX_HISTORY = 30; // Keep last 30 analyses
 
   private constructor() {
-    this.modelClient = new ModelClient();
+    this.provider = new LocalProvider();
     this.gitClient = new GitClient();
     this.performanceTracker = ModelPerformanceTracker.getInstance();
-    this.localModel = LocalModelService.getInstance();
     this.suggestions = new Map();
     this.analysisHistory = [];
-    this.startPeriodicAnalysis();
   }
 
   static getInstance(): SelfImprovementManager {
@@ -65,11 +64,24 @@ export class SelfImprovementManager {
     return SelfImprovementManager.instance;
   }
 
+  async initialize(): Promise<void> {
+    if (this.isInitialized) return;
+
+    try {
+      await this.provider.initialize();
+      this.isInitialized = true;
+      logger.info('Self-improvement manager initialized successfully');
+    } catch (error) {
+      logger.error('Failed to initialize self-improvement manager:', error);
+      throw error;
+    }
+  }
+
   private async analyzeCodebase(): Promise<CodeAnalysisResult> {
     logger.info('Starting codebase self-analysis');
 
     // Use Phi to analyze its own code
-    const codebaseAnalysis = await this.localModel.analyze({
+    const codebaseAnalysis = await this.provider.generateResponse({
       type: 'self-analysis',
       scope: ['src/lib/llm', 'src/lib/clients', 'src/lib/improvement'],
       metrics: ['performance', 'quality', 'security', 'maintainability']
@@ -77,9 +89,9 @@ export class SelfImprovementManager {
 
     // Use specialized models for specific analyses
     const [performanceAnalysis, securityAnalysis, architectureAnalysis] = await Promise.all([
-      this.modelClient.complete('Analyze performance bottlenecks and optimization opportunities', 'perplexity'),
-      this.modelClient.complete('Identify security vulnerabilities and improvement areas', 'claude'),
-      this.modelClient.complete('Review architecture and suggest structural improvements', 'o1')
+      this.provider.generateResponse('Analyze performance bottlenecks and optimization opportunities'),
+      this.provider.generateResponse('Identify security vulnerabilities and improvement areas'),
+      this.provider.generateResponse('Review architecture and suggest structural improvements')
     ]);
 
     // Combine and process all analyses
@@ -118,7 +130,7 @@ export class SelfImprovementManager {
     const suggestions: ImprovementSuggestion[] = [];
     
     for (const analysis of analyses) {
-      const processed = await this.localModel.process({
+      const processed = await this.provider.generateResponse({
         type: 'improvement-extraction',
         content: analysis,
         format: 'suggestion'

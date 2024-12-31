@@ -1,0 +1,4 @@
+FROM granite3-dense:2b
+
+# Enable GPU acceleration
+PARAMETER num_gpu_layers 23

@@ -96,44 +96,11 @@ export function ChatInterface() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="border-t p-4 bg-background">
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <Textarea
-              ref={textareaRef}
-              value={input}
-              onChange={handleTextareaChange}
-              onKeyDown={handleKeyDown}
-              placeholder={hasActiveAgent ? "Type a message..." : "Select an agent to start chatting"}
-              disabled={!hasActiveAgent || isLoading}
-              rows={1}
-              className={cn(
-                "pr-12 min-h-[44px] max-h-[200px]",
-                "focus:outline-none focus:ring-2 focus:ring-primary",
-                !hasActiveAgent && "opacity-50 cursor-not-allowed",
-                "transition-all duration-200 ease-in-out",
-                "resize-none overflow-hidden leading-normal"
-              )}
-            />
-          </div>
-          <Button
-            type="submit"
-            disabled={!input.trim() || isLoading || !hasActiveAgent}
-            onClick={() => void handleSubmit()}
-            className={cn(
-              "h-11 px-4",
-              isLoading && "opacity-50",
-              "transition-opacity duration-200"
-            )}
-          >
-            {isLoading ? (
-              <Loader className="w-5 h-5 animate-spin" />
-            ) : (
-              <Send className="w-5 h-5" />
-            )}
-          </Button>
-        </div>
-      </form>
+      <ChatInput
+        onSendMessage={handleSubmit}
+        disabled={!hasActiveAgent || isLoading}
+        placeholder={hasActiveAgent ? "Type a message..." : "Select an agent to start chatting"}
+      />
     </div>
   );
 }

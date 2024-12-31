@@ -24,7 +24,7 @@ const config: Config = {
   xai: {
     apiKey: import.meta.env.VITE_XAI_API_KEY || '',
     baseUrl: 'https://api.x.ai/v1',
-    defaultModel: 'grok-beta',
+    defaultModel: 'llama3.2:1b-instruct-q2_K',
     maxTokens: 1000,
     temperature: 0.7,
   },

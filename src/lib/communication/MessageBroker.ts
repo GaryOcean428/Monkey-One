@@ -1,18 +1,30 @@
-import type { Message } from '../../types';
+import type { Message } from '../types/core';
 import { MessageHandler } from '../../decorators/MessageHandlers';
 
-class MessageBroker {
+export class MessageBroker {
+  private subscribers: Map<string, MessageHandler[]> = new Map();
+
   async publish(topic: string, message: Message): Promise<void> {
-    // Publishing logic
+    const handlers = this.subscribers.get(topic) || [];
+    await Promise.all(handlers.map(handler => {
+      try {
+        return handler(message);
+      } catch (error) {
+        console.error('Error in message handler:', error);
+        return Promise.resolve();
+      }
+    }));
   }
   
   async subscribe(topic: string, handler: MessageHandler): Promise<void> {
-    // Subscription logic
+    if (!this.subscribers.has(topic)) {
+      this.subscribers.set(topic, []);
+    }
+    this.subscribers.get(topic)?.push(handler);
   }
 
   async sendMessage(message: Message): Promise<void> {
-    // ...sparse communication logic...
+    // Sparse communication logic
+    await this.publish('messages', message);
   }
-}
-
-export { MessageBroker };
+}

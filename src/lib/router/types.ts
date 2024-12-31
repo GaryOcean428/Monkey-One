@@ -56,8 +56,7 @@ export interface RouterContext {
 }
 
 export interface ModelTiers {
-  low: ModelConfig;
-  mid: ModelConfig;
-  high: ModelConfig;
-  superior: ModelConfig;
+  default: ModelConfig; // granite3.1-dense:2b
+  mid: ModelConfig;    // claude-3-5-haiku
+  high: ModelConfig;   // claude-3-5-sonnet
 }

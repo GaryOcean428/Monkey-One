@@ -1,86 +1,68 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { expect, describe, it, vi, beforeEach } from 'vitest';
 import { AgentSession } from '../../lib/sessions/AgentSession';
-import { BaseAgent } from '../../lib/agents/base';
-import { Message, MessageType, AgentCapability, MemoryItem, MemoryType } from '../../types';
-
-class TestAgent extends BaseAgent {
-  constructor() {
-    super('test-id', 'Test Agent', 'tester', [
-      { name: 'test', description: 'Test capability', version: '1.0.0' }
-    ]);
-  }
-
-  async processMessage(message: Message): Promise<Message> {
-    return {
-      id: 'test',
-      type: MessageType.RESPONSE,
-      role: 'assistant',
-      content: 'test response',
-      timestamp: Date.now()
-    };
-  }
-
-  getCapabilities(): AgentCapability[] {
-    return this.capabilities;
-  }
-
-  registerCapability(capability: AgentCapability): void {
-    this.capabilities.push(capability);
-  }
-}
+import { Agent, Message, MemoryItem } from '../../types/core';
 
 describe('AgentSession', () => {
   let session: AgentSession;
-  let agent: TestAgent;
+  let mockAgent: Agent;
 
   beforeEach(() => {
-    vi.clearAllMocks();
-    agent = new TestAgent();
-    session = new AgentSession(agent);
+    mockAgent = {
+      id: 'test-agent',
+      type: 'SPECIALIST',
+      capabilities: [],
+      status: 'AVAILABLE',
+      initialize: vi.fn(),
+      processMessage: vi.fn(),
+      getCapabilities: vi.fn(),
+      hasCapability: vi.fn(),
+      addCapability: vi.fn(),
+      removeCapability: vi.fn(),
+      shutdown: vi.fn()
+    };
+    session = new AgentSession(mockAgent, { saveInterval: 1000 }); // Add saveInterval to test cleanup
   });
 
   describe('message handling', () => {
     it('should handle valid messages', async () => {
-      const message = {
+      const message: Message = {
         id: 'test',
+        type: 'TASK',
         role: 'user',
-        content: 'hello',
+        content: 'test message',
         timestamp: Date.now()
       };
-      const response = await    session.addMessage(message);
-      expect(response).toBeDefined();
-      expect(response.content).toBe('test response');
+      await session.handleMessage(message);
+      expect(session.getHistory()).toContainEqual(message);
     });
 
     it('should throw error for invalid message format', async () => {
-      const invalidMessage = { content: 'invalid' };
-      await expect(session.handleMessage(invalidMessage as any)).rejects.toThrow();
+      const invalidMessage = { id: 'test' } as Message;
+      await expect(session.handleMessage(invalidMessage)).rejects.toThrow('Invalid message');
     });
   });
 
   describe('memory management', () => {
-    it('should add memory items', () => {
+    it('should add memory items', async () => {
       const item: MemoryItem = {
         id: 'test',
-        type: MemoryType.TASK,
-        content: 'memory content',
-        timestamp: Date.now()
+        type: 'task',
+        content: 'test memory',
+        tags: []
       };
-      session.addMemoryItem(item);
-      const memory = session.getMemory();
-      expect(memory).toContainEqual(item);
+      await session.addMemoryItem(item);
+      expect(session.getMemory()).toContainEqual(item);
     });
 
-    it('should get memory by type', () => {
-      const item = {
+    it('should get memory by type', async () => {
+      const item: MemoryItem = {
         id: 'test',
-      type: MemoryType.TASK,
-        content: 'memory content',
-        timestamp: Date.now()
+        type: 'task',
+        content: 'test memory',
+        tags: []
       };
-      session.addMemoryItem(item);
-      const memory = session.getMemoryByType('test');
-      expect(memory).toContainEqual(item);
+      await session.addMemoryItem(item);
+      expect(session.getMemoryByType('task')).toContainEqual(item);
     });
   });
 
@@ -89,6 +71,7 @@ describe('AgentSession', () => {
       const clearIntervalSpy = vi.spyOn(global, 'clearInterval');
       session.dispose();
       expect(clearIntervalSpy).toHaveBeenCalled();
+      clearIntervalSpy.mockRestore();
     });
   });
 });
