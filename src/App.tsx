@@ -1,12 +1,24 @@
-import React from 'react'
+import React, { lazy, Suspense } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { createClient } from '@supabase/supabase-js'
 import { AuthProvider } from './components/auth/AuthProvider'
 import { VectorStoreProvider } from './contexts/VectorStoreContext'
 import { ThemeProvider } from './components/ThemeProvider'
 import { ModalProvider } from './contexts/ModalContext'
 import { TooltipProvider } from './components/ui/tooltip'
 import { Toaster } from './components/ui/toaster'
+import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
+import { LoadingFallback } from './components/LoadingFallback'
+
+// Lazy-loaded components
+const DashboardHome = lazy(() =>
+  import('./pages/Dashboard/DashboardHome').then(module => ({ default: module.DashboardHome }))
+)
+const AuthCallback = lazy(() =>
+  import('./routes/auth').then(module => ({ default: module.AuthCallback }))
+)
+const PasswordReset = lazy(() =>
+  import('./routes/auth').then(module => ({ default: module.PasswordReset }))
+)
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -19,32 +31,55 @@ const queryClient = new QueryClient({
   },
 })
 
-// Initialize Supabase client
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+// Wrap component with Suspense
+const withSuspense = (Component: React.ComponentType) => (
+  <Suspense fallback={<LoadingFallback />}>
+    <Component />
+  </Suspense>
+)
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables')
-}
-
-// Create Supabase client for AuthProvider
-createClient(supabaseUrl, supabaseAnonKey)
+// Configure router with routes and future flags
+const router = createBrowserRouter(
+  [
+    {
+      path: '/',
+      element: <Navigate to="/dashboard" replace />,
+    },
+    {
+      path: '/dashboard',
+      element: withSuspense(DashboardHome),
+    },
+    {
+      path: '/auth/callback',
+      element: withSuspense(AuthCallback),
+    },
+    {
+      path: '/auth/reset-password',
+      element: withSuspense(PasswordReset),
+    },
+  ],
+  {
+    future: {
+      v7_startTransition: true,
+      v7_relativeSplatPath: true,
+    },
+  }
+)
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <TooltipProvider>
-          <AuthProvider>
-            <VectorStoreProvider>
-              <ModalProvider>
-                <div className="min-h-screen">
-                  <Toaster />
-                </div>
-              </ModalProvider>
-            </VectorStoreProvider>
-          </AuthProvider>
-        </TooltipProvider>
+        <AuthProvider>
+          <VectorStoreProvider>
+            <ModalProvider>
+              <TooltipProvider>
+                <RouterProvider router={router} />
+                <Toaster />
+              </TooltipProvider>
+            </ModalProvider>
+          </VectorStoreProvider>
+        </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
   )

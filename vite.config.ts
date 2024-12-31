@@ -33,8 +33,9 @@ export default defineConfig(({ mode }) => {
     ],
     resolve: {
       alias: {
-        '@': resolve(__dirname, './src'),
+        '@': resolve(__dirname, 'src'),
       },
+      extensions: ['.js', '.ts', '.jsx', '.tsx', '.json'],
     },
     build: {
       outDir: 'dist',
