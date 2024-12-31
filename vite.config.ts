@@ -31,57 +31,44 @@ export default defineConfig(({ mode }) => {
         ext: '.br',
       }),
     ],
-    optimizeDeps: {
-      include: [
-        '@radix-ui/react-slider',
-        '@radix-ui/react-tabs',
-        '@radix-ui/react-switch',
-        '@radix-ui/react-select',
-      ],
-    },
     resolve: {
       alias: {
         '@': resolve(__dirname, './src'),
-        '~': resolve(__dirname, './'),
       },
-    },
-    define: {
-      global: 'globalThis',
-      ...Object.keys(env).reduce<Record<string, string>>((acc: Record<string, string>, key) => {
-        if (key.startsWith('VITE_')) {
-          acc[`import.meta.env.${key}`] = JSON.stringify(env[key])
-        }
-        return acc
-      }, {}),
     },
     build: {
       outDir: 'dist',
       sourcemap: true,
       rollupOptions: {
-        output: {
-          manualChunks: {
-            vendor: [
-              'react',
-              'react-dom',
-              'react-router-dom',
-              '@radix-ui/react-slider',
-              '@radix-ui/react-tabs',
-              '@radix-ui/react-switch',
-              '@radix-ui/react-select',
-            ],
-          },
+        input: {
+          main: resolve(__dirname, 'index.html'),
         },
+        external: [
+          'events',
+          '@sentry/node',
+          'fs',
+          'path',
+          'os',
+          'crypto',
+          'stream',
+          'util',
+          'buffer',
+          'url',
+        ],
       },
-      chunkSizeWarningLimit: 1000,
+    },
+    optimizeDeps: {
+      exclude: ['@sentry/node'],
     },
     server: {
       port: 3000,
       host: true,
-      strictPort: true,
-      watch: {
-        usePolling: true,
-        interval: 100,
-      },
+    },
+    preview: {
+      port: 3000,
+    },
+    define: {
+      'process.env': env,
     },
   }
 })

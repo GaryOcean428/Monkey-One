@@ -1,26 +1,31 @@
-import * as Sentry from '@sentry/node';
+/* eslint-disable no-undef */
+import * as Sentry from '@sentry/browser'
 
-export function initializeSentry(): void {
-  if (import.meta.env.VITE_SENTRY_DSN) {
+export const initSentry = (): void => {
+  const dsn = import.meta.env.VITE_SENTRY_DSN
+  const env = import.meta.env.MODE || 'development'
+
+  if (dsn) {
     Sentry.init({
-      dsn: import.meta.env.VITE_SENTRY_DSN,
-      environment: import.meta.env.MODE || 'development',
+      dsn,
+      environment: env,
       tracesSampleRate: 1.0,
-      integrations: [
-        new Sentry.Integrations.Http({ tracing: true }),
-        new Sentry.Integrations.OnUncaughtException(),
-        new Sentry.Integrations.OnUnhandledRejection(),
-      ],
-    });
+    })
   }
 }
 
-export function captureException(error: Error, context?: Record<string, unknown>): void {
+export const captureException = (error: Error): void => {
+  // eslint-disable-next-line no-console
+  console.error(error)
   if (import.meta.env.VITE_SENTRY_DSN) {
-    Sentry.captureException(error, {
-      extra: context
-    });
+    Sentry.captureException(error)
   }
 }
 
-export { Sentry };
+export const captureMessage = (message: string): void => {
+  // eslint-disable-next-line no-console
+  console.log(message)
+  if (import.meta.env.VITE_SENTRY_DSN) {
+    Sentry.captureMessage(message)
+  }
+}
