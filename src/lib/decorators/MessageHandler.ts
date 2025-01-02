@@ -9,14 +9,12 @@ export interface MessageHandlerMetadata {
   target: object
 }
 
-type MessageFunction = (...args: unknown[]) => unknown
-
 export function MessageHandler(messageType: MessageType): MethodDecorator {
-  return <T extends MessageFunction>(
+  return function (
     target: object,
     propertyKey: string | symbol,
-    descriptor: TypedPropertyDescriptor<T>
-  ): TypedPropertyDescriptor<T> => {
+    descriptor: PropertyDescriptor
+  ): PropertyDescriptor {
     // Validate message type
     if (!messageType || typeof messageType !== 'string') {
       throw new Error('Invalid message type')
@@ -43,28 +41,6 @@ export function MessageHandler(messageType: MessageType): MethodDecorator {
 
     // Store on constructor to support inheritance
     Reflect.defineMetadata(MESSAGE_HANDLERS_KEY, handlers, target.constructor)
-
-    // Create new descriptor if none exists
-    if (!descriptor) {
-      descriptor = {
-        configurable: true,
-        enumerable: false,
-        writable: true,
-        value: undefined,
-      }
-    }
-
-    // Store original method
-    const originalMethod = descriptor.value
-
-    if (!originalMethod) {
-      throw new Error('No method found for message handler')
-    }
-
-    // Create new method that binds this context
-    descriptor.value = function (this: unknown, ...args: unknown[]): unknown {
-      return originalMethod.apply(this, args)
-    } as T
 
     return descriptor
   }

@@ -1,24 +1,24 @@
-import React from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { Routes, Route } from 'react-router-dom'
+import { Toaster } from 'react-hot-toast'
 import { ThemeProvider } from './components/ThemeProvider'
 import { ModalProvider } from './contexts/ModalContext'
 import { TooltipProvider } from './components/ui/tooltip'
-import { Toaster } from './components/ui/toaster'
-import { Outlet } from 'react-router-dom'
+import { Login } from './components/Auth/Login'
+import { Dashboard } from './components/Dashboard'
+import { PrivateRoute } from './components/Auth/PrivateRoute'
 import { Sidebar } from './components/Sidebar'
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 1000 * 60 * 5, // 5 minutes
-      cacheTime: 1000 * 60 * 30, // 30 minutes
-      retry: 3,
       refetchOnWindowFocus: false,
     },
   },
 })
 
-function App() {
+export function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
@@ -27,15 +27,23 @@ function App() {
             <div className="flex h-screen">
               <Sidebar />
               <main className="flex-1 overflow-auto">
-                <Outlet />
+                <Toaster position="top-right" />
+                <Routes>
+                  <Route path="/auth/login" element={<Login />} />
+                  <Route
+                    path="/*"
+                    element={
+                      <PrivateRoute>
+                        <Dashboard />
+                      </PrivateRoute>
+                    }
+                  />
+                </Routes>
               </main>
             </div>
-            <Toaster />
           </TooltipProvider>
         </ModalProvider>
       </ThemeProvider>
     </QueryClientProvider>
   )
 }
-
-export default App

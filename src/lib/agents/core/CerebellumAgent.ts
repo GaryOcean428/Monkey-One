@@ -1,7 +1,8 @@
 /// <reference types="node" />
 import { BaseAgent } from '../base/BaseAgent'
-import { AgentType, Message, TimeoutId } from '../../../lib/types/core'
+import { AgentMessage, AgentStatus, AgentType, AgentCapability } from '../../../lib/types/agent'
 import { randomUUID } from 'crypto'
+import { EventEmitter } from 'events'
 
 interface MotorPattern {
   id: string
@@ -25,18 +26,26 @@ export class CerebellumAgent extends BaseAgent {
   private readonly REFINEMENT_THRESHOLD = 0.8
   private readonly PATTERN_EVAL_INTERVAL = 5000
   private readonly MAX_PATTERNS = 100
-  private optimizationInterval: TimeoutId | null = null
+  private optimizationInterval: ReturnType<typeof setInterval> | null = null
+  private eventEmitter: EventEmitter
+  private messageQueue: AgentMessage[]
+  private capabilities: Set<AgentCapability>
 
   constructor() {
     super(undefined, 'Cerebellum Agent', AgentType.SPECIALIST)
     this.motorPatterns = new Map()
     this.learningMetrics = new Map()
+    this.eventEmitter = new EventEmitter()
+    this.messageQueue = []
+    this.capabilities = new Set()
+    this.status = AgentStatus.IDLE
   }
 
   async initialize(): Promise<void> {
     await super.initialize()
     await this.loadMotorPatterns()
     this.startPerformanceOptimization()
+    this.eventEmitter.setMaxListeners(100)
   }
 
   private startPerformanceOptimization(): void {
@@ -72,43 +81,82 @@ export class CerebellumAgent extends BaseAgent {
     }
   }
 
-  override async processMessage(message: Message): Promise<Message> {
+  async handleMessage(message: AgentMessage): Promise<void> {
+    if (this.status !== AgentStatus.AVAILABLE) {
+      throw new Error('Agent is not available to handle messages')
+    }
+
     try {
-      const patternId = randomUUID()
-      const pattern: MotorPattern = {
-        id: patternId,
-        name: `pattern-${patternId}`,
-        sequence: [message.content],
-        efficiency: 1.0,
-        lastUsed: Date.now(),
-        usageCount: 1,
-      }
-
-      // Check pattern limit before adding
-      if (this.motorPatterns.size >= this.MAX_PATTERNS) {
-        // Remove oldest pattern
-        const oldest = Array.from(this.motorPatterns.entries()).sort(
-          (a, b) => a[1].lastUsed - b[1].lastUsed
-        )[0]
-        if (oldest) {
-          this.motorPatterns.delete(oldest[0])
-          this.learningMetrics.delete(oldest[0])
-        }
-      }
-
-      this.motorPatterns.set(patternId, pattern)
-      await this.executeMotorPattern(pattern)
-      const response = await super.processMessage(message)
-
-      return {
-        ...response,
-        content: `Cerebellum processed: ${message.content}`,
-      }
+      this.status = AgentStatus.BUSY
+      await this.processMessage(message)
+      this.status = AgentStatus.AVAILABLE
     } catch (error) {
-      if (error instanceof Error) {
-        throw new Error(`Cerebellum processing error: ${error.message}`)
+      this.status = AgentStatus.ERROR
+      throw error
+    }
+  }
+
+  addCapability(capability: AgentCapability): void {
+    this.capabilities.add(capability)
+  }
+
+  removeCapability(capability: AgentCapability): void {
+    this.capabilities.delete(capability)
+  }
+
+  hasCapability(capability: AgentCapability): boolean {
+    return this.capabilities.has(capability)
+  }
+
+  getCapabilities(): Set<AgentCapability> {
+    return new Set(this.capabilities)
+  }
+
+  async start(): Promise<void> {
+    if (this.status !== AgentStatus.IDLE) {
+      throw new Error('Agent is already running')
+    }
+
+    try {
+      this.status = AgentStatus.STARTING
+      await this.initialize()
+      this.status = AgentStatus.AVAILABLE
+    } catch (error) {
+      this.status = AgentStatus.ERROR
+      throw error
+    }
+  }
+
+  protected async processMessage(message: AgentMessage): Promise<void> {
+    const patternId = randomUUID()
+    const pattern: MotorPattern = {
+      id: patternId,
+      name: `pattern-${patternId}`,
+      sequence: [message.content],
+      efficiency: 1.0,
+      lastUsed: Date.now(),
+      usageCount: 1,
+    }
+
+    // Check pattern limit before adding
+    if (this.motorPatterns.size >= this.MAX_PATTERNS) {
+      // Remove oldest pattern
+      const oldest = Array.from(this.motorPatterns.entries()).sort(
+        (a, b) => a[1].lastUsed - b[1].lastUsed
+      )[0]
+      if (oldest) {
+        this.motorPatterns.delete(oldest[0])
+        this.learningMetrics.delete(oldest[0])
       }
-      throw new Error('Cerebellum processing error: Unknown error occurred')
+    }
+
+    this.motorPatterns.set(patternId, pattern)
+    await this.executeMotorPattern(pattern)
+    const response = await super.processMessage(message)
+
+    return {
+      ...response,
+      content: `Cerebellum processed: ${message.content}`,
     }
   }
 
@@ -155,10 +203,27 @@ export class CerebellumAgent extends BaseAgent {
     return this.motorPatterns.get(id)
   }
 
-  override async shutdown(): Promise<void> {
+  async stop(): Promise<void> {
+    if (this.status === AgentStatus.IDLE) {
+      return
+    }
+
+    try {
+      this.status = AgentStatus.STOPPING
+      await this.shutdown()
+      this.status = AgentStatus.IDLE
+    } catch (error) {
+      this.status = AgentStatus.ERROR
+      throw error
+    }
+  }
+
+  protected async shutdown(): Promise<void> {
+    // Clean up resources
+    this.eventEmitter.removeAllListeners()
+    this.messageQueue = []
     if (this.optimizationInterval) {
       clearInterval(this.optimizationInterval)
     }
-    await super.shutdown()
   }
 }

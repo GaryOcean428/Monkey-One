@@ -1,53 +1,29 @@
 export interface Settings {
-  theme: 'light' | 'dark';
-  fontSize: 'small' | 'medium' | 'large';
+  theme: 'light' | 'dark' | 'system';
   notifications: boolean;
-  apiEndpoint: string;
-  
-  llm?: {
-    defaultModel: string;
-    temperature: number;
-    maxTokens: number;
-    streamResponses: boolean;
-    contextLength: number;
-    topP: number;
-    frequencyPenalty: number;
-    presencePenalty: number;
-  };
+  language: 'en' | 'es' | 'fr';
+  dataCollection: boolean;
+  fontSize: 'sm' | 'md' | 'lg';
+  colorScheme: string;
+  autoSave: boolean;
+  telemetry: boolean;
+}
 
-  agents?: {
-    maxConcurrentTasks: number;
-    taskTimeout: number;
-    autoDelegation: boolean;
-    defaultRole: string;
-    maxRetries: number;
-    errorThreshold: number;
-  };
+export interface UseSettingsReturn {
+  settings: Settings;
+  isLoading: boolean;
+  error: Error | null;
+  updateSettings: (newSettings: Partial<Settings>) => Promise<void>;
+  resetSettings: () => Promise<void>;
+}
 
-  memory?: {
-    maxItems: number;
-    retentionDays: number;
-    contextWindowSize: number;
-    vectorSearch: boolean;
-    embeddingModel: string;
-    similarityThreshold: number;
-  };
-
-  performance?: {
-    batchSize: number;
-    cacheDuration: number;
-    cacheEnabled: boolean;
-    debugMode: boolean;
-    logLevel: 'debug' | 'info' | 'warn' | 'error';
-    metricsEnabled: boolean;
-  };
-
-  security?: {
-    apiKeyRotation: number;
-    rateLimit: number;
-    sandboxMode: boolean;
-    contentFiltering: boolean;
-    maxTokensPerRequest: number;
-    allowedDomains: string[];
-  };
+export const defaultSettings: Settings = {
+  theme: 'system',
+  notifications: true,
+  language: 'en',
+  dataCollection: false,
+  fontSize: 'md',
+  colorScheme: 'blue',
+  autoSave: true,
+  telemetry: false
 }
