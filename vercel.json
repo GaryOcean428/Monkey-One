@@ -5,6 +5,11 @@
   "installCommand": "npm install",
   "framework": "vite",
   "outputDirectory": "dist",
+  "functions": {
+    "api/**/*.ts": {
+      "runtime": "nodejs20.x"
+    }
+  },
   "rewrites": [
     {
       "source": "/api/ollama/(.*)",
