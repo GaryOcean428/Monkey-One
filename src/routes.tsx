@@ -42,81 +42,92 @@ const PasswordReset = lazy(() =>
   import('./components/Auth/PasswordReset').then(m => ({ default: m.PasswordReset }))
 )
 
+// Future flags for React Router v7 compatibility
+const routerOptions = {
+  future: {
+    v7_startTransition: true,
+    v7_relativeSplatPath: true,
+  },
+}
+
 const withProviders = (element: React.ReactNode) => (
   <ToolhouseProvider>
     <Suspense fallback={<LoadingFallback />}>{element}</Suspense>
   </ToolhouseProvider>
 )
 
-export const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <App />,
-    children: [
-      {
-        index: true,
-        element: withProviders(<ChatPanel />),
-      },
-      {
-        path: 'chat',
-        element: withProviders(<ChatPanel />),
-      },
-      {
-        path: 'dashboard',
-        element: withProviders(<DashboardHome />),
-      },
-      {
-        path: 'memory',
-        element: withProviders(<MemoryManager />),
-      },
-      {
-        path: 'settings',
-        element: withProviders(<Settings />),
-      },
-      {
-        path: 'profile',
-        element: withProviders(<ProfileManager />),
-      },
-      {
-        path: 'agents',
-        element: withProviders(<AgentsPanel />),
-      },
-      {
-        path: 'workflow',
-        element: withProviders(<WorkflowPanel />),
-      },
-      {
-        path: 'documents',
-        element: withProviders(<DocumentsPanel />),
-      },
-      {
-        path: 'tools',
-        element: withProviders(<ToolsPanel />),
-      },
-      {
-        path: 'github',
-        element: withProviders(<GithubPanel />),
-      },
-      {
-        path: 'performance',
-        element: withProviders(<PerformancePanel />),
-      },
-      {
-        path: 'auth/callback',
-        element: (
-          <Suspense fallback={<LoadingFallback />}>
-            <AuthCallback />
-          </Suspense>
-        ),
-      },
-      {
-        path: 'auth/reset-password',
-        element: (
-          <Suspense fallback={<LoadingFallback />}>
-            <PasswordReset />
-          </Suspense>
-        ),
-      },
-    ],
-  },
-])
+export const router = createBrowserRouter(
+  [
+    {
+      path: '/',
+      element: <App />,
+      children: [
+        {
+          index: true,
+          element: withProviders(<ChatPanel />),
+        },
+        {
+          path: 'chat',
+          element: withProviders(<ChatPanel />),
+        },
+        {
+          path: 'dashboard',
+          element: withProviders(<DashboardHome />),
+        },
+        {
+          path: 'memory',
+          element: withProviders(<MemoryManager />),
+        },
+        {
+          path: 'settings',
+          element: withProviders(<Settings />),
+        },
+        {
+          path: 'profile',
+          element: withProviders(<ProfileManager />),
+        },
+        {
+          path: 'agents',
+          element: withProviders(<AgentsPanel />),
+        },
+        {
+          path: 'workflow',
+          element: withProviders(<WorkflowPanel />),
+        },
+        {
+          path: 'documents',
+          element: withProviders(<DocumentsPanel />),
+        },
+        {
+          path: 'tools',
+          element: withProviders(<ToolsPanel />),
+        },
+        {
+          path: 'github',
+          element: withProviders(<GithubPanel />),
+        },
+        {
+          path: 'performance',
+          element: withProviders(<PerformancePanel />),
+        },
+        {
+          path: 'auth/callback',
+          element: (
+            <Suspense fallback={<LoadingFallback />}>
+              <AuthCallback />
+            </Suspense>
+          ),
+        },
+        {
+          path: 'auth/reset-password',
+          element: (
+            <Suspense fallback={<LoadingFallback />}>
+              <PasswordReset />
+            </Suspense>
+          ),
+        },
+      ],
+    },
+  ],
+  routerOptions
+)

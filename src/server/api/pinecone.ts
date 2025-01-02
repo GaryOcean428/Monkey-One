@@ -1,4 +1,5 @@
-import { Pinecone } from '@pinecone-database/pinecone'
+import { Pinecone, PineconeRecord, RecordMetadata } from '@pinecone-database/pinecone'
+import type { Request, Response } from 'express'
 
 // Server-side only
 const pineconeApiKey = process.env.PINECONE_API_KEY
@@ -12,13 +13,15 @@ if (!pineconeApiKey || !pineconeEnvironment || !pineconeIndexName) {
 // Initialize Pinecone client
 const pinecone = new Pinecone({
   apiKey: pineconeApiKey,
-  controllerHostUrl: `https://controller.${pineconeEnvironment}.pinecone.io`,
+  environment: pineconeEnvironment,
 })
 
 const index = pinecone.index(pineconeIndexName)
 
-export interface VectorMetadata {
-  [key: string]: string | number | boolean | null | undefined
+interface PineconeVector {
+  id: string
+  values: number[]
+  metadata: Record<string, string | number | boolean | null>
 }
 
 export async function queryVectors(vector: number[], topK: number = 5) {
@@ -36,11 +39,15 @@ export async function queryVectors(vector: number[], topK: number = 5) {
 }
 
 export async function upsertVectors(
-  vectors: { id: string; values: number[]; metadata?: VectorMetadata }[]
+  vectors: {
+    id: string
+    values: number[]
+    metadata?: Record<string, string | number | boolean | null>
+  }[]
 ) {
   try {
     return await index.upsert(
-      vectors.map(vector => ({ ...vector, metadata: vector.metadata as VectorMetadata }))
+      vectors.map(vector => ({ ...vector, metadata: vector.metadata as RecordMetadata }))
     )
   } catch (error) {
     console.error('Error upserting vectors:', error)
@@ -54,5 +61,40 @@ export async function deleteVectors(ids: string[]) {
   } catch (error) {
     console.error('Error deleting vectors:', error)
     throw error
+  }
+}
+
+export async function handler(req: Request, res: Response) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' })
+  }
+
+  try {
+    const { operation, data } = req.body
+
+    switch (operation) {
+      case 'query': {
+        const queryResults = await index.query(data)
+        return res.status(200).json(queryResults)
+      }
+
+      case 'upsert': {
+        const vectors: PineconeRecord<RecordMetadata>[] = data.vectors.map(
+          (vector: PineconeVector) => ({
+            id: vector.id,
+            values: vector.values,
+            metadata: vector.metadata,
+          })
+        )
+        const upsertResults = await index.upsert(vectors)
+        return res.status(200).json(upsertResults)
+      }
+
+      default:
+        return res.status(400).json({ error: 'Invalid operation' })
+    }
+  } catch (error) {
+    console.error('Pinecone API error:', error)
+    return res.status(500).json({ error: 'Internal server error' })
   }
 }
