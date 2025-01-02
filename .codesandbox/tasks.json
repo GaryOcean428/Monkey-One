@@ -1,0 +1,110 @@
+{
+  // These tasks will run in order when initializing your CodeSandbox project.
+  "setupTasks": [
+    {
+      "command": "pnpm install",
+      "name": "Install Dependencies"
+    }
+  ],
+
+  // These tasks can be run from CodeSandbox. Running one will open a log in the app.
+  "tasks": {
+    "dev": {
+      "name": "dev",
+      "command": "pnpm dev",
+      "runAtStart": true
+    },
+    "build": {
+      "name": "build",
+      "command": "pnpm build"
+    },
+    "preview": {
+      "name": "preview",
+      "command": "pnpm preview"
+    },
+    "test": {
+      "name": "test",
+      "command": "pnpm test"
+    },
+    "test:watch": {
+      "name": "test:watch",
+      "command": "pnpm test:watch"
+    },
+    "test:coverage": {
+      "name": "test:coverage",
+      "command": "pnpm test:coverage"
+    },
+    "lint": {
+      "name": "lint",
+      "command": "pnpm lint"
+    },
+    "lint:fix": {
+      "name": "lint:fix",
+      "command": "pnpm lint:fix"
+    },
+    "format": {
+      "name": "format",
+      "command": "pnpm format"
+    },
+    "format:check": {
+      "name": "format:check",
+      "command": "pnpm format:check"
+    },
+    "type-check": {
+      "name": "type-check",
+      "command": "pnpm type-check"
+    },
+    "clean": {
+      "name": "clean",
+      "command": "pnpm clean"
+    },
+    "deploy": {
+      "name": "deploy",
+      "command": "pnpm deploy"
+    },
+    "vercel-build": {
+      "name": "vercel-build",
+      "command": "pnpm vercel-build"
+    },
+    "vercel-deploy": {
+      "name": "vercel-deploy",
+      "command": "pnpm vercel-deploy"
+    },
+    "prepare": {
+      "name": "prepare",
+      "command": "pnpm prepare"
+    },
+    "pre-commit": {
+      "name": "pre-commit",
+      "command": "pnpm pre-commit"
+    },
+    "validate": {
+      "name": "validate",
+      "command": "pnpm validate"
+    },
+    "prepare-model": {
+      "name": "prepare-model",
+      "command": "pnpm prepare-model"
+    },
+    "ollama:status": {
+      "name": "ollama:status",
+      "command": "pnpm ollama:status"
+    },
+    "ollama:start": {
+      "name": "ollama:start",
+      "command": "pnpm ollama:start"
+    },
+    "ollama:stop": {
+      "name": "ollama:stop",
+      "command": "pnpm ollama:stop"
+    },
+    "ollama:restart": {
+      "name": "ollama:restart",
+      "command": "pnpm ollama:restart"
+    },
+    "sync-secrets": {
+      "name": "sync-secrets",
+      "command": "pnpm sync-secrets"
+    }
+  }
+}
