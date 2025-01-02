@@ -17,7 +17,7 @@
     "type-check": "tsc --noEmit",
     "clean": "rimraf node_modules/.vite dist",
     "deploy": "vercel build && vercel deploy --prod",
-    "vercel-build": "vercel build",
+    "vercel-build": "vite build",
     "vercel-deploy": "vercel deploy --prod",
     "prepare": "husky && husky install",
     "pre-commit": "lint-staged",
