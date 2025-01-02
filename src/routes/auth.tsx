@@ -1,88 +1,83 @@
-import { useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { supabase } from '@/lib/supabase/config';
-import { useToast } from '@/components/ui/use-toast';
+import { useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { supabase } from '../lib/supabase'
+import { useToast } from '../components/ui/use-toast'
 
 export function AuthCallback() {
-  const navigate = useNavigate();
-  const { toast } = useToast();
+  const navigate = useNavigate()
+  const { toast } = useToast()
 
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (error) throw error;
-        
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession()
+
+        if (error) {
+
         if (session) {
           toast({
             title: 'Authentication Successful',
             description: 'You have been successfully authenticated',
-          });
-          navigate('/dashboard');
+          })
+          navigate('/dashboard')
         } else {
-          navigate('/login');
+          navigate('/login')
         }
       } catch (error) {
-        console.error('Auth callback error:', error);
+        console.error('Auth callback error:', error)
         toast({
           title: 'Authentication Error',
           description: error instanceof Error ? error.message : 'Authentication failed',
           variant: 'destructive',
-        });
-        navigate('/login');
+        })
+        navigate('/login')
       }
-    };
+    }
 
-    handleAuthCallback();
-  }, [navigate, toast]);
+    handleAuthCallback()
+  }, [navigate, toast])
 
-  return <div>Processing authentication...</div>;
+  return <div>Processing authentication...</div>
 }
 
 export function PasswordReset() {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { toast } = useToast();
+  const location = useLocation()
+  const navigate = useNavigate()
+  const { toast } = useToast()
 
   useEffect(() => {
     const handlePasswordReset = async () => {
       try {
-        // Get the access token from the URL
-        const hashParams = new URLSearchParams(location.hash.substring(1));
-        const accessToken = hashParams.get('access_token');
-
-        if (!accessToken) {
-          throw new Error('No access token found in URL');
-        }
-
-        // Verify and exchange the access token
-        const { error } = await supabase.auth.verifyOtp({
-          token_hash: accessToken,
-          type: 'recovery',
-        });
-
-        if (error) throw error;
+        const error = await supabase.auth.resetPasswordForEmail(location.state?.email)
+        if (error) {
 
         toast({
-          title: 'Password Reset Successful',
-          description: 'Your password has been successfully reset',
-        });
-        
-        navigate('/login');
+          title: 'Password Reset Email Sent',
+          description: 'Check your email for the password reset link',
+        })
+        navigate('/login')
       } catch (error) {
-        console.error('Password reset error:', error);
+        console.error('Password reset error:', error)
         toast({
           title: 'Password Reset Error',
-          description: error instanceof Error ? error.message : 'Password reset failed',
+          description: error instanceof Error ? error.message : 'Failed to send reset email',
           variant: 'destructive',
-        });
-        navigate('/login');
+        })
+        navigate('/login')
       }
-    };
+    }
 
-    handlePasswordReset();
-  }, [location, navigate, toast]);
+    if (location.state?.email) {
+      handlePasswordReset()
+    } else {
+      navigate('/login')
+    }
+  }, [location.state?.email, navigate, toast])
 
-  return <div>Processing password reset...</div>;
+  return <div>Processing password reset...</div>
 }
+
+export { AuthCallback, PasswordReset }

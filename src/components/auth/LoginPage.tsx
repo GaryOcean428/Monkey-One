@@ -1,44 +1,44 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { Card } from '../ui/card';
-import { useAuth } from '../../contexts/AuthContext';
-import { useToast } from '../ui/use-toast';
+import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Button } from '../ui/button'
+import { Input } from '../ui/input'
+import { Card } from '../ui/card'
+import { useAuth } from './hooks/useAuth'
+import { useToast } from '../ui/use-toast'
 
 export const LoginPage: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const { signIn } = useAuth();
-  const { toast } = useToast();
-  const navigate = useNavigate();
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const { signIn } = useAuth()
+  const { toast } = useToast()
+  const navigate = useNavigate()
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+    e.preventDefault()
+    setIsLoading(true)
 
     try {
-      await signIn(email, password);
-      navigate('/dashboard');
+      await signIn(email, password)
+      navigate('/dashboard')
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('Login error:', error)
       toast({
         title: 'Error',
         description: 'Failed to sign in. Please check your credentials.',
         variant: 'destructive',
-      });
+      })
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="flex min-h-screen items-center justify-center bg-background">
       <Card className="w-full max-w-md p-8">
-        <div className="text-center mb-8">
+        <div className="mb-8 text-center">
           <h1 className="text-2xl font-bold">Welcome to Monkey One</h1>
-          <p className="text-muted-foreground mt-2">Sign in to continue</p>
+          <p className="mt-2 text-muted-foreground">Sign in to continue</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -51,7 +51,7 @@ export const LoginPage: React.FC = () => {
               type="email"
               placeholder="Enter your email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={e => setEmail(e.target.value)}
               disabled={isLoading}
               required
             />
@@ -66,7 +66,7 @@ export const LoginPage: React.FC = () => {
               type="password"
               placeholder="Enter your password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={e => setPassword(e.target.value)}
               disabled={isLoading}
               required
             />
@@ -84,5 +84,5 @@ export const LoginPage: React.FC = () => {
         </div>
       </Card>
     </div>
-  );
-};
+  )
+}

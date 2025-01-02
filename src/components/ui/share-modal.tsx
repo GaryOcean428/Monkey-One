@@ -1,5 +1,5 @@
 /* eslint-disable no-undef */
-import React from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -25,86 +25,79 @@ interface NavigatorShare {
 }
 
 function isNavigatorShareSupported(nav: Navigator): nav is Navigator & NavigatorShare {
-  return 'share' in nav
+  return typeof nav !== 'undefined' && 'share' in nav
 }
 
 export function ShareModal({ title, url, onShare, children }: ShareModalProps) {
-  const isClient = typeof window !== 'undefined'
-  const canShare = isClient && isNavigatorShareSupported(navigator)
+  const [isOpen, setIsOpen] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (isOpen && inputRef.current) {
+      inputRef.current.select()
+    }
+  }, [isOpen])
 
   const handleCopy = async () => {
-    const operationId = `copy-${Date.now()}`
-    monitoring.startOperation(operationId)
-
     try {
-      if (isClient) {
-        await navigator.clipboard.writeText(url)
-        toast({
-          title: 'Copied!',
-          description: 'Link copied to clipboard',
-        })
-        onShare?.(url)
-        monitoring.endOperation(operationId, 'share_copy_success')
-      }
-    } catch (error) {
-      monitoring.recordError(
-        'share_copy',
-        error instanceof Error ? error.message : 'Failed to copy link'
-      )
+      await navigator.clipboard.writeText(url)
       toast({
-        title: 'Error',
-        description: 'Failed to copy link',
+        title: 'Copied!',
+        description: 'Link copied to clipboard',
+      })
+      onShare?.(url)
+      monitoring.logEvent('share_copy_success')
+    } catch (error) {
+      console.error('Failed to copy:', error)
+      toast({
+        title: 'Failed to copy',
+        description: 'Please try again',
         variant: 'destructive',
       })
+      monitoring.logEvent('share_copy_error')
     }
   }
 
   const handleShare = async () => {
-    const operationId = `share-${Date.now()}`
-    monitoring.startOperation(operationId)
+    if (!isNavigatorShareSupported(navigator)) {
+      await handleCopy()
+      return
+    }
 
     try {
-      if (canShare) {
-        await navigator.share({
-          title,
-          url,
-        })
-        onShare?.(url)
-        monitoring.endOperation(operationId, 'share_native_success')
-      } else {
-        handleCopy()
-      }
+      await navigator.share({
+        title,
+        url,
+      })
+      onShare?.(url)
+      monitoring.logEvent('share_native_success')
     } catch (error) {
-      if (error instanceof Error && error.name !== 'AbortError') {
-        monitoring.recordError('share_native', error.message)
+      if ((error as Error).name !== 'AbortError') {
+        console.error('Failed to share:', error)
         toast({
-          title: 'Error',
-          description: 'Failed to share',
+          title: 'Failed to share',
+          description: 'Please try again',
           variant: 'destructive',
         })
+        monitoring.logEvent('share_native_error')
       }
     }
   }
 
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
-        <div className="flex flex-col space-y-4">
-          <DialogHeader>
-            <DialogTitle>{title}</DialogTitle>
-            <DialogDescription>Share this link with others</DialogDescription>
-          </DialogHeader>
-          <div className="flex items-center space-x-2">
-            <Input
-              value={url}
-              readOnly
-              className="flex-1"
-              onClick={e => e.currentTarget.select()}
-            />
-            <Button onClick={handleCopy}>Copy</Button>
-            {canShare && <Button onClick={handleShare}>Share</Button>}
-          </div>
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>
+            Share this link with others or copy it for your records.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex items-center space-x-2">
+          <Input ref={inputRef} readOnly value={url} className="flex-1" />
+          <Button onClick={handleCopy}>Copy</Button>
+          {isNavigatorShareSupported(navigator) && <Button onClick={handleShare}>Share</Button>}
         </div>
       </DialogContent>
     </Dialog>

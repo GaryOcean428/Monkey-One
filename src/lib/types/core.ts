@@ -1,64 +1,93 @@
-export enum MessageType {
-  USER = 'USER',
-  SYSTEM = 'SYSTEM',
-  TASK = 'TASK',
-  RESPONSE = 'RESPONSE',
-  ERROR = 'ERROR',
-  BROADCAST = 'BROADCAST',
-  HANDOFF = 'HANDOFF',
-  COMMAND = 'COMMAND'  // Adding missing COMMAND type
+// Core application types
+export type TimeoutId = ReturnType<typeof setTimeout>
+export type IntervalId = ReturnType<typeof setInterval>
+
+export interface MemoryStats {
+  heapUsed: number
+  heapTotal: number
+  external: number
+  arrayBuffers: number
+}
+
+export type MessageType = 'SYSTEM' | 'USER' | 'ASSISTANT' | 'ERROR' | 'WARNING' | 'INFO' | 'DEBUG'
+
+export interface Message {
+  id: string
+  type: MessageType
+  content: string
+  timestamp: number
+  metadata?: Record<string, unknown>
+}
+
+export interface SystemConfig {
+  maxMemoryUsage: number
+  maxConcurrentTasks: number
+  defaultTimeout: number
+  debugMode: boolean
 }
 
 export enum AgentType {
   ORCHESTRATOR = 'ORCHESTRATOR',
   WORKER = 'WORKER',
-  SPECIALIST = 'SPECIALIST'
+  SPECIALIST = 'SPECIALIST',
 }
 
 export enum AgentStatus {
   AVAILABLE = 'AVAILABLE',
   BUSY = 'BUSY',
   OFFLINE = 'OFFLINE',
-  IDLE = 'IDLE'
+  ERROR = 'ERROR',
 }
 
-export interface Message {
-  id: string;
-  type: MessageType;
-  role: 'user' | 'assistant' | 'system';
-  content: string;
-  timestamp: number;
-  metadata?: Record<string, unknown>;
-  status?: 'sending' | 'sent' | 'error';
-  sender?: string;
-  recipient?: string;
+export enum AgentCapabilityType {
+  CHAT = 'chat',
+  RAG = 'rag',
+  MEMORY = 'memory',
+  TOOLS = 'tools',
+  SEARCH = 'search',
+  CODE = 'code',
 }
 
 export interface AgentCapability {
-  name: string;
-  description: string;
+  type: AgentCapabilityType
+  name: string
+  description: string
+  schema?: Record<string, unknown>
 }
 
 export interface AgentMetrics {
-  messageCount: number;
-  errorCount: number;
-  averageResponseTime: number;
-  status: AgentStatus;
-  lastActive: number;
-  successRate: number;
+  totalRequests: number
+  successfulRequests: number
+  failedRequests: number
+  averageResponseTime: number
+  lastResponseTime: number
+  uptime: number
+  memoryUsage: MemoryStats
 }
 
+export type MessageHandler = (message: Message) => Promise<Message>
+export type ErrorHandler = (error: Error) => void
+export type ResponseHandler = (response: Message) => void
+
 export interface Agent {
-  id: string;
-  type: AgentType;
-  capabilities: AgentCapability[];
-  status: AgentStatus;
-  
-  initialize(): Promise<void>;
-  processMessage(message: Message): Promise<Message>;
-  getCapabilities(): AgentCapability[];
-  hasCapability(name: string): boolean;
-  addCapability(capability: AgentCapability): void;
-  removeCapability(name: string): void;
-  shutdown(): Promise<void>;
+  id: string
+  name: string
+  type: AgentType
+  capabilities: Set<AgentCapabilityType>
+  status: AgentStatus
+  description?: string
+  provider?: string
+
+  initialize(): Promise<void>
+  processMessage(message: Message): Promise<Message>
+  handleRequest(capability: string, params: Record<string, unknown>): Promise<unknown>
+  getCapabilities(): AgentCapability[]
+  hasCapability(type: AgentCapabilityType): boolean
+  addCapability(type: AgentCapabilityType): void
+  removeCapability(type: AgentCapabilityType): void
+  validateParameters(capability: string, params: Record<string, unknown>): void
+  getMetrics(): AgentMetrics
+  onMemoryCleanup(handler: () => void): void
+  cleanupMemory(): void
+  shutdown(): Promise<void>
 }

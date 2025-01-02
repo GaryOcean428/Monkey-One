@@ -3,7 +3,9 @@
     "browser": true,
     "es2021": true,
     "node": true,
-    "jest": true
+    "jest": true,
+    "worker": true,
+    "serviceworker": true
   },
   "extends": [
     "eslint:recommended",
@@ -20,6 +22,55 @@
     "sourceType": "module"
   },
   "plugins": ["@typescript-eslint", "react"],
+  "globals": {
+    "window": "readonly",
+    "document": "readonly",
+    "navigator": "readonly",
+    "localStorage": "readonly",
+    "sessionStorage": "readonly",
+    "console": "readonly",
+    "performance": "readonly",
+    "crypto": "readonly",
+    "fetch": "readonly",
+    "Headers": "readonly",
+    "Request": "readonly",
+    "Response": "readonly",
+    "TextDecoder": "readonly",
+    "TextEncoder": "readonly",
+    "Blob": "readonly",
+    "File": "readonly",
+    "FileReader": "readonly",
+    "AbortController": "readonly",
+    "ReadableStream": "readonly",
+    "ReadableStreamDefaultReader": "readonly",
+    "HTMLElement": "readonly",
+    "HTMLInputElement": "readonly",
+    "HTMLButtonElement": "readonly",
+    "HTMLTextAreaElement": "readonly",
+    "HTMLParagraphElement": "readonly",
+    "HTMLHeadingElement": "readonly",
+    "SVGSVGElement": "readonly",
+    "KeyboardEvent": "readonly",
+    "MutationObserver": "readonly",
+    "MessageChannel": "readonly",
+    "WebSocket": "readonly",
+    "FormData": "readonly",
+    "URL": "readonly",
+    "URLSearchParams": "readonly",
+    "NodeJS": "readonly",
+    "require": "readonly",
+    "module": "readonly",
+    "process": "readonly",
+    "Buffer": "readonly",
+    "__dirname": "readonly",
+    "__filename": "readonly",
+    "global": "readonly",
+    "setTimeout": "readonly",
+    "clearTimeout": "readonly",
+    "setImmediate": "readonly",
+    "queueMicrotask": "readonly",
+    "MSApp": "readonly"
+  },
   "rules": {
     "@typescript-eslint/no-explicit-any": "warn",
     "@typescript-eslint/no-unused-vars": [
@@ -30,6 +81,13 @@
         "ignoreRestSiblings": true
       }
     ],
+    "no-redeclare": "error",
+    "no-dupe-keys": "error",
+    "valid-typeof": "error",
+    "no-control-regex": "error",
+    "no-useless-escape": "error",
+    "no-constant-condition": ["error", { "checkLoops": false }],
+    "no-fallthrough": ["error", { "commentPattern": "falls?\\s?through" }],
     "react/react-in-jsx-scope": "off",
     "no-console": "off",
     "no-undef": ["error", { "typeof": true }],
@@ -38,29 +96,65 @@
     "no-prototype-builtins": "off",
     "getter-return": "error",
     "no-cond-assign": ["error", "except-parens"],
-    "no-misleading-character-class": "warn"
+    "no-misleading-character-class": "warn",
+    "no-redeclare": "error",
+    "no-dupe-keys": "error",
+    "valid-typeof": "error",
+    "no-control-regex": "error",
+    "no-useless-escape": "error",
+    "no-constant-condition": ["error", { "checkLoops": false }],
+    "no-fallthrough": ["error", { "commentPattern": "falls?\\s?through" }]
   },
   "settings": {
     "react": {
       "version": "detect"
     }
   },
-  "ignorePatterns": ["dist/**/*", "build/**/*", "node_modules/**/*"],
+  "ignorePatterns": [
+    "dist/**/*",
+    "build/**/*",
+    "node_modules/**/*",
+    "coverage/**/*",
+    ".vercel/**/*"
+  ],
   "overrides": [
     {
       "files": [
         "**/__tests__/**/*.[jt]s?(x)",
         "**/?(*.)+(spec|test).[jt]s?(x)",
-        "e2e/**/*.[jt]s?(x)"
+        "e2e/**/*.[jt]s?(x)",
+        "src/test/**/*"
       ],
       "env": {
-        "jest": true,
         "node": true
+      },
+      "extends": ["plugin:vitest/recommended"],
+      "plugins": ["vitest"],
+      "globals": {
+        "describe": "readonly",
+        "it": "readonly",
+        "expect": "readonly",
+        "beforeEach": "readonly",
+        "afterEach": "readonly",
+        "beforeAll": "readonly",
+        "afterAll": "readonly",
+        "test": "readonly",
+        "vi": "readonly"
       },
       "rules": {
         "@typescript-eslint/no-explicit-any": "off",
-        "@typescript-eslint/no-unused-vars": "off",
-        "no-undef": "off"
+        "@typescript-eslint/no-unused-vars": [
+          "error",
+          {
+            "argsIgnorePattern": "^_",
+            "varsIgnorePattern": "^_",
+            "ignoreRestSiblings": true
+          }
+        ],
+        "no-undef": "off",
+        "vitest/expect-expect": "error",
+        "vitest/no-disabled-tests": "warn",
+        "vitest/no-focused-tests": "error"
       }
     },
     {
@@ -81,19 +175,5 @@
         "no-undef": "off"
       }
     }
-  ],
-  "globals": {
-    "window": true,
-    "document": true,
-    "navigator": true,
-    "localStorage": true,
-    "sessionStorage": true,
-    "fetch": true,
-    "WebSocket": true,
-    "FormData": true,
-    "File": true,
-    "Blob": true,
-    "URL": true,
-    "URLSearchParams": true
-  }
+  ]
 }

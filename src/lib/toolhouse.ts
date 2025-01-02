@@ -1,20 +1,24 @@
-import { z } from 'zod';
+import { z } from 'zod'
+import { Logger } from './logger/Logger'
 
-const TOOLHOUSE_API_KEY = import.meta.env.VITE_TOOLHOUSE_API_KEY;
-const API_BASE_URL = 'https://api.toolhouse.io/v1';
+const TOOLHOUSE_API_KEY = import.meta.env.VITE_TOOLHOUSE_API_KEY
+const API_BASE_URL = 'https://api.toolhouse.io/v1'
 
 if (!TOOLHOUSE_API_KEY) {
-  throw new Error('Missing Toolhouse API key');
+  throw new Error('Missing Toolhouse API key')
 }
 
-export type ToolhouseOptions = {
-  temperature?: number;
-  maxTokens?: number;
-  topP?: number;
-  frequencyPenalty?: number;
-  presencePenalty?: number;
-  streaming?: boolean;
-};
+// Schema for validating options
+const ToolhouseOptionsSchema = z.object({
+  temperature: z.number().min(0).max(1).optional(),
+  maxTokens: z.number().min(1).max(8192).optional(),
+  topP: z.number().min(0).max(1).optional(),
+  frequencyPenalty: z.number().min(-2).max(2).optional(),
+  presencePenalty: z.number().min(-2).max(2).optional(),
+  streaming: z.boolean().optional(),
+})
+
+export type ToolhouseOptions = z.infer<typeof ToolhouseOptionsSchema>
 
 const defaultOptions: ToolhouseOptions = {
   temperature: parseFloat(import.meta.env.VITE_AI_MODEL_TEMPERATURE || '0.7'),
@@ -22,115 +26,133 @@ const defaultOptions: ToolhouseOptions = {
   topP: parseFloat(import.meta.env.VITE_AI_TOP_P || '0.9'),
   frequencyPenalty: parseFloat(import.meta.env.VITE_AI_FREQUENCY_PENALTY || '0'),
   presencePenalty: parseFloat(import.meta.env.VITE_AI_PRESENCE_PENALTY || '0'),
-  streaming: import.meta.env.VITE_AI_STREAMING_ENABLED === 'true'
-};
+  streaming: import.meta.env.VITE_AI_STREAMING_ENABLED === 'true',
+}
+
+interface ChatResponse {
+  id: string
+  choices: Array<{
+    message: {
+      role: string
+      content: string
+    }
+  }>
+}
+
+interface MemoryResponse {
+  id: string
+  content: string
+  metadata: Record<string, unknown>
+  timestamp: string
+}
+
+interface SearchResponse {
+  results: Array<{
+    id: string
+    content: string
+    metadata: Record<string, unknown>
+    score: number
+  }>
+}
 
 export class ToolhouseClient {
-  private readonly apiKey: string;
-  private readonly options: ToolhouseOptions;
+  private readonly apiKey: string
+  private readonly options: ToolhouseOptions
+  private readonly logger: Logger
 
   constructor(options: Partial<ToolhouseOptions> = {}) {
-    this.apiKey = TOOLHOUSE_API_KEY;
-    this.options = { ...defaultOptions, ...options };
+    this.apiKey = TOOLHOUSE_API_KEY
+    this.options = ToolhouseOptionsSchema.parse({ ...defaultOptions, ...options })
+    this.logger = new Logger('ToolhouseClient')
   }
 
-  async chat(messages: Array<{ role: string; content: string }>, options: Partial<ToolhouseOptions> = {}) {
-    const mergedOptions = { ...this.options, ...options };
-    
+  async chat(
+    messages: Array<{ role: string; content: string }>,
+    options: Partial<ToolhouseOptions> = {}
+  ): Promise<ChatResponse> {
+    const mergedOptions = ToolhouseOptionsSchema.parse({ ...this.options, ...options })
+
     try {
-      const response = await fetch(`${API_BASE_URL}/chat`, {
+      const response = await globalThis.fetch(`${API_BASE_URL}/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.apiKey}`
+          Authorization: `Bearer ${this.apiKey}`,
         },
         body: JSON.stringify({
           messages,
-          ...mergedOptions
-        })
-      });
+          ...mergedOptions,
+        }),
+      })
 
       if (!response.ok) {
-        throw new Error(`Toolhouse API error: ${response.statusText}`);
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
 
-      return await response.json();
+      return await response.json()
     } catch (error) {
-      console.error('Toolhouse chat error:', error);
-      throw error;
+      this.logger.error('Error in chat:', { error })
+      throw error
     }
   }
 
-  async embedText(text: string) {
+  async storeMemory(
+    content: string,
+    metadata: Record<string, unknown> = {}
+  ): Promise<MemoryResponse> {
     try {
-      const response = await fetch(`${API_BASE_URL}/embeddings`, {
+      const response = await globalThis.fetch(`${API_BASE_URL}/memory`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.apiKey}`
-        },
-        body: JSON.stringify({ text })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Toolhouse API error: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      return data.embedding;
-    } catch (error) {
-      console.error('Toolhouse embedding error:', error);
-      throw error;
-    }
-  }
-
-  async generateCode(prompt: string, options: { language?: string } = {}) {
-    try {
-      const response = await fetch(`${API_BASE_URL}/code/generate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.apiKey}`
+          Authorization: `Bearer ${this.apiKey}`,
         },
         body: JSON.stringify({
-          prompt,
-          ...options
-        })
-      });
+          content,
+          metadata,
+        }),
+      })
 
       if (!response.ok) {
-        throw new Error(`Toolhouse API error: ${response.statusText}`);
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
 
-      return await response.json();
+      return await response.json()
     } catch (error) {
-      console.error('Toolhouse code generation error:', error);
-      throw error;
+      this.logger.error('Error storing memory:', { error })
+      throw error
     }
   }
 
-  async analyzeCode(code: string, options: { language?: string } = {}) {
+  async searchMemory(
+    query: string,
+    options: { limit?: number; filter?: Record<string, unknown> } = {}
+  ): Promise<SearchResponse> {
     try {
-      const response = await fetch(`${API_BASE_URL}/code/analyze`, {
+      const response = await globalThis.fetch(`${API_BASE_URL}/memory/search`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.apiKey}`
+          Authorization: `Bearer ${this.apiKey}`,
         },
         body: JSON.stringify({
-          code,
-          ...options
-        })
-      });
+          query,
+          ...options,
+        }),
+      })
 
       if (!response.ok) {
-        throw new Error(`Toolhouse API error: ${response.statusText}`);
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
 
-      return await response.json();
+      return await response.json()
     } catch (error) {
-      console.error('Toolhouse code analysis error:', error);
-      throw error;
+      this.logger.error('Error searching memory:', { error })
+      throw error
     }
   }
 }
+
+// Create and export default instance
+export const toolhouse = new ToolhouseClient()
+export default toolhouse

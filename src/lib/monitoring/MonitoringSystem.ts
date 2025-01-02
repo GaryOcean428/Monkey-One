@@ -41,16 +41,28 @@ export class MonitoringSystem {
   }
 
   private startMetricsCollection(): void {
-    this.collectSystemMetrics()
-    this.metricsTimer = window.setInterval(() => {
+    try {
       this.collectSystemMetrics()
-    }, this.METRICS_INTERVAL)
+      const interval = typeof window !== 'undefined' ? window.setInterval : setInterval
+      this.metricsTimer = interval(() => {
+        this.collectSystemMetrics()
+      }, this.METRICS_INTERVAL)
+    } catch (error) {
+      logger.error('Failed to start metrics collection:', error)
+      captureException(error)
+    }
   }
 
   private startCleanupInterval(): void {
-    this.cleanupTimer = window.setInterval(() => {
-      this.cleanupOldMetrics()
-    }, this.CLEANUP_INTERVAL)
+    try {
+      const interval = typeof window !== 'undefined' ? window.setInterval : setInterval
+      this.cleanupTimer = interval(() => {
+        this.cleanupOldMetrics()
+      }, this.CLEANUP_INTERVAL)
+    } catch (error) {
+      logger.error('Failed to start cleanup interval:', error)
+      captureException(error)
+    }
   }
 
   /**
@@ -59,49 +71,84 @@ export class MonitoringSystem {
   private collectSystemMetrics(): void {
     try {
       // Memory metrics with thresholds
-      const memUsage = window.performance.memory
-      const heapUsed = memUsage.usedJSHeapSize
-      memoryUsage.set({ type: 'heap' }, heapUsed)
-      memoryUsage.set({ type: 'rss' }, memUsage.totalJSHeapSize)
-      memoryUsage.set({ type: 'external' }, memUsage.usedJSHeapSize)
+      let memoryMetrics
 
-      // Trigger cleanup if memory usage is high
-      if (heapUsed > 1024 * 1024 * 1024) {
-        // 1GB
+      if (typeof window !== 'undefined' && window.performance?.memory) {
+        // Browser environment
+        const memUsage = window.performance.memory
+        memoryMetrics = {
+          heapUsed: memUsage.usedJSHeapSize,
+          heapTotal: memUsage.totalJSHeapSize,
+          heapLimit: memUsage.jsHeapSizeLimit,
+        }
+      } else if (typeof process !== 'undefined') {
+        // Node.js environment
+        const memUsage = process.memoryUsage()
+        memoryMetrics = {
+          heapUsed: memUsage.heapUsed,
+          heapTotal: memUsage.heapTotal,
+          external: memUsage.external,
+          rss: memUsage.rss,
+        }
+      } else {
+        // Fallback metrics
+        memoryMetrics = {
+          heapUsed: 0,
+          heapTotal: 0,
+          external: 0,
+          rss: 0,
+        }
+      }
+
+      // Set memory metrics
+      Object.entries(memoryMetrics).forEach(([key, value]) => {
+        memoryUsage.set({ type: key }, value)
+      })
+
+      // Trigger cleanup if memory usage is high (75% of total)
+      if (memoryMetrics.heapUsed > memoryMetrics.heapTotal * 0.75) {
         this.cleanupOldMetrics()
       }
 
       // Cache metrics with optimization
       const cacheStats = this.getCacheStats()
-      cacheOperations.inc({ type: 'read' }, cacheStats.reads)
-      cacheOperations.inc({ type: 'write' }, cacheStats.writes)
-      cacheSize.set(cacheStats.size)
+      if (cacheStats) {
+        cacheOperations.inc({ type: 'read' }, cacheStats.reads)
+        cacheOperations.inc({ type: 'write' }, cacheStats.writes)
+        cacheSize.set(cacheStats.size)
+      }
 
       // Error tracking
       const errors = this.getErrorStats()
-      errorCount.inc({ type: 'system' }, errors.system)
-      errorCount.inc({ type: 'user' }, errors.user)
+      if (errors) {
+        errorCount.inc({ type: 'system' }, errors.system)
+        errorCount.inc({ type: 'user' }, errors.user)
+      }
 
       // Brain activity metrics
       const brainStats = this.getBrainStats()
-      brainActivityGauge.set({ type: 'neurons' }, brainStats.activeNeurons)
-      brainActivityGauge.set({ type: 'synapses' }, brainStats.activeSynapses)
+      if (brainStats) {
+        brainActivityGauge.set({ type: 'neurons' }, brainStats.activeNeurons)
+        brainActivityGauge.set({ type: 'synapses' }, brainStats.activeSynapses)
+      }
 
       // Neural network performance
       const nnStats = this.getNeuralNetworkStats()
-      neuralNetworkMetrics.set({ type: 'accuracy' }, nnStats.accuracy)
-      neuralNetworkMetrics.set({ type: 'loss' }, nnStats.loss)
+      if (nnStats) {
+        neuralNetworkMetrics.set({ type: 'accuracy' }, nnStats.accuracy)
+        neuralNetworkMetrics.set({ type: 'loss' }, nnStats.loss)
+      }
 
       this.emit('metrics_collected', {
-        memory: memUsage,
+        memory: memoryMetrics,
         cache: cacheStats,
         errors,
         brain: brainStats,
         neuralNetwork: nnStats,
       })
     } catch (error) {
-      captureException(error as Error)
       logger.error('Error collecting system metrics:', error)
+      captureException(error)
     }
   }
 

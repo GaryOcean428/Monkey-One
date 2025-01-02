@@ -1,33 +1,52 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom';
-import { lazy, Suspense } from 'react';
-import { LoadingFallback } from './components/LoadingFallback';
-import { ToolhouseProvider } from './providers/ToolhouseProvider';
-import App from './App';
+import React from 'react'
+import { createBrowserRouter } from 'react-router-dom'
+import { lazy, Suspense } from 'react'
+import { LoadingFallback } from './components/LoadingFallback'
+import { ToolhouseProvider } from './providers/ToolhouseProvider'
+import App from './App'
 
 // Lazy-loaded components
-const DashboardHome = lazy(() => import('./pages/Dashboard/DashboardHome').then(module => ({ default: module.DashboardHome })));
-const MemoryManager = lazy(() => import('./components/Memory/MemoryManager').then(module => ({ default: module.MemoryManager })));
-const Settings = lazy(() => import('./components/Settings').then(module => ({ default: module.Settings })));
-const ProfileManager = lazy(() => import('./components/Profile/ProfileManager').then(module => ({ default: module.ProfileManager })));
-const AgentsPanel = lazy(() => import('./components/panels/AgentsPanel'));
-const WorkflowPanel = lazy(() => import('./components/panels/WorkflowPanel'));
-const DocumentsPanel = lazy(() => import('./components/panels/DocumentsPanel'));
-const ToolsPanel = lazy(() => import('./components/panels/ToolsPanel'));
-const GitHubPanel = lazy(() => import('./components/panels/GitHubPanel'));
-const PerformancePanel = lazy(() => import('./components/panels/PerformancePanel'));
-const ChatPanel = lazy(() => import('./components/chat/ChatContainer').then(module => ({ default: module.ChatContainer })));
+const DashboardHome = lazy(() =>
+  import('./pages/Dashboard/DashboardHome').then(m => ({ default: m.DashboardHome }))
+)
+const MemoryManager = lazy(() =>
+  import('./components/Memory/MemoryManager').then(m => ({ default: m.MemoryManager }))
+)
+const Settings = lazy(() => import('./components/Settings').then(m => ({ default: m.Settings })))
+const ProfileManager = lazy(() =>
+  import('./components/Profile/ProfileManager').then(m => ({ default: m.ProfileManager }))
+)
+const AgentsPanel = lazy(() => import('./components/panels/AgentsPanel'))
+const WorkflowPanel = lazy(() =>
+  import('./components/panels/WorkflowPanel').then(m => ({ default: m.WorkflowPanel }))
+)
+const DocumentsPanel = lazy(() =>
+  import('./components/panels/DocumentsPanel').then(m => ({ default: m.DocumentsPanel }))
+)
+const ToolsPanel = lazy(() =>
+  import('./components/panels/ToolsPanel').then(m => ({ default: m.ToolsPanel }))
+)
+const GithubPanel = lazy(() => import('./components/panels/GitHubPanel'))
+const PerformancePanel = lazy(() =>
+  import('./components/panels/PerformancePanel').then(m => ({ default: m.PerformancePanel }))
+)
+const ChatPanel = lazy(() =>
+  import('./components/chat/ChatContainer').then(m => ({ default: m.ChatContainer }))
+)
 
-const withSuspense = (Component: React.ComponentType) => (
-  <Suspense fallback={<LoadingFallback />}>
-    <Component />
-  </Suspense>
-);
+// Auth components
+const AuthCallback = lazy(() =>
+  import('./components/Auth/AuthCallback').then(m => ({ default: m.AuthCallback }))
+)
+const PasswordReset = lazy(() =>
+  import('./components/Auth/PasswordReset').then(m => ({ default: m.PasswordReset }))
+)
 
 const withProviders = (element: React.ReactNode) => (
   <ToolhouseProvider>
-    {element}
+    <Suspense fallback={<LoadingFallback />}>{element}</Suspense>
   </ToolhouseProvider>
-);
+)
 
 export const router = createBrowserRouter([
   {
@@ -36,48 +55,68 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: withProviders(withSuspense(ChatPanel)),
+        element: withProviders(<ChatPanel />),
       },
       {
-        path: 'agents',
-        element: withProviders(withSuspense(AgentsPanel)),
+        path: 'chat',
+        element: withProviders(<ChatPanel />),
       },
       {
-        path: 'workflow',
-        element: withProviders(withSuspense(WorkflowPanel)),
+        path: 'dashboard',
+        element: withProviders(<DashboardHome />),
       },
       {
         path: 'memory',
-        element: withProviders(withSuspense(MemoryManager)),
-      },
-      {
-        path: 'documents',
-        element: withProviders(withSuspense(DocumentsPanel)),
-      },
-      {
-        path: 'tools',
-        element: withProviders(withSuspense(ToolsPanel)),
-      },
-      {
-        path: 'github',
-        element: withProviders(withSuspense(GithubPanel)),
-      },
-      {
-        path: 'performance',
-        element: withProviders(withSuspense(PerformancePanel)),
+        element: withProviders(<MemoryManager />),
       },
       {
         path: 'settings',
-        element: withProviders(withSuspense(Settings)),
+        element: withProviders(<Settings />),
       },
       {
         path: 'profile',
-        element: withProviders(withSuspense(ProfileManager)),
+        element: withProviders(<ProfileManager />),
       },
       {
-        path: '*',
-        element: <Navigate to="/" replace />,
+        path: 'agents',
+        element: withProviders(<AgentsPanel />),
+      },
+      {
+        path: 'workflow',
+        element: withProviders(<WorkflowPanel />),
+      },
+      {
+        path: 'documents',
+        element: withProviders(<DocumentsPanel />),
+      },
+      {
+        path: 'tools',
+        element: withProviders(<ToolsPanel />),
+      },
+      {
+        path: 'github',
+        element: withProviders(<GithubPanel />),
+      },
+      {
+        path: 'performance',
+        element: withProviders(<PerformancePanel />),
+      },
+      {
+        path: 'auth/callback',
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <AuthCallback />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'auth/reset-password',
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <PasswordReset />
+          </Suspense>
+        ),
       },
     ],
   },
-]);
+])

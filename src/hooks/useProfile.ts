@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useAuth } from '../contexts/AuthContext'
+import { useAuth } from '../components/auth/hooks/useAuth'
 import { supabase } from '../lib/supabase'
 import type { Database } from '../types/supabase'
 
@@ -17,7 +17,7 @@ export function useProfile() {
     async function loadProfile() {
       try {
         setLoading(true)
-        
+
         const { data, error } = await supabase
           .from('profiles')
           .select('*')
@@ -43,14 +43,11 @@ export function useProfile() {
     try {
       setLoading(true)
 
-      const { error } = await supabase
-        .from('profiles')
-        .update(updates)
-        .eq('id', user.id)
+      const { error } = await supabase.from('profiles').update(updates).eq('id', user.id)
 
       if (error) throw error
 
-      setProfile(prev => prev ? { ...prev, ...updates } : null)
+      setProfile(prev => (prev ? { ...prev, ...updates } : null))
     } catch (e) {
       setError(e instanceof Error ? e : new Error('An error occurred'))
       throw e
@@ -63,6 +60,6 @@ export function useProfile() {
     profile,
     loading,
     error,
-    updateProfile
+    updateProfile,
   }
 }
