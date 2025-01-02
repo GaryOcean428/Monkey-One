@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { AmygdalaAgent } from '@/lib/agents/core/AmygdalaAgent';
+import { AmygdalaAgent } from '../../lib/agents/core/AmygdalaAgent';
+import { MessageType, AgentType } from '../../lib/types/core';
 
 describe('AmygdalaAgent', () => {
   let agent: AmygdalaAgent;
@@ -12,7 +13,7 @@ describe('AmygdalaAgent', () => {
   describe('initialization', () => {
     it('should initialize with correct properties', () => {
       expect(agent.id).toBe('amygdala-1');
-      expect(agent.role).toBe('emotional_processor');
+      expect(agent.type).toBe(AgentType.SPECIALIST);
       expect(agent.capabilities).toContainEqual(
         expect.objectContaining({ name: 'emotional_processing' })
       );
@@ -29,6 +30,7 @@ describe('AmygdalaAgent', () => {
     it('should detect fear triggers', async () => {
       const message = {
         id: 'test',
+        type: MessageType.TASK,
         role: 'user',
         content: 'dangerous situation',
         timestamp: Date.now()
@@ -40,6 +42,7 @@ describe('AmygdalaAgent', () => {
     it('should detect reward triggers', async () => {
       const message = {
         id: 'test',
+        type: MessageType.TASK,
         role: 'user',
         content: 'great success',
         timestamp: Date.now()
@@ -54,6 +57,7 @@ describe('AmygdalaAgent', () => {
       const initialState = agent.getCurrentEmotionalState();
       await agent.processMessage({
         id: 'test',
+        type: MessageType.TASK,
         role: 'user',
         content: 'positive experience',
         timestamp: Date.now()
@@ -66,6 +70,7 @@ describe('AmygdalaAgent', () => {
       const storeMemorySpy = vi.spyOn(agent as any, 'storeEmotionalMemory');
       await agent.processMessage({
         id: 'test',
+        type: MessageType.TASK,
         role: 'user',
         content: 'memorable event',
         timestamp: Date.now()

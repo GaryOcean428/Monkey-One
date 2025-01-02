@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react'
 import {
   Menu,
   MessageSquare,
@@ -13,77 +13,90 @@ import {
   FileText,
   Github,
   Activity,
-  Network
-} from 'lucide-react';
-import { useNavigationStore } from '../store/navigationStore';
-import { Button } from './ui/button';
-import { Tabs, TabsList, TabsTrigger } from './ui/tabs';
+  Network,
+  UserCircle,
+} from 'lucide-react'
+import { useNavigationStore } from '../store/navigationStore'
+import { Link, useLocation } from 'react-router-dom'
 
 export function Sidebar() {
-  const [isExpanded, setIsExpanded] = useState(true);
-  const { activeTab, setActiveTab } = useNavigationStore();
+  const { isCollapsed, toggleSidebar } = useNavigationStore()
+  const location = useLocation()
 
   const tabs = [
-    { id: 'chat', label: 'Chat', icon: MessageSquare },
-    { id: 'agents', label: 'Agents', icon: Users },
-    { id: 'workflows', label: 'Workflows', icon: Network },
-    { id: 'memory', label: 'Memory', icon: Brain },
-    { id: 'documents', label: 'Documents', icon: FileText },
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'tools', label: 'Tools', icon: Wrench },
-    { id: 'search', label: 'Search', icon: Search },
-    { id: 'vectorstore', label: 'Vector Store', icon: Database },
-    { id: 'github', label: 'GitHub', icon: Github },
-    { id: 'performance', label: 'Performance', icon: Activity }
-  ];
+    { id: 'chat', label: 'Chat', icon: MessageSquare, path: '/' },
+    { id: 'agents', label: 'Agents', icon: Users, path: '/agents' },
+    { id: 'workflows', label: 'Workflows', icon: Network, path: '/workflows' },
+    { id: 'memory', label: 'Memory', icon: Brain, path: '/memory' },
+    { id: 'documents', label: 'Documents', icon: FileText, path: '/documents' },
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
+    { id: 'tools', label: 'Tools', icon: Wrench, path: '/tools' },
+    { id: 'search', label: 'Search', icon: Search, path: '/search' },
+    { id: 'vectorstore', label: 'Vector Store', icon: Database, path: '/vectorstore' },
+    { id: 'github', label: 'GitHub', icon: Github, path: '/github' },
+    { id: 'performance', label: 'Performance', icon: Activity, path: '/performance' },
+  ]
+
+  const userTabs = [
+    { id: 'profile', label: 'Profile', icon: UserCircle, path: '/profile' },
+    { id: 'settings', label: 'Settings', icon: Settings, path: '/settings' },
+  ]
 
   return (
-    <div className={`${isExpanded ? 'w-64' : 'w-16'} bg-gray-900 flex flex-col transition-all duration-300`}>
+    <div
+      className={`${!isCollapsed ? 'w-64' : 'w-16'} flex flex-col bg-gray-900 transition-all duration-300`}
+    >
       <div className="flex items-center p-4">
-        <button 
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-gray-800"
+        <button
+          onClick={toggleSidebar}
+          className="rounded-lg p-2 text-gray-400 hover:bg-gray-800 hover:text-white"
         >
-          {isExpanded ? <X size={24} /> : <Menu size={24} />}
+          {!isCollapsed ? <X size={24} /> : <Menu size={24} />}
         </button>
-        {isExpanded && (
-          <span className="text-white ml-2 font-semibold">Monkey One</span>
-        )}
+        {!isCollapsed && <span className="ml-2 font-semibold text-white">Monkey One</span>}
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} orientation="vertical" className="flex-1">
-        <TabsList className="flex flex-col items-stretch gap-1 px-2 border-none bg-transparent">
-          {tabs.map(({ id, label, icon: Icon }) => (
-            <TabsTrigger
-              key={id}
-              value={id}
-              className="flex items-center gap-3 p-3 rounded-lg justify-start text-gray-400 hover:text-white hover:bg-gray-800 data-[state=active]:bg-gray-800 data-[state=active]:text-white"
+      <nav className="flex-1 overflow-y-auto">
+        {tabs.map(tab => {
+          const Icon = tab.icon
+          const isActive = location.pathname === tab.path
+          return (
+            <Link
+              key={tab.id}
+              to={tab.path}
+              className={`flex items-center px-4 py-2 text-sm ${
+                isActive
+                  ? 'bg-gray-800 text-white'
+                  : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+              }`}
             >
               <Icon size={20} />
-              {isExpanded && <span>{label}</span>}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
+              {!isCollapsed && <span className="ml-3">{tab.label}</span>}
+            </Link>
+          )
+        })}
+      </nav>
 
-      <div className="mt-auto p-4 space-y-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-full flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-800"
-        >
-          <Users size={20} />
-          {isExpanded && <span className="ml-3">Add Agent</span>}
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-full flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-800"
-        >
-          <Settings size={20} />
-          {isExpanded && <span className="ml-3">Settings</span>}
-        </Button>
+      <div className="border-t border-gray-800 pt-2">
+        {userTabs.map(tab => {
+          const Icon = tab.icon
+          const isActive = location.pathname === tab.path
+          return (
+            <Link
+              key={tab.id}
+              to={tab.path}
+              className={`flex items-center px-4 py-2 text-sm ${
+                isActive
+                  ? 'bg-gray-800 text-white'
+                  : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+              }`}
+            >
+              <Icon size={20} />
+              {!isCollapsed && <span className="ml-3">{tab.label}</span>}
+            </Link>
+          )
+        })}
       </div>
     </div>
-  );
+  )
 }

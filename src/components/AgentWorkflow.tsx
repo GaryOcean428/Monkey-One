@@ -1,75 +1,53 @@
-import React, { useState } from 'react';
-import { Save, Play, Pause, RefreshCw } from 'lucide-react';
+import React from 'react';
+import { Card } from './ui/card';
 import { Button } from './ui/button';
+import { Badge } from './ui/badge';
+import { Plus, Play, Save } from 'lucide-react';
+import { useWorkflow } from '../hooks/useWorkflow';
+import { WorkflowVisualizer } from './workflow/WorkflowVisualizer';
 
 export function AgentWorkflow() {
-  const [isRunning, setIsRunning] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
-
-  const templates = [
-    { id: '1', name: 'Code Review' },
-    { id: '2', name: 'Bug Fix' },
-    { id: '3', name: 'Feature Implementation' }
-  ];
+  const { workflows, createWorkflow } = useWorkflow();
+  const activeWorkflow = workflows[0]; // For now, just show the first workflow
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold dark:text-white">Workflow Management</h2>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsRunning(!isRunning)}
-          >
-            {isRunning ? <Pause size={16} /> : <Play size={16} />}
-            {isRunning ? 'Pause' : 'Start'}
+    <div className="h-full p-6 overflow-y-auto">
+      <div className="mb-6 flex justify-between items-start">
+        <div>
+          <h2 className="text-2xl font-bold">Agent Workflow</h2>
+          <p className="text-muted-foreground mt-1">Visualize and manage agent workflows</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline">
+            <Plus className="w-4 h-4 mr-2" />
+            New
           </Button>
-          <Button variant="outline" size="sm">
-            <Save size={16} className="mr-1" />
-            Save Template
+          <Button variant="outline">
+            <Play className="w-4 h-4 mr-2" />
+            Run
           </Button>
-          <Button variant="outline" size="sm">
-            <RefreshCw size={16} className="mr-1" />
-            Reset
+          <Button variant="outline">
+            <Save className="w-4 h-4 mr-2" />
+            Save
           </Button>
         </div>
       </div>
-
+      
       <div className="space-y-4">
-        <div className="flex gap-2">
-          {templates.map(template => (
-            <button
-              key={template.id}
-              onClick={() => setSelectedTemplate(template.id)}
-              className={`px-3 py-1 rounded-full text-sm
-                ${selectedTemplate === template.id
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
-                }`}
-            >
-              {template.name}
-            </button>
-          ))}
-        </div>
-
-        <div className="border rounded-lg p-4 dark:border-gray-700">
-          <h3 className="font-medium mb-2 dark:text-white">Active Workflow</h3>
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-              <div className="w-2 h-2 rounded-full bg-green-500"></div>
-              Task Analysis
-            </div>
-            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-              <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
-              Code Generation
-            </div>
-            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-              <div className="w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-600"></div>
-              Testing
-            </div>
-          </div>
-        </div>
+        {activeWorkflow ? (
+          <WorkflowVisualizer workflow={activeWorkflow} />
+        ) : (
+          <Card className="p-8 text-center">
+            <h3 className="text-lg font-medium mb-2">No Active Workflow</h3>
+            <p className="text-muted-foreground mb-4">
+              Create a new workflow to get started with agent automation
+            </p>
+            <Button onClick={() => createWorkflow({})}>
+              <Plus className="w-4 h-4 mr-2" />
+              Create Workflow
+            </Button>
+          </Card>
+        )}
       </div>
     </div>
   );

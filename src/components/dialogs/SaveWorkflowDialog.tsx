@@ -3,8 +3,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { Button } from '../ui/button';
-import { useWorkflow } from '@/hooks/useWorkflow';
-import type { WorkflowDefinition } from '@/types';
+import { useWorkflow } from '../../hooks/useWorkflow';
+import type { WorkflowDefinition } from '../../types';
 
 interface SaveWorkflowDialogProps {
   open: boolean;

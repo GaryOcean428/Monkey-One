@@ -1,45 +1,120 @@
 import React from 'react';
-import { Activity, Brain, CheckCircle, XCircle } from 'lucide-react';
+import { Card as BaseCard } from './ui/card';
+import { Button } from './ui/button';
+import { Badge } from './ui/badge';
+import { Activity, AlertCircle, CheckCircle, Clock, Power } from 'lucide-react';
 import type { Agent } from '../types';
 
 interface AgentMonitorProps {
   agents: Agent[];
   activeAgent: Agent | null;
+  onAgentSelect?: (agent: Agent) => void;
 }
 
-export function AgentMonitor({ agents, activeAgent }: AgentMonitorProps) {
+interface AgentCardProps {
+  agent: Agent;
+  isActive: boolean;
+  onClick?: () => void;
+}
+
+const AgentCard: React.FC<AgentCardProps> = ({ agent, isActive, onClick }) => {
+  const statusColors = {
+    available: 'bg-green-500',
+    busy: 'bg-yellow-500',
+    offline: 'bg-gray-500',
+    error: 'bg-red-500'
+  };
+
+  const statusIcons = {
+    available: CheckCircle,
+    busy: Clock,
+    offline: Power,
+    error: AlertCircle
+  };
+
+  const StatusIcon = statusIcons[agent.status];
+
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4">
-      <h2 className="text-lg font-semibold mb-4 dark:text-white">Agent Monitor</h2>
-      <div className="space-y-4">
-        {agents.map(agent => (
-          <div
-            key={agent.id}
-            className={`flex items-center justify-between p-3 rounded-lg border
-              ${activeAgent?.id === agent.id ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-200 dark:border-gray-700'}
-            `}
-          >
-            <div className="flex items-center gap-3">
-              <Brain className="text-gray-500 dark:text-gray-400" size={20} />
-              <div>
-                <h3 className="font-medium dark:text-white">{agent.name}</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {agent.type.charAt(0).toUpperCase() + agent.type.slice(1)}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              {agent.status === 'active' && (
-                <Activity className="text-green-500 animate-pulse" size={20} />
-              )}
-              {agent.status === 'idle' && (
-                <CheckCircle className="text-gray-400" size={20} />
-              )}
-              {agent.status === 'error' && (
-                <XCircle className="text-red-500" size={20} />
-              )}
-            </div>
+    <BaseCard
+      className={`p-4 cursor-pointer transition-all ${
+        isActive ? 'ring-2 ring-primary' : ''
+      }`}
+      onClick={onClick}
+    >
+      <div className="flex items-start justify-between">
+        <div>
+          <h3 className="font-medium">{agent.name}</h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            {agent.description}
+          </p>
+        </div>
+        <StatusIcon className={`w-5 h-5 ${
+          agent.status === 'available' ? 'text-green-500' :
+          agent.status === 'busy' ? 'text-yellow-500' :
+          agent.status === 'error' ? 'text-red-500' :
+          'text-gray-500'
+        }`} />
+      </div>
+
+      <div className="mt-4 space-y-2">
+        <div className="flex items-center justify-between text-sm">
+          <span className="text-muted-foreground">Model</span>
+          <span>{agent.model}</span>
+        </div>
+        {agent.performance && (
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">Success Rate</span>
+            <span>{(agent.performance.successRate * 100).toFixed(1)}%</span>
           </div>
+        )}
+        {agent.lastActive && (
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">Last Active</span>
+            <span>{new Date(agent.lastActive).toLocaleString()}</span>
+          </div>
+        )}
+      </div>
+
+      <div className="mt-4 flex flex-wrap gap-2">
+        {agent.capabilities.map((capability) => (
+          <Badge key={capability} variant="secondary">
+            {capability}
+          </Badge>
+        ))}
+      </div>
+
+      {agent.error && (
+        <div className="mt-4 p-2 bg-red-50 dark:bg-red-900/10 rounded text-sm text-red-600 dark:text-red-400">
+          {agent.error}
+        </div>
+      )}
+    </BaseCard>
+  );
+};
+
+export function AgentMonitor({ agents, activeAgent, onAgentSelect }: AgentMonitorProps) {
+  return (
+    <div className="h-full p-6 overflow-y-auto">
+      <div className="mb-6 flex justify-between items-start">
+        <div>
+          <h2 className="text-2xl font-bold">Agent Monitor</h2>
+          <p className="text-muted-foreground mt-1">Monitor and manage your AI agents</p>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Button variant="outline" size="sm">
+            <Activity className="w-4 h-4 mr-2" />
+            Refresh Status
+          </Button>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {agents?.map((agent) => (
+          <AgentCard
+            key={agent.id}
+            agent={agent}
+            isActive={agent.id === activeAgent?.id}
+            onClick={() => onAgentSelect?.(agent)}
+          />
         ))}
       </div>
     </div>

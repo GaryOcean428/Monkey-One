@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { BrainstemAgent } from '../../lib/agents/core/BrainstemAgent';
-import { Message, MessageType } from '@/types';
+import { Message, MessageType } from '../../types';
 
 describe('BrainstemAgent', () => {
   let agent: BrainstemAgent;

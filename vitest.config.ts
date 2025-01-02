@@ -1,6 +1,6 @@
-import { defineConfig } from 'vitest/config';
-import path from 'path';
-import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vitest/config'
+import react from '@vitejs/plugin-react'
+import path from 'path'
 
 export default defineConfig({
   plugins: [react()],
@@ -8,34 +8,45 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./src/setupTests.ts'],
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    exclude: ['**/node_modules/**', '**/dist/**'],
     coverage: {
-      provider: 'v8',
-      reporter: ['text', 'lcov', 'html'],
-      exclude: [
-        'node_modules/',
-        'src/setupTests.ts',
-        '**/*.d.ts',
-        '**/*.test.ts',
-        '**/*.test.tsx'
-      ]
+      reporter: ['text', 'json', 'html'],
+      exclude: ['node_modules/', 'src/setupTests.ts', 'src/**/*.d.ts', 'src/types/**'],
+      thresholds: {
+        statements: 80,
+        branches: 75,
+        functions: 80,
+        lines: 80,
+      },
     },
-    include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
-    exclude: ['node_modules', 'dist'],
-    deps: {
-      inline: ['@testing-library/react']
+    testTimeout: 20000,
+    hookTimeout: 20000,
+    pool: 'forks', // Use process isolation for tests
+    poolOptions: {
+      threads: {
+        singleThread: false,
+      },
+      forks: {
+        isolate: true,
+      },
+    },
+    retry: 2,
+    maxConcurrency: 10,
+    sequence: {
+      shuffle: true, // Randomize test order
+    },
+    environmentOptions: {
+      jsdom: {
+        resources: 'usable',
+      },
     },
     mockReset: true,
-    restoreMocks: true,
-    clearMocks: true,
-    testTimeout: 20000,
-    typecheck: {
-      tsconfig: './tsconfig.json',
-      include: ['src/**/*.ts', 'src/**/*.tsx']
-    }
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src')
-    }
-  }
-});
+      '@': path.resolve(__dirname, './src'),
+      '@test': path.resolve(__dirname, './src/__tests__'),
+    },
+  },
+})

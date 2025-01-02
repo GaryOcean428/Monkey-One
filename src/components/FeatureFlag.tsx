@@ -1,4 +1,4 @@
-import { useRemoteConfig } from '@/lib/firebase/hooks/useRemoteConfig';
+import { useRemoteConfig } from '../lib/firebase/hooks/useRemoteConfig';
 
 interface FeatureFlagProps {
   flagKey: string;

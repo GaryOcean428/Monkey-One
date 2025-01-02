@@ -2,7 +2,7 @@ import { getDatabase, ref, push, set, get } from 'firebase/database';
 import { getAuth } from 'firebase/auth';
 import * as tf from '@tensorflow/tfjs';
 import { database, isDemo } from '../firebase';
-import type { Message } from '@/types';
+import type { Message } from '../../types';
 
 export interface Feedback {
   id: string;

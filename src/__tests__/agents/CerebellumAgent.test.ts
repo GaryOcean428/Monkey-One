@@ -1,94 +1,92 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { CerebellumAgent } from '@/lib/agents/core/CerebellumAgent';
-import { AgentType, MotorPattern } from '@/types';
+import { expect, describe, it, vi, beforeEach } from 'vitest';
+import { CerebellumAgent } from '../../lib/agents/core/CerebellumAgent';
+import { memoryManager } from '../../lib/memory';
+import { MessageType } from '../../lib/types/core';
 
-class TestCerebellumAgent extends CerebellumAgent {
-  constructor() {
-    super('test-id', 'Test Agent');
+vi.mock('../../lib/memory', () => ({
+  memoryManager: {
+    add: vi.fn(),
+    search: vi.fn().mockResolvedValue([])
   }
-
-  // Make protected method public for testing
-  public async testExecuteMotorPattern(pattern: MotorPattern) {
-    return this.executeMotorPattern(pattern);
-  }
-}
-import { Message, MessageType } from '@/types';
+}));
 
 describe('CerebellumAgent', () => {
   let agent: CerebellumAgent;
 
   beforeEach(() => {
-    vi.clearAllMocks();
-    agent = new TestCerebellumAgent();
+    agent = new CerebellumAgent();
   });
 
-  describe('initialization', () => {
-    it('should initialize with correct properties', () => {
-      expect(agent.id).toBe('cerebellum-1');
-      expect(agent.role).toBe('motor_coordinator');
-      expect(agent.capabilities).toContainEqual(
-        expect.objectContaining({ name: 'motor_learning' })
-      );
-    });
-
-    it('should load existing motor patterns', async () => {
-      const loadPatternsSpy = vi.spyOn(agent as any, 'loadMotorPatterns');
-      await agent.initialize();
-      expect(loadPatternsSpy).toHaveBeenCalled();
-    });
+  it('should initialize with correct properties', () => {
+    expect(agent.id).toBe('cerebellum-1');
+    expect(agent.name).toBe('Cerebellum Agent');
   });
 
-  describe('motor pattern processing', () => {
-    it('should analyze motor components from message', async () => {
-      const analyzeSpy = vi.spyOn(agent as any, 'analyzeMotorComponents');
-      await agent.processMessage({
-        id: 'test',
-        type: MessageType.TASK,
-        role: 'user',
-        content: 'execute task',
-        timestamp: Date.now()
-      });
-      expect(analyzeSpy).toHaveBeenCalled();
-    });
+  it('should handle motor pattern messages', async () => {
+    const message = {
+      id: '1',
+      type: MessageType.TASK,
+      role: 'user',
+      content: 'move and rotate',
+      timestamp: Date.now()
+    };
 
-    it('should create new motor pattern if none exists', async () => {
-      const createPatternSpy = vi.spyOn(agent as any, 'createNewPattern');
-      await agent.processMessage({
-        id: 'test',
-        type: MessageType.TASK,
-        role: 'user',
-        content: 'new task',
-        timestamp: Date.now()
-      });
-      expect(createPatternSpy).toHaveBeenCalled();
-    });
+    const response = await agent.processMessage(message);
+    expect(response.content).toContain('Executed motor pattern');
   });
 
-  describe('learning and optimization', () => {
-    it('should update learning metrics after execution', async () => {
-      const updateMetricsSpy = vi.spyOn(agent as any, 'updateLearningMetrics');
-      await agent.processMessage({
-        id: 'test',
-        type: MessageType.TASK,
-        role: 'user',
-        content: 'task execution',
-        timestamp: Date.now()
-      });
-      expect(updateMetricsSpy).toHaveBeenCalled();
-    });
+  it('should store motor patterns', async () => {
+    const message = {
+      id: '1',
+      type: MessageType.TASK,
+      role: 'user',
+      content: 'move and rotate',
+      timestamp: Date.now()
+    };
 
-    it('should optimize pattern timing based on accuracy', async () => {
-      const optimizeSpy = vi.spyOn(agent as any, 'optimizePerformance');
-      await agent.testExecuteMotorPattern({
-      id: 'test',
-      sequence: ['move'],
-      timing: [1000],
-      accuracy: 0.5,
-      confidence: 0.1,
-      usageCount: 0,
-      lastUsed: Date.now()
-    });
-      expect(optimizeSpy).toHaveBeenCalled();
-    });
+    await agent.processMessage(message);
+    expect(memoryManager.add).toHaveBeenCalled();
+  });
+
+  it('should handle errors gracefully', async () => {
+    const message = {
+      id: '1',
+      type: MessageType.TASK,
+      role: 'user',
+      content: '',
+      timestamp: Date.now()
+    };
+
+    const response = await agent.processMessage(message);
+    expect(response.content).toContain('error');
+  });
+
+  it('should track learning metrics', async () => {
+    const message = {
+      id: '1',
+      type: MessageType.TASK,
+      role: 'user',
+      content: 'move and rotate',
+      timestamp: Date.now()
+    };
+
+    await agent.processMessage(message);
+    const metrics = agent.getLearningMetrics();
+    expect(metrics.errorRate).toBeDefined();
+    expect(metrics.refinementLevel).toBeDefined();
+  });
+
+  it('should maintain motor patterns', async () => {
+    const message = {
+      id: '1',
+      type: MessageType.TASK,
+      role: 'user',
+      content: 'move and rotate',
+      timestamp: Date.now()
+    };
+
+    await agent.processMessage(message);
+    const patterns = agent.getMotorPatterns();
+    expect(patterns.length).toBeGreaterThan(0);
   });
 });

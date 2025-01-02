@@ -1,4 +1,4 @@
-import { Agent, Message, MessageType, MemoryItem, MemoryType, AgentStatus } from '../../types';
+import { Agent, Message, MemoryItem, MemoryType } from '../../types/core';
 import { RuntimeError } from '../errors/AgentErrors';
 
 export interface SessionOptions {
@@ -21,8 +21,9 @@ export class AgentSession {
   private history: Message[] = [];
   private memory: MemoryItem[] = [];
   private context: Record<string, any> = {};
-  private status: AgentStatus = AgentStatus.IDLE;
+  private status: string = 'AVAILABLE';
   private metadata: Record<string, any> = {};
+  private cleanupInterval?: NodeJS.Timer;
 
   constructor(agent: Agent, options: SessionOptions = {}) {
     this.agent = agent;
@@ -32,6 +33,12 @@ export class AgentSession {
       persistenceEnabled: options.persistenceEnabled ?? defaultOptions.persistenceEnabled,
       saveInterval: options.saveInterval ?? defaultOptions.saveInterval
     };
+
+    if (this.options.saveInterval > 0) {
+      this.cleanupInterval = setInterval(() => {
+        this.save();
+      }, this.options.saveInterval);
+    }
   }
 
   getId(): string {
@@ -52,7 +59,7 @@ export class AgentSession {
     };
   }
 
-  async addMessage(message: Message): Promise<void> {
+  async handleMessage(message: Message): Promise<void> {
     if (!message.type || !message.content) {
       throw new RuntimeError('Invalid message: type and content are required');
     }
@@ -96,7 +103,7 @@ export class AgentSession {
     return this.context[key];
   }
 
-  async updateStatus(status: AgentStatus): Promise<void> {
+  async updateStatus(status: string): Promise<void> {
     this.status = status;
   }
 
@@ -125,7 +132,10 @@ export class AgentSession {
   }
 
   dispose(): void {
-    // Cleanup logic
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = undefined;
+    }
     this.clear();
   }
 }

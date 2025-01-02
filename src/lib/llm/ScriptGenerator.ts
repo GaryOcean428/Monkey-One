@@ -1,5 +1,5 @@
 import { llmManager } from './providers';
-import type { Message } from '@/types';
+import type { Message } from '../../types';
 
 interface GeneratedScript {
   language: 'python' | 'javascript';

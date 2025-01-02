@@ -1,4 +1,4 @@
-import type { Message } from '../../types';
+import type { Message } from '../types/core';
 
 export class SecurityMiddleware {
   private allowedRoles: string[] = ['user', 'assistant', 'system'];

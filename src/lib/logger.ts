@@ -1,20 +1,37 @@
-// Simple logger implementation
-class Logger {
-  error(...args: any[]) {
-    console.error(...args);
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// Simple logger implementation with type-safe console access
+interface LoggerInterface {
+  error(message: string, ...args: unknown[]): void
+  warn(message: string, ...args: unknown[]): void
+  info(message: string, ...args: unknown[]): void
+  debug(message: string, ...args: unknown[]): void
+}
+
+class Logger implements LoggerInterface {
+  private log(level: 'error' | 'warn' | 'info' | 'debug', message: string, ...args: unknown[]) {
+    try {
+      // eslint-disable-next-line no-console
+      globalThis.console[level](message, ...args)
+    } catch {
+      // Fail silently if console is not available
+    }
   }
 
-  warn(...args: any[]) {
-    console.warn(...args);
+  error(message: string, ...args: unknown[]) {
+    this.log('error', message, ...args)
   }
 
-  info(...args: any[]) {
-    console.info(...args);
+  warn(message: string, ...args: unknown[]) {
+    this.log('warn', message, ...args)
   }
 
-  debug(...args: any[]) {
-    console.debug(...args);
+  info(message: string, ...args: unknown[]) {
+    this.log('info', message, ...args)
+  }
+
+  debug(message: string, ...args: unknown[]) {
+    this.log('debug', message, ...args)
   }
 }
 
-export const logger = new Logger();
+export const logger = new Logger()

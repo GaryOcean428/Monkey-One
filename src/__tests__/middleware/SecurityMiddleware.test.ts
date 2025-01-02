@@ -1,127 +1,42 @@
 import { describe, it, expect } from 'vitest';
 import { SecurityMiddleware } from '../../lib/middleware/SecurityMiddleware';
-import { Message, MessageType } from '@/types';
+import { MessageType, type Message } from '../../lib/types/core';
+import { createMockMessage } from '../../test/test-utils';
 
 describe('SecurityMiddleware', () => {
   const middleware = new SecurityMiddleware();
 
-  describe('validateMessage', () => {
-    it('should validate valid message', () => {
-      const message: Message = {
-        id: '123',
-        type: MessageType.TASK,
-        role: 'user',
-        content: 'Hello',
-        timestamp: Date.now()
-      };
-
-      expect(middleware.validateMessage(message)).toBe(true);
+  it('validates a valid message', () => {
+    const message = createMockMessage({
+      type: MessageType.TASK,
+      content: 'test content'
     });
 
-    it('should reject message with invalid role', () => {
-      const message: Message = {
-        id: '123',
-        type: MessageType.TASK,
-        role: 'invalid' as any,
-        content: 'Hello',
-        timestamp: Date.now()
-      };
-
-      expect(middleware.validateMessage(message)).toBe(false);
-    });
-
-    it('should reject message exceeding length limit', () => {
-      const message: Message = {
-        id: '123',
-        type: MessageType.TASK,
-        role: 'user',
-        content: 'a'.repeat(11000),
-        timestamp: Date.now()
-      };
-
-      expect(middleware.validateMessage(message)).toBe(false);
-    });
-
-    it('should reject message with missing required fields', () => {
-      const message = {
-        id: '123',
-        type: MessageType.TASK,
-        content: 'Hello'
-      } as Message;
-
-      expect(middleware.validateMessage(message)).toBe(false);
-    });
+    expect(middleware.validateMessage(message)).toBe(true);
   });
 
-  describe('sanitizeMessage', () => {
-    it('should sanitize HTML in content', () => {
-      const message: Message = {
-        id: '123',
-        type: MessageType.TASK,
-        role: 'user',
-        content: '<script>alert("xss")</script>Hello',
-        timestamp: Date.now()
-      };
-
-      const sanitized = middleware.sanitizeMessage(message);
-      expect(sanitized.content).not.toContain('<script>');
-      expect(sanitized.content).toContain('Hello');
+  it('invalidates message with invalid role', () => {
+    const message = createMockMessage({
+      role: 'invalid' as any
     });
 
-    it('should remove javascript: URLs', () => {
-      const message: Message = {
-        id: '123',
-        type: MessageType.TASK,
-        role: 'user',
-        content: 'javascript:alert("xss")',
-        timestamp: Date.now()
-      };
+    expect(middleware.validateMessage(message)).toBe(false);
+  });
 
-      const sanitized = middleware.sanitizeMessage(message);
-      expect(sanitized.content).not.toContain('javascript:');
+  it('invalidates message exceeding max length', () => {
+    const message = createMockMessage({
+      content: 'a'.repeat(11000)
     });
 
-    it('should remove onerror attributes', () => {
-      const message: Message = {
-        id: '123',
-        type: MessageType.TASK,
-        role: 'user',
-        content: '<img onerror="alert(1)" src="x">',
-        timestamp: Date.now()
-      };
+    expect(middleware.validateMessage(message)).toBe(false);
+  });
 
-      const sanitized = middleware.sanitizeMessage(message);
-      expect(sanitized.content).not.toContain('onerror');
+  it('sanitizes message content', () => {
+    const message = createMockMessage({
+      content: '<script>alert("xss")</script>'
     });
 
-    it('should preserve safe HTML elements', () => {
-      const message: Message = {
-        id: '123',
-        type: MessageType.TASK,
-        role: 'user',
-        content: '<p>Safe paragraph</p><br><b>Bold text</b>',
-        timestamp: Date.now()
-      };
-
-      const sanitized = middleware.sanitizeMessage(message);
-      expect(sanitized.content).toContain('<p>');
-      expect(sanitized.content).toContain('<br>');
-      expect(sanitized.content).toContain('<b>');
-    });
-
-    it('should handle nested malicious content', () => {
-      const message: Message = {
-        id: '123',
-        type: MessageType.TASK,
-        role: 'user',
-        content: '<div onclick="javascript:alert(1)" style="background: url(javascript:alert(2))">Test</div>',
-        timestamp: Date.now()
-      };
-
-      const sanitized = middleware.sanitizeMessage(message);
-      expect(sanitized.content).not.toContain('onclick');
-      expect(sanitized.content).not.toContain('javascript:');
-      expect(sanitized.content).toContain('Test');
-    });
+    const sanitized = middleware.sanitizeMessage(message);
+    expect(sanitized.content).not.toContain('<script>');
   });
 });

@@ -1,101 +1,41 @@
-import { useEffect, lazy, Suspense, useState } from 'react';
-import { Sidebar } from './components/Sidebar';
-import { Header } from './components/Header';
-import { ErrorBoundary } from './components/ErrorBoundary';
-import { TooltipProvider } from './components/ui/tooltip';
-import { SettingsProvider, useSettings } from './context/SettingsContext';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { LoginForm } from './components/Auth/LoginForm';
-import { SignUpForm } from './components/Auth/SignUpForm';
-import { ProfileManager } from './components/Profile/ProfileManager';
-import { useAgentStore } from './store/agentStore';
+import React from 'react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ThemeProvider } from './components/ThemeProvider'
+import { ModalProvider } from './contexts/ModalContext'
+import { TooltipProvider } from './components/ui/tooltip'
+import { Toaster } from './components/ui/toaster'
+import { Outlet } from 'react-router-dom'
+import { Sidebar } from './components/Sidebar'
 
-// Lazy load heavy components
-const MainPanel = lazy(() => import('./components/MainPanel').then(module => ({ default: module.MainPanel })));
-
-// Loading fallback
-const LoadingFallback = () => (
-  <div className="flex items-center justify-center h-full">
-    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-  </div>
-);
-
-function AuthenticatedContent() {
-  const { settings } = useSettings();
-  const { user } = useAuth();
-  const [isSignUp, setIsSignUp] = useState(false);
-  const initializeAgents = useAgentStore(state => state.initializeAgents);
-
-  useEffect(() => {
-    document.documentElement.classList.toggle('dark', settings.theme === 'dark');
-  }, [settings.theme]);
-
-  useEffect(() => {
-    if (user) {
-      initializeAgents().catch(console.error);
-    }
-  }, [user, initializeAgents]);
-
-  if (!user) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="w-full max-w-md p-8">
-          {isSignUp ? (
-            <>
-              <SignUpForm />
-              <button
-                onClick={() => setIsSignUp(false)}
-                className="mt-4 w-full text-center text-sm text-gray-600 hover:text-gray-900"
-              >
-                Already have an account? Sign in
-              </button>
-            </>
-          ) : (
-            <>
-              <LoginForm />
-              <button
-                onClick={() => setIsSignUp(true)}
-                className="mt-4 w-full text-center text-sm text-gray-600 hover:text-gray-900"
-              >
-                Don't have an account? Sign up
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex h-screen bg-background">
-      <Sidebar />
-      <main className="flex-1 flex flex-col">
-        <Header />
-        <ErrorBoundary>
-          <Suspense fallback={<LoadingFallback />}>
-            <ProfileManager />
-            <MainPanel />
-          </Suspense>
-        </ErrorBoundary>
-      </main>
-    </div>
-  );
-}
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      cacheTime: 1000 * 60 * 30, // 30 minutes
+      retry: 3,
+      refetchOnWindowFocus: false,
+    },
+  },
+})
 
 function App() {
   return (
-    <ErrorBoundary>
-      <SettingsProvider>
-        <AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <ModalProvider>
           <TooltipProvider>
-            <Suspense fallback={<LoadingFallback />}>
-              <AuthenticatedContent />
-            </Suspense>
+            <div className="flex h-screen">
+              <Sidebar />
+              <main className="flex-1 overflow-auto">
+                <Outlet />
+              </main>
+            </div>
+            <Toaster />
           </TooltipProvider>
-        </AuthProvider>
-      </SettingsProvider>
-    </ErrorBoundary>
-  );
+        </ModalProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  )
 }
 
-export default App;
+export default App

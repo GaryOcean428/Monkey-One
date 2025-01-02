@@ -1,4 +1,4 @@
-import { PineconeClient } from '@pinecone-database/pinecone';
+import { Pinecone } from '@pinecone-database/pinecone';
 
 export interface VectorMetadata {
   id: string;
@@ -17,7 +17,8 @@ export interface SearchResult {
 
 export class VectorStore {
   private static instance: VectorStore;
-  private client: PineconeClient;
+  private client: Pinecone;
+  private index: any;
   private namespace: string;
   private dimension: number;
 
@@ -27,7 +28,6 @@ export class VectorStore {
   ) {
     this.namespace = namespace;
     this.dimension = dimension;
-    this.client = new PineconeClient();
   }
 
   public static async getInstance(
@@ -42,10 +42,20 @@ export class VectorStore {
   }
 
   private async initialize(): Promise<void> {
-    await this.client.init({
-      apiKey: process.env.PINECONE_API_KEY!,
-      environment: process.env.PINECONE_ENVIRONMENT!
-    });
+    if (!this.client) {
+      try {
+        // Initialize with only apiKey
+        this.client = new Pinecone({
+          apiKey: import.meta.env.VITE_PINECONE_API_KEY
+        });
+        
+        // Configure environment after initialization
+        this.client.environment = import.meta.env.VITE_PINECONE_ENVIRONMENT;
+      } catch (error) {
+        console.error('Failed to initialize Pinecone client:', error);
+        throw error;
+      }
+    }
   }
 
   public async storeEmbedding(

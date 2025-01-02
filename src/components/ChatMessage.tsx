@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle2, XCircle, Clock, User, Bot } from 'lucide-react';
 import type { Message } from '../types';
-import { cn } from '@/lib/utils';
+import { cn } from '../lib/utils';
 import { MarkdownRenderer } from './chat/MarkdownRenderer';
 
 interface ChatMessageProps {

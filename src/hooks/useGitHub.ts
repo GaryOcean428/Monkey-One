@@ -1,46 +1,49 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react'
 
 export function useGitHub() {
-  const [searchResults, setSearchResults] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isConfigured, setIsConfigured] = useState(false);
+  const [searchResults, setSearchResults] = useState([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [isConfigured, _setIsConfigured] = useState(false)
 
-  const searchRepositories = useCallback(async (query: string) => {
-    setIsLoading(true);
+  const searchRepositories = useCallback(async (_query: string) => {
+    setIsLoading(true)
     try {
       // Implementation
-      setSearchResults([]);
+      setSearchResults([])
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  }, []);
+  }, [])
 
-  const getBranches = useCallback(async (owner: string, repo: string) => {
+  const getBranches = useCallback(async (_owner: string, _repo: string) => {
     // Implementation
-  }, []);
+  }, [])
 
-  const getCommits = useCallback(async (owner: string, repo: string, branch: string) => {
+  const getCommits = useCallback(async (_owner: string, _repo: string) => {
     // Implementation
-  }, []);
+  }, [])
 
-  const getPullRequests = useCallback(async (owner: string, repo: string) => {
+  const getPullRequests = useCallback(async (_owner: string, _repo: string) => {
     // Implementation
-  }, []);
+  }, [])
 
-  const initializeRepository = useCallback(async (params: { name: string, description: string }) => {
-    // Implementation
-  }, []);
+  const initializeRepository = useCallback(
+    async (_params: { name: string; description: string }) => {
+      // Implementation
+    },
+    []
+  )
 
-  const connectToRepository = useCallback(async (url: string) => {
+  const connectToRepository = useCallback(async (_url: string) => {
     // Implementation
-  }, []);
+  }, [])
 
   const clearError = useCallback(() => {
-    setError(null);
-  }, []);
+    setError(null)
+  }, [])
 
   return {
     searchRepositories,
@@ -53,6 +56,6 @@ export function useGitHub() {
     isLoading,
     error,
     isConfigured,
-    clearError
-  };
+    clearError,
+  }
 }

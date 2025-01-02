@@ -1,98 +1,68 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { Message, MessageType } from '@/types';
-import { AgentRuntime } from '@/lib/runtime/AgentRuntime';
-import { BaseAgent } from '@/lib/agents/base';
-
-class TestAgent extends BaseAgent {
-  constructor() {
-    super('test-id', 'Test Agent', 'tester', [
-      { name: 'test', description: 'Test capability', version: '1.0.0' }
-    ]);
-  }
-
-  async processMessage() {
-    return {
-      id: 'test',
-      type: MessageType.RESPONSE,
-      role: 'assistant',
-      content: 'test response',
-      timestamp: Date.now()
-    };
-  }
-}
+import { expect, describe, it, beforeEach, vi } from 'vitest';
+import { AgentRuntime } from '../../lib/runtime/AgentRuntime';
+import { BaseAgent } from '../../lib/agents/base/BaseAgent';
+import { Message, MessageType } from '../../lib/types/core';
 
 describe('AgentRuntime', () => {
   let runtime: AgentRuntime;
-  let agent: TestAgent;
+  let agent: BaseAgent;
 
   beforeEach(() => {
-    vi.clearAllMocks();
-    agent = new TestAgent();
+    agent = new BaseAgent();
     runtime = new AgentRuntime(agent);
+    vi.spyOn(agent, 'processMessage');
   });
 
-  describe('initialization', () => {
-    it('should initialize with an agent', () => {
-      expect(runtime.getAgent()).toBe(agent);
-    });
-
-    it('should create a message queue', () => {
-      expect(runtime['messageQueue']).toBeDefined();
-    });
-
-    it('should start message processing', async () => {
-      const processSpy = vi.spyOn(runtime as any, 'processQueue');
-      await runtime.startProcessing();
-      expect(processSpy).toHaveBeenCalled();
-    });
+  it('should initialize with an agent', () => {
+    expect(runtime.getAgent()).toBe(agent);
   });
 
-  describe('message handling', () => {
-    it('should enqueue messages', async () => {
-      const message = {
-        id: 'test',
-        type: MessageType.TASK,
-        role: 'user',
-        content: 'hello',
-        timestamp: Date.now()
-      };
-      await runtime.enqueueMessage(message);
-      expect(runtime['messageQueue'].size).toBe(1);
-    });
-
-    it('should process messages through the agent', async () => {
-      const processSpy = vi.spyOn(agent, 'processMessage');
-      const message = {
-        id: 'test',
-        type: MessageType.TASK,
-        role: 'user',
-        content: 'hello',
-        timestamp: Date.now()
-      };
-      await runtime.enqueueMessage(message);
-      await runtime.processQueue();
-      expect(processSpy).toHaveBeenCalled();
-    });
+  it('should start message processing', () => {
+    const spy = vi.spyOn(runtime as any, 'processQueue');
+    runtime.startProcessing();
+    expect(spy).toHaveBeenCalled();
   });
 
-  describe('lifecycle management', () => {
-    it('should stop processing on shutdown', async () => {
-      await runtime.startProcessing();
-      await runtime.shutdown();
-      expect(runtime.isActive()).toBe(false);
-    });
+  it('should enqueue messages', () => {
+    const message: Message = {
+      id: '1',
+      type: MessageType.TASK,
+      role: 'user',
+      content: 'test',
+      timestamp: Date.now()
+    };
+    runtime.enqueueMessage(message);
+    expect(runtime['messageQueue'].size()).toBe(1);
+  });
 
-    it('should process remaining messages before shutdown', async () => {
-      const message: Message = {
-        id: 'test',
-        type: MessageType.TASK,
-        role: 'user',
-        content: 'hello',
-        timestamp: Date.now()
-      };
-      await runtime.enqueueMessage(message);
-      await runtime.shutdown();
-      expect(runtime['messageQueue'].size).toBe(0);
-    });
+  it('should process messages through the agent', async () => {
+    const message: Message = {
+      id: '1',
+      type: MessageType.TASK,
+      role: 'user',
+      content: 'test',
+      timestamp: Date.now()
+    };
+    runtime.enqueueMessage(message);
+    await runtime['processQueue']();
+    expect(agent.processMessage).toHaveBeenCalledWith(message);
+  });
+
+  it('should stop processing on shutdown', async () => {
+    await runtime.shutdown();
+    expect(runtime.isActive()).toBe(false);
+  });
+
+  it('should process remaining messages before shutdown', async () => {
+    const message: Message = {
+      id: '1',
+      type: MessageType.TASK,
+      role: 'user',
+      content: 'test',
+      timestamp: Date.now()
+    };
+    runtime.enqueueMessage(message);
+    await runtime.shutdown();
+    expect(runtime['messageQueue'].size()).toBe(0);
   });
 });

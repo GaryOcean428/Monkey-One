@@ -1,12 +1,40 @@
-import { expect, afterEach, vi } from 'vitest';
-import { cleanup } from '@testing-library/react';
-import { TextDecoder, TextEncoder } from 'util';
+import '@testing-library/jest-dom'
+import { expect, afterEach, beforeAll, afterAll, vi } from 'vitest'
+import { cleanup } from '@testing-library/react'
+import * as matchers from '@testing-library/jest-dom/matchers'
+import { server } from './test/mocks/server'
 
-// Run cleanup after each test case
+// Extend Vitest's expect
+expect.extend(matchers)
+
+// Setup MSW
+beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
+afterAll(() => server.close())
 afterEach(() => {
-  cleanup();
-  vi.restoreAllMocks();
-});
+  cleanup()
+  server.resetHandlers()
+  vi.clearAllMocks()
+  vi.clearAllTimers()
+})
+
+// Mock window.performance
+Object.defineProperty(window, 'performance', {
+  value: {
+    memory: {
+      jsHeapSizeLimit: 2147483648, // 2GB
+      totalJSHeapSize: 1073741824, // 1GB
+      usedJSHeapSize: 536870912, // 512MB
+    },
+    now: () => Date.now(),
+    mark: vi.fn(),
+    measure: vi.fn(),
+    getEntriesByName: vi.fn(),
+    getEntriesByType: vi.fn(),
+    clearMarks: vi.fn(),
+    clearMeasures: vi.fn(),
+  },
+  writable: true,
+})
 
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
@@ -21,139 +49,78 @@ Object.defineProperty(window, 'matchMedia', {
     removeEventListener: vi.fn(),
     dispatchEvent: vi.fn(),
   })),
-});
+})
 
 // Mock ResizeObserver
 global.ResizeObserver = vi.fn().mockImplementation(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
   disconnect: vi.fn(),
-}));
+}))
 
-// Mock TextEncoder/TextDecoder
-global.TextEncoder = TextEncoder;
+// Mock IntersectionObserver
+global.IntersectionObserver = vi.fn().mockImplementation(() => ({
+  observe: vi.fn(),
+  unobserve: vi.fn(),
+  disconnect: vi.fn(),
+  root: null,
+  rootMargin: '',
+  thresholds: [],
+}))
 
-// Replace the TextDecoder mock with a more compatible version
-class CustomTextDecoder extends TextDecoder {
-  decode(input?: ArrayBuffer | ArrayBufferView | null, options?: { stream?: boolean }): string {
-    return super.decode(input as ArrayBuffer, options);
-  }
-}
-global.TextDecoder = CustomTextDecoder as typeof global.TextDecoder;
+// Mock TextDecoder/TextEncoder
+global.TextDecoder = vi.fn().mockImplementation(() => ({
+  decode: vi.fn(text => text),
+}))
 
-// Mock requestAnimationFrame
-global.requestAnimationFrame = (callback: FrameRequestCallback) => {
-  return setTimeout(callback, 0);
-};
+global.TextEncoder = vi.fn().mockImplementation(() => ({
+  encode: vi.fn(text => text),
+}))
 
-// Mock cancelAnimationFrame
-global.cancelAnimationFrame = (id: number) => {
-  clearTimeout(id);
-};
-
-// Mock crypto
-Object.defineProperty(global, 'crypto', {
-  value: {
-    randomUUID: () => 'test-uuid',
-    getRandomValues: (arr: Uint8Array) => {
-      for (let i = 0; i < arr.length; i++) {
-        arr[i] = Math.floor(Math.random() * 256);
-      }
-      return arr;
+// Mock WebGL context
+HTMLCanvasElement.prototype.getContext = vi.fn(contextType => {
+  if (contextType === 'webgl' || contextType === 'webgl2') {
+    return {
+      getExtension: vi.fn(),
+      getParameter: vi.fn(),
+      getShaderPrecisionFormat: vi.fn(() => ({
+        precision: 23,
+        rangeMin: 127,
+        rangeMax: 127,
+      })),
     }
   }
-});
+  return null
+})
 
-// Create a comprehensive mock for TextMetrics
-function createTextMetricsMock(text: string): TextMetrics {
-  return {
-    width: text.length * 10,
-    actualBoundingBoxAscent: 10,
-    actualBoundingBoxDescent: 5,
-    actualBoundingBoxLeft: 0,
-    actualBoundingBoxRight: text.length * 10,
-    fontBoundingBoxAscent: 12,
-    fontBoundingBoxDescent: 6,
-    emHeightAscent: 10,
-    emHeightDescent: 5,
-    hangingBaseline: 8,
-    alphabeticBaseline: 10,
-    ideographicBaseline: 12
-  };
+// Mock Fetch API
+global.fetch = vi.fn()
+global.Request = vi.fn()
+global.Response = vi.fn()
+
+// Mock localStorage
+const localStorageMock = {
+  getItem: vi.fn(),
+  setItem: vi.fn(),
+  removeItem: vi.fn(),
+  clear: vi.fn(),
+  length: 0,
+  key: vi.fn(),
 }
+Object.defineProperty(window, 'localStorage', { value: localStorageMock })
 
-// Comprehensive mock for CanvasRenderingContext2D
-function createCanvasContextMock(): CanvasRenderingContext2D {
-  const canvas = document.createElement('canvas');
-  
-  const mockContext: CanvasRenderingContext2D = {
-    canvas,
-    globalAlpha: 1.0,
-    globalCompositeOperation: 'source-over',
-    fillStyle: '#000000',
-    strokeStyle: '#000000',
-    lineCap: 'butt',
-    lineJoin: 'miter',
-    lineWidth: 1.0,
-    miterLimit: 10.0,
-    shadowBlur: 0,
-    shadowColor: 'rgba(0,0,0,0)',
-    shadowOffsetX: 0,
-    shadowOffsetY: 0,
-    filter: 'none',
-    imageSmoothingEnabled: true,
-    imageSmoothingQuality: 'high',
-    beginPath: vi.fn(),
-    closePath: vi.fn(),
-    moveTo: vi.fn(),
-    lineTo: vi.fn(),
-    stroke: vi.fn(),
-    fill: vi.fn(),
-    rect: vi.fn(),
-    clearRect: vi.fn(),
-    fillRect: vi.fn(),
-    strokeRect: vi.fn(),
-    arc: vi.fn(),
-    arcTo: vi.fn(),
-    scale: vi.fn(),
-    rotate: vi.fn(),
-    translate: vi.fn(),
-    transform: vi.fn(),
-    setTransform: vi.fn(),
-    resetTransform: vi.fn(),
-    save: vi.fn(),
-    restore: vi.fn(),
-    clip: vi.fn(),
-    isPointInPath: vi.fn(),
-    isPointInStroke: vi.fn(),
-    drawImage: vi.fn(),
-    createLinearGradient: vi.fn(),
-    createRadialGradient: vi.fn(),
-    createConicGradient: vi.fn(),
-    createPattern: vi.fn(),
-    measureText: vi.fn((text: string) => createTextMetricsMock(text)),
-    fillText: vi.fn(),
-    strokeText: vi.fn(),
-    getContextAttributes: vi.fn(),
-    getLineDash: vi.fn(),
-    setLineDash: vi.fn(),
-    createImageData: vi.fn(),
-    getImageData: vi.fn(),
-    putImageData: vi.fn(),
-    quadraticCurveTo: vi.fn(),
-    bezierCurveTo: vi.fn(),
-    ellipse: vi.fn(),
-  } as unknown as CanvasRenderingContext2D;
-
-  return mockContext;
+// Mock sessionStorage
+const sessionStorageMock = {
+  getItem: vi.fn(),
+  setItem: vi.fn(),
+  removeItem: vi.fn(),
+  clear: vi.fn(),
+  length: 0,
+  key: vi.fn(),
 }
+Object.defineProperty(window, 'sessionStorage', { value: sessionStorageMock })
 
-// Mock canvas getContext
-(HTMLCanvasElement.prototype.getContext as any) = function(contextId: string) {
-  switch (contextId) {
-    case '2d':
-      return createCanvasContextMock();
-    default:
-      return null;
-  }
-};
+// Mock console methods for cleaner test output
+console.error = vi.fn()
+console.warn = vi.fn()
+console.log = vi.fn()

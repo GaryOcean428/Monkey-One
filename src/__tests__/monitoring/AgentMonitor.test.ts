@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { Agent, AgentType, AgentStatus, Message, MessageType, AgentCapability } from '@/types';
-import { Logger } from '@/utils/logger';
-import { RuntimeError } from '@/lib/errors/AgentErrors';
-import { AgentMonitor } from '@/lib/monitoring/AgentMonitor';
+import { Agent, AgentType, AgentStatus, Message, MessageType, AgentCapability } from '../../types';
+import { Logger } from '../../utils/logger';
+import { RuntimeError } from '../../lib/errors/AgentErrors';
+import { AgentMonitor } from '../../lib/monitoring/AgentMonitor';
 
 const logger = new Logger('test');
 
@@ -71,9 +71,12 @@ describe('AgentMonitor', () => {
       monitor.registerAgent(mockAgent)
       const metrics = monitor.getAgentMetrics(mockAgent.id)
       
-      expect(metrics).toBeDefined()
-      expect(metrics.messageCount).toBe(0)
-      expect(metrics.status).toBe(AgentStatus.IDLE)
+      expect(metrics).toEqual({
+        messageCount: 0,
+        errorCount: 0,
+        averageResponseTime: 0,
+        status: AgentStatus.IDLE
+      })
     })
 
     it('should throw error when registering duplicate agent', () => {
@@ -97,8 +100,12 @@ describe('AgentMonitor', () => {
       monitor.trackMessage(mockMessage)
       const metrics = monitor.getAgentMetrics(mockAgent.id)
       
-      expect(metrics.messageCount).toBe(1)
-      expect(metrics.errorCount).toBe(0)
+      expect(metrics).toEqual({
+        messageCount: 1,
+        errorCount: 0,
+        averageResponseTime: 0,
+        status: AgentStatus.IDLE
+      })
     })
 
     it('should track error message', () => {

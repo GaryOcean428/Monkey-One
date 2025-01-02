@@ -115,13 +115,26 @@ export class PerformanceOptimizer {
       
       const analysis = await this.analyzeCacheUsage();
       
-      // Pre-fetch predicted data
-      await Promise.all(
-        analysis.predictedAccess.map(key => this.preFetchData(key))
-      );
+      // Implement LRU cache eviction
+      if (metrics.memoryUsage > this.MEMORY_THRESHOLD) {
+        const unusedEntries = analysis.unusedEntries.slice(0, Math.ceil(analysis.unusedEntries.length * 0.2));
+        await this.cleanupCache(unusedEntries);
+        logger.info(`Cleaned up ${unusedEntries.length} unused cache entries`);
+      }
 
-      // Clean up unused entries
-      await this.cleanupCache(analysis.unusedEntries);
+      // Pre-fetch frequently accessed data
+      const frequentKeys = analysis.frequentlyAccessed.slice(0, 10);
+      await Promise.all(
+        frequentKeys.map(key => this.preFetchData(key))
+      );
+      logger.info(`Pre-fetched ${frequentKeys.length} frequently accessed items`);
+
+      // Predict and pre-fetch next likely accesses
+      const predictedKeys = this.predictNextAccesses(analysis.accesses).slice(0, 5);
+      await Promise.all(
+        predictedKeys.map(key => this.preFetchData(key))
+      );
+      logger.info(`Pre-fetched ${predictedKeys.length} predicted items`);
 
       monitoring.recordMetric('cache_optimization', 1);
     }

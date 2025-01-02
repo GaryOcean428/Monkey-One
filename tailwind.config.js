@@ -1,7 +1,12 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: ["class"],
-  content: ["./src/**/*.{ts,tsx}"],
+  content: [
+    './pages/**/*.{ts,tsx}',
+    './components/**/*.{ts,tsx}',
+    './app/**/*.{ts,tsx}',
+    './src/**/*.{ts,tsx}',
+  ],
   theme: {
     container: {
       center: true,
@@ -12,6 +17,12 @@ module.exports = {
     },
     extend: {
       colors: {
+        'neon-pink': 'rgb(255, 0, 128)',
+        'neon-blue': 'rgb(0, 191, 255)',
+        'neon-purple': 'rgb(187, 0, 255)',
+        'bg-darker': 'rgb(4, 4, 8)',
+        'bg-dark': 'rgb(8, 8, 13)',
+        'bg-light': 'rgb(24, 24, 36)',
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -53,12 +64,12 @@ module.exports = {
       },
       keyframes: {
         "accordion-down": {
-          from: { height: "0" },
+          from: { height: 0 },
           to: { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
           from: { height: "var(--radix-accordion-content-height)" },
-          to: { height: "0" },
+          to: { height: 0 },
         },
       },
       animation: {
@@ -67,5 +78,5 @@ module.exports = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate"), require("@tailwindcss/forms")],
-};
+  plugins: [require("tailwindcss-animate")],
+}

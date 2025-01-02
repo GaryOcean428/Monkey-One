@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Circle, ArrowRight, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
-import type { WorkflowDefinition } from '@/types';
+import type { WorkflowDefinition } from '../../types';
 
 interface WorkflowVisualizerProps {
   workflow: WorkflowDefinition;

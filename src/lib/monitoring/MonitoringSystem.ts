@@ -1,6 +1,6 @@
-import { EventEmitter } from 'events';
-import { logger } from '../../utils/logger';
-import { captureException } from '../../utils/sentry';
+/* eslint-disable no-undef */
+import { logger } from '../../utils/logger'
+import { captureException } from '../../utils/sentry'
 import {
   memoryUsage,
   agentProcessingTime,
@@ -8,190 +8,245 @@ import {
   cacheSize,
   errorCount,
   brainActivityGauge,
-  neuralNetworkMetrics
-} from '../../utils/metrics';
+  neuralNetworkMetrics,
+} from '../../utils/metrics'
+
+type EventListener = (...args: unknown[]) => void
 
 /**
  * MonitoringSystem provides centralized monitoring and metrics collection
  * for the entire application. It handles performance tracking, resource
  * utilization, and system health monitoring.
  */
-export class MonitoringSystem extends EventEmitter {
-  private static instance: MonitoringSystem;
-  private readonly METRICS_INTERVAL = 60000; // 1 minute
-  private readonly CLEANUP_INTERVAL = 3600000; // 1 hour
-  private metricsTimer: NodeJS.Timer;
-  private cleanupTimer: NodeJS.Timer;
-  private metrics: Map<string, number> = new Map();
-  private operationTimers: Map<string, number> = new Map();
+export class MonitoringSystem {
+  private static instance: MonitoringSystem
+  private readonly METRICS_INTERVAL = 60000 // 1 minute
+  private readonly CLEANUP_INTERVAL = 3600000 // 1 hour
+  private metricsTimer?: number
+  private cleanupTimer?: number
+  private metrics: Map<string, number> = new Map()
+  private operationTimers: Map<string, number> = new Map()
+  private listeners: { [event: string]: EventListener[] } = {}
 
   private constructor() {
-    super();
-    this.startMetricsCollection();
-    this.startCleanupInterval();
+    this.startMetricsCollection()
+    this.startCleanupInterval()
   }
 
-  /**
-   * Gets the singleton instance of MonitoringSystem
-   */
-  static getInstance(): MonitoringSystem {
+  public static getInstance(): MonitoringSystem {
     if (!MonitoringSystem.instance) {
-      MonitoringSystem.instance = new MonitoringSystem();
+      MonitoringSystem.instance = new MonitoringSystem()
     }
-    return MonitoringSystem.instance;
+    return MonitoringSystem.instance
   }
 
-  /**
-   * Starts periodic metrics collection
-   */
   private startMetricsCollection(): void {
-    this.metricsTimer = setInterval(() => {
-      try {
-        this.collectSystemMetrics();
-      } catch (error) {
-        logger.error('Failed to collect metrics:', error);
-        captureException(error);
-      }
-    }, this.METRICS_INTERVAL);
+    try {
+      this.collectSystemMetrics()
+      const interval = typeof window !== 'undefined' ? window.setInterval : setInterval
+      this.metricsTimer = interval(() => {
+        this.collectSystemMetrics()
+      }, this.METRICS_INTERVAL)
+    } catch (error) {
+      logger.error('Failed to start metrics collection:', error)
+      captureException(error)
+    }
   }
 
-  /**
-   * Starts periodic cleanup of old metrics
-   */
   private startCleanupInterval(): void {
-    this.cleanupTimer = setInterval(() => {
-      try {
-        this.cleanupOldMetrics();
-      } catch (error) {
-        logger.error('Failed to cleanup metrics:', error);
-        captureException(error);
-      }
-    }, this.CLEANUP_INTERVAL);
+    try {
+      const interval = typeof window !== 'undefined' ? window.setInterval : setInterval
+      this.cleanupTimer = interval(() => {
+        this.cleanupOldMetrics()
+      }, this.CLEANUP_INTERVAL)
+    } catch (error) {
+      logger.error('Failed to start cleanup interval:', error)
+      captureException(error)
+    }
   }
 
   /**
-   * Collects system-wide metrics
+   * Collects system metrics at regular intervals
    */
   private collectSystemMetrics(): void {
-    // Memory metrics
-    const memUsage = process.memoryUsage();
-    memoryUsage.set({ type: 'heap' }, memUsage.heapUsed);
-    memoryUsage.set({ type: 'rss' }, memUsage.rss);
-    memoryUsage.set({ type: 'external' }, memUsage.external);
+    try {
+      // Memory metrics with thresholds
+      let memoryMetrics
 
-    // Cache metrics
-    const cacheStats = this.getCacheStats();
-    cacheSize.set(cacheStats.size);
-    cacheOperations.inc({ operation: 'cleanup', status: 'success' });
+      if (typeof window !== 'undefined' && window.performance?.memory) {
+        // Browser environment
+        const memUsage = window.performance.memory
+        memoryMetrics = {
+          heapUsed: memUsage.usedJSHeapSize,
+          heapTotal: memUsage.totalJSHeapSize,
+          heapLimit: memUsage.jsHeapSizeLimit,
+        }
+      } else if (typeof process !== 'undefined') {
+        // Node.js environment
+        const memUsage = process.memoryUsage()
+        memoryMetrics = {
+          heapUsed: memUsage.heapUsed,
+          heapTotal: memUsage.heapTotal,
+          external: memUsage.external,
+          rss: memUsage.rss,
+        }
+      } else {
+        // Fallback metrics
+        memoryMetrics = {
+          heapUsed: 0,
+          heapTotal: 0,
+          external: 0,
+          rss: 0,
+        }
+      }
 
-    // Brain activity metrics
-    this.collectBrainMetrics();
-  }
+      // Set memory metrics
+      Object.entries(memoryMetrics).forEach(([key, value]) => {
+        memoryUsage.set({ type: key }, value)
+      })
 
-  /**
-   * Collects brain-specific metrics
-   */
-  private collectBrainMetrics(): void {
-    const regions = ['amygdala', 'cerebellum', 'thalamus', 'hippocampus'];
-    regions.forEach(region => {
-      const activity = Math.random(); // Replace with actual activity measurement
-      brainActivityGauge.set({ region }, activity);
-    });
+      // Trigger cleanup if memory usage is high (75% of total)
+      if (memoryMetrics.heapUsed > memoryMetrics.heapTotal * 0.75) {
+        this.cleanupOldMetrics()
+      }
 
-    // Neural network performance metrics
-    const networkMetrics = {
-      accuracy: this.metrics.get('accuracy') || 0,
-      loss: this.metrics.get('loss') || 0,
-      learningRate: this.metrics.get('learningRate') || 0
-    };
+      // Cache metrics with optimization
+      const cacheStats = this.getCacheStats()
+      if (cacheStats) {
+        cacheOperations.inc({ type: 'read' }, cacheStats.reads)
+        cacheOperations.inc({ type: 'write' }, cacheStats.writes)
+        cacheSize.set(cacheStats.size)
+      }
 
-    Object.entries(networkMetrics).forEach(([metric, value]) => {
-      neuralNetworkMetrics.set({ metric }, value);
-    });
-  }
+      // Error tracking
+      const errors = this.getErrorStats()
+      if (errors) {
+        errorCount.inc({ type: 'system' }, errors.system)
+        errorCount.inc({ type: 'user' }, errors.user)
+      }
 
-  /**
-   * Gets current cache statistics
-   */
-  private getCacheStats(): { size: number; hitRate: number } {
-    return {
-      size: this.metrics.size * 100, // Approximate size in bytes
-      hitRate: (this.metrics.get('cacheHits') || 0) / 
-               (this.metrics.get('cacheTotal') || 1)
-    };
-  }
+      // Brain activity metrics
+      const brainStats = this.getBrainStats()
+      if (brainStats) {
+        brainActivityGauge.set({ type: 'neurons' }, brainStats.activeNeurons)
+        brainActivityGauge.set({ type: 'synapses' }, brainStats.activeSynapses)
+      }
 
-  /**
-   * Records a metric value
-   * @param name - Metric name
-   * @param value - Metric value
-   */
-  public recordMetric(name: string, value: number): void {
-    this.metrics.set(name, value);
-    this.emit('metric', { name, value });
-  }
+      // Neural network performance
+      const nnStats = this.getNeuralNetworkStats()
+      if (nnStats) {
+        neuralNetworkMetrics.set({ type: 'accuracy' }, nnStats.accuracy)
+        neuralNetworkMetrics.set({ type: 'loss' }, nnStats.loss)
+      }
 
-  /**
-   * Records the start of an operation
-   * @param operationId - Unique operation identifier
-   */
-  public startOperation(operationId: string): void {
-    this.operationTimers.set(operationId, Date.now());
-  }
-
-  /**
-   * Records the end of an operation and its duration
-   * @param operationId - Operation identifier
-   * @param type - Type of operation
-   */
-  public endOperation(operationId: string, type: string): void {
-    const startTime = this.operationTimers.get(operationId);
-    if (startTime) {
-      const duration = Date.now() - startTime;
-      agentProcessingTime.observe({ operation: type }, duration);
-      this.operationTimers.delete(operationId);
+      this.emit('metrics_collected', {
+        memory: memoryMetrics,
+        cache: cacheStats,
+        errors,
+        brain: brainStats,
+        neuralNetwork: nnStats,
+      })
+    } catch (error) {
+      logger.error('Error collecting system metrics:', error)
+      captureException(error)
     }
   }
 
-  /**
-   * Records an error occurrence
-   * @param type - Error type
-   * @param message - Error message
-   */
-  public recordError(type: string, message: string): void {
-    errorCount.inc({ type });
-    logger.error(`${type} error: ${message}`);
-    this.emit('error', { type, message });
-  }
-
-  /**
-   * Cleans up old metrics to prevent memory leaks
-   */
   private cleanupOldMetrics(): void {
-    const now = Date.now();
-    
-    // Clean up old operation timers
-    for (const [operationId, startTime] of this.operationTimers.entries()) {
-      if (now - startTime > 3600000) { // 1 hour timeout
-        this.operationTimers.delete(operationId);
-        this.recordError('operation_timeout', `Operation ${operationId} timed out`);
+    const now = Date.now()
+    let cleanedCount = 0
+
+    // Remove old entries
+    for (const [key, value] of this.metrics.entries()) {
+      if (now - value > 3600000) {
+        // 1 hour
+        this.metrics.delete(key)
+        cleanedCount++
       }
     }
 
-    // Reset accumulated metrics
-    this.metrics.clear();
+    // Clear old operation timers
+    this.operationTimers.clear()
+
+    logger.info(`Cleaned up ${cleanedCount} old metrics`)
   }
 
-  /**
-   * Cleans up resources
-   */
+  private getCacheStats() {
+    return {
+      reads: 0,
+      writes: 0,
+      size: this.metrics.size,
+    }
+  }
+
+  private getErrorStats() {
+    return {
+      system: 0,
+      user: 0,
+    }
+  }
+
+  private getBrainStats() {
+    return {
+      activeNeurons: 0,
+      activeSynapses: 0,
+    }
+  }
+
+  private getNeuralNetworkStats() {
+    return {
+      accuracy: 0,
+      loss: 0,
+    }
+  }
+
+  public startOperation(operationId: string): void {
+    this.operationTimers.set(operationId, Date.now())
+  }
+
+  public endOperation(operationId: string): void {
+    const startTime = this.operationTimers.get(operationId)
+    if (startTime) {
+      const duration = Date.now() - startTime
+      agentProcessingTime.observe({ operation: operationId }, duration)
+      this.operationTimers.delete(operationId)
+    }
+  }
+
+  public recordMetric(name: string, value: number): void {
+    this.metrics.set(name, value)
+  }
+
   public cleanup(): void {
-    clearInterval(this.metricsTimer);
-    clearInterval(this.cleanupTimer);
-    this.metrics.clear();
-    this.operationTimers.clear();
-    this.removeAllListeners();
+    if (this.metricsTimer) window.clearInterval(this.metricsTimer)
+    if (this.cleanupTimer) window.clearInterval(this.cleanupTimer)
+    this.metrics.clear()
+    this.operationTimers.clear()
+    this.removeAllListeners()
+  }
+
+  public on(event: string, listener: EventListener): void {
+    if (!this.listeners[event]) {
+      this.listeners[event] = []
+    }
+    this.listeners[event].push(listener)
+  }
+
+  public emit(event: string, data: unknown): void {
+    if (this.listeners[event]) {
+      this.listeners[event].forEach(listener => {
+        try {
+          listener(data)
+        } catch (error) {
+          captureException(error as Error)
+        }
+      })
+    }
+  }
+
+  public removeAllListeners(): void {
+    this.listeners = {}
   }
 }
 
-export const monitoring = MonitoringSystem.getInstance();
+export const monitoring = MonitoringSystem.getInstance()

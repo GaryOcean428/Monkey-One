@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
-import { llmManager } from '@/lib/llm/providers';
-import type { Message } from '@/types';
+import { llmManager } from '../lib/llm/providers';
+import type { Message } from '../types';
 
 export function useLLM() {
   const [isProcessing, setIsProcessing] = useState(false);

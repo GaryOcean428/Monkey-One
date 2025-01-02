@@ -1,6 +1,6 @@
 import { llmManager } from './providers';
 import { memoryManager } from '../memory';
-import type { Message } from '@/types';
+import type { Message } from '../../types';
 
 interface ProcessedResponse {
   content: string;
@@ -20,6 +20,7 @@ interface ProcessedResponse {
 export class ResponseProcessor {
   async processResponse(
     userMessage: string,
+    agentId: string,
     context: Message[] = []
   ): Promise<ProcessedResponse> {
     const startTime = Date.now();
@@ -31,8 +32,11 @@ export class ResponseProcessor {
         useSemanticSearch: true
       });
 
+      // Ensure context is an array
+      const messageContext = Array.isArray(context) ? context : [];
+
       // Generate response using LLM
-      const response = await llmManager.sendMessage(userMessage, context, {
+      const response = await llmManager.sendMessage(userMessage, messageContext, {
         useRag: true,
         documents: relevantMemories.map(m => m.content)
       });

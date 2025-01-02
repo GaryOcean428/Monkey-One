@@ -1,36 +1,36 @@
-import { BaseAgent } from '../agents/base';
-import { Message } from '../../types';
+import { BaseAgent } from '../agents/base/BaseAgent';
+import { Message } from '../../types/core';
 import { MessageQueue } from '../memory/MessageQueue';
 
 export class AgentRuntime {
   private agent: BaseAgent;
-  public messageQueue: MessageQueue;
+  private messageQueue: MessageQueue;
   private isProcessing: boolean = false;
   private processingTimeout: number | null = null;
   private abortController: AbortController | null = null;
 
   constructor(agent: BaseAgent) {
     this.agent = agent;
-    this.queue = new MessageQueue();
+    this.messageQueue = new MessageQueue();
     this.startProcessing();
   }
 
-  public startProcessing() {
+  public startProcessing(): void {
     if (this.isProcessing) return;
     
     this.isProcessing = true;
     this.processQueue();
   }
 
-  protected async processQueue() {
+  private async processQueue(): Promise<void> {
     if (this.abortController) {
       this.abortController.abort();
     }
     this.abortController = new AbortController();
 
-    while (this.isProcessing && this.queue.hasMessages()) {
+    while (this.isProcessing && !this.messageQueue.isEmpty()) {
       try {
-        const message = await this.queue.next();
+        const message = this.messageQueue.dequeue();
         if (message) {
           await this.agent.processMessage(message);
         }
@@ -42,26 +42,16 @@ export class AgentRuntime {
         console.error('Error processing message:', error);
       }
     }
-    
-    if (this.isProcessing) {
-      // Use requestAnimationFrame for browser environments
-      if (typeof window !== 'undefined') {
-        requestAnimationFrame(() => this.processQueue());
-      } else {
-        // Use setImmediate or setTimeout for Node.js
-        setImmediate(() => this.processQueue());
-      }
-    }
   }
 
-  enqueueMessage(message: Message) {
-    this.queue.add(message);
+  public enqueueMessage(message: Message): void {
+    this.messageQueue.enqueue(message);
     if (!this.isProcessing) {
       this.startProcessing();
     }
   }
 
-  async shutdown() {
+  async shutdown(): Promise<void> {
     this.isProcessing = false;
     if (this.processingTimeout !== null) {
       clearTimeout(this.processingTimeout);
@@ -71,7 +61,7 @@ export class AgentRuntime {
       this.abortController.abort();
       this.abortController = null;
     }
-    await this.queue.clear();
+    await this.messageQueue.clear();
   }
 
   getAgent(): BaseAgent {
@@ -81,4 +71,4 @@ export class AgentRuntime {
   isActive(): boolean {
     return this.isProcessing;
   }
-}
+}
