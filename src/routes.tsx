@@ -1,10 +1,11 @@
+import React from 'react'
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
 import { App } from './App'
 import { Dashboard } from './components/Dashboard'
 import { AuthCallback } from './routes/auth/AuthCallback'
 import { PasswordReset } from './routes/auth/PasswordReset'
-import { MemoryManager } from './components/Memory/MemoryManager'
-import { ProfileManager } from './components/Profile/ProfileManager'
+import { MemoryManager } from './components/memory/MemoryManager'
+import { ProfileManager } from './components/profile/ProfileManager'
 import { PrivateRoute } from './components/Auth/PrivateRoute'
 import { ChatContainer } from './components/chat/ChatContainer'
 import { AgentsPanel } from './components/agents/AgentsPanel'
@@ -18,8 +19,8 @@ import { Login } from './components/Auth/Login'
 import { Register } from './components/Auth/Register'
 
 interface ErrorFallbackProps {
-  error?: Error;
-  children: React.ReactElement;
+  error?: Error
+  children: React.ReactElement
 }
 
 const ErrorFallback = ({ error, children }: ErrorFallbackProps) => {
@@ -29,9 +30,9 @@ const ErrorFallback = ({ error, children }: ErrorFallbackProps) => {
         <h2>Something went wrong:</h2>
         <pre>{error.message}</pre>
       </div>
-    );
+    )
   }
-  return children;
+  return children
 }
 
 const router = createBrowserRouter([
@@ -45,7 +46,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <Navigate to="/dashboard" replace />
+        element: <Navigate to="/dashboard" replace />,
       },
       {
         path: 'dashboard',
@@ -53,20 +54,20 @@ const router = createBrowserRouter([
           <PrivateRoute>
             <Dashboard />
           </PrivateRoute>
-        )
+        ),
       },
       {
         path: 'auth',
         children: [
           {
             path: 'callback',
-            element: <AuthCallback />
+            element: <AuthCallback />,
           },
           {
             path: 'reset-password',
-            element: <PasswordReset />
-          }
-        ]
+            element: <PasswordReset />,
+          },
+        ],
       },
       {
         path: 'memory',
@@ -74,7 +75,7 @@ const router = createBrowserRouter([
           <PrivateRoute>
             <MemoryManager />
           </PrivateRoute>
-        )
+        ),
       },
       {
         path: 'profile',
@@ -82,7 +83,7 @@ const router = createBrowserRouter([
           <PrivateRoute>
             <ProfileManager />
           </PrivateRoute>
-        )
+        ),
       },
       {
         path: 'chat',
@@ -90,7 +91,7 @@ const router = createBrowserRouter([
           <PrivateRoute>
             <ChatContainer />
           </PrivateRoute>
-        )
+        ),
       },
       {
         path: 'agents',
@@ -98,7 +99,7 @@ const router = createBrowserRouter([
           <PrivateRoute>
             <AgentsPanel />
           </PrivateRoute>
-        )
+        ),
       },
       {
         path: 'workflow',
@@ -106,7 +107,7 @@ const router = createBrowserRouter([
           <PrivateRoute>
             <WorkflowPanel />
           </PrivateRoute>
-        )
+        ),
       },
       {
         path: 'tools',
@@ -114,7 +115,7 @@ const router = createBrowserRouter([
           <PrivateRoute>
             <ToolsPanel />
           </PrivateRoute>
-        )
+        ),
       },
       {
         path: 'documents',
@@ -122,7 +123,7 @@ const router = createBrowserRouter([
           <PrivateRoute>
             <DocumentsPanel />
           </PrivateRoute>
-        )
+        ),
       },
       {
         path: 'github',
@@ -130,7 +131,7 @@ const router = createBrowserRouter([
           <PrivateRoute>
             <GithubPanel />
           </PrivateRoute>
-        )
+        ),
       },
       {
         path: 'performance',
@@ -138,7 +139,7 @@ const router = createBrowserRouter([
           <PrivateRoute>
             <PerformancePanel />
           </PrivateRoute>
-        )
+        ),
       },
       {
         path: 'settings',
@@ -146,18 +147,18 @@ const router = createBrowserRouter([
           <PrivateRoute>
             <Settings />
           </PrivateRoute>
-        )
-      }
-    ]
+        ),
+      },
+    ],
   },
   {
     path: 'login',
-    element: <Login />
+    element: <Login />,
   },
   {
     path: 'register',
-    element: <Register />
-  }
+    element: <Register />,
+  },
 ])
 
 export function AppRoutes() {

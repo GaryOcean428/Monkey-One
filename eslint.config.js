@@ -3,19 +3,21 @@ import tseslint from '@typescript-eslint/eslint-plugin'
 import tseslintParser from '@typescript-eslint/parser'
 
 export default [
-  eslint.configs.recommended,
+  {
+    ignores: ['**/dist/**', '**/node_modules/**'],
+  },
   {
     files: ['**/*.ts', '**/*.tsx'],
     languageOptions: {
       parser: tseslintParser,
       parserOptions: {
-        ecmaVersion: 'latest',
-        sourceType: 'module',
-        ecmaFeatures: {
-          jsx: true,
-        },
+        project: './tsconfig.json',
       },
       globals: {
+        HTMLInputElement: 'readonly',
+        HTMLTextAreaElement: 'readonly',
+        HTMLSelectElement: 'readonly',
+        HTMLFormElement: 'readonly',
         window: 'readonly',
         document: 'readonly',
         console: 'readonly',
