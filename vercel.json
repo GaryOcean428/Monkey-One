@@ -15,28 +15,16 @@
       "source": "/api/ollama/(.*)",
       "destination": "http://localhost:11434/api/$1"
     },
-    { "source": "/(.*)", "destination": "/" },
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
+      "source": "/public/(.*)",
+      "destination": "/public/$1"
+    },
+    { "source": "/(.*)", "destination": "/" }
   ],
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "DENY"
-        },
-        {
-          "key": "X-XSS-Protection",
-          "value": "1; mode=block"
-        },
         {
           "key": "Access-Control-Allow-Origin",
           "value": "*"
@@ -53,61 +41,15 @@
     }
   ],
   "env": {
-    "SB_SQL_DB_POSTGRES_URL": "${SB_SQL_DB_POSTGRES_URL}",
-    "SB_SQL_DB_POSTGRES_PRISMA_URL": "${SB_SQL_DB_POSTGRES_PRISMA_URL}",
-    "SB_SQL_DB_SUPABASE_URL": "${SB_SQL_DB_SUPABASE_URL}",
-    "SB_SQL_DB_NEXT_PUBLIC_SUPABASE_URL": "${SB_SQL_DB_NEXT_PUBLIC_SUPABASE_URL}",
-    "SB_SQL_DB_POSTGRES_URL_NON_POOLING": "${SB_SQL_DB_POSTGRES_URL_NON_POOLING}",
-    "SB_SQL_DB_SUPABASE_JWT_SECRET": "${SB_SQL_DB_SUPABASE_JWT_SECRET}",
-    "SB_SQL_DB_POSTGRES_USER": "${SB_SQL_DB_POSTGRES_USER}",
-    "SB_SQL_DB_NEXT_PUBLIC_SUPABASE_ANON_KEY": "${SB_SQL_DB_NEXT_PUBLIC_SUPABASE_ANON_KEY}",
-    "SB_SQL_DB_POSTGRES_PASSWORD": "${SB_SQL_DB_POSTGRES_PASSWORD}",
-    "SB_SQL_DB_POSTGRES_DATABASE": "${SB_SQL_DB_POSTGRES_DATABASE}",
-    "SB_SQL_DB_SUPABASE_SERVICE_ROLE_KEY": "${SB_SQL_DB_SUPABASE_SERVICE_ROLE_KEY}",
-    "SB_SQL_DB_POSTGRES_HOST": "${SB_SQL_DB_POSTGRES_HOST}",
-    "VITE_CHROMA_CLOUD_URL": "${VITE_CHROMA_CLOUD_URL}",
+    "PINECONE_API_KEY": "${PINECONE_API_KEY}",
+    "PINECONE_ENVIRONMENT": "${PINECONE_ENVIRONMENT}",
+    "PINECONE_INDEX_NAME": "${PINECONE_INDEX_NAME}",
+    "VITE_SUPABASE_URL": "${VITE_SUPABASE_URL}",
+    "VITE_SUPABASE_ANON_KEY": "${VITE_SUPABASE_ANON_KEY}",
+    "VITE_SUPABASE_SERVICE_ROLE_KEY": "${VITE_SUPABASE_SERVICE_ROLE_KEY}",
+    "VITE_SUPABASE_JWT_SECRET": "${VITE_SUPABASE_JWT_SECRET}",
+    "VITE_OLLAMA_BASE_URL": "${VITE_OLLAMA_BASE_URL}",
     "VITE_CHROMA_CLOUD_TOKEN": "${VITE_CHROMA_CLOUD_TOKEN}",
-    "VITE_OPENAI_API_KEY": "${VITE_OPENAI_API_KEY}",
-    "VITE_ANTHROPIC_API_KEY": "${VITE_ANTHROPIC_API_KEY}",
-    "VITE_GROQ_API_KEY": "${VITE_GROQ_API_KEY}",
-    "VITE_PERPLEXITY_API_KEY": "${VITE_PERPLEXITY_API_KEY}",
-    "VITE_XAI_API_KEY": "${VITE_XAI_API_KEY}",
-    "VITE_HUGGINGFACE_TOKEN": "${VITE_HUGGINGFACE_TOKEN}",
-    "VITE_GITHUB_USERNAME": "${VITE_GITHUB_USERNAME}",
-    "VITE_GITHUB_USEREMAIL": "${VITE_GITHUB_USEREMAIL}",
-    "VITE_VERCEL_ORG_ID": "${VITE_VERCEL_ORG_ID}",
-    "VITE_VERCEL_PROJECT_ID": "${VITE_VERCEL_PROJECT_ID}",
-    "VITE_VERCEL_TOKEN": "${VITE_VERCEL_TOKEN}",
-    "VITE_AI_MODEL_TEMPERATURE": "${VITE_AI_MODEL_TEMPERATURE}",
-    "VITE_AI_MAX_TOKENS": "${VITE_AI_MAX_TOKENS}",
-    "VITE_AI_TOP_P": "${VITE_AI_TOP_P}",
-    "VITE_AI_FREQUENCY_PENALTY": "${VITE_AI_FREQUENCY_PENALTY}",
-    "VITE_AI_PRESENCE_PENALTY": "${VITE_AI_PRESENCE_PENALTY}",
-    "VITE_AI_TIMEOUT": "${VITE_AI_TIMEOUT}",
-    "VITE_AI_RETRY_ATTEMPTS": "${VITE_AI_RETRY_ATTEMPTS}",
-    "VITE_AI_BATCH_SIZE": "${VITE_AI_BATCH_SIZE}",
-    "VITE_AI_STREAMING_ENABLED": "${VITE_AI_STREAMING_ENABLED}",
-    "VITE_AI_CACHING_ENABLED": "${VITE_AI_CACHING_ENABLED}",
-    "VITE_AI_LOGGING_ENABLED": "${VITE_AI_LOGGING_ENABLED}",
-    "VITE_SUPPORT_EMAIL": "${VITE_SUPPORT_EMAIL}"
-  },
-  "build": {
-    "env": {
-      "SB_SQL_DB_POSTGRES_URL": "${SB_SQL_DB_POSTGRES_URL}",
-      "SB_SQL_DB_POSTGRES_PRISMA_URL": "${SB_SQL_DB_POSTGRES_PRISMA_URL}",
-      "SB_SQL_DB_SUPABASE_URL": "${SB_SQL_DB_SUPABASE_URL}",
-      "SB_SQL_DB_NEXT_PUBLIC_SUPABASE_URL": "${SB_SQL_DB_NEXT_PUBLIC_SUPABASE_URL}",
-      "SB_SQL_DB_POSTGRES_URL_NON_POOLING": "${SB_SQL_DB_POSTGRES_URL_NON_POOLING}",
-      "SB_SQL_DB_SUPABASE_JWT_SECRET": "${SB_SQL_DB_SUPABASE_JWT_SECRET}",
-      "VITE_CHROMA_CLOUD_URL": "${VITE_CHROMA_CLOUD_URL}",
-      "VITE_CHROMA_CLOUD_TOKEN": "${VITE_CHROMA_CLOUD_TOKEN}",
-      "VITE_OPENAI_API_KEY": "${VITE_OPENAI_API_KEY}"
-    }
-  },
-  "routes": [
-    {
-      "src": "/public/(.*)",
-      "dest": "/public/$1"
-    }
-  ]
+    "VITE_OPENAI_API_KEY": "${VITE_OPENAI_API_KEY}"
+  }
 }
