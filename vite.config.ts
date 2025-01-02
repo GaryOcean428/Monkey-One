@@ -1,16 +1,10 @@
-/// <reference types="node" />
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
-import dotenv from 'dotenv'
 import compression from 'vite-plugin-compression'
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
 import tsconfigPaths from 'vite-tsconfig-paths'
-
-// Load environment variables
-dotenv.config()
-dotenv.config({ path: '.env.local' })
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -58,12 +52,18 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 3000,
       host: true,
+      // Ensure static assets are served correctly
+      fs: {
+        allow: ['.'],
+      },
     },
     preview: {
       port: 3000,
     },
     define: {
-      'process.env': env,
+      'import.meta.env.VITE_PUBLIC_URL': JSON.stringify(
+        env.VITE_PUBLIC_URL || 'http://localhost:3000'
+      ),
     },
   }
 })
