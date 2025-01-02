@@ -1,8 +1,10 @@
 /// <reference lib="dom" />
 /// <reference lib="dom.iterable" />
+/// <reference lib="webworker" />
 
 import { Pinecone } from '@pinecone-database/pinecone'
-import fetch from 'cross-fetch'
+
+declare const fetch: typeof globalThis.fetch
 
 const pineconeApiKey = import.meta.env.VITE_PINECONE_API_KEY
 const pineconeEnvironment = import.meta.env.VITE_PINECONE_ENVIRONMENT
