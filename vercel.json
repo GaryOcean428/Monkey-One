@@ -36,9 +36,18 @@
     }
   ],
   "env": {
-    "VITE_SUPABASE_URL": "@vite_supabase_url",
-    "VITE_SUPABASE_ANON_KEY": "@vite_supabase_anon_key",
-    "VITE_SUPABASE_SERVICE_ROLE_KEY": "@vite_supabase_service_role_key",
+    "SB_SQL_DB_POSTGRES_URL": "@sb_sql_db_postgres_url",
+    "SB_SQL_DB_POSTGRES_PRISMA_URL": "@sb_sql_db_postgres_prisma_url",
+    "SB_SQL_DB_SUPABASE_URL": "@sb_sql_db_supabase_url",
+    "SB_SQL_DB_NEXT_PUBLIC_SUPABASE_URL": "@sb_sql_db_next_public_supabase_url",
+    "SB_SQL_DB_POSTGRES_URL_NON_POOLING": "@sb_sql_db_postgres_url_non_pooling",
+    "SB_SQL_DB_SUPABASE_JWT_SECRET": "@sb_sql_db_supabase_jwt_secret",
+    "SB_SQL_DB_POSTGRES_USER": "@sb_sql_db_postgres_user",
+    "SB_SQL_DB_NEXT_PUBLIC_SUPABASE_ANON_KEY": "@sb_sql_db_next_public_supabase_anon_key",
+    "SB_SQL_DB_POSTGRES_PASSWORD": "@sb_sql_db_postgres_password",
+    "SB_SQL_DB_POSTGRES_DATABASE": "@sb_sql_db_postgres_database",
+    "SB_SQL_DB_SUPABASE_SERVICE_ROLE_KEY": "@sb_sql_db_supabase_service_role_key",
+    "SB_SQL_DB_POSTGRES_HOST": "@sb_sql_db_postgres_host",
     "VITE_CHROMA_CLOUD_URL": "@vite_chroma_cloud_url",
     "VITE_CHROMA_CLOUD_TOKEN": "@vite_chroma_cloud_token",
     "VITE_OPENAI_API_KEY": "@vite_openai_api_key",
@@ -67,9 +76,12 @@
   },
   "build": {
     "env": {
-      "VITE_SUPABASE_URL": "@vite_supabase_url",
-      "VITE_SUPABASE_ANON_KEY": "@vite_supabase_anon_key",
-      "VITE_SUPABASE_SERVICE_ROLE_KEY": "@vite_supabase_service_role_key",
+      "SB_SQL_DB_POSTGRES_URL": "@sb_sql_db_postgres_url",
+      "SB_SQL_DB_POSTGRES_PRISMA_URL": "@sb_sql_db_postgres_prisma_url",
+      "SB_SQL_DB_SUPABASE_URL": "@sb_sql_db_supabase_url",
+      "SB_SQL_DB_NEXT_PUBLIC_SUPABASE_URL": "@sb_sql_db_next_public_supabase_url",
+      "SB_SQL_DB_POSTGRES_URL_NON_POOLING": "@sb_sql_db_postgres_url_non_pooling",
+      "SB_SQL_DB_SUPABASE_JWT_SECRET": "@sb_sql_db_supabase_jwt_secret",
       "VITE_CHROMA_CLOUD_URL": "@vite_chroma_cloud_url",
       "VITE_CHROMA_CLOUD_TOKEN": "@vite_chroma_cloud_token",
       "VITE_OPENAI_API_KEY": "@vite_openai_api_key"

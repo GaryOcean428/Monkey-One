@@ -1,7 +1,7 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl = import.meta.env.SB_SQL_DB_NEXT_PUBLIC_SUPABASE_URL
+const supabaseKey = import.meta.env.SB_SQL_DB_NEXT_PUBLIC_SUPABASE_ANON_KEY
 
 console.log('Supabase URL:', supabaseUrl)
 console.log('Supabase Key:', supabaseKey ? '[Key exists]' : '[Key missing]')
@@ -14,9 +14,9 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: true
+    detectSessionInUrl: true,
   },
   db: {
-    schema: 'public'
-  }
+    schema: 'public',
+  },
 })
