@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useAuth } from '../../contexts/AuthContext'
+import React, { useState } from 'react'
+import { useAuth } from '../auth/hooks/useAuth'
 import { NeonMonkey } from '../Logo/NeonMonkey'
 
 export function LoginForm() {
@@ -22,47 +22,53 @@ export function LoginForm() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-center mb-8">
+      <div className="mb-8 flex justify-center">
         <NeonMonkey size="lg" animated={true} />
       </div>
-      <h2 className="text-2xl font-bold text-center text-gray-900 dark:text-white mb-6">
+      <h2 className="mb-6 text-center text-2xl font-bold text-gray-900 dark:text-white">
         Welcome Back
       </h2>
       <form onSubmit={handleSubmit} className="space-y-6">
         {error && (
-          <div className="bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-200 px-4 py-3 rounded relative">
+          <div className="relative rounded border border-red-400 bg-red-100 px-4 py-3 text-red-700 dark:border-red-600 dark:bg-red-900 dark:text-red-200">
             {error}
           </div>
         )}
         <div className="space-y-2">
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label
+            htmlFor="email"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+          >
             Email
           </label>
           <input
             id="email"
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={e => setEmail(e.target.value)}
             required
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent"
+            className="w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:focus:ring-indigo-400"
           />
         </div>
         <div className="space-y-2">
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label
+            htmlFor="password"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+          >
             Password
           </label>
           <input
             id="password"
             type="password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={e => setPassword(e.target.value)}
             required
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent"
+            className="w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:focus:ring-indigo-400"
           />
         </div>
         <button
           type="submit"
-          className="w-full py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
+          className="w-full rounded-md border border-transparent bg-indigo-600 px-4 py-3 text-sm font-medium text-white shadow-sm transition-colors duration-200 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-indigo-500 dark:hover:bg-indigo-600"
         >
           Sign In
         </button>

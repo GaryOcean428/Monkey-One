@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { useProfile } from '../../hooks/useProfile'
-import { useAuth } from '../../contexts/AuthContext'
+import { useAuth } from '../auth/hooks/useAuth'
 
 export function ProfileManager() {
   const { profile, loading, error, updateProfile } = useProfile()
@@ -40,7 +40,7 @@ export function ProfileManager() {
             id="username"
             type="text"
             value={formData.username}
-            onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
+            onChange={e => setFormData(prev => ({ ...prev, username: e.target.value }))}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
           />
         </div>
@@ -52,21 +52,21 @@ export function ProfileManager() {
             id="fullName"
             type="text"
             value={formData.full_name}
-            onChange={(e) => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
+            onChange={e => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
           />
         </div>
         <div className="flex space-x-4">
           <button
             type="submit"
-            className="flex-1 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            className="flex-1 rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
           >
             Save
           </button>
           <button
             type="button"
             onClick={() => setEditing(false)}
-            className="flex-1 py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            className="flex-1 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
           >
             Cancel
           </button>
@@ -76,22 +76,26 @@ export function ProfileManager() {
   }
 
   return (
-    <div className="p-4 space-y-4">
+    <div className="space-y-4 p-4">
       <div className="space-y-2">
         <h2 className="text-xl font-bold">Profile</h2>
-        <p><strong>Username:</strong> {profile?.username}</p>
-        <p><strong>Full Name:</strong> {profile?.full_name}</p>
+        <p>
+          <strong>Username:</strong> {profile?.username}
+        </p>
+        <p>
+          <strong>Full Name:</strong> {profile?.full_name}
+        </p>
       </div>
       <div className="flex space-x-4">
         <button
           onClick={() => setEditing(true)}
-          className="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          className="rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
         >
           Edit Profile
         </button>
         <button
           onClick={() => signOut()}
-          className="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
         >
           Sign Out
         </button>

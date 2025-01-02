@@ -1,11 +1,11 @@
-import { useState } from 'react'
-import { useAuth } from '../../contexts/AuthContext'
+import React, { useState } from 'react'
+import { useAuth } from '../auth/hooks/useAuth'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { useToast } from '../ui/use-toast'
 
 interface AuthSwitchProps {
-  onSwitch: () => void;
+  onSwitch: () => void
 }
 
 export function SignUpForm({ onSwitch }: AuthSwitchProps) {
@@ -21,7 +21,7 @@ export function SignUpForm({ onSwitch }: AuthSwitchProps) {
     setError(null)
     try {
       await signUp(email, password, {
-        data: { full_name: fullName }
+        data: { full_name: fullName },
       })
       toast({
         title: 'Success!',
@@ -38,11 +38,11 @@ export function SignUpForm({ onSwitch }: AuthSwitchProps) {
   }
 
   return (
-    <div className="w-full max-w-md p-6 space-y-4 bg-card rounded-lg shadow-lg">
-      <h2 className="text-2xl font-bold text-center">Sign Up</h2>
+    <div className="w-full max-w-md space-y-4 rounded-lg bg-card p-6 shadow-lg">
+      <h2 className="text-center text-2xl font-bold">Sign Up</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          <div className="rounded border border-red-400 bg-red-100 px-4 py-3 text-red-700">
             {error}
           </div>
         )}
@@ -51,7 +51,7 @@ export function SignUpForm({ onSwitch }: AuthSwitchProps) {
             type="text"
             placeholder="Full Name"
             value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
+            onChange={e => setFullName(e.target.value)}
             required
           />
         </div>
@@ -60,7 +60,7 @@ export function SignUpForm({ onSwitch }: AuthSwitchProps) {
             type="email"
             placeholder="Email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={e => setEmail(e.target.value)}
             required
           />
         </div>
@@ -69,7 +69,7 @@ export function SignUpForm({ onSwitch }: AuthSwitchProps) {
             type="password"
             placeholder="Password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={e => setPassword(e.target.value)}
             required
           />
         </div>
