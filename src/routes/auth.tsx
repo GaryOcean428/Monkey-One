@@ -52,7 +52,7 @@ export function PasswordReset() {
     const handlePasswordReset = async () => {
       try {
         const error = await supabase.auth.resetPasswordForEmail(location.state?.email)
-        if (error) throw error
+        if (error) {
 
         toast({
           title: 'Password Reset Email Sent',
