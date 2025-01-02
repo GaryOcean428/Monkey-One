@@ -2,8 +2,8 @@ import React from 'react'
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
 import { App } from './App'
 import { Dashboard } from './components/Dashboard'
-import { AuthCallback } from './routes/auth/AuthCallback'
-import { PasswordReset } from './routes/auth/PasswordReset'
+import { AuthCallback } from './components/Auth/AuthCallback'
+import { PasswordReset } from './components/Auth/PasswordReset'
 import { MemoryManager } from './components/memory/MemoryManager'
 import { ProfileManager } from './components/profile/ProfileManager'
 import { PrivateRoute } from './components/Auth/PrivateRoute'
@@ -164,3 +164,5 @@ const router = createBrowserRouter([
 export function AppRoutes() {
   return <RouterProvider router={router} />
 }
+
+export { router }
