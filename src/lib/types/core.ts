@@ -1,15 +1,29 @@
-import type { Timeout } from 'node:timers'
-import type { MemoryUsage } from 'node:process'
+// Core application types
+export type TimeoutId = ReturnType<typeof setTimeout>
+export type IntervalId = ReturnType<typeof setInterval>
 
-export enum MessageType {
-  USER = 'USER',
-  SYSTEM = 'SYSTEM',
-  TASK = 'TASK',
-  RESPONSE = 'RESPONSE',
-  ERROR = 'ERROR',
-  BROADCAST = 'BROADCAST',
-  HANDOFF = 'HANDOFF',
-  COMMAND = 'COMMAND',
+export interface MemoryStats {
+  heapUsed: number
+  heapTotal: number
+  external: number
+  arrayBuffers: number
+}
+
+export type MessageType = 'SYSTEM' | 'USER' | 'ASSISTANT' | 'ERROR' | 'WARNING' | 'INFO' | 'DEBUG'
+
+export interface Message {
+  id: string
+  type: MessageType
+  content: string
+  timestamp: number
+  metadata?: Record<string, unknown>
+}
+
+export interface SystemConfig {
+  maxMemoryUsage: number
+  maxConcurrentTasks: number
+  defaultTimeout: number
+  debugMode: boolean
 }
 
 export enum AgentType {
@@ -34,26 +48,11 @@ export enum AgentCapabilityType {
   CODE = 'code',
 }
 
-export interface Message {
-  id: string
-  type: MessageType
-  role: 'user' | 'assistant' | 'system'
-  content: string
-  timestamp: number
-  metadata?: Record<string, unknown>
-  status?: 'sending' | 'sent' | 'error'
-  sender?: string
-  recipient?: string
-}
-
 export interface AgentCapability {
   type: AgentCapabilityType
+  name: string
   description: string
-  parameters?: {
-    type: string
-    properties?: Record<string, unknown>
-    required?: string[]
-  }
+  schema?: Record<string, unknown>
 }
 
 export interface AgentMetrics {
@@ -63,14 +62,12 @@ export interface AgentMetrics {
   averageResponseTime: number
   lastResponseTime: number
   uptime: number
-  memoryUsage: MemoryUsage
+  memoryUsage: MemoryStats
 }
 
-export type Timer = Timeout
-
-export type MessageHandler<T = unknown, R = unknown> = (message: T) => Promise<R>
+export type MessageHandler = (message: Message) => Promise<Message>
 export type ErrorHandler = (error: Error) => void
-export type ResponseHandler<T = unknown> = (response: T) => void
+export type ResponseHandler = (response: Message) => void
 
 export interface Agent {
   id: string

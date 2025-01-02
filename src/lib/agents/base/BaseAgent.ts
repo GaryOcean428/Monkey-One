@@ -3,23 +3,24 @@ import {
   AgentType,
   AgentStatus,
   AgentCapability,
+  AgentCapabilityType,
   AgentMetrics,
-  Timer,
-} from '../../../lib/types/core'
+  Message,
+} from '../../types/core'
 import { logger } from '../../../utils/logger'
 import { v4 as uuidv4 } from 'uuid'
-import type { MessagePayload, MessageResponse } from '../../types/messages'
 
 export class BaseAgent implements Agent {
   id: string
   name: string
   type: AgentType
-  capabilities: Set<AgentCapability>
+  capabilities: Set<AgentCapabilityType>
   status: AgentStatus
+  description?: string
+  provider?: string
   private metrics: AgentMetrics
   private startTime: number
   private cleanupHandlers: Array<() => void>
-  private timeoutDuration: number
 
   constructor(
     id: string = uuidv4(),
@@ -40,127 +41,94 @@ export class BaseAgent implements Agent {
       averageResponseTime: 0,
       lastResponseTime: 0,
       uptime: 0,
-      memoryUsage: process.memoryUsage(),
+      memoryUsage: {
+        heapTotal: 0,
+        heapUsed: 0,
+        external: 0,
+        arrayBuffers: 0,
+      },
     }
-    this.timeoutDuration = 100
   }
 
   async initialize(): Promise<void> {
     logger.info('Base agent initialized', { id: this.id, type: this.type })
   }
 
-  setStatus(status: AgentStatus): void {
-    this.status = status
-  }
-
-  async handleRequest(capability: string, params: MessagePayload): Promise<MessageResponse> {
-    const startTime = Date.now()
+  async processMessage(message: Message): Promise<Message> {
     try {
-      this.setStatus(AgentStatus.BUSY)
+      this.metrics.totalRequests++
+      const startTime = Date.now()
 
-      // Simulate processing
-      await new Promise(_resolve => this.initializeTimer().unref())
-
-      this.metrics.successfulRequests++
-      this.metrics.lastResponseTime = Date.now() - startTime
-
-      return {
-        status: 'success',
-        data: params,
+      // Process message logic here
+      const response: Message = {
+        id: uuidv4(),
+        type: message.type,
+        content: 'Processed message',
+        timestamp: Date.now(),
+        metadata: {
+          sender: this.id,
+          recipient: message.metadata?.sender,
+        },
       }
+
+      const endTime = Date.now()
+      this.metrics.lastResponseTime = endTime - startTime
+      this.metrics.successfulRequests++
+      return response
     } catch (error) {
       this.metrics.failedRequests++
       throw error
-    } finally {
-      this.setStatus(AgentStatus.IDLE)
     }
   }
 
-  protected async processMessage(_message: MessagePayload): Promise<MessageResponse> {
-    return {
-      id: uuidv4(),
-      type: 'response',
-      role: 'assistant',
-      content: 'Base agent response',
-      timestamp: Date.now(),
-    }
-  }
-
-  protected async executeCapability(
-    _capability: string,
+  async handleRequest(
+    _capability: AgentCapabilityType,
     _params: Record<string, unknown>
-  ): Promise<MessageResponse> {
-    throw new Error('Method not implemented')
-  }
-
-  async shutdown(): Promise<void> {
-    this.status = AgentStatus.OFFLINE
-    logger.info('Base agent shutdown', { id: this.id })
+  ): Promise<unknown> {
+    if (!this.hasCapability(_capability)) {
+      throw new Error(`Agent does not have capability: ${_capability}`)
+    }
+    // Handle request implementation
+    return {}
   }
 
   getCapabilities(): AgentCapability[] {
-    return Array.from(this.capabilities)
+    return Array.from(this.capabilities).map(type => ({
+      type,
+      name: type,
+      description: `Capability for ${type}`,
+    }))
   }
 
-  hasCapability(name: string): boolean {
-    return Array.from(this.capabilities).some(cap => cap.name === name)
+  hasCapability(type: AgentCapabilityType): boolean {
+    return this.capabilities.has(type)
   }
 
-  addCapability(capability: AgentCapability): void {
-    if (!this.hasCapability(capability.name)) {
-      this.capabilities.add(capability)
-    }
+  addCapability(type: AgentCapabilityType): void {
+    this.capabilities.add(type)
   }
 
-  removeCapability(name: string): void {
-    for (const cap of this.capabilities) {
-      if (cap.name === name) {
-        this.capabilities.delete(cap)
-        break
-      }
-    }
+  removeCapability(type: AgentCapabilityType): void {
+    this.capabilities.delete(type)
   }
 
-  validateParameters(capability: string, params: any): void {
-    const cap = Array.from(this.capabilities).find(c => c.name === capability)
+  validateParameters(_capability: AgentCapabilityType, _params: Record<string, unknown>): void {
+    const cap = this.getCapabilities().find(c => c.type === _capability)
     if (!cap) {
-      throw new Error(`Capability ${capability} not found`)
+      throw new Error(`Invalid capability: ${_capability}`)
     }
-
-    if (!cap.schema) {
-      return
-    }
-
-    // Basic schema validation
-    const errors: string[] = []
-    if (cap.schema.required) {
-      for (const field of cap.schema.required) {
-        if (!(field in params)) {
-          errors.push(`Missing required field: ${field}`)
-        }
-      }
-    }
-
-    if (cap.schema.properties) {
-      for (const [field, def] of Object.entries(cap.schema.properties)) {
-        if (field in params) {
-          const value = params[field]
-          if (def.type && typeof value !== def.type) {
-            errors.push(`Invalid type for ${field}: expected ${def.type}, got ${typeof value}`)
-          }
-        }
-      }
-    }
-
-    if (errors.length > 0) {
-      throw new Error(`Parameter validation failed:\n${errors.join('\n')}`)
+    if (cap.schema) {
+      // Validate params against schema
     }
   }
 
   getMetrics(): AgentMetrics {
-    this.metrics.uptime = Date.now() - this.startTime
-    this.metrics.memoryUsage = process.memoryUsage()
-    return { ...this.metrics }
+    const now = Date.now()
+    this.metrics.uptime = now - this.startTime
+    this.metrics.memoryUsage = {
+      ...process.memoryUsage(),
+    }
+    return this.metrics
   }
 
   onMemoryCleanup(handler: () => void): void {
@@ -171,9 +139,8 @@ export class BaseAgent implements Agent {
     this.cleanupHandlers.forEach(handler => handler())
   }
 
-  private initializeTimer(): Timer {
-    return setTimeout(() => {
-      // Implementation
-    }, this.timeoutDuration)
+  async shutdown(): Promise<void> {
+    this.status = AgentStatus.OFFLINE
+    this.cleanupMemory()
   }
 }

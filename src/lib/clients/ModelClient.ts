@@ -1,466 +1,206 @@
-import { LocalModelService } from '../llm/LocalModelService';
-import { logger } from '../../utils/logger';
-import { ModelPerformanceTracker, ModelProvider, TaskType } from '../llm/ModelPerformanceTracker';
-import { ProviderRegistry } from '../providers';
-import { LocalProvider } from '../providers';
+/// <reference lib="dom" />
+/// <reference lib="dom.iterable" />
 
-type ModelCapabilities = 
-  | 'reasoning'      // 0-10 reasoning capability
-  | 'creativity'     // 0-10 creative capability
-  | 'knowledge'      // 0-10 knowledge base
-  | 'coding'        // 0-10 coding capability
-  | 'search'        // 0-10 search capability
-  | 'toolUse'       // 0-10 tool usage capability
-  | 'speed'         // 0-10 inference speed
-  | 'contextWindow' // Maximum context window size
-  | 'costPerToken' // Cost in USD per 1K tokens
+import { logger } from '../../utils/logger'
+import { ModelPerformanceTracker, ModelProvider, TaskType } from '../llm/ModelPerformanceTracker'
 
-interface ModelClientConfig {
-  defaultProvider?: ModelProvider;
-  fallbackProviders?: ModelProvider[];
-  maxRetries?: number;
-  routingPreferences?: {
-    [key in TaskType]?: ModelProvider[];
-  };
-  maxLatency?: number;    // Maximum acceptable latency in ms
-  adaptiveRouting?: boolean; // Whether to use performance-based routing
+// Re-export ModelResponse type for external use
+export interface ModelResponse {
+  content: string
+  model: string
+  usage?: {
+    prompt_tokens: number
+    completion_tokens: number
+    total_tokens: number
+  }
 }
 
-interface ModelResponse {
-  content: string;
-  model: string;
-  usage?: {
-    prompt_tokens: number;
-    completion_tokens: number;
-    total_tokens: number;
-  };
+interface ModelClientConfig {
+  defaultProvider?: ModelProvider
+  fallbackProviders?: ModelProvider[]
+  maxRetries?: number
+  routingPreferences?: {
+    [key in TaskType]?: ModelProvider[]
+  }
+  maxLatency?: number // Maximum acceptable latency in ms
+  adaptiveRouting?: boolean // Whether to use performance-based routing
+}
+
+interface APIResponse<T> {
+  success: boolean
+  data: T
+  error?: string
 }
 
 export class ModelClient {
-  private modelService: LocalModelService;
-  private performanceTracker: ModelPerformanceTracker;
-  private currentProvider: ModelProvider;
-  private fallbackProviders: ModelProvider[];
-  private maxRetries: number;
-  private maxLatency?: number;
-  private adaptiveRouting: boolean;
-  private routingPreferences: Required<ModelClientConfig>['routingPreferences'];
-  private provider: LocalProvider;
-
-  // Model version control to prevent using outdated models
-  private readonly MODEL_VERSIONS = {
-    'phi3.5': 'latest',
-    'gpt-4o': '2024-11-06',
-    'gpt-4o-mini': '2024-07-18',
-    'o1': '2024-12-01',
-    'o1-mini': '2024-09-15',
-    'llama-3.3-70b-versatile': '20241225',
-    'claude-3-5-sonnet': 'v2@20241022',
-    'claude-3-5-haiku': '20241022',
-    'qwq-32b': 'preview',
-    'sonar-huge': 'latest',
-    'sonar-large': 'latest',
-    'sonar-small': 'latest'
-  } as const;
-
-  private readonly MODEL_CAPABILITIES: Record<ModelProvider, ModelCapabilities> = {
-    'gpt-4o': {
-      reasoning: 10,
-      creativity: 9,
-      knowledge: 10,
-      coding: 9,
-      search: 9,
-      toolUse: 10,
-      speed: 7,
-      contextWindow: 128000,
-      costPerToken: 0.015
-    },
-    'gpt-4o-mini': {
-      reasoning: 8,
-      creativity: 8,
-      knowledge: 8,
-      coding: 8,
-      search: 8,
-      toolUse: 8,
-      speed: 9,
-      contextWindow: 128000,
-      costPerToken: 0.008
-    },
-    'o1': {
-      reasoning: 10,
-      creativity: 10,
-      knowledge: 10,
-      coding: 10,
-      search: 9,
-      toolUse: 9,
-      speed: 8,
-      contextWindow: 200000,
-      costPerToken: 0.015
-    },
-    'o1-mini': {
-      reasoning: 9,
-      creativity: 8,
-      knowledge: 9,
-      coding: 9,
-      search: 8,
-      toolUse: 8,
-      speed: 9,
-      contextWindow: 128000,
-      costPerToken: 0.008
-    },
-    'llama-3.3-70b-versatile': {
-      reasoning: 9,
-      creativity: 8,
-      knowledge: 9,
-      coding: 9,
-      search: 8,
-      toolUse: 9,
-      speed: 7,
-      contextWindow: 128000,
-      costPerToken: 0.002
-    },
-    'claude-3-5-sonnet': {
-      reasoning: 9,
-      creativity: 9,
-      knowledge: 9,
-      coding: 9,
-      search: 8,
-      toolUse: 9,
-      speed: 8,
-      contextWindow: 200000,
-      costPerToken: 0.01
-    },
-    'claude-3-5-haiku': {
-      reasoning: 8,
-      creativity: 8,
-      knowledge: 8,
-      coding: 8,
-      search: 7,
-      toolUse: 8,
-      speed: 10,
-      contextWindow: 200000,
-      costPerToken: 0.006
-    },
-    'qwq-32b': {
-      reasoning: 8,
-      creativity: 7,
-      knowledge: 8,
-      coding: 9,
-      search: 7,
-      toolUse: 7,
-      speed: 8,
-      contextWindow: 32768,
-      costPerToken: 0.001
-    },
-    'sonar-huge': {
-      reasoning: 9,
-      creativity: 8,
-      knowledge: 10,
-      coding: 8,
-      search: 10,
-      toolUse: 8,
-      speed: 7,
-      contextWindow: 127072,
-      costPerToken: 0.004
-    },
-    'sonar-large': {
-      reasoning: 8,
-      creativity: 7,
-      knowledge: 9,
-      coding: 7,
-      search: 10,
-      toolUse: 7,
-      speed: 8,
-      contextWindow: 127072,
-      costPerToken: 0.002
-    },
-    'sonar-small': {
-      reasoning: 7,
-      creativity: 6,
-      knowledge: 8,
-      coding: 6,
-      search: 10,
-      toolUse: 6,
-      speed: 9,
-      contextWindow: 127072,
-      costPerToken: 0.001
-    },
-    'phi3.5': {
-      reasoning: 7,
-      creativity: 7,
-      knowledge: 7,
-      coding: 8,
-      search: 7,
-      toolUse: 7,
-      speed: 10,
-      contextWindow: 128000,
-      costPerToken: 0.001
-    },
-    'llama-3.3-70b-versatile': {
-      reasoning: 9,
-      creativity: 8,
-      knowledge: 9,
-      coding: 9,
-      search: 8,
-      toolUse: 9,
-      speed: 7,
-      contextWindow: 128000,
-      costPerToken: 0.002
-    },
-    'llama-3.2-70b': {
-      reasoning: 8,
-      creativity: 8,
-      knowledge: 8,
-      coding: 9,
-      search: 7,
-      toolUse: 8,
-      speed: 7,
-      contextWindow: 128000,
-      costPerToken: 0.002
-    },
-    'llama-3.1-70b': {
-      reasoning: 8,
-      creativity: 7,
-      knowledge: 8,
-      coding: 8,
-      search: 7,
-      toolUse: 7,
-      speed: 8,
-      contextWindow: 128000,
-      costPerToken: 0.002
-    },
-    'gpt-4o': {
-      reasoning: 10,
-      creativity: 9,
-      knowledge: 10,
-      coding: 9,
-      search: 9,
-      toolUse: 10,
-      speed: 7,
-      contextWindow: 128000,
-      costPerToken: 0.015
-    },
-    'claude-3-5-sonnet': {
-      reasoning: 9,
-      creativity: 9,
-      knowledge: 9,
-      coding: 9,
-      search: 8,
-      toolUse: 9,
-      speed: 8,
-      contextWindow: 200000,
-      costPerToken: 0.01
-    },
-    'o1': {
-      reasoning: 10,
-      creativity: 10,
-      knowledge: 10,
-      coding: 10,
-      search: 9,
-      toolUse: 9,
-      speed: 8,
-      contextWindow: 200000,
-      costPerToken: 0.015
-    }
-  };
-
-  private constructor() {
-    this.modelService = LocalModelService.getInstance();
-    this.performanceTracker = ModelPerformanceTracker.getInstance();
-    this.currentProvider = 'phi3.5';
-    this.fallbackProviders = ['llama-3.1-70b', 'llama-3.2-70b'];
-    this.maxRetries = 3;
-    this.adaptiveRouting = true;
-    this.routingPreferences = {
-      reasoning: ['o1', 'gpt-4o', 'llama-3.3-70b-versatile'],
-      creativity: ['o1', 'claude-3-5-sonnet', 'gpt-4o'],
-      coding: ['o1', 'llama-3.3-70b-versatile', 'claude-3-5-sonnet'],
-      search: ['gpt-4o', 'o1', 'claude-3-5-sonnet'],
-      toolUse: ['gpt-4o', 'o1', 'llama-3.3-70b-versatile'],
-      general: ['phi3.5', 'llama-3.1-70b', 'llama-3.2-70b']
-    };
-    this.provider = new LocalProvider();
+  private performanceTracker: ModelPerformanceTracker
+  private currentProvider: ModelProvider
+  private readonly fallbackProviders: ModelProvider[]
+  private maxRetries: number
+  private readonly maxLatency?: number
+  private adaptiveRouting: boolean
+  private routingPreferences: {
+    [key in TaskType]?: ModelProvider[]
   }
 
-  private detectTaskType(messages: Array<{ role: string; content: string }> | string): TaskType {
-    const content = typeof messages === 'string' 
-      ? messages 
-      : messages.map(m => m.content).join(' ');
-
-    // Task detection heuristics
-    if (content.includes('```') || /\b(code|function|class|import)\b/i.test(content)) {
-      return 'coding';
-    }
-    if (/\b(search|find|look up|query)\b/i.test(content)) {
-      return 'search';
-    }
-    if (/\b(tool|execute|run|command)\b/i.test(content)) {
-      return 'toolUse';
-    }
-    if (/\b(why|how|explain|analyze|compare)\b/i.test(content)) {
-      return 'reasoning';
-    }
-    if (/\b(create|generate|imagine|design)\b/i.test(content)) {
-      return 'creativity';
-    }
-    return 'general';
+  constructor(config: ModelClientConfig = {}) {
+    this.performanceTracker = ModelPerformanceTracker.getInstance()
+    this.currentProvider = config.defaultProvider || 'phi'
+    this.fallbackProviders = config.fallbackProviders || ['o1-mini', 'claude-haiku']
+    this.maxRetries = config.maxRetries || 3
+    this.maxLatency = config.maxLatency
+    this.adaptiveRouting = config.adaptiveRouting || false
+    this.routingPreferences = config.routingPreferences || {}
   }
 
-  private getProvidersForTask(taskType: TaskType): ModelProvider[] {
-    if (this.adaptiveRouting) {
-      const bestModel = this.performanceTracker.getBestModelForTask(taskType, this.maxLatency);
-      const preferredProviders = this.routingPreferences[taskType] || [];
-      return [bestModel, ...preferredProviders.filter(p => p !== bestModel)];
+  private async handleResponse<T>(response: globalThis.Response): Promise<APIResponse<T>> {
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status} ${response.statusText}`)
     }
-    return this.routingPreferences[taskType] || [];
+    const data = (await response.json()) as T
+    return {
+      success: true,
+      data,
+    }
   }
 
-  private async callExternalAPI(endpoint: string, data: any) {
-    const startTime = Date.now();
+  private async generateWithProvider(
+    provider: ModelProvider,
+    prompt: string
+  ): Promise<ModelResponse> {
     try {
-      const response = await fetch(`/api/${endpoint}`, {
+      if (provider === 'phi') {
+        // For local phi model, we'll use a simple REST endpoint
+        const response = await globalThis.fetch('http://localhost:8000/generate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ prompt }),
+        })
+        const result = await this.handleResponse<ModelResponse>(response)
+        return result.data
+      }
+
+      const endpoint = this.getEndpointForProvider(provider)
+      const response = await globalThis.fetch(endpoint, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data)
-      });
+        body: JSON.stringify({ prompt }),
+      })
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      const result = await this.handleResponse<ModelResponse>(response)
+      if (!result.success || !result.data) {
+        throw new Error('Failed to generate response')
       }
 
-      const result = await response.json();
-      const latency = Date.now() - startTime;
-      
-      this.performanceTracker.recordLatency(data.provider, latency);
-      this.performanceTracker.recordSuccess(
-        data.provider,
-        result.usage?.total_tokens || 0,
-        (result.usage?.total_tokens || 0) * this.MODEL_CAPABILITIES[data.provider].costPerToken
-      );
-
-      if (result.quality_score) {
-        this.performanceTracker.recordQualityScore(
-          data.provider,
-          data.taskType,
-          result.quality_score
-        );
-      }
-
-      return result;
+      return result.data
     } catch (error) {
-      this.performanceTracker.recordError(data.provider);
-      throw error;
+      if (error instanceof Error) {
+        throw new Error(`Generation failed with provider ${provider}: ${error.message}`)
+      }
+      throw new Error(`Generation failed with provider ${provider}`)
     }
   }
 
-  private async useLocalModel(prompt: string) {
-    const startTime = Date.now();
-    try {
-      const result = await this.provider.generateResponse(prompt);
-      const latency = Date.now() - startTime;
-      
-      this.performanceTracker.recordLatency('phi', latency);
-      this.performanceTracker.recordSuccess('phi', result.usage?.total_tokens || 0, 0);
-      
-      return result;
-    } catch (error) {
-      this.performanceTracker.recordError('phi');
-      throw error;
+  private getEndpointForProvider(provider: ModelProvider): string {
+    const endpoints: Record<ModelProvider, string> = {
+      phi: 'http://localhost:8000/generate',
+      o1: 'https://api.o1.ai/v1/generate',
+      'o1-mini': 'https://api.o1.ai/v1/generate/mini',
+      claude: 'https://api.anthropic.com/v1/complete',
+      'claude-haiku': 'https://api.anthropic.com/v1/complete/haiku',
+      grok: 'https://api.grok.ai/v1/chat/completions',
+      'grok-40': 'https://api.grok.ai/v1/chat/completions/mini',
+      perplexity: 'https://api.perplexity.ai/v1/complete',
+      llama: 'https://api.llama.ai/v1/chat/completions',
+      groq: 'https://api.groq.ai/v1/completions',
+      qwen: 'https://api.qwen.ai/v1/completions',
     }
+    return endpoints[provider]
   }
 
-  private async withTaskRouting<T>(
-    messages: Array<{ role: string; content: string }> | string,
-    operation: (provider: ModelProvider, taskType: TaskType) => Promise<T>
-  ): Promise<T> {
-    const taskType = this.detectTaskType(messages);
-    const providers = this.getProvidersForTask(taskType);
-    let lastError: Error | null = null;
+  public async generate(prompt: string, taskType?: TaskType): Promise<ModelResponse> {
+    let attempts = 0
+    let lastError: Error | null = null
+    const startTime = Date.now()
 
-    for (let i = 0; i < this.maxRetries; i++) {
-      for (const provider of providers) {
-        try {
-          logger.info(`Attempting task type '${taskType}' with provider '${provider}'`);
-          return await operation(provider, taskType);
-        } catch (error) {
-          lastError = error as Error;
-          logger.warn(`Failed to use provider ${provider} for task '${taskType}':`, error);
-          continue;
+    while (attempts < this.maxRetries) {
+      try {
+        const provider = this.selectProvider(taskType)
+        const response = await this.generateWithProvider(provider, prompt)
+        const latency = Date.now() - startTime
+
+        // Record success metrics
+        this.performanceTracker.recordLatency(provider, latency)
+        if (response.usage) {
+          this.performanceTracker.recordSuccess(provider, response.usage.total_tokens, 0) // Cost tracking TBD
         }
+        if (taskType) {
+          this.performanceTracker.recordQualityScore(provider, taskType, 8) // Default quality score for now
+        }
+
+        return response
+      } catch (error) {
+        attempts++
+        if (error instanceof Error) {
+          lastError = error
+          logger.error(`Attempt ${attempts} failed:`, error)
+        }
+
+        // Record error metrics
+        this.performanceTracker.recordLatency(this.currentProvider, Date.now() - startTime)
+        this.performanceTracker.recordError(this.currentProvider)
+
+        this.rotateProvider()
       }
     }
 
-    throw lastError || new Error('All providers failed');
+    throw lastError || new Error('Failed to generate response after all retries')
   }
 
-  async chat(messages: Array<{ role: string; content: string }>) {
-    return this.withTaskRouting(messages, async (provider, taskType) => {
-      if (provider === 'phi') {
-        const prompt = messages
-          .map(msg => `${msg.role}: ${msg.content}`)
-          .join('\n');
-        return this.useLocalModel(prompt);
-      }
-
-      const response = await this.callExternalAPI('chat', {
-        provider,
-        messages,
-        taskType,
-        capabilities: this.MODEL_CAPABILITIES[provider]
-      });
-      return response.content;
-    });
-  }
-
-  async complete(prompt: string) {
-    return this.withTaskRouting(prompt, async (provider, taskType) => {
-      if (provider === 'phi') {
-        return this.useLocalModel(prompt);
-      }
-
-      const response = await this.callExternalAPI('complete', {
-        provider,
-        prompt,
-        taskType,
-        capabilities: this.MODEL_CAPABILITIES[provider]
-      });
-      return response.completion;
-    });
-  }
-
-  async isReady(): Promise<boolean> {
-    if (this.currentProvider === 'phi') {
-      return this.modelService.isInitialized();
+  private selectProvider(taskType?: TaskType): ModelProvider {
+    if (!taskType || !this.adaptiveRouting) {
+      return this.currentProvider
     }
-    return true;
+
+    const preferredProviders = this.routingPreferences[taskType]
+    if (preferredProviders?.length) {
+      // Find the best provider based on metrics
+      const providerMetrics = preferredProviders.map(provider => ({
+        provider,
+        metrics: this.performanceTracker.getModelPerformance(provider),
+      }))
+
+      const bestProvider = providerMetrics
+        .filter(
+          ({ metrics }) =>
+            metrics &&
+            (!this.maxLatency ||
+              metrics.latency.length === 0 ||
+              metrics.latency.reduce((a: number, b: number) => a + b, 0) / metrics.latency.length <=
+                this.maxLatency)
+        )
+        .sort((a, b) => {
+          if (!a.metrics || !b.metrics) return 0
+          const aScore = a.metrics.successRate - a.metrics.errorRate
+          const bScore = b.metrics.successRate - b.metrics.errorRate
+          return bScore - aScore
+        })[0]
+
+      if (bestProvider) {
+        return bestProvider.provider
+      }
+    }
+
+    return this.currentProvider
   }
 
-  setProvider(provider: ModelProvider) {
-    this.currentProvider = provider;
-  }
-
-  getCurrentProvider(): ModelProvider {
-    return this.currentProvider;
-  }
-
-  getModelCapabilities(provider: ModelProvider): ModelCapabilities {
-    return this.MODEL_CAPABILITIES[provider];
-  }
-
-  updateRoutingPreferences(preferences: Partial<Required<ModelClientConfig>['routingPreferences']>) {
-    this.routingPreferences = {
-      ...this.routingPreferences,
-      ...preferences
-    };
-  }
-
-  getPerformanceMetrics(provider: ModelProvider) {
-    return this.performanceTracker.getModelPerformance(provider);
-  }
-
-  getModelStats(provider: ModelProvider) {
-    return this.performanceTracker.getModelStats(provider);
+  private rotateProvider(): void {
+    const currentIndex = this.fallbackProviders.indexOf(this.currentProvider)
+    const nextIndex = (currentIndex + 1) % this.fallbackProviders.length
+    this.currentProvider = this.fallbackProviders[nextIndex]
   }
 }

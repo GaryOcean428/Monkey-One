@@ -20,6 +20,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>
 }
 
+export default AuthProvider
+
 export function useAuthContext(): AuthContextType {
   const context = useContext(AuthContext)
   if (context === undefined) {

@@ -1,10 +1,10 @@
 import { create } from 'zustand'
-import type { Agent } from '../lib/types/core'
+import type { Agent, AgentCapabilityType } from '../lib/types/core'
 
 export interface AgentState {
   agents: Agent[]
   activeAgent: Agent | null
-  addAgent: (agent: Omit<Agent, 'capabilities'> & { capabilities: string[] }) => void
+  addAgent: (agent: Omit<Agent, 'capabilities'> & { capabilities: AgentCapabilityType[] }) => void
   removeAgent: (id: string) => void
   setActiveAgent: (agent: Agent) => void
 }
@@ -18,8 +18,8 @@ export const useAgentStore = create<AgentState>(set => ({
         ...state.agents,
         {
           ...agent,
-          capabilities: new Set(agent.capabilities),
-        },
+          capabilities: new Set<AgentCapabilityType>(agent.capabilities),
+        } as Agent,
       ],
     })),
   removeAgent: id =>

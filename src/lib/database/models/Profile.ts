@@ -22,44 +22,61 @@ export const UpdateProfileSchema = CreateProfileSchema.partial().omit({ id: true
 export type CreateProfileInput = z.infer<typeof CreateProfileSchema>
 export type UpdateProfileInput = z.infer<typeof UpdateProfileSchema>
 
-export interface Profile extends CreateProfileInput {
+// Base profile interface with required fields
+export interface BaseProfile {
   id: string
   createdAt: Date
   updatedAt: Date
 }
 
+// Full profile interface with optional fields
+export interface Profile extends BaseProfile {
+  name: string
+  email: string
+  preferences?: {
+    theme: 'light' | 'dark' | 'system'
+    notifications: boolean
+    language: string
+  }
+}
+
 // Profile model class
 export class ProfileModel {
-  private readonly tableName = 'profiles'
-
   async create(data: CreateProfileInput): Promise<Profile> {
     const validated = CreateProfileSchema.parse(data)
     // Implementation will be added when database service is ready
-    return validated
+    return validated as Profile
   }
 
   async update(id: string, data: UpdateProfileInput): Promise<Profile> {
     const validated = UpdateProfileSchema.parse(data)
+    const existing = await this.getById(id)
+
+    // Merge existing data with updates
+    return {
+      ...existing,
+      ...validated,
+      updatedAt: new Date(),
+    }
+  }
+
+  async getById(id: string): Promise<Profile> {
     // Implementation will be added when database service is ready
     return {
-      ...validated,
       id,
+      name: 'Default User',
+      email: 'user@example.com',
       createdAt: new Date(),
       updatedAt: new Date(),
+      preferences: {
+        theme: 'system',
+        notifications: true,
+        language: 'en',
+      },
     }
   }
 
   async delete(_id: string): Promise<void> {
     // Implementation will be added when database service is ready
-  }
-
-  async findById(_id: string): Promise<Profile | null> {
-    // Implementation will be added when database service is ready
-    return null
-  }
-
-  async findByEmail(_email: string): Promise<Profile | null> {
-    // Implementation will be added when database service is ready
-    return null
   }
 }

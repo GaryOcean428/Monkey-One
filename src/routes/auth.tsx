@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { supabase } from '../lib/supabase/config'
+import { supabase } from '../lib/supabase'
 import { useToast } from '../components/ui/use-toast'
 
 export function AuthCallback() {
@@ -51,48 +51,33 @@ export function PasswordReset() {
   useEffect(() => {
     const handlePasswordReset = async () => {
       try {
-        // Get the access token from the URL
-        const hashParams = new URLSearchParams(location.hash.substring(1))
-        const accessToken = hashParams.get('access_token')
-
-        if (!accessToken) {
-          throw new Error('No access token found in URL')
-        }
-
-        // Verify and exchange the access token
-        const { error } = await supabase.auth.verifyOtp({
-          token_hash: accessToken,
-          type: 'recovery',
-        })
-
+        const error = await supabase.auth.resetPasswordForEmail(location.state?.email)
         if (error) throw error
 
         toast({
-          title: 'Password Reset Successful',
-          description: 'Your password has been successfully reset',
+          title: 'Password Reset Email Sent',
+          description: 'Check your email for the password reset link',
         })
-
         navigate('/login')
       } catch (error) {
         console.error('Password reset error:', error)
         toast({
           title: 'Password Reset Error',
-          description: error instanceof Error ? error.message : 'Password reset failed',
+          description: error instanceof Error ? error.message : 'Failed to send reset email',
           variant: 'destructive',
         })
         navigate('/login')
       }
     }
 
-    handlePasswordReset()
-  }, [location, navigate, toast])
+    if (location.state?.email) {
+      handlePasswordReset()
+    } else {
+      navigate('/login')
+    }
+  }, [location.state?.email, navigate, toast])
 
   return <div>Processing password reset...</div>
 }
 
-const Auth = {
-  AuthCallback,
-  PasswordReset,
-}
-
-export default Auth
+export { AuthCallback, PasswordReset }

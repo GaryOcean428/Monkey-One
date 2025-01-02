@@ -3,18 +3,20 @@ import { MessageType } from '../../types'
 
 const MESSAGE_HANDLERS_KEY = Symbol('messageHandlers')
 
-export interface MessageHandlerMetadata extends Record<string, unknown> {
+export interface MessageHandlerMetadata {
   messageType: MessageType
   methodName: string | symbol
   target: object
 }
 
+type MessageFunction = (...args: unknown[]) => unknown
+
 export function MessageHandler(messageType: MessageType): MethodDecorator {
-  return function (
-    target: Record<string, unknown>,
+  return <T extends MessageFunction>(
+    target: object,
     propertyKey: string | symbol,
-    descriptor: TypedPropertyDescriptor<unknown>
-  ): TypedPropertyDescriptor<unknown> {
+    descriptor: TypedPropertyDescriptor<T>
+  ): TypedPropertyDescriptor<T> => {
     // Validate message type
     if (!messageType || typeof messageType !== 'string') {
       throw new Error('Invalid message type')
@@ -34,7 +36,7 @@ export function MessageHandler(messageType: MessageType): MethodDecorator {
     const newHandler: MessageHandlerMetadata = {
       messageType,
       methodName: propertyKey,
-      target: target,
+      target,
     }
 
     const handlers = [...existingHandlers, newHandler]
@@ -48,17 +50,21 @@ export function MessageHandler(messageType: MessageType): MethodDecorator {
         configurable: true,
         enumerable: false,
         writable: true,
-        value: target[propertyKey as keyof typeof target],
+        value: undefined,
       }
     }
 
     // Store original method
     const originalMethod = descriptor.value
 
-    // Create new method that binds this context
-    descriptor.value = function (...args: unknown[]) {
-      return originalMethod.apply(this, args)
+    if (!originalMethod) {
+      throw new Error('No method found for message handler')
     }
+
+    // Create new method that binds this context
+    descriptor.value = function (this: unknown, ...args: unknown[]): unknown {
+      return originalMethod.apply(this, args)
+    } as T
 
     return descriptor
   }
@@ -69,23 +75,18 @@ export function getMessageHandlers(target: object): MessageHandlerMetadata[] {
   const prototype = Object.getPrototypeOf(target)
   const inheritedHandlers = prototype ? getMessageHandlers(prototype) : []
 
-  // Get handlers defined on this class
-  const ownHandlers = Reflect.getMetadata(MESSAGE_HANDLERS_KEY, target.constructor) || []
+  // Get handlers from current target
+  const handlers: MessageHandlerMetadata[] = Reflect.getMetadata(MESSAGE_HANDLERS_KEY, target) || []
 
   // Combine and deduplicate handlers
-  const allHandlers = [...inheritedHandlers, ...ownHandlers]
-  const uniqueHandlers = allHandlers.filter(
-    (handler, index, self) => index === self.findIndex(h => h.messageType === handler.messageType)
-  )
-
-  return uniqueHandlers
+  return [...new Set([...inheritedHandlers, ...handlers])]
 }
 
 export function hasMessageHandler(target: object, messageType: MessageType): boolean {
   return getMessageHandlers(target).some(handler => handler.messageType === messageType)
 }
 
-export function getMessageHandler(
+export function findMessageHandler(
   target: object,
   messageType: MessageType
 ): MessageHandlerMetadata | undefined {

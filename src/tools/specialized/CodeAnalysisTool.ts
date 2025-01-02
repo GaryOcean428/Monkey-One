@@ -1,32 +1,44 @@
-import { Tool, ToolMetadata, ToolParams, ToolResult } from '../registry/Tool';
-import { LLMProvider } from '../../services/llm/LLMProvider';
+import { Tool, ToolParams, ToolResult } from '../registry/Tool'
+import { LLMProvider } from '../../services/llm/LLMProvider'
 
 interface CodeAnalysisParams extends ToolParams {
-  code: string;
-  type: 'analysis' | 'refactor' | 'optimize' | 'security' | 'docs';
+  code: string
+  type: 'analysis' | 'refactor' | 'optimize' | 'security' | 'docs'
   options?: {
-    maxSuggestions?: number;
-    minConfidence?: number;
-    includeExamples?: boolean;
-  };
+    maxSuggestions?: number
+    minConfidence?: number
+    includeExamples?: boolean
+  }
 }
 
 interface CodeAnalysisResult extends ToolResult {
   data: {
-    summary: string;
-    suggestions?: string[];
-    examples?: string[];
-    confidence: number;
+    summary: string
+    suggestions?: string[]
+    examples?: string[]
+    confidence: number
     metadata: {
-      analysisType: string;
-      timestamp: number;
-      modelUsed: string;
-    };
-  };
+      analysisType: string
+      timestamp: number
+      modelUsed: string
+    }
+  }
+}
+
+interface LLMAnalysisResponse {
+  summary: string
+  suggestions?: string[]
+  examples?: string[]
+  confidence: number
+  metadata: {
+    analysisType: string
+    timestamp: string
+    model: string
+  }
 }
 
 export class CodeAnalysisTool extends Tool {
-  private llmProvider: LLMProvider;
+  private llmProvider: LLMProvider
 
   constructor(llmProvider: LLMProvider) {
     super({
@@ -39,29 +51,29 @@ export class CodeAnalysisTool extends Tool {
         'refactoring',
         'optimization',
         'security_review',
-        'documentation'
-      ]
-    });
+        'documentation',
+      ],
+    })
 
-    this.llmProvider = llmProvider;
+    this.llmProvider = llmProvider
   }
 
   public async execute(params: CodeAnalysisParams): Promise<CodeAnalysisResult> {
     try {
-      this.validateParams(params);
-      
-      const prompt = this.buildPrompt(params);
-      const analysis = await this.llmProvider.analyze(prompt);
-      
-      return this.processAnalysis(analysis, params);
+      this.validateParams(params)
+
+      const prompt = this.buildPrompt(params)
+      const analysis = await this.llmProvider.analyze(prompt)
+
+      return this.processAnalysis(analysis, params)
     } catch (error) {
-      return this.createErrorResult(error);
+      return this.createErrorResult(error)
     }
   }
 
   private buildPrompt(params: CodeAnalysisParams): string {
-    const { code, type, options } = params;
-    let prompt = '';
+    const { code, type, options } = params
+    let prompt = ''
 
     switch (type) {
       case 'analysis':
@@ -70,8 +82,8 @@ export class CodeAnalysisTool extends Tool {
                  ${options?.includeExamples ? 'Include example improvements' : ''}
                  
                  Code:
-                 ${code}`;
-        break;
+                 ${code}`
+        break
 
       case 'refactor':
         prompt = `Suggest refactoring improvements for the following code:
@@ -79,8 +91,8 @@ export class CodeAnalysisTool extends Tool {
                  Max suggestions: ${options?.maxSuggestions || 3}
                  
                  Code:
-                 ${code}`;
-        break;
+                 ${code}`
+        break
 
       case 'optimize':
         prompt = `Analyze performance optimization opportunities:
@@ -88,8 +100,8 @@ export class CodeAnalysisTool extends Tool {
                  Include concrete examples and benchmarks
                  
                  Code:
-                 ${code}`;
-        break;
+                 ${code}`
+        break
 
       case 'security':
         prompt = `Perform a security review of the following code:
@@ -97,8 +109,8 @@ export class CodeAnalysisTool extends Tool {
                  Include specific recommendations
                  
                  Code:
-                 ${code}`;
-        break;
+                 ${code}`
+        break
 
       case 'docs':
         prompt = `Generate comprehensive documentation for the code:
@@ -106,18 +118,18 @@ export class CodeAnalysisTool extends Tool {
                  Format in markdown
                  
                  Code:
-                 ${code}`;
-        break;
+                 ${code}`
+        break
 
       default:
-        throw new Error(`Unsupported analysis type: ${type}`);
+        throw new Error(`Unsupported analysis type: ${type}`)
     }
 
-    return prompt;
+    return prompt
   }
 
   private processAnalysis(
-    analysis: any,
+    analysis: LLMAnalysisResponse,
     params: CodeAnalysisParams
   ): CodeAnalysisResult {
     // TODO: Implement proper analysis processing
@@ -126,34 +138,38 @@ export class CodeAnalysisTool extends Tool {
       data: {
         summary: analysis.summary || 'Analysis completed',
         suggestions: analysis.suggestions || [],
-        examples: params.options?.includeExamples ? (analysis.examples || []) : undefined,
+        examples: params.options?.includeExamples ? analysis.examples || [] : undefined,
         confidence: analysis.confidence || 0.8,
         metadata: {
           analysisType: params.type,
           timestamp: Date.now(),
-          modelUsed: this.llmProvider.getModelInfo().name
-        }
-      }
-    };
+          modelUsed: this.llmProvider.getModelInfo().name,
+        },
+      },
+    }
   }
 
   protected validateParams(params: CodeAnalysisParams): void {
-    super.validateParams(params);
-    
+    super.validateParams(params)
+
     if (!params.code || typeof params.code !== 'string') {
-      throw new Error('Code parameter is required and must be a string');
-    }
-    
-    if (!params.type || !['analysis', 'refactor', 'optimize', 'security', 'docs'].includes(params.type)) {
-      throw new Error('Invalid analysis type');
+      throw new Error('Code parameter is required and must be a string')
     }
 
-    if (params.options?.minConfidence && (
-      typeof params.options.minConfidence !== 'number' ||
-      params.options.minConfidence < 0 ||
-      params.options.minConfidence > 1
-    )) {
-      throw new Error('minConfidence must be a number between 0 and 1');
+    if (
+      !params.type ||
+      !['analysis', 'refactor', 'optimize', 'security', 'docs'].includes(params.type)
+    ) {
+      throw new Error('Invalid analysis type')
+    }
+
+    if (
+      params.options?.minConfidence &&
+      (typeof params.options.minConfidence !== 'number' ||
+        params.options.minConfidence < 0 ||
+        params.options.minConfidence > 1)
+    ) {
+      throw new Error('minConfidence must be a number between 0 and 1')
     }
   }
 
@@ -166,10 +182,10 @@ export class CodeAnalysisTool extends Tool {
         metadata: {
           analysisType: 'error',
           timestamp: Date.now(),
-          modelUsed: this.llmProvider.getModelInfo().name
-        }
+          modelUsed: this.llmProvider.getModelInfo().name,
+        },
       },
-      error
-    };
+      error,
+    }
   }
 }
