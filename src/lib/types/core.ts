@@ -1,3 +1,6 @@
+import type { Timeout } from 'node:timers'
+import type { MemoryUsage } from 'node:process'
+
 export enum MessageType {
   USER = 'USER',
   SYSTEM = 'SYSTEM',
@@ -6,59 +9,88 @@ export enum MessageType {
   ERROR = 'ERROR',
   BROADCAST = 'BROADCAST',
   HANDOFF = 'HANDOFF',
-  COMMAND = 'COMMAND'  // Adding missing COMMAND type
+  COMMAND = 'COMMAND',
 }
 
 export enum AgentType {
   ORCHESTRATOR = 'ORCHESTRATOR',
   WORKER = 'WORKER',
-  SPECIALIST = 'SPECIALIST'
+  SPECIALIST = 'SPECIALIST',
 }
 
 export enum AgentStatus {
   AVAILABLE = 'AVAILABLE',
   BUSY = 'BUSY',
   OFFLINE = 'OFFLINE',
-  IDLE = 'IDLE'
+  ERROR = 'ERROR',
+}
+
+export enum AgentCapabilityType {
+  CHAT = 'chat',
+  RAG = 'rag',
+  MEMORY = 'memory',
+  TOOLS = 'tools',
+  SEARCH = 'search',
+  CODE = 'code',
 }
 
 export interface Message {
-  id: string;
-  type: MessageType;
-  role: 'user' | 'assistant' | 'system';
-  content: string;
-  timestamp: number;
-  metadata?: Record<string, unknown>;
-  status?: 'sending' | 'sent' | 'error';
-  sender?: string;
-  recipient?: string;
+  id: string
+  type: MessageType
+  role: 'user' | 'assistant' | 'system'
+  content: string
+  timestamp: number
+  metadata?: Record<string, unknown>
+  status?: 'sending' | 'sent' | 'error'
+  sender?: string
+  recipient?: string
 }
 
 export interface AgentCapability {
-  name: string;
-  description: string;
+  type: AgentCapabilityType
+  description: string
+  parameters?: {
+    type: string
+    properties?: Record<string, unknown>
+    required?: string[]
+  }
 }
 
 export interface AgentMetrics {
-  messageCount: number;
-  errorCount: number;
-  averageResponseTime: number;
-  status: AgentStatus;
-  lastActive: number;
-  successRate: number;
+  totalRequests: number
+  successfulRequests: number
+  failedRequests: number
+  averageResponseTime: number
+  lastResponseTime: number
+  uptime: number
+  memoryUsage: MemoryUsage
 }
 
+export type Timer = Timeout
+
+export type MessageHandler<T = unknown, R = unknown> = (message: T) => Promise<R>
+export type ErrorHandler = (error: Error) => void
+export type ResponseHandler<T = unknown> = (response: T) => void
+
 export interface Agent {
-  id: string;
-  type: AgentType;
-  capabilities: AgentCapability[];
-  status: AgentStatus;
-  
-  initialize(): Promise<void>;
-  processMessage(message: Message): Promise<Message>;
-  getCapabilities(): AgentCapability[];
-  hasCapability(name: string): boolean;
-  addCapability(capability: AgentCapability): void;
-  removeCapability(name: string): void;
-  shutdown(): Promise<void>;
+  id: string
+  name: string
+  type: AgentType
+  capabilities: Set<AgentCapabilityType>
+  status: AgentStatus
+  description?: string
+  provider?: string
+
+  initialize(): Promise<void>
+  processMessage(message: Message): Promise<Message>
+  handleRequest(capability: string, params: Record<string, unknown>): Promise<unknown>
+  getCapabilities(): AgentCapability[]
+  hasCapability(type: AgentCapabilityType): boolean
+  addCapability(type: AgentCapabilityType): void
+  removeCapability(type: AgentCapabilityType): void
+  validateParameters(capability: string, params: Record<string, unknown>): void
+  getMetrics(): AgentMetrics
+  onMemoryCleanup(handler: () => void): void
+  cleanupMemory(): void
+  shutdown(): Promise<void>
 }

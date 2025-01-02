@@ -1,39 +1,42 @@
-import React, { useRef, useState } from 'react';
-import { useChat } from '../../hooks/useChat';
-import { ChatMessage } from './ChatMessage';
-import { ChatInput } from './ChatInput';
-import { SystemThoughts } from '../SystemThoughts';
-import { Integrations } from '../Integrations';
-import { LoadingSpinner } from '../ui/loading-spinner';
-import { Alert } from '../ui/alert';
-import { useAgentStore } from '../../store/agentStore';
+import React, { useRef, useState } from 'react'
+import { useChat } from '../../hooks/useChat'
+import { ChatMessage } from './ChatMessage'
+import { ChatInput } from './ChatInput'
+import { SystemThoughts } from '../SystemThoughts'
+import { Integrations } from '../Integrations'
+import { LoadingSpinner } from '../ui/loading-spinner'
+import { Alert } from '../ui/alert'
+import { useAgentStore } from '../../store/agentStore'
 
 export const ChatContainer: React.FC = () => {
-  const { messages, isLoading, error, sendMessage } = useChat();
-  const [showThoughts, setShowThoughts] = useState(true);
-  const [showIntegrations, setShowIntegrations] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const hasActiveAgent = useAgentStore(state => !!state.activeAgent);
+  const { messages, isLoading, error, sendMessage } = useChat()
+  const [showThoughts] = useState(false)
+  const [showIntegrations] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const activeAgent = useAgentStore(state => state.activeAgent)
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+    containerRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
 
   const handleSend = async (content: string) => {
     try {
-      await sendMessage(content);
-      scrollToBottom();
+      await sendMessage(content)
+      scrollToBottom()
     } catch (err) {
-      console.error('Error sending message:', err);
+      console.error('Error sending message:', err)
     }
-  };
+  }
 
   return (
     <div className="flex h-full">
       {/* Main chat area */}
-      <div className="flex-1 flex flex-col h-full">
+      <div className="flex h-full flex-1 flex-col">
         {/* Messages area */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="flex-1 space-y-4 overflow-y-auto p-4">
+          {!activeAgent && (
+            <Alert>Please select an agent from the Agents panel to start chatting</Alert>
+          )}
           {messages.map((message, index) => (
             <ChatMessage key={message.id || index} message={message} />
           ))}
@@ -47,47 +50,35 @@ export const ChatContainer: React.FC = () => {
               {error}
             </Alert>
           )}
-          <div ref={messagesEndRef} />
+          <div ref={containerRef} />
         </div>
 
         {/* Input area */}
-        <ChatInput 
-          onSendMessage={handleSend}
-          disabled={isLoading || !hasActiveAgent}
-          placeholder={hasActiveAgent ? "Type a message..." : "Please select an agent to start chatting"}
-        />
+        <div className="border-t border-gray-200 dark:border-gray-800">
+          <ChatInput
+            onSendMessage={handleSend}
+            disabled={isLoading || !activeAgent}
+            placeholder={activeAgent ? 'Type a message...' : 'Select an agent to start chatting'}
+          />
+        </div>
       </div>
 
       {/* Right sidebar */}
-      <div className="w-64 border-l border-gray-200 dark:border-gray-700 p-4 space-y-4">
-        {/* System thoughts toggle */}
-        <div className="flex items-center justify-between">
-          <span>System Thoughts</span>
-          <button
-            onClick={() => setShowThoughts(!showThoughts)}
-            className={`px-2 py-1 rounded ${
-              showThoughts ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'
-            }`}
-          >
-            {showThoughts ? 'Hide' : 'Show'}
-          </button>
-        </div>
-        {showThoughts && <SystemThoughts />}
+      <div className="flex w-80 flex-col border-l border-gray-200 dark:border-gray-800">
+        {/* System thoughts */}
+        {showThoughts && (
+          <div className="flex-1 overflow-y-auto p-4">
+            <SystemThoughts />
+          </div>
+        )}
 
-        {/* Integrations toggle */}
-        <div className="flex items-center justify-between">
-          <span>Integrations</span>
-          <button
-            onClick={() => setShowIntegrations(!showIntegrations)}
-            className={`px-2 py-1 rounded ${
-              showIntegrations ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'
-            }`}
-          >
-            {showIntegrations ? 'Hide' : 'Show'}
-          </button>
-        </div>
-        {showIntegrations && <Integrations />}
+        {/* Integrations */}
+        {showIntegrations && (
+          <div className="flex-1 overflow-y-auto p-4">
+            <Integrations />
+          </div>
+        )}
       </div>
     </div>
-  );
-};
+  )
+}

@@ -1,88 +1,74 @@
-import React from 'react';
-import { cn } from '../../lib/utils';
-import { Card } from '../../components/ui/card';
-import { Button } from '../../components/ui/button';
+import React from 'react'
+import { cn } from '../../lib/utils'
+import { Card } from '../../components/ui/card'
+import { Button } from '../../components/ui/button'
 import {
   Brain,
-  Tool,
+  Wrench,
   History,
   Settings,
   ArrowRight,
   Activity,
   Database,
-  Search
-} from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+  Search,
+} from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 interface QuickActionProps {
-  icon: React.ElementType;
-  title: string;
-  description: string;
-  path: string;
+  icon: React.ElementType
+  title: string
+  description: string
+  path: string
 }
 
-const QuickAction: React.FC<QuickActionProps> = ({
-  icon: Icon,
-  title,
-  description,
-  path,
-}) => {
-  const navigate = useNavigate();
+const QuickAction: React.FC<QuickActionProps> = ({ icon: Icon, title, description, path }) => {
+  const navigate = useNavigate()
 
   return (
-    <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer"
-          onClick={() => navigate(path)}>
+    <Card
+      className="cursor-pointer p-6 transition-shadow hover:shadow-lg"
+      onClick={() => navigate(path)}
+    >
       <div className="flex items-start space-x-4">
-        <div className="p-2 bg-primary/10 rounded-lg">
+        <div className="rounded-lg bg-primary/10 p-2">
           <Icon className="h-6 w-6 text-primary" />
         </div>
         <div className="flex-1">
           <h3 className="text-lg font-semibold">{title}</h3>
-          <p className="text-sm text-muted-foreground mt-1">{description}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{description}</p>
         </div>
         <Button variant="ghost" size="icon">
           <ArrowRight className="h-4 w-4" />
         </Button>
       </div>
     </Card>
-  );
-};
-
-interface MetricCardProps {
-  icon: React.ElementType;
-  title: string;
-  value: string;
-  trend?: string;
-  trendUp?: boolean;
+  )
 }
 
-const MetricCard: React.FC<MetricCardProps> = ({
-  icon: Icon,
-  title,
-  value,
-  trend,
-  trendUp,
-}) => (
+interface MetricCardProps {
+  icon: React.ElementType
+  title: string
+  value: string
+  trend?: string
+  trendUp?: boolean
+}
+
+const MetricCard: React.FC<MetricCardProps> = ({ icon: Icon, title, value, trend, trendUp }) => (
   <Card className="p-6">
     <div className="flex items-start justify-between">
       <div>
         <p className="text-sm font-medium text-muted-foreground">{title}</p>
-        <h3 className="text-2xl font-semibold mt-2">{value}</h3>
+        <h3 className="mt-2 text-2xl font-semibold">{value}</h3>
         {trend && (
-          <p className={cn(
-            "text-sm mt-2",
-            trendUp ? "text-green-600" : "text-red-600"
-          )}>
-            {trend}
-          </p>
+          <p className={cn('mt-2 text-sm', trendUp ? 'text-green-600' : 'text-red-600')}>{trend}</p>
         )}
       </div>
-      <div className="p-2 bg-primary/10 rounded-lg">
+      <div className="rounded-lg bg-primary/10 p-2">
         <Icon className="h-6 w-6 text-primary" />
       </div>
     </div>
   </Card>
-);
+)
 
 export const DashboardHome: React.FC = () => {
   return (
@@ -90,7 +76,7 @@ export const DashboardHome: React.FC = () => {
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground mt-2">
+        <p className="mt-2 text-muted-foreground">
           Welcome back! Here's an overview of your system.
         </p>
       </div>
@@ -104,13 +90,7 @@ export const DashboardHome: React.FC = () => {
           trend="+12% from last week"
           trendUp={true}
         />
-        <MetricCard
-          icon={Activity}
-          title="System Load"
-          value="23%"
-          trend="Normal"
-          trendUp={true}
-        />
+        <MetricCard icon={Activity} title="System Load" value="23%" trend="Normal" trendUp={true} />
         <MetricCard
           icon={Database}
           title="Storage Used"
@@ -129,7 +109,7 @@ export const DashboardHome: React.FC = () => {
 
       {/* Quick Actions */}
       <div>
-        <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
+        <h2 className="mb-4 text-xl font-semibold">Quick Actions</h2>
         <div className="grid gap-6 md:grid-cols-2">
           <QuickAction
             icon={Brain}
@@ -138,7 +118,7 @@ export const DashboardHome: React.FC = () => {
             path="/memory"
           />
           <QuickAction
-            icon={Tool}
+            icon={Wrench}
             title="Tools & Capabilities"
             description="Configure and monitor available tools"
             path="/tools"
@@ -158,5 +138,5 @@ export const DashboardHome: React.FC = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}

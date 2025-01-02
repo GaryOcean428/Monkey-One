@@ -2,11 +2,12 @@
 import './polyfills'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import { VectorStoreProvider } from './contexts/VectorStoreContext'
-import App from './App'
 import { ErrorBoundary } from 'react-error-boundary'
+import { RouterProvider } from 'react-router-dom'
+import { router } from './routes'
+import { StoreProvider } from './providers/StoreProvider'
 import './index.css'
 import styles from './styles/error.module.css'
 
@@ -34,9 +35,9 @@ const init = () => {
       <ErrorBoundary FallbackComponent={ErrorFallback}>
         <AuthProvider>
           <VectorStoreProvider>
-            <BrowserRouter>
-              <App />
-            </BrowserRouter>
+            <StoreProvider>
+              <RouterProvider router={router} />
+            </StoreProvider>
           </VectorStoreProvider>
         </AuthProvider>
       </ErrorBoundary>

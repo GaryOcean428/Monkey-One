@@ -6,6 +6,7 @@ import dotenv from 'dotenv'
 import compression from 'vite-plugin-compression'
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
+import tsconfigPaths from 'vite-tsconfig-paths'
 
 // Load environment variables
 dotenv.config()
@@ -22,6 +23,7 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       react(),
+      tsconfigPaths(),
       compression({
         algorithm: 'gzip',
         ext: '.gz',
@@ -33,7 +35,7 @@ export default defineConfig(({ mode }) => {
     ],
     resolve: {
       alias: {
-        '@': resolve(__dirname, 'src'),
+        '@': resolve(__dirname, './src'),
       },
       extensions: ['.js', '.ts', '.jsx', '.tsx', '.json'],
     },

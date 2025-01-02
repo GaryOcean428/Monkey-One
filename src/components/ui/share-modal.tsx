@@ -50,34 +50,36 @@ export function ShareModal({ title, url, onShare, children }: ShareModalProps) {
     } catch (error) {
       console.error('Failed to copy:', error)
       toast({
-        title: 'Error',
-        description: 'Failed to copy link',
+        title: 'Failed to copy',
+        description: 'Please try again',
         variant: 'destructive',
       })
-      monitoring.logError('share_copy_failed', { error })
+      monitoring.logEvent('share_copy_error')
     }
   }
 
   const handleShare = async () => {
-    if (isNavigatorShareSupported(navigator)) {
-      try {
-        await navigator.share({ title, url })
+    if (!isNavigatorShareSupported(navigator)) {
+      await handleCopy()
+      return
+    }
+
+    try {
+      await navigator.share({
+        title,
+        url,
+      })
+      onShare?.(url)
+      monitoring.logEvent('share_native_success')
+    } catch (error) {
+      if ((error as Error).name !== 'AbortError') {
+        console.error('Failed to share:', error)
         toast({
-          title: 'Shared!',
-          description: 'Link shared successfully',
+          title: 'Failed to share',
+          description: 'Please try again',
+          variant: 'destructive',
         })
-        onShare?.(url)
-        monitoring.logEvent('share_native_success')
-      } catch (error) {
-        if ((error as Error).name !== 'AbortError') {
-          console.error('Failed to share:', error)
-          toast({
-            title: 'Error',
-            description: 'Failed to share link',
-            variant: 'destructive',
-          })
-          monitoring.logError('share_native_failed', { error })
-        }
+        monitoring.logEvent('share_native_error')
       }
     }
   }
@@ -87,9 +89,9 @@ export function ShareModal({ title, url, onShare, children }: ShareModalProps) {
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Share Link</DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
-            Share this link with others or copy it to your clipboard
+            Share this link with others or copy it for your records.
           </DialogDescription>
         </DialogHeader>
         <div className="flex items-center space-x-2">

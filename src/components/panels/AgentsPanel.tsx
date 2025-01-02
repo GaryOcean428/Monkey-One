@@ -1,48 +1,60 @@
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Button } from '../ui/button';
-import { Plus, Settings, Trash2 } from 'lucide-react';
-import { useAgentStore } from '../../store/agentStore';
-import { Badge } from '../ui/badge';
-import { ScrollArea } from '../ui/scroll-area';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
-import { Label } from '../ui/label';
-import { Input } from '../ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import React from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
+import { Button } from '../ui/button'
+import { Plus, Settings, Trash2 } from 'lucide-react'
+import { useAgentStore } from '../../store/agentStore'
+import { Badge } from '../ui/badge'
+import { ScrollArea } from '../ui/scroll-area'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog'
+import { Label } from '../ui/label'
+import { Input } from '../ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
+import { AgentType, AgentStatus, AgentCapabilityType } from '../../lib/types/core'
 
-export const AgentsPanel: React.FC = () => {
-  const { agents, addAgent, removeAgent } = useAgentStore();
-  const [isCreating, setIsCreating] = React.useState(false);
+const CAPABILITY_LABELS: Record<AgentCapabilityType, string> = {
+  [AgentCapabilityType.CHAT]: 'Chat',
+  [AgentCapabilityType.RAG]: 'RAG',
+  [AgentCapabilityType.MEMORY]: 'Memory',
+  [AgentCapabilityType.TOOLS]: 'Tools',
+  [AgentCapabilityType.SEARCH]: 'Search',
+  [AgentCapabilityType.CODE]: 'Code',
+}
+
+const AgentsPanel: React.FC = () => {
+  const { agents, addAgent, removeAgent, setActiveAgent } = useAgentStore()
+  const [isCreating, setIsCreating] = React.useState(false)
   const [newAgent, setNewAgent] = React.useState({
     name: '',
     type: '',
     description: '',
-  });
+  })
 
   const handleCreateAgent = () => {
-    if (!newAgent.name || !newAgent.type) return;
+    if (!newAgent.name || !newAgent.type) return
 
-    addAgent({
+    const agent = {
       id: `agent-${Date.now()}`,
       name: newAgent.name,
+      type: newAgent.type as AgentType,
       description: newAgent.description,
       provider: 'local',
-      capabilities: ['chat', 'rag'],
-      settings: {},
-    });
+      capabilities: [AgentCapabilityType.CHAT, AgentCapabilityType.RAG],
+      status: AgentStatus.AVAILABLE,
+    }
 
-    setIsCreating(false);
-    setNewAgent({ name: '', type: '', description: '' });
-  };
+    addAgent(agent)
+    setIsCreating(false)
+    setNewAgent({ name: '', type: '', description: '' })
+  }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-6 p-6">
+      <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Agents</h1>
         <Dialog open={isCreating} onOpenChange={setIsCreating}>
           <DialogTrigger asChild>
             <Button>
-              <Plus className="w-4 h-4 mr-2" />
+              <Plus className="mr-2 h-4 w-4" />
               New Agent
             </Button>
           </DialogTrigger>
@@ -55,7 +67,7 @@ export const AgentsPanel: React.FC = () => {
                 <Label>Name</Label>
                 <Input
                   value={newAgent.name}
-                  onChange={(e) => setNewAgent({ ...newAgent, name: e.target.value })}
+                  onChange={e => setNewAgent({ ...newAgent, name: e.target.value })}
                   placeholder="Enter agent name"
                 />
               </div>
@@ -63,15 +75,15 @@ export const AgentsPanel: React.FC = () => {
                 <Label>Type</Label>
                 <Select
                   value={newAgent.type}
-                  onValueChange={(value) => setNewAgent({ ...newAgent, type: value })}
+                  onValueChange={value => setNewAgent({ ...newAgent, type: value })}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select agent type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="orchestrator">Orchestrator</SelectItem>
-                    <SelectItem value="websurfer">WebSurfer</SelectItem>
-                    <SelectItem value="filesurfer">FileSurfer</SelectItem>
+                    <SelectItem value={AgentType.ORCHESTRATOR}>Orchestrator</SelectItem>
+                    <SelectItem value={AgentType.WORKER}>Worker</SelectItem>
+                    <SelectItem value={AgentType.SPECIALIST}>Specialist</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -79,7 +91,7 @@ export const AgentsPanel: React.FC = () => {
                 <Label>Description</Label>
                 <Input
                   value={newAgent.description}
-                  onChange={(e) => setNewAgent({ ...newAgent, description: e.target.value })}
+                  onChange={e => setNewAgent({ ...newAgent, description: e.target.value })}
                   placeholder="Enter agent description"
                 />
               </div>
@@ -96,8 +108,12 @@ export const AgentsPanel: React.FC = () => {
 
       <ScrollArea className="h-[calc(100vh-12rem)]">
         <div className="space-y-4">
-          {agents.map((agent) => (
-            <Card key={agent.id}>
+          {agents.map(agent => (
+            <Card
+              key={agent.id}
+              className="cursor-pointer hover:bg-accent/50"
+              onClick={() => setActiveAgent(agent)}
+            >
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <div className="space-y-1">
                   <CardTitle className="text-lg font-medium">{agent.name}</CardTitle>
@@ -110,10 +126,13 @@ export const AgentsPanel: React.FC = () => {
                   <Button variant="ghost" size="icon">
                     <Settings className="h-4 w-4" />
                   </Button>
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     size="icon"
-                    onClick={() => removeAgent(agent.id)}
+                    onClick={e => {
+                      e.stopPropagation()
+                      removeAgent(agent.id)
+                    }}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -121,9 +140,9 @@ export const AgentsPanel: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
-                  {agent.capabilities.map((capability) => (
+                  {Array.from(agent.capabilities).map(capability => (
                     <Badge key={capability} variant="outline">
-                      {capability}
+                      {CAPABILITY_LABELS[capability]}
                     </Badge>
                   ))}
                 </div>
@@ -133,5 +152,7 @@ export const AgentsPanel: React.FC = () => {
         </div>
       </ScrollArea>
     </div>
-  );
-};
+  )
+}
+
+export default AgentsPanel
