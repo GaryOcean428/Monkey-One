@@ -1,0 +1,99 @@
+{
+  "env": {
+    "browser": true,
+    "es2021": true,
+    "node": true,
+    "jest": true
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:react/recommended",
+    "plugin:react-hooks/recommended"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
+    },
+    "ecmaVersion": 12,
+    "sourceType": "module"
+  },
+  "plugins": ["@typescript-eslint", "react"],
+  "rules": {
+    "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "ignoreRestSiblings": true
+      }
+    ],
+    "react/react-in-jsx-scope": "off",
+    "no-console": "off",
+    "no-undef": ["error", { "typeof": true }],
+    "no-unused-vars": "off",
+    "no-empty": "warn",
+    "no-prototype-builtins": "off",
+    "getter-return": "error",
+    "no-cond-assign": ["error", "except-parens"],
+    "no-misleading-character-class": "warn"
+  },
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
+  },
+  "ignorePatterns": ["dist/**/*", "build/**/*", "node_modules/**/*"],
+  "overrides": [
+    {
+      "files": [
+        "**/__tests__/**/*.[jt]s?(x)",
+        "**/?(*.)+(spec|test).[jt]s?(x)",
+        "e2e/**/*.[jt]s?(x)"
+      ],
+      "env": {
+        "jest": true,
+        "node": true
+      },
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/no-unused-vars": "off",
+        "no-undef": "off"
+      }
+    },
+    {
+      "files": ["scripts/**/*.[jt]s?(x)"],
+      "env": {
+        "node": true
+      },
+      "rules": {
+        "no-undef": "off"
+      }
+    },
+    {
+      "files": ["vite.config.ts"],
+      "env": {
+        "node": true
+      },
+      "rules": {
+        "no-undef": "off"
+      }
+    }
+  ],
+  "globals": {
+    "window": true,
+    "document": true,
+    "navigator": true,
+    "localStorage": true,
+    "sessionStorage": true,
+    "fetch": true,
+    "WebSocket": true,
+    "FormData": true,
+    "File": true,
+    "Blob": true,
+    "URL": true,
+    "URLSearchParams": true
+  }
+}

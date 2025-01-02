@@ -6,11 +6,15 @@
   "framework": "vite",
   "outputDirectory": "dist",
   "rewrites": [
-    { 
-      "source": "/api/ollama/(.*)", 
+    {
+      "source": "/api/ollama/(.*)",
       "destination": "http://localhost:11434/api/$1"
     },
-    { "source": "/(.*)", "destination": "/" }
+    { "source": "/(.*)", "destination": "/" },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
   ],
   "headers": [
     {
@@ -30,5 +34,45 @@
         }
       ]
     }
-  ]
+  ],
+  "env": {
+    "VITE_SUPABASE_URL": "@vite_supabase_url",
+    "VITE_SUPABASE_ANON_KEY": "@vite_supabase_anon_key",
+    "VITE_SUPABASE_SERVICE_ROLE_KEY": "@vite_supabase_service_role_key",
+    "VITE_CHROMA_CLOUD_URL": "@vite_chroma_cloud_url",
+    "VITE_CHROMA_CLOUD_TOKEN": "@vite_chroma_cloud_token",
+    "VITE_OPENAI_API_KEY": "@vite_openai_api_key",
+    "VITE_ANTHROPIC_API_KEY": "@vite_anthropic_api_key",
+    "VITE_GROQ_API_KEY": "@vite_groq_api_key",
+    "VITE_PERPLEXITY_API_KEY": "@vite_perplexity_api_key",
+    "VITE_XAI_API_KEY": "@vite_xai_api_key",
+    "VITE_HUGGINGFACE_TOKEN": "@vite_huggingface_token",
+    "VITE_GITHUB_USERNAME": "@vite_github_username",
+    "VITE_GITHUB_USEREMAIL": "@vite_github_useremail",
+    "VITE_VERCEL_ORG_ID": "@vite_vercel_org_id",
+    "VITE_VERCEL_PROJECT_ID": "@vite_vercel_project_id",
+    "VITE_VERCEL_TOKEN": "@vite_vercel_token",
+    "VITE_AI_MODEL_TEMPERATURE": "@vite_ai_model_temperature",
+    "VITE_AI_MAX_TOKENS": "@vite_ai_max_tokens",
+    "VITE_AI_TOP_P": "@vite_ai_top_p",
+    "VITE_AI_FREQUENCY_PENALTY": "@vite_ai_frequency_penalty",
+    "VITE_AI_PRESENCE_PENALTY": "@vite_ai_presence_penalty",
+    "VITE_AI_TIMEOUT": "@vite_ai_timeout",
+    "VITE_AI_RETRY_ATTEMPTS": "@vite_ai_retry_attempts",
+    "VITE_AI_BATCH_SIZE": "@vite_ai_batch_size",
+    "VITE_AI_STREAMING_ENABLED": "@vite_ai_streaming_enabled",
+    "VITE_AI_CACHING_ENABLED": "@vite_ai_caching_enabled",
+    "VITE_AI_LOGGING_ENABLED": "@vite_ai_logging_enabled",
+    "VITE_SUPPORT_EMAIL": "@vite_support_email"
+  },
+  "build": {
+    "env": {
+      "VITE_SUPABASE_URL": "@vite_supabase_url",
+      "VITE_SUPABASE_ANON_KEY": "@vite_supabase_anon_key",
+      "VITE_SUPABASE_SERVICE_ROLE_KEY": "@vite_supabase_service_role_key",
+      "VITE_CHROMA_CLOUD_URL": "@vite_chroma_cloud_url",
+      "VITE_CHROMA_CLOUD_TOKEN": "@vite_chroma_cloud_token",
+      "VITE_OPENAI_API_KEY": "@vite_openai_api_key"
+    }
+  }
 }
