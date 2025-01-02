@@ -1,6 +1,6 @@
 import { create } from 'zustand'
-import type { Agent, AgentCapabilityType, Message } from '../lib/types/core'
-import { AgentType, AgentStatus } from '../lib/types/core'
+import type { Agent, AgentCapabilityType, Message } from '../lib/types/agent'
+import { AgentType, AgentStatus } from '../lib/types/agent'
 
 export interface AgentState {
   agents: Agent[]
@@ -8,6 +8,8 @@ export interface AgentState {
   addAgent: (agent: Omit<Agent, 'capabilities'> & { capabilities: AgentCapabilityType[] }) => void
   removeAgent: (id: string) => void
   setActiveAgent: (agent: Agent) => void
+  getAvailableAgents: () => Agent[]
+  updateAgentStatus: (agentId: string, status: AgentStatus) => void
 }
 
 // Create default base agent
@@ -63,9 +65,15 @@ const defaultAgent: Agent = {
   onMemoryCleanup(_handler: () => void) {},
   cleanupMemory() {},
   async shutdown() {},
+  getId() {
+    return this.id
+  },
+  getStatus() {
+    return this.status
+  }
 }
 
-export const useAgentStore = create<AgentState>(set => ({
+export const useAgentStore = create<AgentState>((set, get) => ({
   agents: [defaultAgent],
   activeAgent: defaultAgent,
   addAgent: agent =>
@@ -84,4 +92,16 @@ export const useAgentStore = create<AgentState>(set => ({
       activeAgent: state.activeAgent?.id === id ? null : state.activeAgent,
     })),
   setActiveAgent: agent => set({ activeAgent: agent }),
+  getAvailableAgents: () => {
+    const { agents } = get()
+    return agents.filter((agent) => agent.getStatus() === AgentStatus.AVAILABLE)
+  },
+  updateAgentStatus: (agentId, status) =>
+    set((state) => ({
+      agents: state.agents.map((agent) =>
+        agent.getId() === agentId
+          ? { ...agent, status }
+          : agent
+      )
+    }))
 }))

@@ -1,0 +1,20 @@
+.progressBar {
+  height: 0.5rem;
+  background-color: rgb(229, 231, 235);
+  border-radius: 0.25rem;
+}
+
+.progressBarFill {
+  height: 100%;
+  border-radius: 0.25rem;
+}
+
+.progressBarFill.cpu {
+  width: 30%;
+  background-color: rgb(34, 197, 94);
+}
+
+.progressBarFill.memory {
+  width: 45%;
+  background-color: rgb(59, 130, 246);
+}

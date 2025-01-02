@@ -1,144 +1,165 @@
-import React from 'react'
-import { createBrowserRouter } from 'react-router-dom'
-import { lazy, Suspense } from 'react'
-import { LoadingFallback } from './components/LoadingFallback'
-import { ToolhouseProvider } from './providers/ToolhouseProvider'
+import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
 import { App } from './App'
-import { PrivateRoute } from './components/auth/PrivateRoute'
+import { Dashboard } from './components/Dashboard'
+import { AuthCallback } from './routes/auth/AuthCallback'
+import { PasswordReset } from './routes/auth/PasswordReset'
+import { MemoryManager } from './components/Memory/MemoryManager'
+import { ProfileManager } from './components/Profile/ProfileManager'
+import { PrivateRoute } from './components/Auth/PrivateRoute'
+import { ChatContainer } from './components/chat/ChatContainer'
+import { AgentsPanel } from './components/agents/AgentsPanel'
+import { WorkflowPanel } from './components/workflow/WorkflowPanel'
+import { ToolsPanel } from './components/tools/ToolsPanel'
+import { DocumentsPanel } from './pages/Documents'
+import { GithubPanel } from './pages/Github'
+import { PerformancePanel } from './pages/Performance'
+import { Settings } from './pages/Settings'
+import { Login } from './components/Auth/Login'
+import { Register } from './components/Auth/Register'
 
-// Lazy load components
-const LoginPage = lazy(() =>
-  import('./components/auth/LoginPage').then(m => ({ default: m.LoginPage }))
-)
-const ChatPanel = lazy(() =>
-  import('./components/chat/ChatContainer').then(m => ({ default: m.ChatContainer }))
-)
-const DashboardHome = lazy(() =>
-  import('./components/dashboard/DashboardHome').then(m => ({ default: m.DashboardHome }))
-)
-const MemoryManager = lazy(() =>
-  import('./components/memory/MemoryManager').then(m => ({ default: m.MemoryManager }))
-)
-const Settings = lazy(() =>
-  import('./components/settings/Settings').then(m => ({ default: m.Settings }))
-)
-const ProfileManager = lazy(() =>
-  import('./components/profile/ProfileManager').then(m => ({ default: m.ProfileManager }))
-)
-const AgentsPanel = lazy(() =>
-  import('./components/agents/AgentsPanel').then(m => ({ default: m.AgentsPanel }))
-)
-const WorkflowPanel = lazy(() =>
-  import('./components/workflow/WorkflowPanel').then(m => ({ default: m.WorkflowPanel }))
-)
-const DocumentsPanel = lazy(() =>
-  import('./components/documents/DocumentsPanel').then(m => ({ default: m.DocumentsPanel }))
-)
-const ToolsPanel = lazy(() =>
-  import('./components/tools/ToolsPanel').then(m => ({ default: m.ToolsPanel }))
-)
-const GithubPanel = lazy(() =>
-  import('./components/github/GithubPanel').then(m => ({ default: m.GithubPanel }))
-)
-const PerformancePanel = lazy(() =>
-  import('./components/performance/PerformancePanel').then(m => ({ default: m.PerformancePanel }))
-)
-const AuthCallback = lazy(() => import('./components/auth/AuthCallback'))
-const PasswordReset = lazy(() => import('./components/auth/PasswordReset'))
-
-const routerOptions = {
-  future: {
-    v7_startTransition: true,
-    v7_relativeSplatPath: true,
-  },
+interface ErrorFallbackProps {
+  error?: Error;
+  children: React.ReactElement;
 }
 
-const withProviders = (element: React.ReactNode) => (
-  <PrivateRoute>
-    <ToolhouseProvider>{element}</ToolhouseProvider>
-  </PrivateRoute>
-)
+const ErrorFallback = ({ error, children }: ErrorFallbackProps) => {
+  if (error) {
+    return (
+      <div className="error-boundary">
+        <h2>Something went wrong:</h2>
+        <pre>{error.message}</pre>
+      </div>
+    );
+  }
+  return children;
+}
 
-export const router = createBrowserRouter(
-  [
-    {
-      path: '/login',
-      element: (
-        <Suspense fallback={<LoadingFallback />}>
-          <LoginPage />
-        </Suspense>
-      ),
-    },
-    {
-      path: '/',
-      element: <App />,
-      children: [
-        {
-          index: true,
-          element: withProviders(<ChatPanel />),
-        },
-        {
-          path: 'chat',
-          element: withProviders(<ChatPanel />),
-        },
-        {
-          path: 'dashboard',
-          element: withProviders(<DashboardHome />),
-        },
-        {
-          path: 'memory',
-          element: withProviders(<MemoryManager />),
-        },
-        {
-          path: 'settings',
-          element: withProviders(<Settings />),
-        },
-        {
-          path: 'profile',
-          element: withProviders(<ProfileManager />),
-        },
-        {
-          path: 'agents',
-          element: withProviders(<AgentsPanel />),
-        },
-        {
-          path: 'workflow',
-          element: withProviders(<WorkflowPanel />),
-        },
-        {
-          path: 'documents',
-          element: withProviders(<DocumentsPanel />),
-        },
-        {
-          path: 'tools',
-          element: withProviders(<ToolsPanel />),
-        },
-        {
-          path: 'github',
-          element: withProviders(<GithubPanel />),
-        },
-        {
-          path: 'performance',
-          element: withProviders(<PerformancePanel />),
-        },
-        {
-          path: 'auth/callback',
-          element: (
-            <Suspense fallback={<LoadingFallback />}>
-              <AuthCallback />
-            </Suspense>
-          ),
-        },
-        {
-          path: 'auth/reset-password',
-          element: (
-            <Suspense fallback={<LoadingFallback />}>
-              <PasswordReset />
-            </Suspense>
-          ),
-        },
-      ],
-    },
-  ],
-  routerOptions
-)
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: (
+      <ErrorFallback>
+        <App />
+      </ErrorFallback>
+    ),
+    children: [
+      {
+        index: true,
+        element: <Navigate to="/dashboard" replace />
+      },
+      {
+        path: 'dashboard',
+        element: (
+          <PrivateRoute>
+            <Dashboard />
+          </PrivateRoute>
+        )
+      },
+      {
+        path: 'auth',
+        children: [
+          {
+            path: 'callback',
+            element: <AuthCallback />
+          },
+          {
+            path: 'reset-password',
+            element: <PasswordReset />
+          }
+        ]
+      },
+      {
+        path: 'memory',
+        element: (
+          <PrivateRoute>
+            <MemoryManager />
+          </PrivateRoute>
+        )
+      },
+      {
+        path: 'profile',
+        element: (
+          <PrivateRoute>
+            <ProfileManager />
+          </PrivateRoute>
+        )
+      },
+      {
+        path: 'chat',
+        element: (
+          <PrivateRoute>
+            <ChatContainer />
+          </PrivateRoute>
+        )
+      },
+      {
+        path: 'agents',
+        element: (
+          <PrivateRoute>
+            <AgentsPanel />
+          </PrivateRoute>
+        )
+      },
+      {
+        path: 'workflow',
+        element: (
+          <PrivateRoute>
+            <WorkflowPanel />
+          </PrivateRoute>
+        )
+      },
+      {
+        path: 'tools',
+        element: (
+          <PrivateRoute>
+            <ToolsPanel />
+          </PrivateRoute>
+        )
+      },
+      {
+        path: 'documents',
+        element: (
+          <PrivateRoute>
+            <DocumentsPanel />
+          </PrivateRoute>
+        )
+      },
+      {
+        path: 'github',
+        element: (
+          <PrivateRoute>
+            <GithubPanel />
+          </PrivateRoute>
+        )
+      },
+      {
+        path: 'performance',
+        element: (
+          <PrivateRoute>
+            <PerformancePanel />
+          </PrivateRoute>
+        )
+      },
+      {
+        path: 'settings',
+        element: (
+          <PrivateRoute>
+            <Settings />
+          </PrivateRoute>
+        )
+      }
+    ]
+  },
+  {
+    path: 'login',
+    element: <Login />
+  },
+  {
+    path: 'register',
+    element: <Register />
+  }
+])
+
+export function AppRoutes() {
+  return <RouterProvider router={router} />
+}

@@ -1,12 +1,18 @@
-import { AgentCapability, Message } from '../../types';
+import { AgentCapabilityType, AgentType, AgentMetrics } from '../types/agent';
 
-export class BaseAgent {
-  private capabilities: Set<AgentCapability>;
-  private id: string;
-  private type: string;
+export abstract class BaseAgent {
+  protected capabilities: AgentCapabilityType[] = [];
+  protected id: string;
+  protected type: AgentType;
+  protected metrics: AgentMetrics = {
+    lastExecutionTime: 0,
+    totalRequests: 0,
+    successfulRequests: 0,
+    failedRequests: 0,
+    averageResponseTime: 0
+  };
 
-  constructor(capabilities: AgentCapability[] = [], id?: string, type: string = 'base') {
-    this.capabilities = new Set(capabilities);
+  constructor(id?: string, type: AgentType = AgentType.BASE) {
     this.id = id || `${type}-${Date.now()}`;
     this.type = type;
   }
@@ -15,38 +21,43 @@ export class BaseAgent {
     return this.id;
   }
 
-  getType(): string {
+  getType(): AgentType {
     return this.type;
   }
 
-  hasCapability(capability: AgentCapability): boolean {
-    return this.capabilities.has(capability);
+  hasCapability(capability: AgentCapabilityType): boolean {
+    return this.capabilities.some(cap => cap.name === capability.name);
   }
 
-  addCapability(capability: AgentCapability): void {
-    this.capabilities.add(capability);
+  addCapability(capability: AgentCapabilityType): void {
+    if (!this.hasCapability(capability)) {
+      this.capabilities.push(capability);
+    }
   }
 
-  removeCapability(capability: AgentCapability): void {
-    this.capabilities.delete(capability);
+  removeCapability(capability: AgentCapabilityType): void {
+    this.capabilities = this.capabilities.filter(cap => cap.name !== capability.name);
   }
 
-  getCapabilities(): AgentCapability[] {
-    return Array.from(this.capabilities);
+  getCapabilities(): AgentCapabilityType[] {
+    return [...this.capabilities];
   }
 
-  async processMessage(message: Message): Promise<void> {
-    // Base implementation - to be overridden by specific agent types
-    console.log(`Processing message in base agent: ${message.content}`);
+  getMetrics(): AgentMetrics {
+    return { ...this.metrics };
   }
 
-  async initialize(): Promise<void> {
-    // Base initialization - to be overridden by specific agent types
-    console.log(`Initializing base agent: ${this.id}`);
+  protected updateMetrics(startTime: number): void {
+    const endTime = Date.now();
+    const executionTime = endTime - startTime;
+    
+    this.metrics.lastExecutionTime = executionTime;
+    this.metrics.totalRequests++;
+    this.metrics.averageResponseTime = (
+      (this.metrics.averageResponseTime * (this.metrics.totalRequests - 1) + executionTime) / 
+      this.metrics.totalRequests
+    );
   }
 
-  async shutdown(): Promise<void> {
-    // Base shutdown - to be overridden by specific agent types
-    console.log(`Shutting down base agent: ${this.id}`);
-  }
+  abstract handleMessage(): Promise<{ success: boolean }>;
 }

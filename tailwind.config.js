@@ -1,4 +1,10 @@
+/* eslint-env commonjs */
+// @ts-check
+// eslint-disable-next-line no-undef
+const { fontFamily } = require('tailwindcss/defaultTheme')
+
 /** @type {import('tailwindcss').Config} */
+// eslint-disable-next-line no-undef
 module.exports = {
   darkMode: ["class"],
   content: [
@@ -62,6 +68,10 @@ module.exports = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      fontFamily: {
+        // eslint-disable-next-line no-undef
+        sans: ['var(--font-sans)', ...fontFamily.sans],
+      },
       keyframes: {
         "accordion-down": {
           from: { height: 0 },
@@ -78,5 +88,6 @@ module.exports = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  // eslint-disable-next-line no-undef
+  plugins: [require("@tailwindcss/typography"), require("tailwindcss-animate")],
 }
