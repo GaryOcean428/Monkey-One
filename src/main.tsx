@@ -2,7 +2,7 @@
 import './polyfills'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import AuthProvider from './components/auth/AuthProvider'
+import AuthProvider from './components/Auth/auth/AuthProvider'
 import { VectorStoreProvider } from './contexts/VectorStoreContext'
 import { ErrorBoundary } from 'react-error-boundary'
 import { RouterProvider } from 'react-router-dom'

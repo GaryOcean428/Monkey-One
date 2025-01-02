@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card } from '../ui/Card'
-import { Input } from '../ui/Input'
+import { LabeledInput } from '../ui/LabeledInput'
 import { Button } from '../ui/button'
-import { useAuth } from './auth/useAuth'
+import { useAuth } from './hooks/useAuth'
 
 export const Register: React.FC = () => {
   const navigate = useNavigate()
@@ -37,23 +37,23 @@ export const Register: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <Card className="p-8 max-w-md w-full">
-        <h2 className="text-2xl font-bold text-center mb-6">Create Account</h2>
+    <div className="flex min-h-screen items-center justify-center bg-gray-50">
+      <Card className="w-full max-w-md p-8">
+        <h2 className="mb-6 text-center text-2xl font-bold">Create Account</h2>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <Input
+            <LabeledInput
               type="email"
               label="Email"
               value={email}
               onChange={e => setEmail(e.target.value)}
               required
               disabled={isLoading}
-              error={error}
+              error={error || undefined}
             />
           </div>
           <div>
-            <Input
+            <LabeledInput
               type="password"
               label="Password"
               value={password}
@@ -63,7 +63,7 @@ export const Register: React.FC = () => {
             />
           </div>
           <div>
-            <Input
+            <LabeledInput
               type="password"
               label="Confirm Password"
               value={confirmPassword}
@@ -72,11 +72,7 @@ export const Register: React.FC = () => {
               disabled={isLoading}
             />
           </div>
-          <Button
-            type="submit"
-            className="w-full"
-            isLoading={isLoading}
-          >
+          <Button type="submit" className="w-full" isLoading={isLoading}>
             Create Account
           </Button>
           <div className="text-center">
