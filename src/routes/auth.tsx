@@ -15,7 +15,7 @@ export function AuthCallback() {
           error,
         } = await supabase.auth.getSession()
 
-        if (error) throw error
+        if (error) {
 
         if (session) {
           toast({
