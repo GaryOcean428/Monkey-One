@@ -1,65 +1,30 @@
-import { useEffect, useState } from 'react'
-import { useAuth } from '../components/auth/hooks/useAuth'
-import { supabase } from '../lib/supabase'
-import type { Database } from '../types/supabase'
+import { useState, useCallback } from 'react'
+import { Profile, UseProfileReturn } from '../types/profile'
 
-type Profile = Database['public']['Tables']['profiles']['Row']
-
-export function useProfile() {
-  const { user } = useAuth()
-  const [loading, setLoading] = useState(true)
+export function useProfile(): UseProfileReturn {
   const [profile, setProfile] = useState<Profile | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
 
-  useEffect(() => {
-    if (!user?.id) return
-
-    async function loadProfile() {
-      try {
-        setLoading(true)
-
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single()
-
-        if (error) throw error
-
-        setProfile(data)
-      } catch (e) {
-        setError(e instanceof Error ? e : new Error('An error occurred'))
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadProfile()
-  }, [user?.id])
-
-  async function updateProfile(updates: Partial<Profile>) {
-    if (!user?.id) return
-
+  const updateProfile = useCallback(async (updates: Partial<Profile>) => {
     try {
-      setLoading(true)
-
-      const { error } = await supabase.from('profiles').update(updates).eq('id', user.id)
-
-      if (error) throw error
-
-      setProfile(prev => (prev ? { ...prev, ...updates } : null))
-    } catch (e) {
-      setError(e instanceof Error ? e : new Error('An error occurred'))
-      throw e
+      setIsLoading(true)
+      setError(null)
+      
+      // TODO: Implement API call to update profile
+      setProfile(prev => prev ? { ...prev, ...updates } : null)
+      
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error('Failed to update profile'))
     } finally {
-      setLoading(false)
+      setIsLoading(false)
     }
-  }
+  }, [])
 
   return {
     profile,
-    loading,
+    isLoading,
     error,
-    updateProfile,
+    updateProfile
   }
 }

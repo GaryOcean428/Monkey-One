@@ -27,67 +27,73 @@ export interface SystemConfig {
 }
 
 export enum AgentType {
+  BASE = 'BASE',
   ORCHESTRATOR = 'ORCHESTRATOR',
   WORKER = 'WORKER',
   SPECIALIST = 'SPECIALIST',
 }
 
 export enum AgentStatus {
-  AVAILABLE = 'AVAILABLE',
+  IDLE = 'IDLE',
   BUSY = 'BUSY',
-  OFFLINE = 'OFFLINE',
   ERROR = 'ERROR',
 }
 
-export enum AgentCapabilityType {
-  CHAT = 'chat',
-  RAG = 'rag',
-  MEMORY = 'memory',
-  TOOLS = 'tools',
-  SEARCH = 'search',
-  CODE = 'code',
+export interface AgentCapabilityParameter {
+  type: string
+  description: string
+  required: boolean
 }
 
-export interface AgentCapability {
-  type: AgentCapabilityType
+export interface AgentCapabilityType {
   name: string
   description: string
-  schema?: Record<string, unknown>
+  version: string
+  parameters: Record<string, AgentCapabilityParameter>
 }
 
 export interface AgentMetrics {
+  lastExecutionTime: number
   totalRequests: number
   successfulRequests: number
   failedRequests: number
   averageResponseTime: number
-  lastResponseTime: number
-  uptime: number
-  memoryUsage: MemoryStats
+}
+
+export interface LogLevel {
+  ERROR: 0
+  WARN: 1
+  INFO: 2
+  DEBUG: 3
+  TRACE: 4
+}
+
+export interface CoreConfig {
+  environment: 'development' | 'production' | 'test'
+  logLevel: LogLevel
+  version: string
+}
+
+export interface ErrorResponse {
+  code: string
+  message: string
+  details?: unknown
+}
+
+export interface SuccessResponse<T = unknown> {
+  data: T
+  metadata?: Record<string, unknown>
+}
+
+export type ApiResponse<T = unknown> = SuccessResponse<T> | ErrorResponse
+
+export interface Metrics {
+  timestamp: number
+  duration: number
+  success: boolean
+  error?: string
 }
 
 export type MessageHandler = (message: Message) => Promise<Message>
 export type ErrorHandler = (error: Error) => void
-export type ResponseHandler = (response: Message) => void
-
-export interface Agent {
-  id: string
-  name: string
-  type: AgentType
-  capabilities: Set<AgentCapabilityType>
-  status: AgentStatus
-  description?: string
-  provider?: string
-
-  initialize(): Promise<void>
-  processMessage(message: Message): Promise<Message>
-  handleRequest(capability: string, params: Record<string, unknown>): Promise<unknown>
-  getCapabilities(): AgentCapability[]
-  hasCapability(type: AgentCapabilityType): boolean
-  addCapability(type: AgentCapabilityType): void
-  removeCapability(type: AgentCapabilityType): void
-  validateParameters(capability: string, params: Record<string, unknown>): void
-  getMetrics(): AgentMetrics
-  onMemoryCleanup(handler: () => void): void
-  cleanupMemory(): void
-  shutdown(): Promise<void>
-}
+export type ResponseHandler = (response: ApiResponse) => void
