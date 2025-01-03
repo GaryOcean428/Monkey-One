@@ -177,7 +177,7 @@ export class WorkflowAgent extends BaseAgent {
 
   private async classifyIntent(content: string): Promise<string> {
     if (content.includes('create') || content.includes('new')) return 'create_workflow'
-    if (content.includes('execute') || content.includes('run')) return 'execute_workflow'
+    if (content.includes('execute') || content.includes('run')) {
     if (content.includes('status') || content.includes('check')) return 'check_status'
     return 'unknown'
   }
