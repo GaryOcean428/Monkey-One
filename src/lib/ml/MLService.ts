@@ -1,22 +1,25 @@
-import { tensor, Tensor, tidy, dispose, memory } from '@tensorflow/tfjs-core';
-import { loadLayersModel } from '@tensorflow/tfjs-layers';
-import { io } from '@tensorflow/tfjs-core/dist/io/types';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { getFirestore, collection, addDoc, query, where, getDocs } from 'firebase/firestore';
-import { app } from '../firebase/config';
-import { logger } from '../../utils/logger';
-import { captureException } from '../../utils/sentry';
-import { mlPredictionDuration } from '../../utils/metrics';
+import { tensor, dispose, memory, Tensor, Rank } from '@tensorflow/tfjs-core'
+import { loadLayersModel, LayersModel, Logs } from '@tensorflow/tfjs-layers'
+import { supabase } from '../supabase/client'
+import { logger } from '../../utils/logger'
+import { captureException } from '../../utils/sentry'
+import { mlPredictionDuration } from '../../utils/metrics'
+
+interface ModelMetrics {
+  dateSaved: Date
+  modelTopologyType: string
+  modelTopologyBytes: number
+  weightSpecsBytes: number
+  weightDataBytes: number
+}
 
 /**
  * MLService handles machine learning operations including model management,
- * training, and predictions. It integrates with Firebase for model storage
+ * training, and predictions. It integrates with Supabase for model storage
  * and metrics tracking.
  */
 export class MLService {
-  private storage = getStorage(app);
-  private firestore = getFirestore(app);
-  private model: any = null;
+  private model: LayersModel | null = null
 
   /**
    * Initializes the MLService by loading or creating a model.
@@ -24,19 +27,18 @@ export class MLService {
    */
   async initialize(): Promise<void> {
     try {
-      // Load or create model
       try {
-        this.model = await this.loadModel();
-        logger.info('Model loaded successfully');
+        this.model = await this.loadModel()
+        logger.info('Model loaded successfully')
       } catch (error) {
-        logger.warn('No existing model found, creating new one');
-        this.model = this.createModel();
-        await this.saveModel();
+        logger.warn('No existing model found, creating new one')
+        this.model = await this.createModel()
+        await this.saveModel()
       }
     } catch (error) {
-      logger.error('Failed to initialize MLService:', error);
-      captureException(error as Error);
-      throw error;
+      logger.error('Failed to initialize MLService:', error)
+      captureException(error as Error)
+      throw error
     }
   }
 
@@ -44,85 +46,76 @@ export class MLService {
    * Creates a new neural network model with predefined architecture.
    * @returns A new TensorFlow.js LayersModel
    */
-  private createModel(): any {
-    const model = loadLayersModel('https://example.com/model.json');
-    return model;
+  private async createModel(): Promise<LayersModel> {
+    return await loadLayersModel('https://example.com/model.json')
   }
 
   /**
-   * Loads a model from Firebase Storage.
+   * Loads a model from Supabase Storage.
    * @returns Promise resolving to the loaded model
    * @throws {Error} If model loading fails
    */
-  private async loadModel(): Promise<any> {
+  private async loadModel(): Promise<LayersModel> {
     try {
-      const modelRef = this.getModelRef('ml-models/latest');
-      const modelUrl = await getDownloadURL(modelRef);
-      return tidy(() => {
-        return loadLayersModel(modelUrl);
-      });
+      const { data, error } = await supabase.storage.from('ml-models').download('latest/model.json')
+
+      if (error) throw error
+      if (!data) throw new Error('No model data found')
+
+      const modelJson = await data.text()
+      return await loadLayersModel(JSON.parse(modelJson))
     } catch (error) {
-      logger.error('Failed to load model:', error);
-      throw error;
+      logger.error('Failed to load model:', error)
+      throw error
     }
   }
 
   /**
-   * Gets a reference to a model in Firebase Storage.
-   * @param path - Path to the model in storage
-   * @returns Storage reference
-   */
-  private getModelRef(path: string) {
-    return ref(this.storage, path);
-  }
-
-  /**
-   * Saves the current model to Firebase Storage and records metadata.
+   * Saves the current model to Supabase Storage and records metadata.
    * @throws {Error} If saving fails
    */
   private async saveModel(): Promise<void> {
     if (!this.model) {
-      throw new Error('No model to save');
+      throw new Error('No model to save')
     }
 
     try {
-      const modelArtifacts = await this.model.save(io.withSaveHandler(async (artifacts: any) => {
-        const modelRef = this.getModelRef('ml-models/latest');
-        await uploadBytes(modelRef, new Blob([JSON.stringify(artifacts)]));
+      // Convert model to JSON format
+      const modelConfig = this.model.toJSON()
+      const modelJson = JSON.stringify(modelConfig)
 
-        let weightDataBytes = 0;
-        if (artifacts.weightData) {
-          if (artifacts.weightData instanceof ArrayBuffer) {
-            weightDataBytes = artifacts.weightData.byteLength;
-          } else if (Array.isArray(artifacts.weightData)) {
-            weightDataBytes = artifacts.weightData.reduce((total, buffer) => total + buffer.byteLength, 0);
-          }
-        }
+      // Upload model to Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('ml-models')
+        .upload('latest/model.json', new Blob([modelJson]), {
+          upsert: true,
+        })
 
-        return {
-          modelArtifactsInfo: {
-            dateSaved: new Date(),
-            modelTopologyType: 'JSON',
-            modelTopologyBytes: artifacts.modelTopology ? JSON.stringify(artifacts.modelTopology).length : 0,
-            weightSpecsBytes: artifacts.weightSpecs ? JSON.stringify(artifacts.weightSpecs).length : 0,
-            weightDataBytes
-          }
-        };
-      }));
+      if (uploadError) throw uploadError
 
-      // Save metadata to Firestore
-      await addDoc(collection(this.firestore, 'ml-models'), {
+      const metrics: ModelMetrics = {
+        dateSaved: new Date(),
+        modelTopologyType: 'JSON',
+        modelTopologyBytes: modelJson.length,
+        weightSpecsBytes: 0, // Updated when weights are saved
+        weightDataBytes: 0, // Updated when weights are saved
+      }
+
+      // Save metadata to Supabase
+      const { error: insertError } = await supabase.from('ml_models').insert({
         version: 'latest',
-        architecture: this.model.toJSON(),
-        savedAt: new Date(),
-        metrics: modelArtifacts.modelArtifactsInfo
-      });
+        architecture: modelConfig,
+        saved_at: new Date().toISOString(),
+        metrics,
+      })
 
-      logger.info('Model saved successfully');
+      if (insertError) throw insertError
+
+      logger.info('Model saved successfully')
     } catch (error) {
-      logger.error('Failed to save model:', error);
-      captureException(error as Error);
-      throw error;
+      logger.error('Failed to save model:', error)
+      captureException(error as Error)
+      throw error
     }
   }
 
@@ -136,38 +129,43 @@ export class MLService {
    */
   async train(data: number[], labels: number[], epochs: number = 10): Promise<any> {
     if (!this.model) {
-      throw new Error('Model not initialized');
+      throw new Error('Model not initialized')
     }
 
-    const startTime = Date.now();
     try {
-      const dataTensor = tensor(data);
-      const labelsTensor = tensor(labels);
+      const dataTensor = tensor(data)
+      const labelsTensor = tensor(labels)
       const history = await this.model.fit(dataTensor, labelsTensor, {
         epochs,
         validationSplit: 0.2,
         callbacks: {
-          onEpochEnd: async (epoch, logs) => {
-            await addDoc(collection(this.firestore, 'training-metrics'), {
+          onEpochEnd: async (epoch: number, logs?: Logs) => {
+            if (!logs) return
+
+            const { error } = await supabase.from('training_metrics').insert({
               epoch,
-              ...logs,
-              timestamp: new Date()
-            });
-          }
-        }
-      });
+              loss: logs.loss,
+              val_loss: logs.val_loss,
+              accuracy: logs.acc,
+              val_accuracy: logs.val_acc,
+              timestamp: new Date().toISOString(),
+            })
 
-      mlPredictionDuration.observe(
-        { model: 'neural_core', type: 'training' },
-        Date.now() - startTime
-      );
+            if (error) throw error
+          },
+        },
+      })
 
-      await this.saveModel();
-      return history;
+      if (mlPredictionDuration) {
+        mlPredictionDuration.observe({ model: 'neural_core', type: 'training' }, Date.now())
+      }
+
+      await this.saveModel()
+      return history
     } catch (error) {
-      logger.error('Training failed:', error);
-      captureException(error as Error);
-      throw error;
+      logger.error('Training failed:', error)
+      captureException(error as Error)
+      throw error
     }
   }
 
@@ -179,42 +177,43 @@ export class MLService {
    */
   async predict(input: number[]): Promise<number[]> {
     if (!this.model) {
-      throw new Error('Model not initialized');
+      throw new Error('Model not initialized')
     }
 
-    const startTime = Date.now();
     try {
-      return tidy(() => {
-        const inputTensor = tensor(input);
-        const prediction = this.model.predict(inputTensor);
-        const result = Array.from(prediction.dataSync());
-        return result;
-      });
+      const inputTensor = tensor(input)
+      const prediction = this.model.predict(inputTensor) as Tensor<Rank>
+      const result = Array.from(prediction.dataSync())
+      prediction.dispose()
+      inputTensor.dispose()
+      return result
     } catch (error) {
-      logger.error('Prediction failed:', error);
-      captureException(error as Error);
-      throw error;
+      logger.error('Prediction failed:', error)
+      captureException(error as Error)
+      throw error
     }
   }
 
   /**
-   * Retrieves training history from Firestore.
+   * Retrieves training history from Supabase.
    * @returns Array of training metrics
    */
   async getTrainingHistory(): Promise<unknown[]> {
     try {
-      const metricsRef = collection(this.firestore, 'training-metrics');
-      const q = query(metricsRef, where('timestamp', '>=', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)));
-      const snapshot = await getDocs(q);
+      const weekAgo = new Date()
+      weekAgo.setDate(weekAgo.getDate() - 7)
 
-      return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      const { data, error } = await supabase
+        .from('training_metrics')
+        .select('*')
+        .gte('timestamp', weekAgo.toISOString())
+
+      if (error) throw error
+      return data || []
     } catch (error) {
-      logger.error('Failed to get training history:', error);
-      captureException(error as Error);
-      throw error;
+      logger.error('Failed to get training history:', error)
+      captureException(error as Error)
+      throw error
     }
   }
 
@@ -223,14 +222,14 @@ export class MLService {
    */
   cleanup(): void {
     if (this.model) {
-      this.model.dispose();
-      this.model = null;
+      this.model.dispose()
+      this.model = null
     }
-    dispose();
-    logger.info('MLService cleanup complete');
+    dispose()
+    logger.info('MLService cleanup complete')
   }
 
   getMemoryInfo() {
-    return memory();
+    return memory()
   }
 }

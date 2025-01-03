@@ -1,53 +1,24 @@
-import React from 'react';
-import { cn } from '../../lib/utils';
-import { Card } from '../ui/card';
-import { ToolhouseLoadingWrapper } from '../../components/Loading/ToolhouseLoading';
+import React from 'react'
+import { Card } from '../ui/card'
 
-interface BasePanelProps {
-  children: React.ReactNode;
-  title?: string;
-  description?: string;
-  isLoading?: boolean;
-  error?: Error | null;
-  loadingText?: string;
-  className?: string;
-  headerActions?: React.ReactNode;
+export interface BasePanelProps {
+  title: string
+  description?: string
+  children: React.ReactNode
+  actions?: React.ReactNode
 }
 
-export const BasePanel: React.FC<BasePanelProps> = ({
-  children,
-  title,
-  description,
-  isLoading = false,
-  error = null,
-  loadingText = 'Loading...',
-  className,
-  headerActions,
-}) => {
+export function BasePanel({ title, description, children, actions }: BasePanelProps) {
   return (
-    <div className={cn('h-full p-6 overflow-y-auto', className)}>
-      {(title || description) && (
-        <div className="mb-6 flex justify-between items-start">
-          <div>
-            {title && <h1 className="text-2xl font-bold">{title}</h1>}
-            {description && (
-              <p className="text-muted-foreground mt-1">{description}</p>
-            )}
-          </div>
-          {headerActions && (
-            <div className="flex items-center space-x-2">{headerActions}</div>
-          )}
+    <Card className="p-6">
+      <div className="mb-6 flex items-start justify-between">
+        <div>
+          <h2 className="text-2xl font-bold">{title}</h2>
+          {description && <p className="mt-1 text-muted-foreground">{description}</p>}
         </div>
-      )}
-      
-      <ToolhouseLoadingWrapper
-        isLoading={isLoading}
-        error={error}
-        loadingText={loadingText}
-        className="min-h-[200px]"
-      >
-        {children}
-      </ToolhouseLoadingWrapper>
-    </div>
-  );
-};
+        {actions && <div className="ml-4">{actions}</div>}
+      </div>
+      {children}
+    </Card>
+  )
+}

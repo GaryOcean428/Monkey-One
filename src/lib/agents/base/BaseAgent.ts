@@ -1,23 +1,36 @@
-import { Message } from '../../types/core'
-import { AgentStatus } from '../../types/core'
-import { AgentType, AgentCapabilityType, AgentMetrics } from '../../types/agent'
+import { AgentType, AgentStatus } from '../../types/agent'
+import type {
+  Agent,
+  Message,
+  AgentCapabilityType,
+  AgentMetrics,
+  AgentConfig,
+  MessageResponse,
+} from '../../types/agent'
 
-export abstract class BaseAgent {
+export abstract class BaseAgent implements Agent {
   protected capabilities: AgentCapabilityType[] = []
-  protected id: string
-  protected type: AgentType
   protected status: AgentStatus = AgentStatus.IDLE
   protected metrics: AgentMetrics = {
     lastExecutionTime: 0,
     totalRequests: 0,
     successfulRequests: 0,
     failedRequests: 0,
-    averageResponseTime: 0
+    averageResponseTime: 0,
   }
 
-  constructor(id?: string, type: AgentType = AgentType.BASE) {
-    this.id = id || `${type}-${Date.now()}`
-    this.type = type
+  protected readonly id: string
+  protected readonly type: AgentType
+  protected readonly name: string
+
+  constructor(config: AgentConfig) {
+    this.id = config.id
+    this.name = config.name
+    this.type = config.type
+
+    if (config.capabilities) {
+      config.capabilities.forEach((cap: AgentCapabilityType) => this.addCapability(cap))
+    }
   }
 
   getId(): string {
@@ -57,14 +70,15 @@ export abstract class BaseAgent {
   protected updateMetrics(startTime: number): void {
     const endTime = Date.now()
     const executionTime = endTime - startTime
-    
+
     this.metrics.lastExecutionTime = executionTime
     this.metrics.totalRequests++
-    this.metrics.averageResponseTime = (
-      (this.metrics.averageResponseTime * (this.metrics.totalRequests - 1) + executionTime) / 
+    this.metrics.averageResponseTime =
+      (this.metrics.averageResponseTime * (this.metrics.totalRequests - 1) + executionTime) /
       this.metrics.totalRequests
-    )
   }
 
   abstract handleMessage(message: Message): Promise<{ success: boolean }>
+  abstract handleRequest(request: unknown): Promise<unknown>
+  abstract handleToolUse(tool: unknown): Promise<MessageResponse>
 }

@@ -1,160 +1,165 @@
-import { getStorage } from 'firebase/storage';
-import { getFirestore } from 'firebase/firestore';
-import { app } from '../firebase/firebase';
-import * as tf from '@tensorflow/tfjs';
-import Redis from 'ioredis';
-import { Pool } from 'pg';
-import { Sequelize } from 'sequelize';
+import * as tf from '@tensorflow/tfjs'
+import { supabase } from '../supabase/client'
 
 export class MLManager {
-  private storage = getStorage(app);
-  private firestore = getFirestore(app);
-  private redis: Redis;
-  private pgPool: Pool;
-  private sequelize: Sequelize;
-
   constructor() {
-    // Initialize Redis
-    this.redis = new Redis({
-      host: import.meta.env.VITE_REDIS_HOST,
-      port: parseInt(import.meta.env.VITE_REDIS_PORT),
-      password: import.meta.env.VITE_REDIS_PASSWORD
-    });
-
-    // Initialize PostgreSQL pool
-    this.pgPool = new Pool({
-      user: import.meta.env.VITE_PG_USER,
-      host: import.meta.env.VITE_PG_HOST,
-      database: import.meta.env.VITE_PG_DATABASE,
-      password: import.meta.env.VITE_PG_PASSWORD,
-      port: parseInt(import.meta.env.VITE_PG_PORT)
-    });
-
-    // Initialize Sequelize
-    this.sequelize = new Sequelize(
-      import.meta.env.VITE_PG_DATABASE,
-      import.meta.env.VITE_PG_USER,
-      import.meta.env.VITE_PG_PASSWORD,
-      {
-        host: import.meta.env.VITE_PG_HOST,
-        dialect: 'postgres',
-        logging: false
-      }
-    );
-
-    this.initializeInfrastructure();
+    this.initializeInfrastructure()
   }
 
   private async initializeInfrastructure() {
-    await this.setupDatabase();
-    await this.setupCaching();
-    await this.setupModelStorage();
+    await this.setupDatabase()
+    await this.setupModelStorage()
   }
 
   private async setupDatabase() {
-    // Create ML-related tables
-    await this.sequelize.query(`
-      CREATE TABLE IF NOT EXISTS ml_models (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(255) NOT NULL,
-        version VARCHAR(50) NOT NULL,
-        architecture JSONB,
-        metrics JSONB,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
+    // Create ML-related tables using Supabase
+    const { error } = await supabase.rpc('setup_ml_tables', {
+      query: `
+        CREATE TABLE IF NOT EXISTS ml_models (
+          id SERIAL PRIMARY KEY,
+          name VARCHAR(255) NOT NULL,
+          version VARCHAR(50) NOT NULL,
+          architecture JSONB,
+          metrics JSONB,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
 
-      CREATE TABLE IF NOT EXISTS training_metrics (
-        id SERIAL PRIMARY KEY,
-        model_id INTEGER REFERENCES ml_models(id),
-        epoch INTEGER,
-        loss FLOAT,
-        accuracy FLOAT,
-        metrics JSONB,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
+        CREATE TABLE IF NOT EXISTS training_metrics (
+          id SERIAL PRIMARY KEY,
+          model_id INTEGER REFERENCES ml_models(id),
+          epoch INTEGER,
+          loss FLOAT,
+          accuracy FLOAT,
+          metrics JSONB,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
 
-      CREATE TABLE IF NOT EXISTS embeddings (
-        id SERIAL PRIMARY KEY,
-        vector FLOAT[],
-        metadata JSONB,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `);
-  }
+        CREATE TABLE IF NOT EXISTS embeddings (
+          id SERIAL PRIMARY KEY,
+          vector FLOAT[],
+          metadata JSONB,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
 
-  private async setupCaching() {
-    // Set up Redis cache structure
-    await this.redis.config('SET', 'maxmemory', '2gb');
-    await this.redis.config('SET', 'maxmemory-policy', 'allkeys-lru');
+        CREATE TABLE IF NOT EXISTS model_cache (
+          cache_key TEXT PRIMARY KEY,
+          model_json JSONB,
+          expires_at TIMESTAMP WITH TIME ZONE,
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );
+      `,
+    })
+
+    if (error) {
+      console.error('Error setting up database:', error)
+      throw error
+    }
   }
 
   private async setupModelStorage() {
-    // Create storage buckets for model artifacts
-    const modelBucket = this.storage.ref('ml-models');
-    const checkpointBucket = this.storage.ref('model-checkpoints');
-    
-    await modelBucket.listAll();
-    await checkpointBucket.listAll();
+    // Ensure storage buckets exist
+    const { error: storageError } = await supabase.storage.createBucket('ml-models', {
+      public: false,
+      allowedMimeTypes: ['application/json'],
+    })
+
+    if (storageError && storageError.message !== 'Bucket already exists') {
+      console.error('Error setting up storage:', storageError)
+      throw storageError
+    }
   }
 
   async saveModel(model: tf.LayersModel, name: string, version: string) {
-    // Save model architecture and weights
-    const modelArtifacts = await model.save('indexeddb://temp');
-    const modelRef = this.storage.ref(`ml-models/${name}/${version}`);
-    
-    await modelRef.put(new Blob([JSON.stringify(modelArtifacts)]));
+    try {
+      // Save model architecture and weights
+      const modelArtifacts = await model.save('indexeddb://temp')
+      const modelJson = JSON.stringify(modelArtifacts)
 
-    // Save model metadata to PostgreSQL
-    await this.sequelize.models.ml_models.create({
-      name,
-      version,
-      architecture: model.toJSON(),
-      metrics: {}
-    });
+      // Upload to Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('ml-models')
+        .upload(`${name}/${version}/model.json`, new Blob([modelJson]), {
+          upsert: true,
+        })
+
+      if (uploadError) throw uploadError
+
+      // Save model metadata to Supabase database
+      const { error: dbError } = await supabase.from('ml_models').insert({
+        name,
+        version,
+        architecture: model.toJSON(),
+        metrics: {},
+      })
+
+      if (dbError) throw dbError
+    } catch (error) {
+      console.error('Error saving model:', error)
+      throw error
+    }
   }
 
   async loadModel(name: string, version: string): Promise<tf.LayersModel> {
-    // Try cache first
-    const cacheKey = `model:${name}:${version}`;
-    const cachedModel = await this.redis.get(cacheKey);
-    
-    if (cachedModel) {
-      return tf.loadLayersModel(tf.io.fromMemory(JSON.parse(cachedModel)));
+    try {
+      // Check if model exists in cache
+      const cacheKey = `model:${name}:${version}`
+      const { data: cachedModel } = await supabase
+        .from('model_cache')
+        .select('model_json')
+        .eq('cache_key', cacheKey)
+        .single()
+
+      if (cachedModel) {
+        return tf.loadLayersModel(tf.io.fromMemory(JSON.parse(cachedModel.model_json)))
+      }
+
+      // Load from storage
+      const { data, error } = await supabase.storage
+        .from('ml-models')
+        .download(`${name}/${version}/model.json`)
+
+      if (error) throw error
+
+      const modelJson = await data.text()
+      const model = await tf.loadLayersModel(tf.io.fromMemory(JSON.parse(modelJson)))
+
+      // Cache model
+      const { error: cacheError } = await supabase.from('model_cache').upsert({
+        cache_key: cacheKey,
+        model_json: model.toJSON(),
+        expires_at: new Date(Date.now() + 3600000).toISOString(), // 1 hour
+      })
+
+      if (cacheError) {
+        console.warn('Failed to cache model:', cacheError)
+        // Don't throw error as the model is still loaded successfully
+      }
+
+      return model
+    } catch (error) {
+      console.error('Error loading model:', error)
+      throw error
     }
-
-    // Load from storage
-    const modelRef = this.storage.ref(`ml-models/${name}/${version}`);
-    const modelBlob = await modelRef.getDownloadURL();
-    const model = await tf.loadLayersModel(modelBlob);
-
-    // Cache model
-    await this.redis.set(
-      cacheKey,
-      JSON.stringify(model.toJSON()),
-      'EX',
-      3600 // 1 hour
-    );
-
-    return model;
   }
 
-  async recordTrainingMetrics(
-    modelId: number,
-    epoch: number,
-    metrics: Record<string, number>
-  ) {
-    await this.sequelize.models.training_metrics.create({
-      model_id: modelId,
-      epoch,
-      loss: metrics.loss,
-      accuracy: metrics.accuracy,
-      metrics
-    });
+  async recordTrainingMetrics(modelId: number, epoch: number, metrics: Record<string, number>) {
+    try {
+      const { error } = await supabase.from('training_metrics').insert({
+        model_id: modelId,
+        epoch,
+        loss: metrics.loss,
+        accuracy: metrics.accuracy,
+        metrics,
+      })
+
+      if (error) throw error
+    } catch (error) {
+      console.error('Error recording metrics:', error)
+      throw error
+    }
   }
 
   async cleanup() {
-    await this.redis.quit();
-    await this.pgPool.end();
-    await this.sequelize.close();
+    // No cleanup needed for Supabase connections
   }
 }

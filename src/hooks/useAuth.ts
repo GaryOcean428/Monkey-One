@@ -1,13 +1,9 @@
-import { useState, useCallback } from 'react'
-import { createClient } from '@supabase/supabase-js'
+import { useState, useCallback, useEffect } from 'react'
+import { createClient, AuthError } from '@supabase/supabase-js'
 
 interface User {
   id: string
   email: string
-}
-
-interface AuthError extends Error {
-  code?: string
 }
 
 interface AuthResponse {
@@ -15,119 +11,122 @@ interface AuthResponse {
   error: AuthError | null
 }
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-)
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('Supabase credentials not found. Please check your environment variables:', {
+    url: !!supabaseUrl,
+    key: !!supabaseAnonKey,
+  })
+  throw new Error('Supabase credentials are required')
+}
+
+const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null)
   const [error, setError] = useState<AuthError | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    // Check active session
+    const checkSession = async () => {
+      try {
+        const {
+          data: { session },
+          error: sessionError,
+        } = await supabase.auth.getSession()
+
+        if (sessionError) {
+          throw sessionError
+        }
+
+        if (session?.user) {
+          const { id, email } = session.user
+          setUser({ id, email: email || '' })
+        }
+      } catch (err) {
+        console.error('Error checking session:', err)
+        setError(err as AuthError)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    checkSession()
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        const { id, email } = session.user
+        setUser({ id, email: email || '' })
+      } else {
+        setUser(null)
+      }
+      setLoading(false)
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [])
 
   const signIn = useCallback(async (email: string, password: string): Promise<AuthResponse> => {
     try {
+      setLoading(true)
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
 
       if (signInError) {
-        throw signInError
+        setError(signInError)
+        return { user: null, error: signInError }
       }
 
-      const user = data?.user ? { id: data.user.id, email: data.user.email || '' } : null
-      setUser(user)
-      return { user, error: null }
-    } catch (err) {
-      const authError = err as AuthError
+      if (data?.user) {
+        const { id, email } = data.user
+        const userData = { id, email: email || '' }
+        setUser(userData)
+        setError(null)
+        return { user: userData, error: null }
+      }
+
+      return { user: null, error: new Error('No user data returned') as AuthError }
+    } catch (error) {
+      const authError = error as AuthError
       setError(authError)
       return { user: null, error: authError }
+    } finally {
+      setLoading(false)
     }
   }, [])
 
-  const signUp = useCallback(async (email: string, password: string): Promise<AuthResponse> => {
+  const signOut = useCallback(async () => {
     try {
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-      })
-
-      if (signUpError) {
-        throw signUpError
-      }
-
-      const user = data?.user ? { id: data.user.id, email: data.user.email || '' } : null
-      setUser(user)
-      return { user, error: null }
-    } catch (err) {
-      const authError = err as AuthError
-      setError(authError)
-      return { user: null, error: authError }
-    }
-  }, [])
-
-  const signOut = useCallback(async (): Promise<{ error: AuthError | null }> => {
-    try {
+      setLoading(true)
       const { error: signOutError } = await supabase.auth.signOut()
-      
       if (signOutError) {
         throw signOutError
       }
-
       setUser(null)
-      return { error: null }
-    } catch (err) {
-      const authError = err as AuthError
-      setError(authError)
-      return { error: authError }
-    }
-  }, [])
-
-  const resetPassword = useCallback(async (email: string): Promise<{ error: AuthError | null }> => {
-    try {
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email)
-      
-      if (resetError) {
-        throw resetError
-      }
-
-      return { error: null }
-    } catch (err) {
-      const authError = err as AuthError
-      setError(authError)
-      return { error: authError }
-    }
-  }, [])
-
-  const handleAuthCallback = useCallback(async (): Promise<AuthResponse> => {
-    try {
-      const { data, error: sessionError } = await supabase.auth.getSession()
-      
-      if (sessionError) {
-        throw sessionError
-      }
-
-      const user = data?.session?.user ? { 
-        id: data.session.user.id, 
-        email: data.session.user.email || '' 
-      } : null
-      
-      setUser(user)
-      return { user, error: null }
-    } catch (err) {
-      const authError = err as AuthError
-      setError(authError)
-      return { user: null, error: authError }
+      setError(null)
+    } catch (error) {
+      console.error('Error signing out:', error)
+      setError(error as AuthError)
+    } finally {
+      setLoading(false)
     }
   }, [])
 
   return {
     user,
     error,
+    loading,
     signIn,
-    signUp,
     signOut,
-    resetPassword,
-    handleAuthCallback
   }
 }

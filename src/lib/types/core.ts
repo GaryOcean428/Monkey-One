@@ -26,39 +26,9 @@ export interface SystemConfig {
   debugMode: boolean
 }
 
-export enum AgentType {
-  BASE = 'BASE',
-  ORCHESTRATOR = 'ORCHESTRATOR',
-  WORKER = 'WORKER',
-  SPECIALIST = 'SPECIALIST',
-}
+import type { AgentType, AgentStatus, AgentCapabilityType, AgentMetrics } from './agent'
 
-export enum AgentStatus {
-  IDLE = 'IDLE',
-  BUSY = 'BUSY',
-  ERROR = 'ERROR',
-}
-
-export interface AgentCapabilityParameter {
-  type: string
-  description: string
-  required: boolean
-}
-
-export interface AgentCapabilityType {
-  name: string
-  description: string
-  version: string
-  parameters: Record<string, AgentCapabilityParameter>
-}
-
-export interface AgentMetrics {
-  lastExecutionTime: number
-  totalRequests: number
-  successfulRequests: number
-  failedRequests: number
-  averageResponseTime: number
-}
+export type { AgentType, AgentStatus, AgentCapabilityType, AgentMetrics }
 
 export interface LogLevel {
   ERROR: 0
