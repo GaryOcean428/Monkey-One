@@ -90,7 +90,7 @@ export class ModelManagementService extends EventEmitter {
     if (!health) return false
 
     const providerInstance = this.providers.get(provider)
-    if (!providerInstance) return false
+    if (!providerInstance) {
 
     try {
       const startTime = Date.now()
