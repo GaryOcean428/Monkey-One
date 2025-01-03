@@ -14,8 +14,16 @@ export const ShareModal: React.FC<ShareModalProps> = ({
 }) => {
   const modalRef = useRef<HTMLDivElement>(null)
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'error'>('idle')
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
+    return () => setMounted(false)
+  }, [])
+
+  useEffect(() => {
+    if (!mounted) return
+
     const handleClickOutside = (event: MouseEvent) => {
       try {
         if (
@@ -40,7 +48,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
       // Safely remove event listener
       document.removeEventListener('mousedown', handleClickOutside)
     }
-  }, [onClose])
+  }, [onClose, mounted])
 
   const handleCopyLink = async () => {
     try {

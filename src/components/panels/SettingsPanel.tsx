@@ -1,7 +1,7 @@
 import React, { Suspense } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/card'
 import { LoadingSpinner } from '../ui/loading-spinner'
-import { ErrorBoundary } from '../ErrorBoundary'
+import { ErrorBoundary } from '../AgentDashboard'
 import { useSettings } from '../../contexts/SettingsContext'
 import { Switch } from '../ui/switch'
 import { Button } from '../ui/button'

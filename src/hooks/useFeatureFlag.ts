@@ -52,7 +52,8 @@ export function useFeatureFlag(
         },
         payload => {
           if (isMounted) {
-            setIsEnabled(payload.new?.enabled ?? defaultValue)
+            const newValue = payload.new as { enabled: boolean } | null
+            setIsEnabled(newValue?.enabled ?? defaultValue)
           }
         }
       )

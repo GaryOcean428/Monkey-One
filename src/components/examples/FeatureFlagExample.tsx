@@ -1,4 +1,3 @@
-import React from 'react'
 import { useFeatureFlag } from '../../hooks/useFeatureFlag'
 
 // Feature flag keys

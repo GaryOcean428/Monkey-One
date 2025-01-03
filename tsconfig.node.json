@@ -6,7 +6,15 @@
     "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true,
     "strict": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"]
+    "forceConsistentCasingInFileNames": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "types": ["node"]
   },
-  "include": ["vite.config.ts", "vitest.config.ts", "stackbit.config.ts", "vite.env.d.ts"]
+  "include": [
+    "vite.config.ts",
+    "vitest.config.ts",
+    "stackbit.config.ts",
+    "vite.env.d.ts",
+    "api/**/*.ts"
+  ]
 }

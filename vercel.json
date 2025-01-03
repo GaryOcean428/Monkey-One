@@ -16,12 +16,28 @@
       "destination": "http://localhost:11434/api/$1"
     },
     {
-      "source": "/public/(.*)",
-      "destination": "/public/$1"
+      "source": "/site.webmanifest",
+      "destination": "/site.webmanifest"
     },
-    { "source": "/(.*)", "destination": "/" }
+    {
+      "source": "/(.*)",
+      "destination": "/"
+    }
   ],
   "headers": [
+    {
+      "source": "/site.webmanifest",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/manifest+json"
+        },
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        }
+      ]
+    },
     {
       "source": "/(.*)",
       "headers": [
@@ -35,7 +51,7 @@
         },
         {
           "key": "Access-Control-Allow-Headers",
-          "value": "Origin, X-Requested-With, Content-Type, Accept"
+          "value": "Origin, X-Requested-With, Content-Type, Accept, Authorization"
         }
       ]
     }

@@ -71,7 +71,7 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction) 
 }
 
 // Error handling middleware
-export function errorHandler(err: Error, req: Request, res: Response, next: NextFunction) {
+export function errorHandler(err: Error, _req: Request, res: Response, next: NextFunction) {
   console.error(err.stack)
 
   if (res.headersSent) {

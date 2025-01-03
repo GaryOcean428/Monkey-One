@@ -7,7 +7,7 @@ export interface VectorMetadata {
   source: string
   context?: Record<string, unknown>
   tags?: string[]
-  [key: string]: string | number | unknown[] | undefined
+  [key: string]: string | number | unknown[] | Record<string, unknown> | undefined
 }
 
 export interface SearchResult {

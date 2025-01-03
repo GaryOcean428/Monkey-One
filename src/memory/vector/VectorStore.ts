@@ -1,21 +1,15 @@
-import { Pinecone, QueryOptions } from '@pinecone-database/pinecone'
 import {
   VectorMetadata,
   SearchResult,
   VectorStoreConfig,
-  RetryConfig,
   MetricsCallback,
-  PineconeIndex,
   EnhancedSearchResult,
 } from './types'
 import { RelevanceScorer } from '../relevance/RelevanceScorer'
-import {
-  VectorStoreConnectionError,
-  VectorStoreOperationError,
-  VectorStoreValidationError,
-} from './errors'
+import { VectorStoreOperationError, VectorStoreValidationError } from './errors'
+import axios, { AxiosResponse } from 'axios'
 
-const DEFAULT_CONFIG: VectorStoreConfig = {
+const DEFAULT_CONFIG: Required<VectorStoreConfig> = {
   namespace: 'default',
   dimension: 1536,
   retryAttempts: 3,
@@ -24,10 +18,28 @@ const DEFAULT_CONFIG: VectorStoreConfig = {
   operationTimeout: 30000,
 }
 
+interface ApiRequest {
+  operation: string
+  data: Record<string, unknown>
+}
+
+interface ApiResponse<T> {
+  success: boolean
+  data: T
+  error?: string
+}
+
+interface SearchApiResponse {
+  matches: Array<{
+    id: string
+    score?: number
+    metadata: unknown
+    values?: number[]
+  }>
+}
+
 export class VectorStore {
   private static instance: VectorStore
-  private client: Pinecone | null = null
-  private index: PineconeIndex | null = null
   private readonly config: Required<VectorStoreConfig>
   private metricsCallback?: MetricsCallback
   private relevanceScorer: RelevanceScorer
@@ -44,62 +56,36 @@ export class VectorStore {
   ): Promise<VectorStore> {
     if (!VectorStore.instance) {
       VectorStore.instance = new VectorStore(config, metricsCallback)
-      await VectorStore.instance.initialize()
     }
     return VectorStore.instance
   }
 
-  private async initialize(): Promise<void> {
-    if (!this.client) {
-      try {
-        const apiKey = import.meta.env.VITE_PINECONE_API_KEY
-        const indexName = import.meta.env.VITE_PINECONE_INDEX_NAME
-
-        if (!apiKey || !indexName) {
-          throw new VectorStoreConnectionError('Missing required environment variables')
-        }
-
-        // Initialize Pinecone client
-        this.client = new Pinecone({
-          apiKey,
-        })
-
-        this.index = this.client.Index(indexName)
-
-        // Verify connection by attempting to describe the index
-        await this.index.describeIndexStats()
-      } catch (error) {
-        this.client = null
-        this.index = null
-        throw new VectorStoreConnectionError('Failed to initialize Pinecone client', error as Error)
-      }
-    }
-  }
-
-  public async getIndexStats() {
-    if (!this.index) {
-      throw new VectorStoreConnectionError('Vector store not initialized')
-    }
-    return this.index.describeIndexStats()
-  }
-
-  private async withRetry<T>(operation: string, fn: () => Promise<T>): Promise<T> {
-    const retryConfig: RetryConfig = {
-      attempts: this.config.retryAttempts,
-      delay: this.config.retryDelay,
-      shouldRetry: (error: Error) => {
-        // Retry on connection errors or rate limits
-        return error instanceof VectorStoreConnectionError || error.message.includes('rate limit')
-      },
-    }
-
+  private async callVectorApi<T>(operation: string, data: Record<string, unknown>): Promise<T> {
     const startTime = Date.now()
-    let lastError: Error | undefined
     let retryCount = 0
+    let lastError: Error | null = null
 
-    for (let attempt = 1; attempt <= retryConfig.attempts; attempt++) {
+    const request: ApiRequest = {
+      operation,
+      data,
+    }
+
+    while (retryCount < this.config.retryAttempts) {
       try {
-        const result = await fn()
+        const response = await axios.post<ApiResponse<T>, AxiosResponse<ApiResponse<T>>>(
+          '/api/vector-store',
+          request,
+          {
+            timeout: this.config.operationTimeout,
+          }
+        )
+
+        if (!response.data.success) {
+          throw new VectorStoreOperationError(
+            operation,
+            response.data.error || 'Unknown operation error'
+          )
+        }
 
         this.recordMetrics(operation, {
           operationLatency: Date.now() - startTime,
@@ -107,18 +93,14 @@ export class VectorStore {
           success: true,
         })
 
-        return result
+        return response.data.data
       } catch (error) {
-        lastError = error as Error
+        lastError = error instanceof Error ? error : new Error('Unknown error')
         retryCount++
 
-        if (attempt === retryConfig.attempts || !retryConfig.shouldRetry(lastError)) {
-          break
+        if (retryCount < this.config.retryAttempts) {
+          await new Promise(resolve => setTimeout(resolve, this.config.retryDelay * retryCount))
         }
-
-        await new Promise(resolve =>
-          setTimeout(resolve, retryConfig.delay * Math.pow(2, attempt - 1))
-        )
       }
     }
 
@@ -126,10 +108,10 @@ export class VectorStore {
       operationLatency: Date.now() - startTime,
       retryCount,
       success: false,
-      error: lastError,
+      error: lastError || new Error('Max retries exceeded'),
     })
 
-    throw new VectorStoreOperationError(operation, 'Operation failed after retries', lastError)
+    throw lastError || new Error('Vector store operation failed after max retries')
   }
 
   private recordMetrics(
@@ -141,34 +123,39 @@ export class VectorStore {
       error?: Error
     }
   ): void {
-    this.metricsCallback?.(operation, metrics)
+    if (this.metricsCallback) {
+      try {
+        this.metricsCallback(operation, metrics)
+      } catch (error) {
+        console.error('Error recording metrics:', error)
+      }
+    }
   }
 
   public async storeEmbedding(vector: number[], metadata: VectorMetadata): Promise<void> {
     this.validateVector(vector)
     this.validateMetadata(metadata)
 
-    if (!this.index) {
-      throw new VectorStoreConnectionError('Vector store not initialized')
-    }
-
-    await this.withRetry('storeEmbedding', async () => {
-      await this.index!.upsert([
+    await this.callVectorApi('store', {
+      vectors: [
         {
           id: metadata.id,
           values: vector,
           metadata,
         },
-      ])
+      ],
     })
   }
 
   public async semanticSearch(
     queryVector: number[],
     k: number = 5,
-    filter?: object
+    filter?: object,
+    queryContext: { timestamp: number; tags?: string[]; source?: string } = {
+      timestamp: Date.now(),
+    }
   ): Promise<SearchResult[]> {
-    return this.enhancedSemanticSearch(queryVector, { timestamp: Date.now() }, k, filter)
+    return this.enhancedSemanticSearch(queryVector, queryContext, k, filter)
   }
 
   public async enhancedSemanticSearch(
@@ -183,78 +170,46 @@ export class VectorStore {
   ): Promise<EnhancedSearchResult[]> {
     this.validateVector(queryVector)
 
-    if (!this.index) {
-      throw new VectorStoreConnectionError('Vector store not initialized')
-    }
+    const expandedK = Math.min(k * 2, 100)
 
-    return this.withRetry('enhancedSemanticSearch', async () => {
-      // Get more results than needed to allow for relevance-based reranking
-      const expandedK = Math.min(k * 2, 100)
-
-      const queryOptions: QueryOptions = {
-        vector: queryVector,
-        topK: expandedK,
-        includeMetadata: true,
-        includeValues: true,
-      }
-
-      if (filter) {
-        queryOptions.filter = filter
-      }
-
-      const queryResponse = await this.index!.query(queryOptions)
-
-      // Convert matches to SearchResults and calculate relevance
-      const results = queryResponse.matches.map(
-        (match: { id: string; score?: number; metadata: unknown; values?: number[] }) => {
-          const searchResult: SearchResult = {
-            id: match.id,
-            score: match.score || 0,
-            metadata: match.metadata as VectorMetadata,
-            vector: match.values || [],
-          }
-
-          // Calculate comprehensive relevance metrics
-          const relevanceMetrics = this.relevanceScorer.calculateRelevance(
-            searchResult,
-            queryContext
-          )
-
-          return {
-            ...searchResult,
-            relevanceMetrics,
-          }
-        }
-      )
-
-      // Sort by final relevance score and take top k
-      return results
-        .sort(
-          (a: EnhancedSearchResult, b: EnhancedSearchResult) =>
-            b.relevanceMetrics.finalScore - a.relevanceMetrics.finalScore
-        )
-        .slice(0, k)
+    const searchResponse = await this.callVectorApi<SearchApiResponse>('search', {
+      vector: queryVector,
+      k: expandedK,
+      filter,
     })
+
+    const results = searchResponse.matches.map(
+      (match: { id: string; score?: number; metadata: unknown; values?: number[] }) => {
+        const searchResult: SearchResult = {
+          id: match.id,
+          score: match.score || 0,
+          metadata: match.metadata as VectorMetadata,
+          vector: match.values || [],
+        }
+
+        const relevanceMetrics = this.relevanceScorer.calculateRelevance(searchResult, queryContext)
+
+        return {
+          ...searchResult,
+          relevanceMetrics,
+        }
+      }
+    )
+
+    return results
+      .sort(
+        (a: EnhancedSearchResult, b: EnhancedSearchResult) =>
+          b.relevanceMetrics.finalScore - a.relevanceMetrics.finalScore
+      )
+      .slice(0, k)
   }
 
   public async deleteEmbedding(id: string): Promise<void> {
-    if (!this.index) {
-      throw new VectorStoreConnectionError('Vector store not initialized')
-    }
-
-    await this.withRetry('deleteEmbedding', async () => {
-      await this.index!.deleteOne(id)
-    })
+    await this.callVectorApi('delete', { ids: [id] })
   }
 
   public async deleteNamespace(): Promise<void> {
-    if (!this.index) {
-      throw new VectorStoreConnectionError('Vector store not initialized')
-    }
-
-    await this.withRetry('deleteNamespace', async () => {
-      await this.index!.deleteAll()
-    })
+    await this.callVectorApi('delete', { ids: [] }) // Empty array means delete all
   }
 
   private validateVector(vector: number[]): void {
