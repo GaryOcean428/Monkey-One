@@ -255,7 +255,10 @@ export class GitHubAgent extends BaseAgent {
   private async analyzeChanges(
     files: PullRequestFile[]
   ): Promise<{ summary: string; comments: any[] }> {
-    const totalChanges = files.reduce((acc, file) => acc + file.changes, 0)
+    const { data: rateLimit } = await this.octokit.rateLimit.get()
+    if (rateLimit.remaining < files.length) {
+      throw new Error('Insufficient API rate limit remaining for analysis')
+    }
     const totalAdditions = files.reduce((acc, file) => acc + file.additions, 0)
     const totalDeletions = files.reduce((acc, file) => acc + file.deletions, 0)
 
