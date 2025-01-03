@@ -252,7 +252,7 @@ export class WorkflowAgent extends BaseAgent {
     const recursionStack = new Set<string>()
 
     const hasCycle = (stepId: string): boolean => {
-      if (recursionStack.has(stepId)) return true
+      if (recursionStack.has(stepId)) {
       if (visited.has(stepId)) return false
 
       visited.add(stepId)
