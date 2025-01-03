@@ -182,10 +182,11 @@ export class MLService {
 
     try {
       const inputTensor = tensor(input)
-      const prediction = this.model.predict(inputTensor) as Tensor<Rank>
-      const result = Array.from(prediction.dataSync())
-      prediction.dispose()
-      inputTensor.dispose()
+const result = tf.tidy(() => {
+  const prediction = this.model.predict(inputTensor) as Tensor
+  return Array.from(prediction.dataSync())
+})
+inputTensor.dispose()
       return result
     } catch (error) {
       logger.error('Prediction failed:', error)
