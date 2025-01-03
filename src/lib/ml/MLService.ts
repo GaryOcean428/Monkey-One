@@ -62,8 +62,14 @@ export class MLService {
       if (error) throw error
       if (!data) throw new Error('No model data found')
 
-      const modelJson = await data.text()
-      return await loadLayersModel(JSON.parse(modelJson))
+const modelJson = await data.text()
+const weightsResponse = await supabase.storage.from('ml-models').download('latest/weights.bin')
+if (!weightsResponse.data) throw new Error('No weights data found')
+const weights = await weightsResponse.data.arrayBuffer()
+return await loadLayersModel({
+  modelTopology: JSON.parse(modelJson),
+  weightData: weights,
+})
     } catch (error) {
       logger.error('Failed to load model:', error)
       throw error
