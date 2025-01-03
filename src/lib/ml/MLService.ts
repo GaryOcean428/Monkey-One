@@ -1,9 +1,10 @@
-import { tensor, dispose, memory, Tensor, Rank } from '@tensorflow/tfjs-core'
+import { tensor, dispose, memory, Tensor, Rank, History } from '@tensorflow/tfjs-core'
 import { loadLayersModel, LayersModel, Logs } from '@tensorflow/tfjs-layers'
 import { supabase } from '../supabase/client'
 import { logger } from '../../utils/logger'
 import { captureException } from '../../utils/sentry'
 import { mlPredictionDuration } from '../../utils/metrics'
+import { encrypt, decrypt } from '../utils/browserCrypto'
 
 interface ModelMetrics {
   dateSaved: Date
@@ -62,7 +63,8 @@ export class MLService {
       if (error) throw error
       if (!data) throw new Error('No model data found')
 
-      const modelJson = await data.text()
+      const encryptedData = await data.text()
+      const modelJson = await decrypt(encryptedData)
       return await loadLayersModel(JSON.parse(modelJson))
     } catch (error) {
       logger.error('Failed to load model:', error)
@@ -80,14 +82,15 @@ export class MLService {
     }
 
     try {
-      // Convert model to JSON format
+      // Convert model to JSON format and encrypt
       const modelConfig = this.model.toJSON()
       const modelJson = JSON.stringify(modelConfig)
+      const encryptedData = await encrypt(modelJson)
 
-      // Upload model to Supabase Storage
+      // Upload encrypted model to Supabase Storage
       const { error: uploadError } = await supabase.storage
         .from('ml-models')
-        .upload('latest/model.json', new Blob([modelJson]), {
+        .upload('latest/model.json', new Blob([encryptedData]), {
           upsert: true,
         })
 
@@ -97,8 +100,8 @@ export class MLService {
         dateSaved: new Date(),
         modelTopologyType: 'JSON',
         modelTopologyBytes: modelJson.length,
-        weightSpecsBytes: 0, // Updated when weights are saved
-        weightDataBytes: 0, // Updated when weights are saved
+        weightSpecsBytes: 0,
+        weightDataBytes: 0,
       }
 
       // Save metadata to Supabase
@@ -127,41 +130,32 @@ export class MLService {
    * @returns Training history
    * @throws {Error} If training fails
    */
-  async train(data: number[], labels: number[], epochs: number = 10): Promise<any> {
+  async train(data: number[], labels: number[], epochs: number = 10): Promise<History> {
     if (!this.model) {
       throw new Error('Model not initialized')
     }
 
     try {
-      const dataTensor = tensor(data)
-      const labelsTensor = tensor(labels)
-      const history = await this.model.fit(dataTensor, labelsTensor, {
-        epochs,
-        validationSplit: 0.2,
-        callbacks: {
-          onEpochEnd: async (epoch: number, logs?: Logs) => {
-            if (!logs) return
+      const timer = mlPredictionDuration.startTimer()
+      const trainData = tensor(data)
+      const trainLabels = tensor(labels)
 
-            const { error } = await supabase.from('training_metrics').insert({
-              epoch,
-              loss: logs.loss,
-              val_loss: logs.val_loss,
-              accuracy: logs.acc,
-              val_accuracy: logs.val_acc,
-              timestamp: new Date().toISOString(),
-            })
-
-            if (error) throw error
+      try {
+        const history = await this.model.fit(trainData, trainLabels, {
+          epochs,
+          callbacks: {
+            onEpochEnd: this.onEpochEnd.bind(this),
           },
-        },
-      })
-
-      if (mlPredictionDuration) {
-        mlPredictionDuration.observe({ model: 'neural_core', type: 'training' }, Date.now())
+        })
+        timer({ success: true })
+        return history
+      } catch (error) {
+        timer({ success: false })
+        throw error
+      } finally {
+        trainData.dispose()
+        trainLabels.dispose()
       }
-
-      await this.saveModel()
-      return history
     } catch (error) {
       logger.error('Training failed:', error)
       captureException(error as Error)
@@ -176,17 +170,28 @@ export class MLService {
    * @throws {Error} If prediction fails or model is not initialized
    */
   async predict(input: number[]): Promise<number[]> {
-    if (!this.model) {
-      throw new Error('Model not initialized')
-    }
-
     try {
+      if (!this.model) {
+        throw new Error('Model not initialized')
+      }
+
+      const timer = mlPredictionDuration.startTimer()
       const inputTensor = tensor(input)
-      const prediction = this.model.predict(inputTensor) as Tensor<Rank>
-      const result = Array.from(prediction.dataSync())
-      prediction.dispose()
-      inputTensor.dispose()
-      return result
+
+      try {
+        const prediction = (await this.model.predict(inputTensor)) as Tensor<Rank>
+        const result = Array.from(await prediction.data())
+
+        // Cleanup tensors
+        inputTensor.dispose()
+        prediction.dispose()
+
+        timer({ success: true })
+        return result
+      } catch (error) {
+        timer({ success: false })
+        throw error
+      }
     } catch (error) {
       logger.error('Prediction failed:', error)
       captureException(error as Error)
@@ -221,15 +226,43 @@ export class MLService {
    * Cleans up resources used by the MLService.
    */
   cleanup(): void {
-    if (this.model) {
-      this.model.dispose()
-      this.model = null
+    try {
+      if (this.model) {
+        this.model.dispose()
+        this.model = null
+      }
+
+      // Force garbage collection of tensors
+      dispose()
+
+      logger.info('MLService cleanup complete', {
+        memoryInfo: this.getMemoryInfo(),
+      })
+    } catch (error) {
+      logger.error('Cleanup failed:', error)
+      captureException(error as Error)
     }
-    dispose()
-    logger.info('MLService cleanup complete')
   }
 
   getMemoryInfo() {
-    return memory()
+    return {
+      ...memory(),
+      timestamp: new Date().toISOString(),
+    }
+  }
+
+  onEpochEnd(epoch: number, logs?: Logs) {
+    if (!logs) return
+
+    const { error } = supabase.from('training_metrics').insert({
+      epoch,
+      loss: logs.loss,
+      val_loss: logs.val_loss,
+      accuracy: logs.acc,
+      val_accuracy: logs.val_acc,
+      timestamp: new Date().toISOString(),
+    })
+
+    if (error) throw error
   }
 }

@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events'
+import { EventEmitter } from '../utils/EventEmitter'
 
 // Use node-fetch in Node.js environment
 declare const fetch: typeof globalThis.fetch
