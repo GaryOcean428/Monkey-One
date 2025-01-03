@@ -41,8 +41,21 @@ export class ExperienceConsolidation extends EventEmitter {
     }
 
     try {
+
+      // Store in Supabase for persistence
+if (!experience.id || !experience.type || !experience.content || !experience.metadata?.timestamp) {
+  throw new Error('Invalid experience object: missing required fields')
+}
+const { error: dbError } = await supabase.from('experiences').insert({
+  id: experience.id,
+  type: experience.type,
+  content: experience.content,
+  metadata: experience.metadata,
+})
+
       this.isRunning = true
       this.consolidationTimer = setInterval(() => this.consolidate(), this.consolidationInterval)
+
 
       // Run initial consolidation
       await this.consolidate()

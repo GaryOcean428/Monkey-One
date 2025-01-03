@@ -1,10 +1,18 @@
 import { Pinecone } from '@pinecone-database/pinecone'
 
+if (!process.env.PINECONE_API_KEY) {
+  throw new Error('PINECONE_API_KEY environment variable is not set')
+}
+
+if (!process.env.PINECONE_INDEX_NAME) {
+  throw new Error('PINECONE_INDEX_NAME environment variable is not set')
+}
+
 const pinecone = new Pinecone({
-  apiKey: process.env.PINECONE_API_KEY!,
+  apiKey: process.env.PINECONE_API_KEY,
 })
 
-const index = pinecone.Index(process.env.PINECONE_INDEX_NAME!)
+const index = pinecone.Index(process.env.PINECONE_INDEX_NAME)
 
 export const config = {
   runtime: 'edge',

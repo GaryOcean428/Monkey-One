@@ -3,15 +3,7 @@ import { loadLayersModel, LayersModel, Logs } from '@tensorflow/tfjs-layers'
 import { supabase } from '../supabase/client'
 import { logger } from '../../utils/logger'
 import { captureException } from '../../utils/sentry'
-import { mlPredictionDuration } from '../../utils/metrics'
-import { encrypt, decrypt } from '../utils/browserCrypto'
 
-interface ModelMetrics {
-  dateSaved: Date
-  modelTopologyType: string
-  modelTopologyBytes: number
-  weightSpecsBytes: number
-  weightDataBytes: number
 }
 
 /**
@@ -63,6 +55,14 @@ export class MLService {
       if (error) throw error
       if (!data) throw new Error('No model data found')
 
+const modelJson = await data.text()
+const weightsResponse = await supabase.storage.from('ml-models').download('latest/weights.bin')
+if (!weightsResponse.data) throw new Error('No weights data found')
+const weights = await weightsResponse.data.arrayBuffer()
+return await loadLayersModel({
+  modelTopology: JSON.parse(modelJson),
+  weightData: weights,
+})
       const encryptedData = await data.text()
       const modelJson = await decrypt(encryptedData)
       return await loadLayersModel(JSON.parse(modelJson))
@@ -178,6 +178,12 @@ export class MLService {
       const timer = mlPredictionDuration.startTimer()
       const inputTensor = tensor(input)
 
+const result = tf.tidy(() => {
+  const prediction = this.model.predict(inputTensor) as Tensor
+  return Array.from(prediction.dataSync())
+})
+inputTensor.dispose()
+      return result
       try {
         const prediction = (await this.model.predict(inputTensor)) as Tensor<Rank>
         const result = Array.from(await prediction.data())
@@ -192,6 +198,7 @@ export class MLService {
         timer({ success: false })
         throw error
       }
+
     } catch (error) {
       logger.error('Prediction failed:', error)
       captureException(error as Error)
@@ -266,3 +273,12 @@ export class MLService {
     if (error) throw error
   }
 }
+import { mlPredictionDuration } from '../../utils/metrics'
+import { encrypt, decrypt } from '../utils/browserCrypto'
+
+interface ModelMetrics {
+  dateSaved: Date
+  modelTopologyType: string
+  modelTopologyBytes: number
+  weightSpecsBytes: number
+  weightDataBytes: number
