@@ -56,12 +56,15 @@ export class ExperienceConsolidation extends EventEmitter {
   public async storeExperience(experience: Experience): Promise<void> {
     try {
       // Store in Supabase for persistence
-      const { error: dbError } = await supabase.from('experiences').insert({
-        id: experience.id,
-        type: experience.type,
-        content: experience.content,
-        metadata: experience.metadata,
-      })
+if (!experience.id || !experience.type || !experience.content || !experience.metadata?.timestamp) {
+  throw new Error('Invalid experience object: missing required fields')
+}
+const { error: dbError } = await supabase.from('experiences').insert({
+  id: experience.id,
+  type: experience.type,
+  content: experience.content,
+  metadata: experience.metadata,
+})
 
       if (dbError) throw dbError
 
