@@ -1,4 +1,4 @@
-import { logger } from '../../lib/utils/logger'
+import { logger } from '../../utils/logger'
 import { monitoring } from '../../utils/monitoring'
 import {
   VectorMetadata,
