@@ -1,54 +1,115 @@
-import React from 'react';
-import { Card } from './ui/card';
-import { Button } from './ui/button';
-import { Badge } from './ui/badge';
-import { Plus, Play, Save } from 'lucide-react';
-import { useWorkflow } from '../hooks/useWorkflow';
-import { WorkflowVisualizer } from './workflow/WorkflowVisualizer';
+import React, { useState } from 'react'
+import { Card } from './ui/card'
+import { Button } from './ui/button'
+import { Plus, Play, Save, Settings } from 'lucide-react'
+import { useWorkflow, type Workflow } from '../hooks/useWorkflow'
+import { WorkflowVisualizer } from './workflow/WorkflowVisualizer'
+import { WorkflowDialog } from './workflow/WorkflowDialog'
 
 export function AgentWorkflow() {
-  const { workflows, createWorkflow } = useWorkflow();
-  const activeWorkflow = workflows[0]; // For now, just show the first workflow
+  const { workflows, createWorkflow, runWorkflow, saveWorkflow } = useWorkflow()
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const activeWorkflow = workflows[0] // For now, just show the first workflow
+
+  const handleCreateWorkflow = (workflowData: {
+    name: string
+    description: string
+    steps: Array<{
+      id: string
+      name: string
+      agent?: string
+      description?: string
+    }>
+  }) => {
+    const newWorkflow: Omit<Workflow, 'id'> = {
+      ...workflowData,
+      status: 'pending',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      steps: workflowData.steps.map(step => ({
+        ...step,
+        status: 'pending',
+      })),
+    }
+    createWorkflow(newWorkflow)
+    setIsDialogOpen(false)
+  }
+
+  const handleRunWorkflow = async () => {
+    if (!activeWorkflow) return
+    try {
+      await runWorkflow(activeWorkflow.id)
+    } catch (error) {
+      console.error('Failed to run workflow:', error)
+    }
+  }
+
+  const handleSaveWorkflow = async () => {
+    if (!activeWorkflow) return
+    try {
+      await saveWorkflow(activeWorkflow.id)
+    } catch (error) {
+      console.error('Failed to save workflow:', error)
+    }
+  }
 
   return (
-    <div className="h-full p-6 overflow-y-auto">
-      <div className="mb-6 flex justify-between items-start">
+    <div className="h-full overflow-y-auto p-6">
+      <div className="mb-6 flex items-start justify-between">
         <div>
           <h2 className="text-2xl font-bold">Agent Workflow</h2>
-          <p className="text-muted-foreground mt-1">Visualize and manage agent workflows</p>
+          <p className="mt-1 text-muted-foreground">Visualize and manage agent workflows</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline">
-            <Plus className="w-4 h-4 mr-2" />
+          <Button variant="outline" onClick={() => setIsDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
             New
           </Button>
-          <Button variant="outline">
-            <Play className="w-4 h-4 mr-2" />
-            Run
-          </Button>
-          <Button variant="outline">
-            <Save className="w-4 h-4 mr-2" />
-            Save
-          </Button>
+          {activeWorkflow && (
+            <>
+              <Button
+                variant="outline"
+                onClick={handleRunWorkflow}
+                disabled={activeWorkflow.status === 'running'}
+              >
+                <Play className="mr-2 h-4 w-4" />
+                Run
+              </Button>
+              <Button variant="outline" onClick={handleSaveWorkflow}>
+                <Save className="mr-2 h-4 w-4" />
+                Save
+              </Button>
+              <Button variant="outline">
+                <Settings className="mr-2 h-4 w-4" />
+                Settings
+              </Button>
+            </>
+          )}
         </div>
       </div>
-      
+
       <div className="space-y-4">
         {activeWorkflow ? (
           <WorkflowVisualizer workflow={activeWorkflow} />
         ) : (
           <Card className="p-8 text-center">
-            <h3 className="text-lg font-medium mb-2">No Active Workflow</h3>
-            <p className="text-muted-foreground mb-4">
+            <h3 className="mb-2 text-lg font-medium">No Active Workflow</h3>
+            <p className="mb-4 text-muted-foreground">
               Create a new workflow to get started with agent automation
             </p>
-            <Button onClick={() => createWorkflow({})}>
-              <Plus className="w-4 h-4 mr-2" />
+            <Button onClick={() => setIsDialogOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
               Create Workflow
             </Button>
           </Card>
         )}
       </div>
+
+      <WorkflowDialog
+        open={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        onSave={handleCreateWorkflow}
+      />
     </div>
-  );
+  )
 }

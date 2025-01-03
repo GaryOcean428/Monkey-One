@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Card } from '../ui/Card'
+import { Card } from '../ui/card'
 import { LabeledInput } from '../ui/LabeledInput'
 import { Button } from '../ui/button'
 import { useAuth } from './hooks/useAuth'

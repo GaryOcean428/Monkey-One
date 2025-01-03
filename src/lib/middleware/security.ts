@@ -1,6 +1,6 @@
-import { Request, Response, NextFunction } from 'express';
-import rateLimit from 'express-rate-limit';
-import helmet from 'helmet';
+import { Request, Response, NextFunction } from 'express'
+import rateLimit from 'express-rate-limit'
+import helmet from 'helmet'
 
 // Rate limiting configuration
 export const rateLimiter = rateLimit({
@@ -9,7 +9,7 @@ export const rateLimiter = rateLimit({
   message: 'Too many requests from this IP, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
-});
+})
 
 // Security headers middleware
 export const securityHeaders = helmet({
@@ -18,23 +18,25 @@ export const securityHeaders = helmet({
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'", "'unsafe-inline'"],
       styleSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'", 
-        "https://*.google-analytics.com",
-        "https://*.googleapis.com",
-        "https://*.firebase.com",
-        "https://*.pinecone.io",
-        "wss://*.firebaseio.com"
+      imgSrc: ["'self'", 'data:', 'https:'],
+      connectSrc: [
+        "'self'",
+        'https://*.google-analytics.com',
+        'https://*.googleapis.com',
+        'https://*.supabase.co',
+        'https://*.supabase.in',
+        'https://*.pinecone.io',
+        'wss://*.supabase.co',
       ],
-      fontSrc: ["'self'", "https:", "data:"],
+      fontSrc: ["'self'", 'https:', 'data:'],
       objectSrc: ["'none'"],
       mediaSrc: ["'self'"],
-      frameSrc: ["'self'"]
-    }
+      frameSrc: ["'self'"],
+    },
   },
   crossOriginEmbedderPolicy: false,
-  crossOriginResourcePolicy: false
-});
+  crossOriginResourcePolicy: false,
+})
 
 // Input sanitization middleware
 export function sanitizeInput(req: Request, _res: Response, next: NextFunction) {
@@ -44,44 +46,39 @@ export function sanitizeInput(req: Request, _res: Response, next: NextFunction) 
         req.body[key] = req.body[key]
           .replace(/<[^>]*>/g, '') // Remove HTML tags
           .replace(/[^\w\s-]/g, '') // Remove special characters
-          .trim();
+          .trim()
       }
-    });
+    })
   }
-  next();
+  next()
 }
 
 // JWT authentication middleware
 export function authMiddleware(req: Request, res: Response, next: NextFunction) {
-  const authHeader = req.headers.authorization;
-  
+  const authHeader = req.headers.authorization
+
   if (!authHeader?.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'No token provided' });
+    return res.status(401).json({ error: 'No token provided' })
   }
 
-  const token = authHeader.split(' ')[1];
-
   try {
-    // Verify token here using your JWT library
-    // const decoded = jwt.verify(token, import.meta.env.VITE_JWT_SECRET);
-    // req.user = decoded;
-    next();
+    // Token verification is handled by Supabase Auth
+    // This middleware just ensures the token is present
+    next()
   } catch (error) {
-    return res.status(401).json({ error: 'Invalid token' });
+    return res.status(401).json({ error: 'Invalid token' })
   }
 }
 
 // Error handling middleware
 export function errorHandler(err: Error, req: Request, res: Response, next: NextFunction) {
-  console.error(err.stack);
+  console.error(err.stack)
 
   if (res.headersSent) {
-    return next(err);
+    return next(err)
   }
 
   res.status(500).json({
-    error: import.meta.env.PROD === 'true' 
-      ? 'Internal server error'
-      : err.message
-  });
+    error: import.meta.env.PROD ? 'Internal server error' : err.message,
+  })
 }

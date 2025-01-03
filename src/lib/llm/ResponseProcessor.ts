@@ -1,63 +1,99 @@
-import { llmManager } from './providers';
-import { memoryManager } from '../memory';
-import type { Message } from '../../types';
+import { EventEmitter } from 'events'
+import { llmManager } from './providers'
+import type { Message } from '../../types'
 
 interface ProcessedResponse {
-  content: string;
-  confidence: number;
+  content: string
+  confidence: number
   context: {
-    relevantMemories: string[];
-    topicContinuity: number;
-    contextualRelevance: number;
-  };
+    relevantMemories: string[]
+    topicContinuity: number
+    contextualRelevance: number
+  }
   metadata: {
-    processingTime: number;
-    tokensUsed: number;
-    model: string;
-  };
+    processingTime: number
+    tokensUsed: number
+    model: string
+  }
 }
 
-export class ResponseProcessor {
+export class ResponseProcessor extends EventEmitter {
+  private calculateRelevanceScore(memory: string, query: string): number {
+    const memoryWords = new Set(memory.toLowerCase().split(' '))
+    const queryWords = new Set(query.toLowerCase().split(' '))
+    const intersection = new Set([...memoryWords].filter(x => queryWords.has(x)))
+    const union = new Set([...memoryWords, ...queryWords])
+    return intersection.size / union.size
+  }
+
+  private calculateTopicContinuity(currentMessage: string, previousMessages: Message[]): number {
+    if (previousMessages.length === 0) return 1
+
+    const recentMessages = previousMessages.slice(-3)
+    const scores = recentMessages.map(msg =>
+      this.calculateRelevanceScore(msg.content, currentMessage)
+    )
+
+    return scores.reduce((acc, score) => acc + score, 0) / scores.length
+  }
+
   async processResponse(
     userMessage: string,
     agentId: string,
     context: Message[] = []
   ): Promise<ProcessedResponse> {
-    const startTime = Date.now();
+    const startTime = Date.now()
 
     try {
-      // Get relevant memories
-      const relevantMemories = await memoryManager.search(userMessage, {
-        limit: 5,
-        useSemanticSearch: true
-      });
+      // Calculate topic continuity
+      const topicContinuity = this.calculateTopicContinuity(userMessage, context)
 
-      // Ensure context is an array
-      const messageContext = Array.isArray(context) ? context : [];
+      // Generate streaming response
+      let fullResponse = ''
+      const responseStream = llmManager.sendStreamingMessage(userMessage, context)
 
-      // Generate response using LLM
-      const response = await llmManager.sendMessage(userMessage, messageContext, {
-        useRag: true,
-        documents: relevantMemories.map(m => m.content)
-      });
+      for await (const chunk of responseStream) {
+        fullResponse += chunk
+        this.emit('chunk', chunk)
+      }
+
+      // Calculate contextual relevance
+      const contextualRelevance = this.calculateRelevanceScore(fullResponse, userMessage)
+
+      const processingTime = Date.now() - startTime
+      const tokensUsed = Math.ceil(fullResponse.length / 4) // Rough estimate
 
       return {
-        content: response,
-        confidence: 0.9, // This should be calculated based on model output
+        content: fullResponse,
+        confidence: (topicContinuity + contextualRelevance) / 2,
         context: {
-          relevantMemories: relevantMemories.map(m => m.content),
-          topicContinuity: 0.8,
-          contextualRelevance: 0.9
+          relevantMemories: [],
+          topicContinuity,
+          contextualRelevance,
         },
         metadata: {
-          processingTime: Date.now() - startTime,
-          tokensUsed: response.length / 4, // Rough estimate
-          model: llmManager.getActiveProvider().name
-        }
-      };
+          processingTime,
+          tokensUsed,
+          model: llmManager.getActiveProvider().name,
+        },
+      }
     } catch (error) {
-      console.error('Error processing response:', error);
-      throw error;
+      console.error('Error processing response:', error)
+      throw error
+    }
+  }
+
+  async processStreamingResponse(
+    userMessage: string,
+    agentId: string,
+    context: Message[] = []
+  ): Promise<AsyncGenerator<string>> {
+    try {
+      const responseStream = llmManager.sendStreamingMessage(userMessage, context)
+      return responseStream
+    } catch (error) {
+      console.error('Error processing streaming response:', error)
+      throw error
     }
   }
 }

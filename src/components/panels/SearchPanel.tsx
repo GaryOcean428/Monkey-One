@@ -1,202 +1,164 @@
-import React from 'react';
-import { Input } from '../ui/input';
-import { Button } from '../ui/button';
-import { Search, Filter, FileText, User, Wrench, GitBranch, Calendar, Tag } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../ui/select';
-import { LoadingSpinner } from '../ui/loading-spinner';
-import { Badge } from '../ui/badge';
-import { ScrollArea } from '../ui/scroll-area';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
-import { Label } from '../ui/label';
+import React, { useState } from 'react'
+import { Panel } from '../ui/Panel'
+import { RangeInput } from '../ui/RangeInput'
+import type { SearchResult, SearchFilters } from '../../lib/types/search'
+import { searchAll } from '../../lib/api/search'
 
-interface SearchResult {
-  id: string;
-  type: 'message' | 'agent' | 'tool' | 'workflow';
-  title: string;
-  description: string;
-  timestamp: string;
-  tags: string[];
+interface SearchPanelProps {
+  loading?: boolean
+  error?: string
 }
 
-export const SearchPanel: React.FC = () => {
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [searchQuery, setSearchQuery] = React.useState('');
-  const [searchType, setSearchType] = React.useState('all');
-  const [showFilters, setShowFilters] = React.useState(false);
-  const [dateRange, setDateRange] = React.useState('all');
-  const [sortBy, setSortBy] = React.useState('relevance');
+export function SearchPanel({ loading = false, error }: SearchPanelProps) {
+  const [query, setQuery] = useState('')
+  const [results, setResults] = useState<SearchResult[]>([])
+  const [filters, setFilters] = useState<SearchFilters>({
+    types: ['memory', 'document', 'workflow'],
+    sortBy: 'relevance',
+    sortOrder: 'desc',
+    minScore: 0.7,
+  })
 
-  const [results] = React.useState<SearchResult[]>([
-    {
-      id: '1',
-      type: 'message',
-      title: 'Project Requirements Discussion',
-      description: 'Chat history discussing the initial project requirements and scope.',
-      timestamp: '2024-12-29T02:30:00Z',
-      tags: ['requirements', 'planning'],
-    },
-    {
-      id: '2',
-      type: 'agent',
-      title: 'WebSurfer Agent',
-      description: 'Agent configured for web browsing and data collection tasks.',
-      timestamp: '2024-12-29T02:15:00Z',
-      tags: ['web', 'automation'],
-    },
-  ]);
-
-  const handleSearch = () => {
-    if (!searchQuery.trim()) return;
-    setIsLoading(true);
-    // Simulate search
-    setTimeout(() => setIsLoading(false), 1000);
-  };
-
-  const getIcon = (type: string) => {
-    switch (type) {
-      case 'message':
-        return <FileText className="w-5 h-5" />;
-      case 'agent':
-        return <User className="w-5 h-5" />;
-      case 'tool':
-        return <Wrench className="w-5 h-5" />;
-      case 'workflow':
-        return <GitBranch className="w-5 h-5" />;
-      default:
-        return <FileText className="w-5 h-5" />;
+  const handleSearch = async () => {
+    if (!query.trim()) return
+    try {
+      const searchResults = await searchAll(query, filters)
+      setResults(searchResults)
+    } catch (err) {
+      console.error('Search failed:', err)
     }
-  };
+  }
+
+  const handleFilterChange = (key: keyof SearchFilters, value: unknown) => {
+    setFilters(prev => ({ ...prev, [key]: value }))
+  }
+
+  const formatDate = (timestamp: number) => {
+    return new Date(timestamp).toLocaleString()
+  }
+
+  const formatScore = (score: number) => {
+    return `${(score * 100).toFixed(1)}%`
+  }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Search</h1>
-      </div>
+    <Panel
+      title="Search"
+      description="Search across memory, documents, and workflows"
+      loading={loading}
+      error={error}
+    >
+      <div className="space-y-6">
+        {/* Search Input */}
+        <div className="flex gap-4">
+          <div className="flex-1">
+            <label htmlFor="search-input" className="sr-only">
+              Search Query
+            </label>
+            <input
+              id="search-input"
+              type="text"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="Enter your search query..."
+              className="w-full rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onKeyDown={e => e.key === 'Enter' && handleSearch()}
+            />
+          </div>
+          <button
+            onClick={handleSearch}
+            className="rounded-md bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
+          >
+            Search
+          </button>
+        </div>
 
-      <Card>
-        <CardContent className="p-4">
-          <div className="space-y-4">
+        {/* Filters */}
+        <div className="flex flex-wrap gap-4 rounded-md bg-gray-50 p-4">
+          {/* Type Filter */}
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">Types</label>
             <div className="flex gap-2">
-              <Input 
-                placeholder="Search..." 
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="flex-1"
-                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              />
-              <Select value={searchType} onValueChange={setSearchType}>
-                <SelectTrigger className="w-[150px]">
-                  <SelectValue placeholder="Search type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  <SelectItem value="messages">Messages</SelectItem>
-                  <SelectItem value="agents">Agents</SelectItem>
-                  <SelectItem value="tools">Tools</SelectItem>
-                  <SelectItem value="workflows">Workflows</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button onClick={handleSearch}>
-                <Search className="w-4 h-4 mr-2" />
-                Search
-              </Button>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowFilters(!showFilters)}
-              >
-                <Filter className="w-4 h-4 mr-2" />
-                Filters
-              </Button>
-              {showFilters && (
-                <div className="flex gap-2">
-                  <Select value={dateRange} onValueChange={setDateRange}>
-                    <SelectTrigger className="w-[150px]">
-                      <Calendar className="w-4 h-4 mr-2" />
-                      <SelectValue placeholder="Date range" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All time</SelectItem>
-                      <SelectItem value="day">Last 24 hours</SelectItem>
-                      <SelectItem value="week">Last week</SelectItem>
-                      <SelectItem value="month">Last month</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Select value={sortBy} onValueChange={setSortBy}>
-                    <SelectTrigger className="w-[150px]">
-                      <Tag className="w-4 h-4 mr-2" />
-                      <SelectValue placeholder="Sort by" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="relevance">Relevance</SelectItem>
-                      <SelectItem value="date">Date</SelectItem>
-                      <SelectItem value="type">Type</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
+              {['memory', 'document', 'workflow'].map(type => (
+                <label key={type} className="inline-flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={filters.types?.includes(type as any)}
+                    onChange={e => {
+                      const types = filters.types || []
+                      handleFilterChange(
+                        'types',
+                        e.target.checked ? [...types, type] : types.filter(t => t !== type)
+                      )
+                    }}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="ml-2 text-sm capitalize text-gray-600">{type}</span>
+                </label>
+              ))}
             </div>
           </div>
-        </CardContent>
-      </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg font-medium">Results</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ScrollArea className="h-[calc(100vh-20rem)]">
-            <div className="space-y-4">
-              {results.length > 0 ? (
-                results.map((result) => (
-                  <Card key={result.id}>
-                    <CardContent className="p-4">
-                      <div className="flex items-start gap-4">
-                        {getIcon(result.type)}
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between">
-                            <h3 className="font-medium">{result.title}</h3>
-                            <Badge variant="outline">{result.type}</Badge>
-                          </div>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {result.description}
-                          </p>
-                          <div className="flex items-center gap-2 mt-2">
-                            <span className="text-sm text-muted-foreground">
-                              {new Date(result.timestamp).toLocaleString()}
-                            </span>
-                            <div className="flex gap-1">
-                              {result.tags.map((tag) => (
-                                <Badge key={tag} variant="secondary">
-                                  {tag}
-                                </Badge>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              ) : (
-                <div className="text-center text-muted-foreground py-8">
-                  <p>No search results found.</p>
-                </div>
-              )}
-            </div>
-          </ScrollArea>
-        </CardContent>
-      </Card>
+          {/* Sort Options */}
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">Sort By</label>
+            <select
+              id="sort-by"
+              value={filters.sortBy}
+              onChange={e => handleFilterChange('sortBy', e.target.value)}
+              className="mt-1 block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
+              aria-label="Sort results by"
+            >
+              <option value="relevance">Relevance</option>
+              <option value="date">Date</option>
+              <option value="type">Type</option>
+            </select>
+          </div>
 
-      {isLoading && (
-        <div className="fixed inset-0 bg-background/80 flex items-center justify-center">
-          <LoadingSpinner size="lg" />
+          {/* Min Score */}
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">Min Score</label>
+            <RangeInput
+              id="min-score"
+              value={filters.minScore ? filters.minScore * 100 : 70}
+              label="Minimum score threshold"
+              onChange={value => handleFilterChange('minScore', value / 100)}
+              formatOutput={value => `${value}%`}
+            />
+          </div>
         </div>
-      )}
-    </div>
-  );
-};
+
+        {/* Results */}
+        <div className="space-y-4">
+          {results.map(result => (
+            <div
+              key={result.id}
+              className="rounded-lg border border-gray-200 bg-white p-4 transition-shadow hover:shadow-sm"
+            >
+              <div className="flex items-start justify-between">
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900">{result.title}</h3>
+                  <p className="mt-1 text-sm text-gray-600">
+                    {result.content.length > 200
+                      ? `${result.content.slice(0, 200)}...`
+                      : result.content}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium capitalize text-blue-800">
+                    {result.type}
+                  </span>
+                  <p className="mt-1 text-sm text-gray-500">Score: {formatScore(result.score)}</p>
+                  <p className="mt-1 text-xs text-gray-500">{formatDate(result.timestamp)}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+          {results.length === 0 && query && !loading && (
+            <div className="py-8 text-center text-gray-500">No results found</div>
+          )}
+        </div>
+      </div>
+    </Panel>
+  )
+}

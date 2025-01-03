@@ -1,12 +1,9 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { Routes, Route } from 'react-router-dom'
+import { Outlet } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { ThemeProvider } from './components/ThemeProvider'
 import { ModalProvider } from './contexts/ModalContext'
 import { TooltipProvider } from './components/ui/tooltip'
-import { Login } from './components/Auth/Login'
-import { Dashboard } from './components/Dashboard'
-import { PrivateRoute } from './components/Auth/PrivateRoute'
 import { Sidebar } from './components/Sidebar'
 
 const queryClient = new QueryClient({
@@ -24,21 +21,13 @@ export function App() {
       <ThemeProvider>
         <ModalProvider>
           <TooltipProvider>
-            <div className="flex h-screen">
+            <div className="flex h-screen overflow-hidden bg-background">
               <Sidebar />
-              <main className="flex-1 overflow-auto">
-                <Toaster position="top-right" />
-                <Routes>
-                  <Route path="/auth/login" element={<Login />} />
-                  <Route
-                    path="/*"
-                    element={
-                      <PrivateRoute>
-                        <Dashboard />
-                      </PrivateRoute>
-                    }
-                  />
-                </Routes>
+              <main className="flex-1 overflow-y-auto">
+                <div className="min-h-full p-4">
+                  <Toaster position="top-right" />
+                  <Outlet />
+                </div>
               </main>
             </div>
           </TooltipProvider>

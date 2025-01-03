@@ -2,209 +2,253 @@
 
 ## Overview
 
-The database layer is built on Supabase with Redis caching for optimal performance. It provides type-safe CRUD operations, complex querying capabilities, and automatic cache management.
+The database layer is built on Supabase, providing a powerful PostgreSQL database with real-time capabilities and built-in authentication. The system uses Supabase's client SDK for database operations and real-time subscriptions.
 
-## Services
+## Database Configuration
 
-### DatabaseService
-
-Core service for database operations with built-in caching.
+### Supabase Client Setup
 
 ```typescript
-import { db } from '@/lib/database/DatabaseService';
+// src/lib/supabase/client.ts
+import { createClient } from '@supabase/supabase-js'
 
-// Create a new profile
-const profile = await db.create('profiles', {
-  user_id: 'user123',
-  username: 'johndoe',
-  avatar_url: 'https://example.com/avatar.jpg'
-});
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-// Read with caching
-const cachedProfile = await db.read('profiles', 'profile123');
-
-// Update (automatically invalidates cache)
-const updatedProfile = await db.update('profiles', 'profile123', {
-  username: 'janedoe'
-});
-
-// Delete (automatically invalidates cache)
-await db.delete('profiles', 'profile123');
-
-// Complex query with caching
-const users = await db.query('profiles', {
-  select: 'id, username, avatar_url',
-  eq: { status: 'active' },
-  order: { created_at: 'desc' },
-  limit: 10
-});
-```
-
-### StorageService
-
-Handles file operations with caching support.
-
-```typescript
-import { storage } from '@/lib/storage/StorageService';
-
-// Upload file
-const publicUrl = await storage.uploadFile(
-  'avatars',
-  'user123/avatar.jpg',
-  file,
-  {
-    contentType: 'image/jpeg',
-    cacheControl: '3600'
-  }
-);
-
-// Download with caching
-const fileBlob = await storage.downloadFile('avatars', 'user123/avatar.jpg');
-
-// Generate signed URL
-const signedUrl = await storage.createSignedUrl(
-  'documents',
-  'private/doc.pdf',
-  3600
-);
-
-// List files
-const files = await storage.listFiles('documents', 'user123', {
-  limit: 20,
-  sortBy: { column: 'created_at', order: 'desc' }
-});
-```
-
-### CacheService
-
-Redis-based caching with support for multiple data structures.
-
-```typescript
-import { cache } from '@/lib/cache/CacheService';
-
-// Basic operations
-await cache.set('key', value, 300); // TTL 5 minutes
-const value = await cache.get('key');
-await cache.delete('key');
-
-// List operations
-await cache.listPush('queue', 'item1');
-const item = await cache.listPop('queue');
-
-// Set operations
-await cache.setAdd('uniqueUsers', 'user1', 'user2');
-const users = await cache.setMembers('uniqueUsers');
-
-// Hash operations
-await cache.hashSet('userPrefs', 'theme', 'dark');
-const theme = await cache.hashGet('userPrefs', 'theme');
-
-// Method caching decorator
-class UserService {
-  @CacheService.cache(300)
-  async getUserProfile(id: string) {
-    // Expensive operation
-    return profile;
-  }
-}
+export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 ```
 
 ## Database Models
 
 ### Profile Model
+
 ```typescript
 interface Profile {
-  id: string;
-  user_id: string;
+  id: uuid;
+  user_id: uuid;
   username: string;
   avatar_url?: string;
-  created_at: string;
-  updated_at: string;
+  created_at: timestamp;
+  updated_at: timestamp;
 }
+
+// Migration
+create table profiles (
+  id uuid references auth.users primary key,
+  user_id uuid references auth.users not null,
+  username text unique,
+  avatar_url text,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Enable RLS
+alter table profiles enable row level security;
+
+-- Policies
+create policy "Public profiles are viewable by everyone"
+  on profiles for select
+  using ( true );
+
+create policy "Users can insert their own profile"
+  on profiles for insert
+  with check ( auth.uid() = user_id );
+
+create policy "Users can update own profile"
+  on profiles for update
+  using ( auth.uid() = user_id );
 ```
 
 ### Experience Model
+
 ```typescript
 interface Experience {
-  id: string;
-  user_id: string;
+  id: uuid;
+  user_id: uuid;
   content: string;
-  metadata: Record<string, any>;
-  created_at: string;
+  metadata: jsonb;
+  created_at: timestamp;
+  updated_at: timestamp;
 }
+
+// Migration
+create table experiences (
+  id uuid default uuid_generate_v4() primary key,
+  user_id uuid references auth.users not null,
+  content text not null,
+  metadata jsonb default '{}'::jsonb,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Enable RLS
+alter table experiences enable row level security;
+
+-- Policies
+create policy "Users can view own experiences"
+  on experiences for select
+  using ( auth.uid() = user_id );
+
+create policy "Users can insert own experiences"
+  on experiences for insert
+  with check ( auth.uid() = user_id );
+
+create policy "Users can update own experiences"
+  on experiences for update
+  using ( auth.uid() = user_id );
 ```
 
-### Document Model
+## Database Operations
+
+### Using Supabase Client
+
 ```typescript
-interface Document {
-  id: string;
-  user_id: string;
-  name: string;
-  content: string;
-  metadata: Record<string, any>;
-  created_at: string;
-  updated_at: string;
-}
+// Select data
+const { data, error } = await supabase.from('profiles').select('*').eq('user_id', userId).single()
+
+// Insert data
+const { data, error } = await supabase
+  .from('profiles')
+  .insert([{ user_id: userId, username: 'johndoe' }])
+  .select()
+
+// Update data
+const { data, error } = await supabase
+  .from('profiles')
+  .update({ username: 'janedoe' })
+  .eq('id', profileId)
+  .select()
+
+// Delete data
+const { error } = await supabase.from('profiles').delete().eq('id', profileId)
+```
+
+### Real-time Subscriptions
+
+```typescript
+// Subscribe to changes
+const subscription = supabase
+  .channel('custom-channel-name')
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, payload => {
+    console.log('Change received!', payload)
+  })
+  .subscribe()
+
+// Cleanup subscription
+subscription.unsubscribe()
 ```
 
 ## Best Practices
 
-1. **Cache Invalidation**
-   - Use pattern-based invalidation for related data
-   - Set appropriate TTL values based on data volatility
-   - Implement cache warming for frequently accessed data
+1. **Row Level Security (RLS)**
+
+   - Always enable RLS on tables
+   - Create appropriate policies
+   - Test policies thoroughly
+   - Use auth.uid() for user-specific policies
 
 2. **Error Handling**
-   - Always catch and log database errors
-   - Implement retry mechanisms for transient failures
-   - Use transactions for multi-step operations
 
-3. **Performance**
-   - Use selective column queries instead of SELECT *
-   - Implement pagination for large result sets
-   - Utilize batch operations for multiple updates
+   ```typescript
+   const { data, error } = await supabase.from('profiles').select('*')
+   if (error) {
+     console.error('Error fetching profiles:', error.message)
+     throw error
+   }
+   ```
 
-4. **Security**
-   - Always validate user permissions before operations
-   - Use RLS (Row Level Security) in Supabase
-   - Sanitize user inputs before queries
+3. **Type Safety**
 
-## Monitoring and Logging
+   ```typescript
+   import { Database } from './types/supabase'
+   const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey)
+   ```
 
-The database layer includes built-in monitoring and logging:
+4. **Performance**
+
+   - Use selective columns in select()
+   - Implement pagination
+   - Create appropriate indexes
+   - Use count() with care
+
+5. **Real-time**
+   - Subscribe only when necessary
+   - Clean up subscriptions
+   - Handle reconnection
+   - Filter subscriptions appropriately
+
+## Migrations
+
+### Creating Migrations
+
+```bash
+# Generate new migration
+supabase migration new my_migration_name
+
+# Apply migrations
+supabase migration up
+```
+
+### Migration Best Practices
+
+1. Make migrations reversible when possible
+2. Test migrations on development first
+3. Back up production before migrating
+4. Use transactions for complex migrations
+
+## Monitoring
+
+### Supabase Dashboard
+
+- Monitor database performance
+- Track API usage
+- Review error logs
+- Monitor auth statistics
+
+### Custom Monitoring
 
 ```typescript
-// Monitor database operations
-monitoring.recordDatabaseOperation('create', Date.now() - startTime);
+const startTime = performance.now()
+const { data, error } = await supabase.from('profiles').select('*')
+const duration = performance.now() - startTime
 
-// Log errors
-logger.error('Database error', {
-  operation: 'create',
-  table: 'profiles',
-  error: error.message
-});
-
-// Track cache performance
-monitoring.recordCacheOperation('hit', Date.now() - startTime);
+// Log performance metrics
+console.log(`Query took ${duration}ms`)
 ```
 
-## Migration Scripts
+## Security
 
-When making database changes:
+1. **Environment Variables**
 
-1. Create a new migration file in `supabase/migrations`
-2. Test migrations locally
-3. Apply migrations in staging
-4. Monitor performance impact
-5. Apply in production
+   - Never commit API keys
+   - Use different keys per environment
+   - Rotate keys periodically
 
-Example migration:
-```sql
--- Enable Row Level Security
-alter table profiles enable row level security;
+2. **Access Control**
 
--- Create policy
-create policy "Users can view own profile"
-  on profiles for select
-  using (auth.uid() = user_id);
-```
+   - Implement RLS policies
+   - Use appropriate auth roles
+   - Validate user permissions
+
+3. **Data Validation**
+   - Validate inputs server-side
+   - Use PostgreSQL constraints
+   - Implement appropriate triggers
+
+## Backup and Recovery
+
+1. **Automated Backups**
+
+   - Enable point-in-time recovery
+   - Configure backup schedule
+   - Test recovery process
+
+2. **Manual Backups**
+
+   ```sql
+   -- Backup specific table
+   copy profiles to '/tmp/profiles_backup.csv' csv header;
+
+   -- Restore from backup
+   copy profiles from '/tmp/profiles_backup.csv' csv header;
+   ```

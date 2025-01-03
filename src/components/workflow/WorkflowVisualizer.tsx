@@ -1,156 +1,108 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Circle, ArrowRight, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
-import type { WorkflowDefinition } from '../../types';
+import React from 'react'
+import { Card } from '../ui/card'
+import { Badge } from '../ui/badge'
+import { Circle, CheckCircle2, XCircle } from 'lucide-react'
+
+interface WorkflowStep {
+  id: string
+  name: string
+  status: 'pending' | 'running' | 'completed' | 'failed'
+  agent?: string
+  startTime?: Date
+  endTime?: Date
+}
+
+interface Workflow {
+  id: string
+  name: string
+  description?: string
+  steps: WorkflowStep[]
+  status: 'pending' | 'running' | 'completed' | 'failed'
+  createdAt: Date
+  updatedAt: Date
+}
 
 interface WorkflowVisualizerProps {
-  workflow: WorkflowDefinition;
+  workflow: Workflow
 }
 
 export function WorkflowVisualizer({ workflow }: WorkflowVisualizerProps) {
+  const getStatusIcon = (status: WorkflowStep['status']) => {
+    switch (status) {
+      case 'pending':
+        return <Circle className="h-5 w-5 text-gray-400" />
+      case 'running':
+        return <Circle className="h-5 w-5 animate-pulse text-blue-500" />
+      case 'completed':
+        return <CheckCircle2 className="h-5 w-5 text-green-500" />
+      case 'failed':
+        return <XCircle className="h-5 w-5 text-red-500" />
+    }
+  }
+
+  const getStatusColor = (status: WorkflowStep['status']) => {
+    switch (status) {
+      case 'pending':
+        return 'bg-gray-100 text-gray-600'
+      case 'running':
+        return 'bg-blue-100 text-blue-600'
+      case 'completed':
+        return 'bg-green-100 text-green-600'
+      case 'failed':
+        return 'bg-red-100 text-red-600'
+    }
+  }
+
   return (
-    <div className="h-full flex flex-col p-6 overflow-auto">
-      <div className="flex items-start gap-8">
+    <Card className="p-6">
+      <div className="mb-4">
+        <h3 className="text-lg font-semibold">{workflow.name}</h3>
+        {workflow.description && (
+          <p className="mt-1 text-sm text-muted-foreground">{workflow.description}</p>
+        )}
+        <div className="mt-2 flex items-center gap-2">
+          <Badge variant="outline" className={getStatusColor(workflow.status)}>
+            {workflow.status.charAt(0).toUpperCase() + workflow.status.slice(1)}
+          </Badge>
+          <span className="text-sm text-muted-foreground">
+            Created {new Date(workflow.createdAt).toLocaleDateString()}
+          </span>
+        </div>
+      </div>
+
+      <div className="space-y-4">
         {workflow.steps.map((step, index) => (
-          <React.Fragment key={step.id}>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="flex flex-col items-center"
-            >
-              <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                step.status === 'completed' ? 'bg-green-100 dark:bg-green-900/20' :
-                step.status === 'failed' ? 'bg-red-100 dark:bg-red-900/20' :
-                step.status === 'in_progress' ? 'bg-blue-100 dark:bg-blue-900/20' :
-                'bg-gray-100 dark:bg-gray-800'
-              }`}>
-                {step.status === 'completed' && <CheckCircle className="w-6 h-6 text-green-500" />}
-                {step.status === 'failed' && <XCircle className="w-6 h-6 text-red-500" />}
-                {step.status === 'in_progress' && (
-                  <Circle className="w-6 h-6 text-blue-500 animate-pulse" />
-                )}
-                {step.status === 'pending' && <Circle className="w-6 h-6 text-gray-400" />}
-              </div>
-              
-              <div className="mt-4 text-center">
-                <p className="font-medium dark:text-white">{step.action}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {workflow.team.find(t => t.id === step.agentId)?.role}
-                </p>
-              </div>
-
-              {step.error && (
-                <div className="mt-2 p-2 bg-red-50 dark:bg-red-900/10 rounded-lg flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 text-red-500" />
-                  <span className="text-xs text-red-700 dark:text-red-300">{step.error}</span>
+          <div key={step.id} className="relative">
+            <div className="flex items-start gap-4">
+              <div className="mt-1 flex-shrink-0">{getStatusIcon(step.status)}</div>
+              <div className="flex-grow">
+                <div className="flex items-center gap-2">
+                  <h4 className="font-medium">{step.name}</h4>
+                  <Badge variant="outline" className={getStatusColor(step.status)}>
+                    {step.status}
+                  </Badge>
                 </div>
-              )}
-            </motion.div>
-
+                {step.agent && (
+                  <p className="mt-1 text-sm text-muted-foreground">Agent: {step.agent}</p>
+                )}
+                {step.startTime && (
+                  <p className="text-sm text-muted-foreground">
+                    Started: {new Date(step.startTime).toLocaleString()}
+                  </p>
+                )}
+                {step.endTime && (
+                  <p className="text-sm text-muted-foreground">
+                    Completed: {new Date(step.endTime).toLocaleString()}
+                  </p>
+                )}
+              </div>
+            </div>
             {index < workflow.steps.length - 1 && (
-              <ArrowRight className="w-6 h-6 text-gray-400 mt-3" />
+              <div className="absolute bottom-0 left-2.5 top-8 w-px bg-gray-200 dark:bg-gray-800" />
             )}
-          </React.Fragment>
+          </div>
         ))}
       </div>
-
-      <div className="mt-8 grid grid-cols-3 gap-4">
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
-          <h3 className="font-medium dark:text-white mb-2">Success Metrics</h3>
-          <div className="space-y-2">
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span className="text-gray-600 dark:text-gray-400">Accuracy</span>
-                <span className="text-gray-900 dark:text-white">
-                  {workflow.metadata.successMetrics.accuracy * 100}%
-                </span>
-              </div>
-              <div className="h-2 bg-gray-100 rounded-full dark:bg-gray-700">
-                <div
-                  className="h-2 bg-green-500 rounded-full"
-                  style={{ width: `${workflow.metadata.successMetrics.accuracy * 100}%` }}
-                />
-              </div>
-            </div>
-            
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span className="text-gray-600 dark:text-gray-400">Efficiency</span>
-                <span className="text-gray-900 dark:text-white">
-                  {workflow.metadata.successMetrics.efficiency * 100}%
-                </span>
-              </div>
-              <div className="h-2 bg-gray-100 rounded-full dark:bg-gray-700">
-                <div
-                  className="h-2 bg-blue-500 rounded-full"
-                  style={{ width: `${workflow.metadata.successMetrics.efficiency * 100}%` }}
-                />
-              </div>
-            </div>
-
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span className="text-gray-600 dark:text-gray-400">Reliability</span>
-                <span className="text-gray-900 dark:text-white">
-                  {workflow.metadata.successMetrics.reliability * 100}%
-                </span>
-              </div>
-              <div className="h-2 bg-gray-100 rounded-full dark:bg-gray-700">
-                <div
-                  className="h-2 bg-purple-500 rounded-full"
-                  style={{ width: `${workflow.metadata.successMetrics.reliability * 100}%` }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
-          <h3 className="font-medium dark:text-white mb-2">Team Performance</h3>
-          <div className="space-y-3">
-            {workflow.team.map(member => (
-              <div key={member.id} className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className={`w-2 h-2 rounded-full ${
-                    member.status === 'active' ? 'bg-green-500' :
-                    member.status === 'failed' ? 'bg-red-500' :
-                    'bg-gray-400'
-                  }`} />
-                  <span className="text-sm dark:text-white">{member.role}</span>
-                </div>
-                <span className="text-xs text-gray-500 dark:text-gray-400">
-                  {member.status}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
-          <h3 className="font-medium dark:text-white mb-2">Workflow Details</h3>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-gray-600 dark:text-gray-400">Created</span>
-              <span className="text-gray-900 dark:text-white">
-                {new Date(workflow.created).toLocaleString()}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600 dark:text-gray-400">Last Updated</span>
-              <span className="text-gray-900 dark:text-white">
-                {new Date(workflow.updated).toLocaleString()}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600 dark:text-gray-400">Iterations</span>
-              <span className="text-gray-900 dark:text-white">
-                {workflow.metadata.iterationCount}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+    </Card>
+  )
 }

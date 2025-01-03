@@ -5,7 +5,8 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true,
-    "strict": true
+    "strict": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"]
   },
-  "include": ["vite.config.ts"]
-}
+  "include": ["vite.config.ts", "vitest.config.ts", "stackbit.config.ts", "vite.env.d.ts"]
+}

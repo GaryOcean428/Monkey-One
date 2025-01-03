@@ -1,41 +1,65 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card } from '../ui/card'
-import { Input } from '../ui/input'
+import { Input } from '../ui/Input'
 import { Button } from '../ui/button'
 import { useAuth } from '../../hooks/useAuth'
 import { toast } from 'react-hot-toast'
+import { AuthError } from '@supabase/supabase-js'
 
 export const Login: React.FC = () => {
   const navigate = useNavigate()
-  const { signIn, error: authError } = useAuth()
+  const { signIn, error: authError, loading: authLoading } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const handleAuthError = (error: AuthError) => {
+    switch (error.message) {
+      case 'Invalid login credentials':
+        toast.error('Invalid email or password')
+        break
+      case 'Email not confirmed':
+        toast.error('Please confirm your email address')
+        break
+      case 'Invalid email':
+        toast.error('Please enter a valid email address')
+        break
+      default:
+        toast.error(error.message || 'Failed to sign in')
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
+
+    // Prevent duplicate submissions
+    if (isSubmitting || authLoading) return
+
+    setIsSubmitting(true)
 
     try {
       const result = await signIn(email, password)
       if (result.error) {
-        toast.error(result.error.message)
+        handleAuthError(result.error)
       } else {
         toast.success('Successfully logged in!')
         navigate('/dashboard')
       }
     } catch (err) {
-      toast.error('Failed to sign in')
+      console.error('Sign in error:', err)
+      toast.error('An unexpected error occurred')
     } finally {
-      setIsLoading(false)
+      setIsSubmitting(false)
     }
   }
 
+  const isLoading = isSubmitting || authLoading
+
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+    <div className="flex min-h-screen items-center justify-center bg-gray-50">
       <Card className="w-full max-w-md p-8">
-        <h1 className="text-2xl font-bold text-center mb-6">Sign In</h1>
+        <h1 className="mb-6 text-center text-2xl font-bold">Sign In</h1>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700">
@@ -45,12 +69,13 @@ export const Login: React.FC = () => {
               id="email"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={e => setEmail(e.target.value)}
               required
               className="mt-1"
               placeholder="Enter your email"
               aria-label="Email"
               disabled={isLoading}
+              autoComplete="email"
             />
           </div>
           <div>
@@ -61,18 +86,21 @@ export const Login: React.FC = () => {
               id="password"
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={e => setPassword(e.target.value)}
               required
               className="mt-1"
               placeholder="Enter your password"
               aria-label="Password"
               disabled={isLoading}
+              autoComplete="current-password"
             />
           </div>
           {authError && (
-            <div className="text-red-600 text-sm">{authError.message}</div>
+            <div className="text-sm text-red-600" role="alert">
+              {authError.message}
+            </div>
           )}
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button type="submit" className="w-full" disabled={isLoading} aria-busy={isLoading}>
             {isLoading ? 'Signing in...' : 'Sign In'}
           </Button>
         </form>
