@@ -1,507 +1,185 @@
-# Development Guide
-
-## Table of Contents
-1. [Development Environment Setup](#development-environment-setup)
-2. [Development Workflow](#development-workflow)
-3. [Code Review Process](#code-review-process)
-4. [Testing Strategy](#testing-strategy)
-5. [CI/CD Pipeline](#cicd-pipeline)
-6. [Release Management](#release-management)
-
-## Development Environment Setup
+# Quick Start
 
 ### Prerequisites
 
-```bash
-# Required versions
-Node.js: v22.12.0
-npm: 10.x
-Git: 2.x
-Docker: 24.x
-Docker Compose: 2.x
-```
+- Node.js v22.12.0 (as specified in .nvmrc)
+- pnpm 8.x
+- Git
+- Supabase account
+- Pinecone account
+- Vercel account (for deployment)
 
-### Initial Setup
+### Installation
 
-1. **Clone and Install**
 ```bash
 # Clone repository
-git clone https://github.com/your-org/monkey-one.git
-cd monkey-one
+git clone [repository-url]
+cd Monkey-One
+
+# Install pnpm if not already installed
+npm install -g pnpm
 
 # Install dependencies
-npm install
+pnpm install
 
-# Setup git hooks
-npm run prepare
-```
-
-2. **Environment Configuration**
-```bash
-# Copy environment template
+# Configure environment
 cp .env.example .env
-
-# Generate development keys
-npm run generate-keys
-
-# Configure environment variables
-nano .env
+# Update .env with your Supabase and Pinecone credentials
 ```
 
-Example `.env` configuration:
-```env
-# App Configuration
-NODE_ENV=development
-PORT=3000
-LOG_LEVEL=debug
-
-# Database Configuration
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=monkey_one_dev
-DB_USER=dev_user
-DB_PASSWORD=dev_password
-
-# Redis Configuration
-REDIS_HOST=localhost
-REDIS_PORT=6379
-
-# JWT Configuration
-JWT_SECRET=your-development-secret
-JWT_EXPIRES_IN=1h
-
-# API Configuration
-API_RATE_LIMIT=100
-API_RATE_WINDOW=900000
-```
-
-3. **Docker Development Environment**
-```yaml
-# docker-compose.dev.yml
-version: '3.8'
-services:
-  app:
-    build:
-      context: .
-      target: development
-    volumes:
-      - .:/usr/src/app
-      - /usr/src/app/node_modules
-    ports:
-      - "3000:3000"
-    environment:
-      - NODE_ENV=development
-    command: npm run dev
-
-  postgres:
-    image: postgres:14-alpine
-    environment:
-      POSTGRES_DB: monkey_one_dev
-      POSTGRES_USER: dev_user
-      POSTGRES_PASSWORD: dev_password
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-  redis:
-    image: redis:alpine
-    ports:
-      - "6379:6379"
-
-volumes:
-  postgres_data:
-```
-
-### Development Tools
-
-1. **VS Code Extensions**
-```json
-{
-  "recommendations": [
-    "dbaeumer.vscode-eslint",
-    "esbenp.prettier-vscode",
-    "ms-vscode.vscode-typescript-tslint-plugin",
-    "streetsidesoftware.code-spell-checker",
-    "eamodio.gitlens",
-    "ms-azuretools.vscode-docker"
-  ]
-}
-```
-
-2. **Editor Configuration**
-```editorconfig
-# .editorconfig
-root = true
-
-[*]
-end_of_line = lf
-insert_final_newline = true
-trim_trailing_whitespace = true
-charset = utf-8
-
-[*.{js,jsx,ts,tsx,json}]
-indent_style = space
-indent_size = 2
-
-[*.md]
-trim_trailing_whitespace = false
-```
-
-## Development Workflow
-
-### 1. Branch Management
-
-```mermaid
-graph TD
-    main --> develop
-    develop --> feature/branch
-    develop --> bugfix/branch
-    feature/branch --> develop
-    bugfix/branch --> develop
-    develop --> release/branch
-    release/branch --> main
-    main --> hotfix/branch
-    hotfix/branch --> main
-    hotfix/branch --> develop
-```
-
-### 2. Git Workflow
+### Running the Application
 
 ```bash
-# Create feature branch
-git checkout develop
-git pull origin develop
-git checkout -b feature/new-feature
-
-# Regular commits
-git add .
-git commit -m "feat: add new feature"
-
-# Push feature branch
-git push origin feature/new-feature
-
-# Create pull request
-gh pr create --base develop --head feature/new-feature
+pnpm dev
 ```
 
-### 3. Commit Message Convention
+## Architecture Overview
 
-```
-type(scope): subject
+### Core Components
 
-body
+- **Frontend**: React + TypeScript + Vite
+- **State Management**: React Context + Custom Hooks
+- **UI Framework**: Custom components with Tailwind CSS
+- **Database**: Supabase (PostgreSQL)
+- **Vector Storage**: Pinecone
+- **Authentication**: Supabase Auth
+- **Deployment**: Vercel
+- **API Integration**: Supabase REST + Realtime
 
-footer
-```
+### Key Features
 
-Types:
-- feat: New feature
-- fix: Bug fix
-- docs: Documentation
-- style: Code style changes
-- refactor: Code refactoring
-- test: Adding tests
-- chore: Maintenance
+1. **Dashboard Analytics**
+2. **Agent Management with Vector Search**
+3. **Memory System using Pinecone**
+4. **Document Processing**
+5. **Workflow Automation**
+6. **Advanced Search**
+7. **Real-time Updates**
+8. **User Authentication**
 
-Example:
-```
-feat(auth): implement JWT authentication
+## UI/UX Guidelines
 
-- Add JWT token generation
-- Implement token validation
-- Add refresh token functionality
+### Dashboard Panel
 
-Closes #123
-```
+- Real-time metrics display
+- System status monitoring
+- Activity tracking
 
-## Code Review Process
+### Agents Panel
 
-### 1. Pull Request Template
+- Agent creation/management interface
+- Status monitoring
+- Capability configuration
+- Vector similarity search
 
-```markdown
-## Description
-[Describe the changes made in this PR]
+### Memory Panel
 
-## Type of Change
-- [ ] Bug fix
-- [ ] New feature
-- [ ] Breaking change
-- [ ] Documentation update
+- Vector storage statistics
+- Item management
+- Backup functionality
+- Settings configuration
+- Pinecone integration
 
-## Testing
-- [ ] Unit tests added/updated
-- [ ] Integration tests added/updated
-- [ ] Manual testing performed
+### Documents Panel
 
-## Checklist
-- [ ] Code follows style guidelines
-- [ ] Comments added for complex logic
-- [ ] Documentation updated
-- [ ] Tests passing
-- [ ] PR title follows convention
-```
+- File upload/creation
+- Document management
+- Version control
 
-### 2. Review Guidelines
+### Search Panel
 
-```typescript
-// Code Review Checklist
-interface ReviewChecklist {
-  functionality: [
-    'Does the code work as intended?',
-    'Are edge cases handled?',
-    'Is error handling comprehensive?'
-  ];
-  
-  security: [
-    'Are inputs properly validated?',
-    'Is authentication/authorization correct?',
-    'Are sensitive data protected?'
-  ];
-  
-  performance: [
-    'Are there potential performance issues?',
-    'Is caching used appropriately?',
-    'Are database queries optimized?'
-  ];
-  
-  maintainability: [
-    'Is the code readable and well-documented?',
-    'Are naming conventions followed?',
-    'Is the code modular and reusable?'
-  ];
-}
-```
+- Advanced search capabilities
+- Vector similarity search
+- Filter system
+- Results categorization
+- Sort options
 
-## Testing Strategy
+### Workflow Panel
 
-### 1. Test Structure
+- Workflow creation
+- Status tracking
+- Scheduling system
+- Real-time updates
 
-```typescript
-// Test organization
-describe('Component/Module Name', () => {
-  describe('Functionality Name', () => {
-    it('should behave in specific way', () => {
-      // Test case
-    });
-  });
-});
+### Design Principles
 
-// Test utilities
-export const createTestUser = async (
-  overrides: Partial<User> = {}
-): Promise<User> => {
-  return User.create({
-    username: 'test-user',
-    email: 'test@example.com',
-    password: 'password123',
-    ...overrides
-  });
-};
-```
+1. **Performance**
 
-### 2. Testing Levels
+   - Code splitting
+   - Optimized renders
+   - Efficient state management
+   - Supabase query optimization
 
-```typescript
-// Unit Tests
-describe('UserService', () => {
-  it('should create user', async () => {
-    const userData = {
-      username: 'testuser',
-      email: 'test@example.com'
-    };
-    
-    const user = await UserService.create(userData);
-    expect(user).toMatchObject(userData);
-  });
-});
+2. **Responsiveness**
+   - Fluid layouts
 
-// Integration Tests
-describe('Authentication Flow', () => {
-  it('should authenticate user', async () => {
-    const response = await request(app)
-      .post('/api/auth/login')
-      .send({
-        email: 'test@example.com',
-        password: 'password123'
-      });
-    
-    expect(response.status).toBe(200);
-    expect(response.body).toHaveProperty('token');
-  });
-});
+### Component Guidelines
 
-// E2E Tests
-describe('User Registration Flow', () => {
-  it('should register and login user', async () => {
-    // Register user
-    const registerResponse = await request(app)
-      .post('/api/auth/register')
-      .send(userData);
-    
-    expect(registerResponse.status).toBe(201);
-    
-    // Login user
-    const loginResponse = await request(app)
-      .post('/api/auth/login')
-      .send(loginData);
-    
-    expect(loginResponse.status).toBe(200);
-  });
-});
-```
+1. **Layout Components**
 
-## CI/CD Pipeline
+   ```tsx
+   // Example panel structure
+   <Panel>
+   ```
 
-### 1. GitHub Actions Workflow
+2. **UI States**
 
-```yaml
-# .github/workflows/ci.yml
-name: CI/CD Pipeline
+   - Consistent hover states
+   - Clear focus indicators
+   - Loading states
+   - Real-time updates
 
-on:
-  push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main, develop ]
+3. **Forms**
 
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '22.12.0'
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Run linting
-        run: npm run lint
-      
-      - name: Run tests
-        run: npm test
-      
-      - name: Run build
-        run: npm run build
+   - Validation feedback
+   - Clear labels
+   - Responsive inputs
+   - Supabase integration
 
-  deploy:
-    needs: test
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy to production
-        run: |
-          echo "Deployment steps here"
-```
+4. **Data Display**
+   - Card-based layouts
+   - Grid systems
+   - Pagination
+   - Real-time updates
 
-### 2. Quality Gates
+## System Components
 
-```typescript
-// Quality gate thresholds
-const qualityGates = {
-  coverage: {
-    lines: 80,
-    functions: 80,
-    branches: 75,
-    statements: 80
-  },
-  
-  complexity: {
-    cyclomatic: 10,
-    cognitive: 15
-  },
-  
-  duplication: {
-    lines: 3,
-    blocks: 10
-  },
-  
-  maintenance: {
-    techDebt: 5 // %
-  }
-};
-```
+### Pinecone Vector Storage
 
-## Release Management
+- Similarity search
+- Retrieval mechanisms
+- Backup systems
+- Cache management
 
-### 1. Version Control
+### Agent System
 
-```typescript
-// Version management
-interface Version {
-  major: number; // Breaking changes
-  minor: number; // New features
-  patch: number; // Bug fixes
-}
+- Agent lifecycle
+- Vector embeddings
+- Capability management
+- Resource allocation
+- Communication protocols
 
-// Example version bumping
-const bumpVersion = (
-  current: Version,
-  type: 'major' | 'minor' | 'patch'
-): Version => {
-  switch (type) {
-    case 'major':
-      return { major: current.major + 1, minor: 0, patch: 0 };
-    case 'minor':
-      return { ...current, minor: current.minor + 1, patch: 0 };
-    case 'patch':
-      return { ...current, patch: current.patch + 1 };
-  }
-};
-```
+### Document Processing
 
-### 2. Release Process
+- File handling
+- Vector embedding
+- Format conversion
+- Version control
+- Search indexing
 
-```bash
-# Create release branch
-git checkout develop
-git pull origin develop
-git checkout -b release/1.2.0
+## Security & Best Practices
 
-# Update version
-npm version minor
+### Security Measures
 
-# Create changelog
-npm run generate-changelog
+- Supabase Authentication
+- Row Level Security (RLS)
+- Data encryption
+- Secure communication
+- Environment variable protection
 
-# Merge to main
-git checkout main
-git merge release/1.2.0
-git tag -a v1.2.0 -m "Release 1.2.0"
-git push origin main --tags
+### Best Practices
 
-# Merge back to develop
-git checkout develop
-git merge release/1.2.0
-git push origin develop
-```
-
-### 3. Deployment Checklist
-
-```markdown
-## Pre-deployment
-- [ ] All tests passing
-- [ ] Code review completed
-- [ ] Documentation updated
-- [ ] Change log generated
-- [ ] Version bumped
-- [ ] Security scan completed
-
-## Deployment
-- [ ] Database migrations ready
-- [ ] Environment variables updated
-- [ ] Backup completed
-- [ ] Deploy to staging
-- [ ] Smoke tests passed
-- [ ] Deploy to production
-- [ ] Health checks passing
-
-## Post-deployment
-- [ ] Monitor error rates
-- [ ] Monitor performance metrics
-- [ ] Verify critical flows
-- [ ] Update status page
-- [ ] Notify stakeholders
-```
+- Code review process
+- Testing requirements
+- Documentation standards
+- Security best practices

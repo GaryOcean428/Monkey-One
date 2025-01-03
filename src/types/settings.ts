@@ -1,29 +1,43 @@
+export interface LLMSettings {
+  defaultModel: string
+  temperature: number
+  maxTokens: number
+  streamResponses: boolean
+  contextLength: number
+  topP: number
+  frequencyPenalty: number
+  presencePenalty: number
+}
+
+export interface MemorySettings {
+  maxItems: number
+  retentionDays: number
+  vectorSearch: boolean
+  similarityThreshold: number
+}
+
+export interface PerformanceSettings {
+  batchSize: number
+  cacheDuration: number
+  cacheEnabled: boolean
+  debugMode: boolean
+  logLevel: 'debug' | 'info' | 'warn' | 'error'
+}
+
+export interface SecuritySettings {
+  apiKeyRotation: number
+  sandboxMode: boolean
+  contentFiltering: boolean
+  maxTokensPerRequest: number
+}
+
 export interface Settings {
-  theme: 'light' | 'dark' | 'system';
-  notifications: boolean;
-  language: 'en' | 'es' | 'fr';
-  dataCollection: boolean;
-  fontSize: 'sm' | 'md' | 'lg';
-  colorScheme: string;
-  autoSave: boolean;
-  telemetry: boolean;
-}
-
-export interface UseSettingsReturn {
-  settings: Settings;
-  isLoading: boolean;
-  error: Error | null;
-  updateSettings: (newSettings: Partial<Settings>) => Promise<void>;
-  resetSettings: () => Promise<void>;
-}
-
-export const defaultSettings: Settings = {
-  theme: 'system',
-  notifications: true,
-  language: 'en',
-  dataCollection: false,
-  fontSize: 'md',
-  colorScheme: 'blue',
-  autoSave: true,
-  telemetry: false
+  theme: 'light' | 'dark'
+  fontSize: 'small' | 'medium' | 'large'
+  notifications: boolean
+  apiEndpoint: string
+  llm: LLMSettings
+  memory: MemorySettings
+  performance: PerformanceSettings
+  security: SecuritySettings
 }

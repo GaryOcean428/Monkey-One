@@ -1,218 +1,245 @@
-import { BaseAgent } from '../base/BaseAgent';
-import { Message } from '../../types/Message';
-import { Response } from '../../types/Response';
-import { Tool } from '../../tools/registry/Tool';
-import { VectorStore } from '../../memory/vector/VectorStore';
+import { BaseAgent } from '../../lib/agents/base/BaseAgent'
+import { AgentType } from '../../lib/types/agent'
+import type {
+  Message,
+  AgentConfig,
+  AgentCapabilityType,
+  MessageResponse,
+} from '../../lib/types/agent'
+import type { Tool } from '../../tools/registry/Tool'
+import type { VectorStore } from '../../memory/vector/VectorStore'
+
+interface AnalysisResult {
+  summary: string
+  details: Record<string, unknown>
+  vulnerabilities?: string[]
+  recommendations?: string[]
+  generated?: string
+}
+
+interface EmbeddingData {
+  id: string
+  type: string
+  timestamp: number
+  source: string
+  summary: string
+  details: Record<string, unknown>
+}
 
 interface CodeAnalysisConfig {
-  name: string;
-  modelEndpoint: string;
-  vectorStore?: VectorStore;
+  id: string
+  modelEndpoint: string
+  vectorStore?: VectorStore
 }
 
 export class CodeAnalysisAgent extends BaseAgent {
-  private modelEndpoint: string;
-  private vectorStore?: VectorStore;
+  private modelEndpoint: string
+  private vectorStore?: VectorStore
 
   constructor(config: CodeAnalysisConfig) {
-    super({
-      name: config.name,
-      capabilities: [
-        'code_analysis',
-        'refactoring',
-        'optimization',
-        'security_review',
-        'documentation'
-      ]
-    });
+    const agentConfig: AgentConfig = {
+      id: config.id,
+      name: 'CodeAnalysisAgent',
+      type: AgentType.BASE,
+      capabilities: [],
+    }
+    super(agentConfig)
+    this.modelEndpoint = config.modelEndpoint
+    this.vectorStore = config.vectorStore
 
-    this.modelEndpoint = config.modelEndpoint;
-    this.vectorStore = config.vectorStore;
+    const capability: AgentCapabilityType = {
+      name: 'code_analysis',
+      description: 'Analyzes code for patterns, issues, and improvements',
+      version: '1.0.0',
+      parameters: {
+        code: {
+          type: 'string',
+          description: 'Code to analyze',
+          required: true,
+        },
+      },
+    }
+    this.addCapability(capability)
   }
 
-  public async processMessage(message: Message): Promise<Response> {
+  public async handleMessage(message: Message): Promise<{ success: boolean }> {
     try {
-      const intent = await this.classifyIntent(message.content);
+      const startTime = Date.now()
+      const intent = await this.classifyIntent(message.content)
+
       switch (intent) {
         case 'analyze_code':
-          return await this.analyzeCode(message);
+          await this.analyzeCode(message)
+          break
         case 'suggest_refactoring':
-          return await this.suggestRefactoring(message);
+          await this.suggestRefactoring(message)
+          break
         case 'optimize_performance':
-          return await this.optimizePerformance(message);
+          await this.optimizePerformance(message)
+          break
         case 'review_security':
-          return await this.reviewSecurity(message);
+          await this.reviewSecurity(message)
+          break
         case 'generate_docs':
-          return await this.generateDocs(message);
+          await this.generateDocs(message)
+          break
         default:
-          throw new Error(`Unsupported intent: ${intent}`);
+          throw new Error(`Unsupported intent: ${intent}`)
       }
+
+      this.updateMetrics(startTime)
+      return { success: true }
     } catch (error) {
-      this.logError(error, { message });
-      throw error;
+      this.metrics.failedRequests++
+      throw error
     }
   }
 
-  public async handleToolUse(tool: Tool): Promise<Response> {
-    const metadata = tool.getMetadata();
-    if (metadata.capabilities.includes('code_analysis')) {
-      return await this.executeAnalysisTool(tool);
+  public async handleRequest(request: unknown): Promise<unknown> {
+    if (typeof request === 'string') {
+      return this.handleMessage({
+        id: Date.now().toString(),
+        type: 'text',
+        content: request,
+        timestamp: Date.now(),
+      })
     }
-    throw new Error('Unsupported tool for code analysis');
+    throw new Error('Invalid request format')
   }
 
-  private async analyzeCode(message: Message): Promise<Response> {
-    const codeSnippet = await this.extractCodeSnippet(message.content);
-    const analysis = await this.performCodeAnalysis(codeSnippet);
-    
+  public async handleToolUse(tool: unknown): Promise<MessageResponse> {
+    try {
+      const typedTool = tool as Tool
+      const metadata = typedTool.getMetadata()
+      if (metadata.capabilities.includes('code_analysis')) {
+        const result = await this.executeAnalysisTool(typedTool)
+        return { status: 'success', data: result }
+      }
+      throw new Error('Unsupported tool for code analysis')
+    } catch (error) {
+      return {
+        status: 'error',
+        data: error instanceof Error ? error.message : 'Unknown error occurred',
+      }
+    }
+  }
+
+  private async analyzeCode(message: Message): Promise<void> {
+    const codeSnippet = await this.extractCodeSnippet(message.content)
+    const analysis = await this.performCodeAnalysis(codeSnippet)
+
     if (this.vectorStore) {
-      await this.storeAnalysis(analysis);
+      await this.storeAnalysis(analysis)
     }
-
-    return this.createResponse({
-      type: 'code_analysis',
-      content: analysis.summary,
-      details: analysis.details
-    });
   }
 
-  private async suggestRefactoring(message: Message): Promise<Response> {
-    const codeSnippet = await this.extractCodeSnippet(message.content);
-    const suggestions = await this.generateRefactoringSuggestions(codeSnippet);
-    
-    return this.createResponse({
-      type: 'refactoring_suggestions',
-      content: suggestions.summary,
-      suggestions: suggestions.details
-    });
+  private async suggestRefactoring(message: Message): Promise<void> {
+    const codeSnippet = await this.extractCodeSnippet(message.content)
+    await this.generateRefactoringSuggestions(codeSnippet)
   }
 
-  private async optimizePerformance(message: Message): Promise<Response> {
-    const codeSnippet = await this.extractCodeSnippet(message.content);
-    const optimizations = await this.analyzePerformance(codeSnippet);
-    
-    return this.createResponse({
-      type: 'performance_optimization',
-      content: optimizations.summary,
-      optimizations: optimizations.details
-    });
+  private async optimizePerformance(message: Message): Promise<void> {
+    const codeSnippet = await this.extractCodeSnippet(message.content)
+    await this.analyzePerformance(codeSnippet)
   }
 
-  private async reviewSecurity(message: Message): Promise<Response> {
-    const codeSnippet = await this.extractCodeSnippet(message.content);
-    const securityReview = await this.performSecurityReview(codeSnippet);
-    
-    return this.createResponse({
-      type: 'security_review',
-      content: securityReview.summary,
-      vulnerabilities: securityReview.vulnerabilities,
-      recommendations: securityReview.recommendations
-    });
+  private async reviewSecurity(message: Message): Promise<void> {
+    const codeSnippet = await this.extractCodeSnippet(message.content)
+    await this.performSecurityReview(codeSnippet)
   }
 
-  private async generateDocs(message: Message): Promise<Response> {
-    const codeSnippet = await this.extractCodeSnippet(message.content);
-    const documentation = await this.generateDocumentation(codeSnippet);
-    
-    return this.createResponse({
-      type: 'documentation',
-      content: documentation.summary,
-      docs: documentation.generated
-    });
+  private async generateDocs(message: Message): Promise<void> {
+    const codeSnippet = await this.extractCodeSnippet(message.content)
+    await this.generateDocumentation(codeSnippet)
   }
 
   private async classifyIntent(content: string): Promise<string> {
     // TODO: Implement intent classification using the model
-    if (content.includes('analyze')) return 'analyze_code';
-    if (content.includes('refactor')) return 'suggest_refactoring';
-    if (content.includes('optimize')) return 'optimize_performance';
-    if (content.includes('security')) return 'review_security';
-    if (content.includes('document')) return 'generate_docs';
-    return 'analyze_code';
+    if (content.includes('analyze')) return 'analyze_code'
+    if (content.includes('refactor')) return 'suggest_refactoring'
+    if (content.includes('optimize')) return 'optimize_performance'
+    if (content.includes('security')) return 'review_security'
+    if (content.includes('document')) return 'generate_docs'
+    return 'analyze_code'
   }
 
   private async extractCodeSnippet(content: string): Promise<string> {
-    // TODO: Implement better code extraction
-    const codeBlockRegex = /```[\s\S]*?```/g;
-    const matches = content.match(codeBlockRegex);
+    const codeBlockRegex = /```[\s\S]*?```/g
+    const matches = content.match(codeBlockRegex)
     if (!matches) {
-      throw new Error('No code snippet found in message');
+      throw new Error('No code snippet found in message')
     }
-    return matches[0].replace(/```/g, '').trim();
+    return matches[0].replace(/```/g, '').trim()
   }
 
-  private async performCodeAnalysis(code: string): Promise<any> {
+  private async performCodeAnalysis(_code: string): Promise<AnalysisResult> {
     // TODO: Implement code analysis using the model
     return {
       summary: 'Code analysis placeholder',
-      details: {}
-    };
-  }
-
-  private async generateRefactoringSuggestions(code: string): Promise<any> {
-    // TODO: Implement refactoring suggestions using the model
-    return {
-      summary: 'Refactoring suggestions placeholder',
-      details: []
-    };
-  }
-
-  private async analyzePerformance(code: string): Promise<any> {
-    // TODO: Implement performance analysis
-    return {
-      summary: 'Performance analysis placeholder',
-      details: {}
-    };
-  }
-
-  private async performSecurityReview(code: string): Promise<any> {
-    // TODO: Implement security review
-    return {
-      summary: 'Security review placeholder',
-      vulnerabilities: [],
-      recommendations: []
-    };
-  }
-
-  private async generateDocumentation(code: string): Promise<any> {
-    // TODO: Implement documentation generation
-    return {
-      summary: 'Documentation generation placeholder',
-      generated: ''
-    };
-  }
-
-  private async storeAnalysis(analysis: any): Promise<void> {
-    if (this.vectorStore) {
-      await this.vectorStore.storeEmbedding(
-        // TODO: Generate embedding for analysis
-        [],
-        {
-          id: `analysis_${Date.now()}`,
-          type: 'code_analysis',
-          timestamp: Date.now(),
-          source: this.name,
-          ...analysis
-        }
-      );
+      details: {},
     }
   }
 
-  private async executeAnalysisTool(tool: Tool): Promise<Response> {
-    const result = await tool.execute({});
-    return this.createResponse({
-      type: 'tool_execution',
-      content: 'Tool execution completed',
-      result
-    });
+  private async generateRefactoringSuggestions(_code: string): Promise<AnalysisResult> {
+    // TODO: Implement refactoring suggestions using the model
+    return {
+      summary: 'Refactoring suggestions placeholder',
+      details: {
+        suggestions: [],
+      },
+    }
   }
 
-  private createResponse(data: any): Response {
+  private async analyzePerformance(_code: string): Promise<AnalysisResult> {
+    // TODO: Implement performance analysis
     return {
-      type: data.type,
-      content: data.content,
-      timestamp: Date.now(),
-      metadata: data
-    };
+      summary: 'Performance analysis placeholder',
+      details: {},
+    }
+  }
+
+  private async performSecurityReview(_code: string): Promise<AnalysisResult> {
+    // TODO: Implement security review
+    return {
+      summary: 'Security review placeholder',
+      details: {
+        issues: [],
+      },
+      vulnerabilities: [],
+      recommendations: [],
+    }
+  }
+
+  private async generateDocumentation(_code: string): Promise<AnalysisResult> {
+    // TODO: Implement documentation generation
+    return {
+      summary: 'Documentation generation placeholder',
+      details: {
+        sections: {},
+      },
+      generated: '',
+    }
+  }
+
+  private async storeAnalysis(analysis: AnalysisResult): Promise<void> {
+    if (this.vectorStore) {
+      const embeddingData: EmbeddingData = {
+        id: `analysis_${Date.now()}`,
+        type: 'code_analysis',
+        timestamp: Date.now(),
+        source: this.getId(),
+        summary: analysis.summary,
+        details: analysis.details,
+      }
+
+      // TODO: Generate embedding vector from analysis
+      const embeddingVector: number[] = []
+
+      await this.vectorStore.storeEmbedding(embeddingVector, embeddingData)
+    }
+  }
+
+  private async executeAnalysisTool(tool: Tool): Promise<unknown> {
+    return await tool.execute({})
   }
 }

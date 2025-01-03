@@ -1,158 +1,131 @@
 import React from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
-import { Button } from '../ui/button'
-import { Plus, Settings, Trash2 } from 'lucide-react'
-import { useAgentStore } from '../../store/agentStore'
-import { Badge } from '../ui/badge'
-import { ScrollArea } from '../ui/scroll-area'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog'
-import { Label } from '../ui/label'
-import { Input } from '../ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
-import { AgentType, AgentStatus, AgentCapabilityType } from '../../lib/types/core'
+import { Panel } from '../ui/Panel'
+import { AgentType, AgentStatus } from '../../lib/types/agent'
+import type { Agent, AgentCapabilityType } from '../../lib/types/agent'
 
-const CAPABILITY_LABELS: Record<AgentCapabilityType, string> = {
-  [AgentCapabilityType.CHAT]: 'Chat',
-  [AgentCapabilityType.RAG]: 'RAG',
-  [AgentCapabilityType.MEMORY]: 'Memory',
-  [AgentCapabilityType.TOOLS]: 'Tools',
-  [AgentCapabilityType.SEARCH]: 'Search',
-  [AgentCapabilityType.CODE]: 'Code',
+interface AgentDisplay {
+  id: string
+  name: string
+  type: AgentType
+  status: AgentStatus
+  capabilities: AgentCapabilityType[]
+  lastActive?: number
 }
 
-const AgentsPanel: React.FC = () => {
-  const { agents, addAgent, removeAgent, setActiveAgent } = useAgentStore()
-  const [isCreating, setIsCreating] = React.useState(false)
-  const [newAgent, setNewAgent] = React.useState({
-    name: '',
-    type: '',
-    description: '',
-  })
+interface AgentsPanelProps {
+  agents: Agent[]
+  loading?: boolean
+  error?: string
+  onRefresh?: () => void
+  onAgentClick?: (agent: Agent) => void
+}
 
-  const handleCreateAgent = () => {
-    if (!newAgent.name || !newAgent.type) return
+function agentToDisplay(agent: Agent): AgentDisplay {
+  return {
+    id: agent.getId(),
+    name: agent.constructor.name,
+    type: agent.getType(),
+    status: agent.getStatus(),
+    capabilities: agent.getCapabilities(),
+    lastActive: agent.getMetrics().lastExecutionTime,
+  }
+}
 
-    const agent = {
-      id: `agent-${Date.now()}`,
-      name: newAgent.name,
-      type: newAgent.type as AgentType,
-      description: newAgent.description,
-      provider: 'local',
-      capabilities: [AgentCapabilityType.CHAT, AgentCapabilityType.RAG],
-      status: AgentStatus.AVAILABLE,
+export function AgentsPanel({
+  agents,
+  loading = false,
+  error,
+  onRefresh,
+  onAgentClick,
+}: AgentsPanelProps) {
+  const getStatusColor = (status: AgentStatus) => {
+    switch (status) {
+      case AgentStatus.IDLE:
+        return 'bg-gray-400'
+      case AgentStatus.RUNNING:
+        return 'bg-green-500'
+      case AgentStatus.PAUSED:
+        return 'bg-yellow-500'
+      case AgentStatus.ERROR:
+        return 'bg-red-500'
+      case AgentStatus.COMPLETED:
+        return 'bg-blue-500'
+      default:
+        return 'bg-gray-400'
     }
+  }
 
-    addAgent(agent)
-    setIsCreating(false)
-    setNewAgent({ name: '', type: '', description: '' })
+  const formatLastActive = (timestamp?: number) => {
+    if (!timestamp) return 'Never'
+    const diff = Date.now() - timestamp
+    const minutes = Math.floor(diff / 60000)
+    if (minutes < 1) return 'Just now'
+    if (minutes < 60) return `${minutes}m ago`
+    const hours = Math.floor(minutes / 60)
+    if (hours < 24) return `${hours}h ago`
+    return new Date(timestamp).toLocaleDateString()
   }
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Agents</h1>
-        <Dialog open={isCreating} onOpenChange={setIsCreating}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              New Agent
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Create New Agent</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label>Name</Label>
-                <Input
-                  value={newAgent.name}
-                  onChange={e => setNewAgent({ ...newAgent, name: e.target.value })}
-                  placeholder="Enter agent name"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Type</Label>
-                <Select
-                  value={newAgent.type}
-                  onValueChange={value => setNewAgent({ ...newAgent, type: value })}
+    <Panel
+      title="Agents"
+      description="Active agent instances and capabilities"
+      loading={loading}
+      error={error}
+      onRefresh={onRefresh}
+    >
+      <div className="space-y-4">
+        {agents.length === 0 ? (
+          <div className="py-8 text-center text-gray-500">No agents available</div>
+        ) : (
+          <div className="grid gap-4">
+            {agents.map(agent => {
+              const display = agentToDisplay(agent)
+              return (
+                <div
+                  key={display.id}
+                  className="cursor-pointer rounded-lg border border-gray-200 bg-white p-4 transition-shadow hover:shadow-md"
+                  onClick={() => onAgentClick?.(agent)}
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select agent type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={AgentType.ORCHESTRATOR}>Orchestrator</SelectItem>
-                    <SelectItem value={AgentType.WORKER}>Worker</SelectItem>
-                    <SelectItem value={AgentType.SPECIALIST}>Specialist</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Description</Label>
-                <Input
-                  value={newAgent.description}
-                  onChange={e => setNewAgent({ ...newAgent, description: e.target.value })}
-                  placeholder="Enter agent description"
-                />
-              </div>
-            </div>
-            <div className="flex justify-end space-x-2">
-              <Button variant="outline" onClick={() => setIsCreating(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleCreateAgent}>Create</Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <div className="flex items-center space-x-2">
+                        <h3 className="text-lg font-medium text-gray-900">{display.name}</h3>
+                        <span
+                          className={`inline-block h-2 w-2 rounded-full ${getStatusColor(
+                            display.status
+                          )}`}
+                        />
+                      </div>
+                      <p className="mt-1 text-sm text-gray-500">Type: {display.type}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-gray-500">
+                        Last active: {formatLastActive(display.lastActive)}
+                      </p>
+                    </div>
+                  </div>
+                  {display.capabilities.length > 0 && (
+                    <div className="mt-3">
+                      <div className="flex flex-wrap gap-2">
+                        {display.capabilities.map(capability => (
+                          <span
+                            key={capability.name}
+                            className="inline-flex items-center rounded-md bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800"
+                            title={capability.description}
+                          >
+                            {capability.name} v{capability.version}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
-
-      <ScrollArea className="h-[calc(100vh-12rem)]">
-        <div className="space-y-4">
-          {agents.map(agent => (
-            <Card
-              key={agent.id}
-              className="cursor-pointer hover:bg-accent/50"
-              onClick={() => setActiveAgent(agent)}
-            >
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <div className="space-y-1">
-                  <CardTitle className="text-lg font-medium">{agent.name}</CardTitle>
-                  <p className="text-sm text-muted-foreground">{agent.description}</p>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Badge variant={agent.provider === 'local' ? 'secondary' : 'default'}>
-                    {agent.provider}
-                  </Badge>
-                  <Button variant="ghost" size="icon">
-                    <Settings className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={e => {
-                      e.stopPropagation()
-                      removeAgent(agent.id)
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {Array.from(agent.capabilities).map(capability => (
-                    <Badge key={capability} variant="outline">
-                      {CAPABILITY_LABELS[capability]}
-                    </Badge>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </ScrollArea>
-    </div>
+    </Panel>
   )
 }
-
-export default AgentsPanel

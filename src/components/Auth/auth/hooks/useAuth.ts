@@ -23,6 +23,36 @@ export function useAuth() {
   })
 
   useEffect(() => {
+    // Ensure Supabase is initialized with client-side environment variables
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.error('Missing Supabase environment variables')
+      setState(prev => ({
+        ...prev,
+        loading: false,
+        error: {
+          message: 'Supabase configuration is incomplete',
+          status: 500,
+        },
+      }))
+      return
+    }
+
+    // Safely check if supabase is initialized
+    if (!supabase) {
+      setState(prev => ({
+        ...prev,
+        loading: false,
+        error: {
+          message: 'Supabase client not initialized',
+          status: 500,
+        },
+      }))
+      return
+    }
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       setState(prev => ({
@@ -53,6 +83,7 @@ export function useAuth() {
 
   const signIn = async (email: string, password: string) => {
     try {
+      if (!supabase) throw new Error('Supabase not initialized')
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -66,6 +97,7 @@ export function useAuth() {
 
   const signUp = async (email: string, password: string) => {
     try {
+      if (!supabase) throw new Error('Supabase not initialized')
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -78,6 +110,13 @@ export function useAuth() {
   }
 
   const signOut = async () => {
+    if (!supabase) {
+      setState(prev => ({
+        ...prev,
+        error: { message: 'Supabase not initialized' },
+      }))
+      return
+    }
     const { error } = await supabase.auth.signOut()
     if (error) {
       setState(prev => ({
@@ -88,6 +127,13 @@ export function useAuth() {
   }
 
   const resetPassword = async (email: string) => {
+    if (!supabase) {
+      setState(prev => ({
+        ...prev,
+        error: { message: 'Supabase not initialized' },
+      }))
+      return
+    }
     const { error } = await supabase.auth.resetPasswordForEmail(email)
     if (error) {
       setState(prev => ({
@@ -98,6 +144,13 @@ export function useAuth() {
   }
 
   const updatePassword = async (newPassword: string) => {
+    if (!supabase) {
+      setState(prev => ({
+        ...prev,
+        error: { message: 'Supabase not initialized' },
+      }))
+      return
+    }
     const { error } = await supabase.auth.updateUser({
       password: newPassword,
     })

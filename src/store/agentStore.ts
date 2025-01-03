@@ -1,76 +1,68 @@
 import { create } from 'zustand'
-import type { Agent, AgentCapabilityType, Message } from '../lib/types/agent'
+import type { Agent, AgentCapabilityType, MessageResponse, AgentMetrics } from '../lib/types/agent'
 import { AgentType, AgentStatus } from '../lib/types/agent'
+
+interface AgentInput {
+  id: string
+  name: string
+  type: AgentType
+  status?: AgentStatus
+  capabilities: AgentCapabilityType[]
+}
 
 export interface AgentState {
   agents: Agent[]
   activeAgent: Agent | null
-  addAgent: (agent: Omit<Agent, 'capabilities'> & { capabilities: AgentCapabilityType[] }) => void
+  addAgent: (agent: AgentInput) => void
   removeAgent: (id: string) => void
-  setActiveAgent: (agent: Agent) => void
+  setActiveAgent: (agent: Agent | null) => void
   getAvailableAgents: () => Agent[]
   updateAgentStatus: (agentId: string, status: AgentStatus) => void
 }
 
 // Create default base agent
 const defaultAgent: Agent = {
-  id: 'base-1',
-  name: 'Base Agent',
-  type: AgentType.SPECIALIST,
-  capabilities: new Set<AgentCapabilityType>(),
-  status: AgentStatus.AVAILABLE,
-
-  // Implement required Agent interface methods
-  async initialize() {},
-  async processMessage(message: Message) {
-    return {
-      id: 'response-' + message.id,
-      type: 'ASSISTANT',
-      content: '',
-      timestamp: Date.now(),
-    }
+  getId() {
+    return 'base-1'
   },
-  async handleRequest(_capability: string, _params: Record<string, unknown>) {
-    return null
+  getName() {
+    return 'Base Agent'
+  },
+  getType() {
+    return AgentType.BASE
+  },
+  getStatus() {
+    return AgentStatus.IDLE
   },
   getCapabilities() {
     return []
   },
-  hasCapability(type: AgentCapabilityType) {
-    return this.capabilities.has(type)
+  hasCapability() {
+    return false
   },
-  addCapability(type: AgentCapabilityType) {
-    this.capabilities.add(type)
-  },
-  removeCapability(type: AgentCapabilityType) {
-    this.capabilities.delete(type)
-  },
-  validateParameters(_capability: string, _params: Record<string, unknown>) {},
-  getMetrics() {
+  addCapability() {},
+  removeCapability() {},
+  getMetrics(): AgentMetrics {
     return {
+      lastExecutionTime: 0,
       totalRequests: 0,
       successfulRequests: 0,
       failedRequests: 0,
       averageResponseTime: 0,
-      lastResponseTime: 0,
-      uptime: 0,
-      memoryUsage: {
-        heapUsed: 0,
-        heapTotal: 0,
-        external: 0,
-        arrayBuffers: 0,
-      },
     }
   },
-  onMemoryCleanup(_handler: () => void) {},
-  cleanupMemory() {},
-  async shutdown() {},
-  getId() {
-    return this.id
+  async handleMessage() {
+    return { success: true }
   },
-  getStatus() {
-    return this.status
-  }
+  async handleRequest(request: unknown) {
+    return request
+  },
+  async handleToolUse(): Promise<MessageResponse> {
+    return {
+      status: 'success',
+      data: null,
+    }
+  },
 }
 
 export const useAgentStore = create<AgentState>((set, get) => ({
@@ -81,27 +73,46 @@ export const useAgentStore = create<AgentState>((set, get) => ({
       agents: [
         ...state.agents,
         {
-          ...agent,
-          capabilities: new Set<AgentCapabilityType>(agent.capabilities),
+          getId: () => agent.id,
+          getName: () => agent.name,
+          getType: () => agent.type,
+          getStatus: () => agent.status || AgentStatus.IDLE,
+          getCapabilities: () => agent.capabilities,
+          hasCapability: cap => agent.capabilities.some(c => c.name === cap.name),
+          addCapability: () => {},
+          removeCapability: () => {},
+          getMetrics: () => ({
+            lastExecutionTime: 0,
+            totalRequests: 0,
+            successfulRequests: 0,
+            failedRequests: 0,
+            averageResponseTime: 0,
+          }),
+          handleMessage: async () => ({ success: true }),
+          handleRequest: async req => req,
+          handleToolUse: async () => ({ status: 'success' as const, data: null }),
         } as Agent,
       ],
     })),
   removeAgent: id =>
     set(state => ({
-      agents: state.agents.filter(a => a.id !== id),
-      activeAgent: state.activeAgent?.id === id ? null : state.activeAgent,
+      agents: state.agents.filter(a => a.getId() !== id),
+      activeAgent: state.activeAgent?.getId() === id ? null : state.activeAgent,
     })),
   setActiveAgent: agent => set({ activeAgent: agent }),
   getAvailableAgents: () => {
     const { agents } = get()
-    return agents.filter((agent) => agent.getStatus() === AgentStatus.AVAILABLE)
+    return agents.filter(agent => agent.getStatus() === AgentStatus.IDLE)
   },
   updateAgentStatus: (agentId, status) =>
-    set((state) => ({
-      agents: state.agents.map((agent) =>
+    set(state => ({
+      agents: state.agents.map(agent =>
         agent.getId() === agentId
-          ? { ...agent, status }
+          ? ({
+              ...agent,
+              getStatus: () => status,
+            } as Agent)
           : agent
-      )
-    }))
+      ),
+    })),
 }))

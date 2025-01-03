@@ -7,11 +7,11 @@ export default [
     ignores: ['**/dist/**', '**/node_modules/**'],
   },
   {
-    files: ['**/*.ts', '**/*.tsx'],
+    files: ['**/*.ts', '**/*.tsx', 'vite.config.ts'],
     languageOptions: {
       parser: tseslintParser,
       parserOptions: {
-        project: './tsconfig.json',
+        project: ['./tsconfig.json', './tsconfig.node.json'],
       },
       globals: {
         HTMLInputElement: 'readonly',
