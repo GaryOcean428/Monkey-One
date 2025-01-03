@@ -256,7 +256,7 @@ export class MemoryAgent extends BaseAgent {
         success: true,
         data: searchResults,
         metadata: {
-          took: Date.now() - Date.now(),
+          took: 0,
           total: searchResults.length,
           scanned: results.length,
         },
