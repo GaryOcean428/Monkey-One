@@ -1,5 +1,5 @@
 import { logger } from '../../lib/utils/logger'
-import { monitoring } from '../../lib/monitoring'
+import { monitoring } from '../../utils/monitoring'
 import {
   VectorMetadata,
   SearchResult,
