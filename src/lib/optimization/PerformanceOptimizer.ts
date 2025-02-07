@@ -2,6 +2,9 @@ import { monitoring } from '../monitoring/MonitoringSystem'
 import { logger } from '../../utils/logger'
 import { captureException } from '../../utils/sentry'
 import { memoryUsage } from '../../utils/metrics'
+import { cachedQuery } from '../cache/redis'
+import { LRUCache } from '../cache/strategies/LRUCache'
+import { PrefetchCache } from '../cache/strategies/PrefetchCache'
 
 interface OptimizationMetrics {
   cacheHitRate: number
