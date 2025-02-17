@@ -142,7 +142,7 @@
     "@vitest/eslint-plugin": "^1.0.1",
     "gpt-tokenizer": "^2.8.1",
     "happy-dom": "^16.0.1",
-    "husky": "^8.0.0",
+    "husky": "^9.0.0",
     "jsdom": "^25.0.1",
     "lint-staged": "^15.2.0",
     "msw": "^2.7.0",
