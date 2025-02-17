@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { generateStreamingResponse } from '../lib/models';
 import { useMonitoring } from '../hooks/useMonitoring';
+import { models, ModelName } from '../lib/models';
 
 interface StreamingResponseProps {
   prompt: string;
-  modelName?: string;
+  modelName?: ModelName;
   options?: Record<string, any>;
   onComplete?: (fullResponse: string) => void;
   className?: string;
@@ -32,7 +33,8 @@ export const StreamingResponse: React.FC<StreamingResponseProps> = ({
       const startTime = performance.now();
       
       try {
-        const generator = generateStreamingResponse(prompt, modelName, options);
+        const selectedModel = modelName || 'granite3.1-dense:2b';
+        const generator = generateStreamingResponse(prompt, selectedModel, options);
         
         for await (const chunk of generator) {
           if (chunk.done) {
@@ -45,7 +47,7 @@ export const StreamingResponse: React.FC<StreamingResponseProps> = ({
 
         const endTime = performance.now();
         logEvent('streamingResponse', {
-          modelName,
+          modelName: selectedModel,
           promptLength: prompt.length,
           responseLength: responseRef.current.length,
           duration: endTime - startTime
