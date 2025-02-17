@@ -94,7 +94,7 @@
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "tar": "^7.4.3",
-    "undici": "^5.28.4",
+    "undici": "^7.0.0",
     "uuid": "^11.0.3",
     "winston": "^3.11.0",
     "zod": "^3.24.1",
@@ -178,7 +178,7 @@
     ]
   },
   "resolutions": {
-    "undici": "^5.28.4",
+    "undici": "^7.0.0",
     "path-to-regexp": "^6.3.0",
     "semver": "^7.5.4",
     "tar": "^7.4.3",
