@@ -123,7 +123,7 @@
     "@types/react-dom": "^18.0.6",
     "@types/react-router-dom": "^5.3.3",
     "@types/sequelize": "^4.28.20",
-    "@types/three": "^0.171.0",
+    "@types/three": "^0.173.0",
     "@types/web": "^0.0.203",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
