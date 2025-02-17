@@ -294,8 +294,8 @@ importers:
         specifier: ^0.171.0
         version: 0.171.0
       '@types/web':
-        specifier: ^0.0.188
-        version: 0.0.188
+        specifier: ^0.0.203
+        version: 0.0.203
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.21.0
         version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.3.3))(eslint@8.57.1)(typescript@5.3.3)
@@ -2127,8 +2127,8 @@ packages:
   '@types/validator@13.12.2':
     resolution: {integrity: sha512-6SlHBzUW8Jhf3liqrGGXyTJSIFe4nqlJ5A5KaMZ2l/vbM3Wh3KSybots/wfWVzNLK4D1NZluDlSQIbIEPx6oyA==}
 
-  '@types/web@0.0.188':
-    resolution: {integrity: sha512-dKowKMo4P0W6f2U5i66uJ+/MlSHzBnznI0ExP1xnpcF/9/CJQT4VYvIDqz7ocWDvd0pB1QPgjOe4dVSycQrbuA==}
+  '@types/web@0.0.203':
+    resolution: {integrity: sha512-ZWthXkqMAUjWUYQxb31kJsIQODIlQZuUWjZsyHDMSUHot9Fan3NgQpZTU9CnM4dpw2G/6iF7Pmict/7bYckTtQ==}
 
   '@types/webxr@0.5.20':
     resolution: {integrity: sha512-JGpU6qiIJQKUuVSKx1GtQnHJGxRjtfGIhzO2ilq43VZZS//f1h1Sgexbdk+Lq+7569a6EYhOWrUpIruR/1Enmg==}
@@ -7900,7 +7900,7 @@ snapshots:
 
   '@types/validator@13.12.2': {}
 
-  '@types/web@0.0.188': {}
+  '@types/web@0.0.203': {}
 
   '@types/webxr@0.5.20': {}
 
