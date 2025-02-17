@@ -71,7 +71,7 @@
     "debug": "^4.3.4",
     "express-rate-limit": "^7.1.5",
     "framer-motion": "^11.15.0",
-    "helmet": "^7.1.0",
+    "helmet": "^8.0.0",
     "highlight.js": "^11.11.0",
     "http-proxy-middleware": "^3.0.0",
     "immer": "^10.1.1",
