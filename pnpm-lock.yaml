@@ -99,7 +99,7 @@ importers:
         version: 4.22.0(encoding@0.1.13)(seedrandom@3.0.5)
       '@toolhouseai/sdk':
         specifier: ^1.0.4
-        version: 1.0.4(debug@4.4.0)(encoding@0.1.13)(react@18.3.1)(sswr@2.1.0(svelte@5.16.0))(svelte@5.16.0)(vue@3.5.13(typescript@5.3.3))
+        version: 1.0.4(debug@4.4.0)(encoding@0.1.13)(react@18.3.1)(sswr@2.1.0(svelte@5.16.0))(svelte@5.16.0)(vue@3.5.13(typescript@5.3.3))(ws@8.18.0)
       '@types/axios':
         specifier: ^0.14.4
         version: 0.14.4(debug@4.4.0)
@@ -168,7 +168,7 @@ importers:
         version: 0.4.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       openai:
         specifier: ^4.28.0
-        version: 4.77.0(encoding@0.1.13)(zod@3.24.1)
+        version: 4.85.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.1)
       path-to-regexp:
         specifier: ^6.3.0
         version: 6.3.0
@@ -4618,12 +4618,15 @@ packages:
     resolution: {integrity: sha512-7x81NCL719oNbsq/3mh+hVrAWmFuEYUqrq/Iw3kUzH8ReypT9QQ0BLoJS7/G9k6N81XjW4qHWtjWwe/9eLy1EQ==}
     engines: {node: '>=12'}
 
-  openai@4.77.0:
-    resolution: {integrity: sha512-WWacavtns/7pCUkOWvQIjyOfcdr9X+9n9Vvb0zFeKVDAqwCMDHB+iSr24SVaBAhplvSG6JrRXFpcNM9gWhOGIw==}
+  openai@4.85.1:
+    resolution: {integrity: sha512-jkX2fntHljUvSH3MkWh4jShl10oNkb+SsCj4auKlbu2oF4KWAnmHLNR5EpnUHK1ZNW05Rp0fjbJzYwQzMsH8ZA==}
     hasBin: true
     peerDependencies:
+      ws: ^8.18.0
       zod: ^3.23.8
     peerDependenciesMeta:
+      ws:
+        optional: true
       zod:
         optional: true
 
@@ -7659,12 +7662,12 @@ snapshots:
     dependencies:
       '@testing-library/dom': 10.4.0
 
-  '@toolhouseai/sdk@1.0.4(debug@4.4.0)(encoding@0.1.13)(react@18.3.1)(sswr@2.1.0(svelte@5.16.0))(svelte@5.16.0)(vue@3.5.13(typescript@5.3.3))':
+  '@toolhouseai/sdk@1.0.4(debug@4.4.0)(encoding@0.1.13)(react@18.3.1)(sswr@2.1.0(svelte@5.16.0))(svelte@5.16.0)(vue@3.5.13(typescript@5.3.3))(ws@8.18.0)':
     dependencies:
       '@anthropic-ai/sdk': 0.27.3(encoding@0.1.13)
-      ai: 3.4.33(openai@4.77.0(encoding@0.1.13)(zod@3.24.1))(react@18.3.1)(sswr@2.1.0(svelte@5.16.0))(svelte@5.16.0)(vue@3.5.13(typescript@5.3.3))(zod@3.24.1)
+      ai: 3.4.33(openai@4.85.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.1))(react@18.3.1)(sswr@2.1.0(svelte@5.16.0))(svelte@5.16.0)(vue@3.5.13(typescript@5.3.3))(zod@3.24.1)
       axios: 1.7.9(debug@4.4.0)
-      openai: 4.77.0(encoding@0.1.13)(zod@3.24.1)
+      openai: 4.85.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.1)
       zod: 3.24.1
     transitivePeerDependencies:
       - debug
@@ -7674,6 +7677,7 @@ snapshots:
       - sswr
       - svelte
       - vue
+      - ws
 
   '@tootallnate/once@2.0.0': {}
 
@@ -8416,7 +8420,7 @@ snapshots:
     dependencies:
       humanize-ms: 1.2.1
 
-  ai@3.4.33(openai@4.77.0(encoding@0.1.13)(zod@3.24.1))(react@18.3.1)(sswr@2.1.0(svelte@5.16.0))(svelte@5.16.0)(vue@3.5.13(typescript@5.3.3))(zod@3.24.1):
+  ai@3.4.33(openai@4.85.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.1))(react@18.3.1)(sswr@2.1.0(svelte@5.16.0))(svelte@5.16.0)(vue@3.5.13(typescript@5.3.3))(zod@3.24.1):
     dependencies:
       '@ai-sdk/provider': 0.0.26
       '@ai-sdk/provider-utils': 1.0.22(zod@3.24.1)
@@ -8432,7 +8436,7 @@ snapshots:
       secure-json-parse: 2.7.0
       zod-to-json-schema: 3.24.1(zod@3.24.1)
     optionalDependencies:
-      openai: 4.77.0(encoding@0.1.13)(zod@3.24.1)
+      openai: 4.85.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.1)
       react: 18.3.1
       sswr: 2.1.0(svelte@5.16.0)
       svelte: 5.16.0
@@ -10617,7 +10621,7 @@ snapshots:
       is-docker: 2.2.1
       is-wsl: 2.2.0
 
-  openai@4.77.0(encoding@0.1.13)(zod@3.24.1):
+  openai@4.85.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.1):
     dependencies:
       '@types/node': 18.19.76
       '@types/node-fetch': 2.6.12
@@ -10627,6 +10631,7 @@ snapshots:
       formdata-node: 4.4.1
       node-fetch: 2.7.0(encoding@0.1.13)
     optionalDependencies:
+      ws: 8.18.0
       zod: 3.24.1
     transitivePeerDependencies:
       - encoding
