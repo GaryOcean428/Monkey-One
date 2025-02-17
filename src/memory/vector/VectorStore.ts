@@ -1,3 +1,5 @@
+import { logger } from '../../lib/utils/logger'
+import { monitoring } from '../../lib/monitoring'
 import {
   VectorMetadata,
   SearchResult,
@@ -8,6 +10,9 @@ import {
 import { RelevanceScorer } from '../relevance/RelevanceScorer'
 import { VectorStoreOperationError, VectorStoreValidationError } from './errors'
 import axios, { AxiosResponse } from 'axios'
+import { validateVector } from './validation'
+import { sanitizeMetadata } from './sanitization'
+import { retry } from '../../lib/utils/retry'
 
 const DEFAULT_CONFIG: Required<VectorStoreConfig> = {
   namespace: 'default',
@@ -133,18 +138,49 @@ export class VectorStore {
   }
 
   public async storeEmbedding(vector: number[], metadata: VectorMetadata): Promise<void> {
-    this.validateVector(vector)
-    this.validateMetadata(metadata)
+    try {
+      // Validate inputs
+      if (!metadata.id) {
+        throw new Error('Metadata must include an id')
+      }
 
-    await this.callVectorApi('store', {
-      vectors: [
-        {
-          id: metadata.id,
-          values: vector,
-          metadata,
+      if (!validateVector(vector, this.config.dimension)) {
+        throw new Error(`Vector must have dimension ${this.config.dimension}`)
+      }
+
+      // Sanitize metadata to prevent injection
+      const cleanMetadata = sanitizeMetadata(metadata)
+
+      await retry(
+        async () => {
+          await this.callVectorApi('store', {
+            vectors: [
+              {
+                id: metadata.id,
+                values: vector,
+                metadata: cleanMetadata,
+              },
+            ],
+          })
+
+          monitoring.recordMetric('vector_store.embeddings_stored', 1)
+          logger.debug('Stored embedding', { id: metadata.id })
         },
-      ],
-    })
+        3,
+        {
+          initialDelay: 100,
+          maxDelay: 1000,
+          retryableErrors: ['ERR_STORAGE_FULL', 'ERR_CONCURRENT_MODIFICATION'],
+        }
+      )
+    } catch (error) {
+      monitoring.recordMetric('vector_store.store_errors', 1)
+      logger.error('Failed to store embedding:', {
+        error,
+        metadata: { id: metadata.id },
+      })
+      throw error
+    }
   }
 
   public async semanticSearch(
@@ -168,14 +204,47 @@ export class VectorStore {
     k: number = 5,
     filter?: object
   ): Promise<EnhancedSearchResult[]> {
-    this.validateVector(queryVector)
+    try {
+      if (!validateVector(queryVector, this.config.dimension)) {
+        throw new Error(`Query vector must have dimension ${this.config.dimension}`)
+      }
 
-    const expandedK = Math.min(k * 2, 100)
+      if (k <= 0) {
+        throw new Error('Limit must be positive')
+      }
 
+      const startTime = Date.now()
+      const results = await retry(() => this.performSearch(queryVector, filter, k), 3, {
+        initialDelay: 100,
+        maxDelay: 1000,
+        retryableErrors: ['ERR_SEARCH_TIMEOUT', 'ERR_INDEX_CORRUPTED'],
+      })
+      const duration = Date.now() - startTime
+
+      monitoring.recordMetric('vector_store.search_duration_ms', duration)
+      monitoring.recordMetric('vector_store.searches_performed', 1)
+
+      return results
+    } catch (error) {
+      monitoring.recordMetric('vector_store.search_errors', 1)
+      logger.error('Semantic search failed:', {
+        error,
+        filter,
+        k,
+      })
+      throw error
+    }
+  }
+
+  private async performSearch(
+    queryVector: number[],
+    filters?: Partial<VectorMetadata>,
+    limit: number
+  ): Promise<EnhancedSearchResult[]> {
     const searchResponse = await this.callVectorApi<SearchApiResponse>('search', {
       vector: queryVector,
-      k: expandedK,
-      filter,
+      k: limit,
+      filter: filters,
     })
 
     const results = searchResponse.matches.map(
@@ -187,7 +256,9 @@ export class VectorStore {
           vector: match.values || [],
         }
 
-        const relevanceMetrics = this.relevanceScorer.calculateRelevance(searchResult, queryContext)
+        const relevanceMetrics = this.relevanceScorer.calculateRelevance(searchResult, {
+          timestamp: Date.now(),
+        })
 
         return {
           ...searchResult,
@@ -201,7 +272,7 @@ export class VectorStore {
         (a: EnhancedSearchResult, b: EnhancedSearchResult) =>
           b.relevanceMetrics.finalScore - a.relevanceMetrics.finalScore
       )
-      .slice(0, k)
+      .slice(0, limit)
   }
 
   public async deleteEmbedding(id: string): Promise<void> {

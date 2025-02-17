@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events'
+import { EventEmitter } from '../utils/EventEmitter'
 import { llmManager } from './providers'
 import type { Message } from '../../types'
 import { adaptMessagesForLLM } from './messageAdapter'
