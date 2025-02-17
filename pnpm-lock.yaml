@@ -75,7 +75,7 @@ importers:
         version: 1.1.8(@types/react-dom@18.3.5(@types/react@18.3.18))(@types/react@18.3.18)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@sentry/browser':
         specifier: ^8.47.0
-        version: 8.47.0
+        version: 8.55.0
       '@supabase/supabase-js':
         specifier: ^2.47.10
         version: 2.47.10
@@ -1769,28 +1769,28 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@sentry-internal/browser-utils@8.47.0':
-    resolution: {integrity: sha512-vOXzYzHTKkahTLDzWWIA4EiVCQ+Gk+7xGWUlNcR2ZiEPBqYZVb5MjsUozAcc7syrSUy6WicyFjcomZ3rlCVQhg==}
+  '@sentry-internal/browser-utils@8.55.0':
+    resolution: {integrity: sha512-ROgqtQfpH/82AQIpESPqPQe0UyWywKJsmVIqi3c5Fh+zkds5LUxnssTj3yNd1x+kxaPDVB023jAP+3ibNgeNDw==}
     engines: {node: '>=14.18'}
 
-  '@sentry-internal/feedback@8.47.0':
-    resolution: {integrity: sha512-IAiIemTQIalxAOYhUENs9bZ8pMNgJnX3uQSuY7v0gknEqClOGpGkG04X/cxCmtJUj1acZ9ShTGDxoh55a+ggAQ==}
+  '@sentry-internal/feedback@8.55.0':
+    resolution: {integrity: sha512-cP3BD/Q6pquVQ+YL+rwCnorKuTXiS9KXW8HNKu4nmmBAyf7urjs+F6Hr1k9MXP5yQ8W3yK7jRWd09Yu6DHWOiw==}
     engines: {node: '>=14.18'}
 
-  '@sentry-internal/replay-canvas@8.47.0':
-    resolution: {integrity: sha512-M4W9UGouEeELbGbP3QsXLDVtGiQSZoWJlKwqMWyqdQgZuLoKw0S33+60t6teLVMhuQZR0UI9VJTF5coiXysnnA==}
+  '@sentry-internal/replay-canvas@8.55.0':
+    resolution: {integrity: sha512-nIkfgRWk1091zHdu4NbocQsxZF1rv1f7bbp3tTIlZYbrH62XVZosx5iHAuZG0Zc48AETLE7K4AX9VGjvQj8i9w==}
     engines: {node: '>=14.18'}
 
-  '@sentry-internal/replay@8.47.0':
-    resolution: {integrity: sha512-G/S40ZBORj0HSMLw/uVC6YDEPN/dqVk901vf4VYfml686DEhJrZesfAfp5SydJumQ0NKZQrdtvny+BWnlI5H1w==}
+  '@sentry-internal/replay@8.55.0':
+    resolution: {integrity: sha512-roCDEGkORwolxBn8xAKedybY+Jlefq3xYmgN2fr3BTnsXjSYOPC7D1/mYqINBat99nDtvgFvNfRcZPiwwZ1hSw==}
     engines: {node: '>=14.18'}
 
-  '@sentry/browser@8.47.0':
-    resolution: {integrity: sha512-K6BzHisykmbFy/wORtGyfsAlw7ShevLALzu3ReZZZ18dVubO1bjSNjkZQU9MJD5Jcb9oLwkq89n3N9XIBfvdRA==}
+  '@sentry/browser@8.55.0':
+    resolution: {integrity: sha512-1A31mCEWCjaMxJt6qGUK+aDnLDcK6AwLAZnqpSchNysGni1pSn1RWSmk9TBF8qyTds5FH8B31H480uxMPUJ7Cw==}
     engines: {node: '>=14.18'}
 
-  '@sentry/core@8.47.0':
-    resolution: {integrity: sha512-iSEJZMe3DOcqBFZQAqgA3NB2lCWBc4Gv5x/SCri/TVg96wAlss4VrUunSI2Mp0J4jJ5nJcJ2ChqHSBAU48k3FA==}
+  '@sentry/core@8.55.0':
+    resolution: {integrity: sha512-6g7jpbefjHYs821Z+EBJ8r4Z7LT5h80YSWRJaylGS4nW5W5Z2KXzpdnyFarv37O7QjauzVC2E+PABmpkw5/JGA==}
     engines: {node: '>=14.18'}
 
   '@sinclair/typebox@0.25.24':
@@ -7424,33 +7424,33 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.34.8':
     optional: true
 
-  '@sentry-internal/browser-utils@8.47.0':
+  '@sentry-internal/browser-utils@8.55.0':
     dependencies:
-      '@sentry/core': 8.47.0
+      '@sentry/core': 8.55.0
 
-  '@sentry-internal/feedback@8.47.0':
+  '@sentry-internal/feedback@8.55.0':
     dependencies:
-      '@sentry/core': 8.47.0
+      '@sentry/core': 8.55.0
 
-  '@sentry-internal/replay-canvas@8.47.0':
+  '@sentry-internal/replay-canvas@8.55.0':
     dependencies:
-      '@sentry-internal/replay': 8.47.0
-      '@sentry/core': 8.47.0
+      '@sentry-internal/replay': 8.55.0
+      '@sentry/core': 8.55.0
 
-  '@sentry-internal/replay@8.47.0':
+  '@sentry-internal/replay@8.55.0':
     dependencies:
-      '@sentry-internal/browser-utils': 8.47.0
-      '@sentry/core': 8.47.0
+      '@sentry-internal/browser-utils': 8.55.0
+      '@sentry/core': 8.55.0
 
-  '@sentry/browser@8.47.0':
+  '@sentry/browser@8.55.0':
     dependencies:
-      '@sentry-internal/browser-utils': 8.47.0
-      '@sentry-internal/feedback': 8.47.0
-      '@sentry-internal/replay': 8.47.0
-      '@sentry-internal/replay-canvas': 8.47.0
-      '@sentry/core': 8.47.0
+      '@sentry-internal/browser-utils': 8.55.0
+      '@sentry-internal/feedback': 8.55.0
+      '@sentry-internal/replay': 8.55.0
+      '@sentry-internal/replay-canvas': 8.55.0
+      '@sentry/core': 8.55.0
 
-  '@sentry/core@8.47.0': {}
+  '@sentry/core@8.55.0': {}
 
   '@sinclair/typebox@0.25.24': {}
 
