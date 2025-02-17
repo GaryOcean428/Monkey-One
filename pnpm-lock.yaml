@@ -379,7 +379,7 @@ importers:
         version: 0.6.11(prettier@3.4.2)
       react-hot-toast:
         specifier: ^2.5.1
-        version: 2.5.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 2.5.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
@@ -5037,8 +5037,8 @@ packages:
     peerDependencies:
       react: '>=16.13.1'
 
-  react-hot-toast@2.5.1:
-    resolution: {integrity: sha512-54Gq1ZD1JbmAb4psp9bvFHjS7lje+8ubboUmvKZkCsQBLH6AOpZ9JemfRvIdHcfb9AZXRaFLrb3qUobGYDJhFQ==}
+  react-hot-toast@2.5.2:
+    resolution: {integrity: sha512-Tun3BbCxzmXXM7C+NI4qiv6lT0uwGh4oAfeJyNOjYUejTsm35mK9iCaYLGv8cBz9L5YxZLx/2ii7zsIwPtPUdw==}
     engines: {node: '>=10'}
     peerDependencies:
       react: '>=16'
@@ -11018,7 +11018,7 @@ snapshots:
       '@babel/runtime': 7.26.0
       react: 18.3.1
 
-  react-hot-toast@2.5.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  react-hot-toast@2.5.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       csstype: 3.1.3
       goober: 2.1.16(csstype@3.1.3)
