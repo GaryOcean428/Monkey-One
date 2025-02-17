@@ -345,8 +345,8 @@ importers:
         specifier: ^2.8.1
         version: 2.8.1
       happy-dom:
-        specifier: ^16.0.1
-        version: 16.2.6
+        specifier: ^17.0.0
+        version: 17.1.0
       husky:
         specifier: ^8.0.0
         version: 8.0.3
@@ -409,7 +409,7 @@ importers:
         version: 5.1.4(typescript@5.3.3)(vite@5.4.12(@types/node@20.17.19))
       vitest:
         specifier: ^2.1.8
-        version: 2.1.9(@edge-runtime/vm@3.2.0)(@types/node@20.17.19)(@vitest/ui@2.1.8)(happy-dom@16.2.6)(jsdom@25.0.1)(msw@2.7.0(@types/node@20.17.19)(typescript@5.3.3))
+        version: 2.1.9(@edge-runtime/vm@3.2.0)(@types/node@20.17.19)(@vitest/ui@2.1.8)(happy-dom@17.1.0)(jsdom@25.0.1)(msw@2.7.0(@types/node@20.17.19)(typescript@5.3.3))
 
 packages:
 
@@ -3724,8 +3724,8 @@ packages:
   guid-typescript@1.0.9:
     resolution: {integrity: sha512-Y8T4vYhEfwJOTbouREvG+3XDsjr8E3kIr7uf+JZ0BYloFsttiHU0WfvANVsR7TxNUJa/WpCnw/Ino/p+DeBhBQ==}
 
-  happy-dom@16.2.6:
-    resolution: {integrity: sha512-pl9wpbvThd2BGptDW/DbeZgCVjjFJAe1+rGJ4SdXd1nLhGngaklpGohKlX6bSJwLH8vSi4VDhQsC2Mqa6eiyhg==}
+  happy-dom@17.1.0:
+    resolution: {integrity: sha512-9tUhXyePCjzUMycaHS/IzrIpF69xiq/laAT7golk4MtZ6t8ft5+Rv7U3lfrs2b4NMH0JTL3EhZzjfahrPmOnaQ==}
     engines: {node: '>=18.0.0'}
 
   has-bigints@1.1.0:
@@ -8231,7 +8231,7 @@ snapshots:
       std-env: 3.8.0
       test-exclude: 7.0.1
       tinyrainbow: 1.2.0
-      vitest: 2.1.9(@edge-runtime/vm@3.2.0)(@types/node@20.17.19)(@vitest/ui@2.1.8)(happy-dom@16.2.6)(jsdom@25.0.1)(msw@2.7.0(@types/node@20.17.19)(typescript@5.3.3))
+      vitest: 2.1.9(@edge-runtime/vm@3.2.0)(@types/node@20.17.19)(@vitest/ui@2.1.8)(happy-dom@17.1.0)(jsdom@25.0.1)(msw@2.7.0(@types/node@20.17.19)(typescript@5.3.3))
     transitivePeerDependencies:
       - supports-color
 
@@ -8241,7 +8241,7 @@ snapshots:
       eslint: 8.57.1
     optionalDependencies:
       typescript: 5.3.3
-      vitest: 2.1.9(@edge-runtime/vm@3.2.0)(@types/node@20.17.19)(@vitest/ui@2.1.8)(happy-dom@16.2.6)(jsdom@25.0.1)(msw@2.7.0(@types/node@20.17.19)(typescript@5.3.3))
+      vitest: 2.1.9(@edge-runtime/vm@3.2.0)(@types/node@20.17.19)(@vitest/ui@2.1.8)(happy-dom@17.1.0)(jsdom@25.0.1)(msw@2.7.0(@types/node@20.17.19)(typescript@5.3.3))
 
   '@vitest/expect@2.1.9':
     dependencies:
@@ -8291,7 +8291,7 @@ snapshots:
       sirv: 3.0.0
       tinyglobby: 0.2.10
       tinyrainbow: 1.2.0
-      vitest: 2.1.9(@edge-runtime/vm@3.2.0)(@types/node@20.17.19)(@vitest/ui@2.1.8)(happy-dom@16.2.6)(jsdom@25.0.1)(msw@2.7.0(@types/node@20.17.19)(typescript@5.3.3))
+      vitest: 2.1.9(@edge-runtime/vm@3.2.0)(@types/node@20.17.19)(@vitest/ui@2.1.8)(happy-dom@17.1.0)(jsdom@25.0.1)(msw@2.7.0(@types/node@20.17.19)(typescript@5.3.3))
 
   '@vitest/utils@2.1.8':
     dependencies:
@@ -9729,7 +9729,7 @@ snapshots:
 
   guid-typescript@1.0.9: {}
 
-  happy-dom@16.2.6:
+  happy-dom@17.1.0:
     dependencies:
       webidl-conversions: 7.0.0
       whatwg-mimetype: 3.0.0
@@ -11955,7 +11955,7 @@ snapshots:
       '@types/node': 20.17.19
       fsevents: 2.3.3
 
-  vitest@2.1.9(@edge-runtime/vm@3.2.0)(@types/node@20.17.19)(@vitest/ui@2.1.8)(happy-dom@16.2.6)(jsdom@25.0.1)(msw@2.7.0(@types/node@20.17.19)(typescript@5.3.3)):
+  vitest@2.1.9(@edge-runtime/vm@3.2.0)(@types/node@20.17.19)(@vitest/ui@2.1.8)(happy-dom@17.1.0)(jsdom@25.0.1)(msw@2.7.0(@types/node@20.17.19)(typescript@5.3.3)):
     dependencies:
       '@vitest/expect': 2.1.9
       '@vitest/mocker': 2.1.9(msw@2.7.0(@types/node@20.17.19)(typescript@5.3.3))(vite@5.4.12(@types/node@20.17.19))
@@ -11981,7 +11981,7 @@ snapshots:
       '@edge-runtime/vm': 3.2.0
       '@types/node': 20.17.19
       '@vitest/ui': 2.1.8(vitest@2.1.9)
-      happy-dom: 16.2.6
+      happy-dom: 17.1.0
       jsdom: 25.0.1
     transitivePeerDependencies:
       - less
