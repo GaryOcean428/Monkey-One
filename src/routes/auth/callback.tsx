@@ -7,34 +7,21 @@ const supabase = createClient(
   import.meta.env.VITE_SUPABASE_ANON_KEY
 )
 
-export function AuthCallback() {
+export default function AuthCallback() {
   const navigate = useNavigate()
 
   useEffect(() => {
     const handleAuthCallback = async () => {
-      try {
-        const { error } = await supabase.auth.getSession()
+      const { error } = await supabase.auth.getSession()
 
-        if (error) {
-          console.error('Error during auth callback:', error)
-          navigate('/login', {
-            state: {
-              error: 'Authentication failed. Please try again.'
-            }
-          })
-          return
-        }
-
-        // Successful authentication
-        navigate('/dashboard')
-      } catch (err) {
-        console.error('Unexpected error during auth callback:', err)
-        navigate('/login', {
-          state: {
-            error: 'An unexpected error occurred. Please try again.'
-          }
-        })
+      if (error) {
+        console.error('Error during auth callback:', error)
+        navigate('/auth/error')
+        return
       }
+
+      // Successful authentication
+      navigate('/')
     }
 
     handleAuthCallback()
