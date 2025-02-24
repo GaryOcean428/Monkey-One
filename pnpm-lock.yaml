@@ -352,7 +352,7 @@ importers:
         version: 2.8.1
       happy-dom:
         specifier: ^16.0.1
-        version: 16.2.6
+        version: 16.8.1
       husky:
         specifier: ^9.0.0
         version: 9.1.7
@@ -414,8 +414,8 @@ importers:
         specifier: ^5.1.4
         version: 5.1.4(typescript@5.7.3)(vite@6.1.0(@types/node@22.13.4)(jiti@1.21.7)(tsx@4.19.2)(yaml@2.7.0))
       vitest:
-        specifier: ^3.0.0
-        version: 3.0.5(@edge-runtime/vm@3.2.0)(@types/node@22.13.4)(@vitest/ui@3.0.5)(happy-dom@16.2.6)(jiti@1.21.7)(jsdom@25.0.1)(msw@2.7.0(@types/node@22.13.4)(typescript@5.7.3))(tsx@4.19.2)(yaml@2.7.0)
+        specifier: ^2.1.8
+        version: 2.1.9(@edge-runtime/vm@3.2.0)(@types/node@20.17.19)(@vitest/ui@2.1.8)(happy-dom@16.8.1)(jsdom@25.0.1)(msw@2.7.0(@types/node@20.17.19)(typescript@5.3.3))
 
 packages:
 
@@ -3744,8 +3744,8 @@ packages:
   guid-typescript@1.0.9:
     resolution: {integrity: sha512-Y8T4vYhEfwJOTbouREvG+3XDsjr8E3kIr7uf+JZ0BYloFsttiHU0WfvANVsR7TxNUJa/WpCnw/Ino/p+DeBhBQ==}
 
-  happy-dom@16.2.6:
-    resolution: {integrity: sha512-pl9wpbvThd2BGptDW/DbeZgCVjjFJAe1+rGJ4SdXd1nLhGngaklpGohKlX6bSJwLH8vSi4VDhQsC2Mqa6eiyhg==}
+  happy-dom@16.8.1:
+    resolution: {integrity: sha512-n0QrmT9lD81rbpKsyhnlz3DgnMZlaOkJPpgi746doA+HvaMC79bdWkwjrNnGJRvDrWTI8iOcJiVTJ5CdT/AZRw==}
     engines: {node: '>=18.0.0'}
 
   has-bigints@1.1.0:
@@ -8220,8 +8220,8 @@ snapshots:
       magicast: 0.3.5
       std-env: 3.8.0
       test-exclude: 7.0.1
-      tinyrainbow: 2.0.0
-      vitest: 3.0.5(@edge-runtime/vm@3.2.0)(@types/node@22.13.4)(@vitest/ui@3.0.5)(happy-dom@16.2.6)(jiti@1.21.7)(jsdom@25.0.1)(msw@2.7.0(@types/node@22.13.4)(typescript@5.7.3))(tsx@4.19.2)(yaml@2.7.0)
+      tinyrainbow: 1.2.0
+      vitest: 2.1.9(@edge-runtime/vm@3.2.0)(@types/node@20.17.19)(@vitest/ui@2.1.8)(happy-dom@16.8.1)(jsdom@25.0.1)(msw@2.7.0(@types/node@20.17.19)(typescript@5.3.3))
     transitivePeerDependencies:
       - supports-color
 
@@ -8230,8 +8230,8 @@ snapshots:
       '@typescript-eslint/utils': 8.24.1(eslint@9.20.1(jiti@1.21.7))(typescript@5.7.3)
       eslint: 9.20.1(jiti@1.21.7)
     optionalDependencies:
-      typescript: 5.7.3
-      vitest: 3.0.5(@edge-runtime/vm@3.2.0)(@types/node@22.13.4)(@vitest/ui@3.0.5)(happy-dom@16.2.6)(jiti@1.21.7)(jsdom@25.0.1)(msw@2.7.0(@types/node@22.13.4)(typescript@5.7.3))(tsx@4.19.2)(yaml@2.7.0)
+      typescript: 5.3.3
+      vitest: 2.1.9(@edge-runtime/vm@3.2.0)(@types/node@20.17.19)(@vitest/ui@2.1.8)(happy-dom@16.8.1)(jsdom@25.0.1)(msw@2.7.0(@types/node@20.17.19)(typescript@5.3.3))
 
   '@vitest/expect@3.0.5':
     dependencies:
@@ -8276,8 +8276,8 @@ snapshots:
       pathe: 2.0.3
       sirv: 3.0.0
       tinyglobby: 0.2.10
-      tinyrainbow: 2.0.0
-      vitest: 3.0.5(@edge-runtime/vm@3.2.0)(@types/node@22.13.4)(@vitest/ui@3.0.5)(happy-dom@16.2.6)(jiti@1.21.7)(jsdom@25.0.1)(msw@2.7.0(@types/node@22.13.4)(typescript@5.7.3))(tsx@4.19.2)(yaml@2.7.0)
+      tinyrainbow: 1.2.0
+      vitest: 2.1.9(@edge-runtime/vm@3.2.0)(@types/node@20.17.19)(@vitest/ui@2.1.8)(happy-dom@16.8.1)(jsdom@25.0.1)(msw@2.7.0(@types/node@20.17.19)(typescript@5.3.3))
 
   '@vitest/utils@3.0.5':
     dependencies:
@@ -9690,7 +9690,7 @@ snapshots:
 
   guid-typescript@1.0.9: {}
 
-  happy-dom@16.2.6:
+  happy-dom@16.8.1:
     dependencies:
       webidl-conversions: 7.0.0
       whatwg-mimetype: 3.0.0
@@ -11897,7 +11897,7 @@ snapshots:
       tsx: 4.19.2
       yaml: 2.7.0
 
-  vitest@3.0.5(@edge-runtime/vm@3.2.0)(@types/node@22.13.4)(@vitest/ui@3.0.5)(happy-dom@16.2.6)(jiti@1.21.7)(jsdom@25.0.1)(msw@2.7.0(@types/node@22.13.4)(typescript@5.7.3))(tsx@4.19.2)(yaml@2.7.0):
+  vitest@2.1.9(@edge-runtime/vm@3.2.0)(@types/node@20.17.19)(@vitest/ui@2.1.8)(happy-dom@16.8.1)(jsdom@25.0.1)(msw@2.7.0(@types/node@20.17.19)(typescript@5.3.3)):
     dependencies:
       '@vitest/expect': 3.0.5
       '@vitest/mocker': 3.0.5(msw@2.7.0(@types/node@22.13.4)(typescript@5.7.3))(vite@6.1.0(@types/node@22.13.4)(jiti@1.21.7)(tsx@4.19.2)(yaml@2.7.0))
@@ -11921,9 +11921,9 @@ snapshots:
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@edge-runtime/vm': 3.2.0
-      '@types/node': 22.13.4
-      '@vitest/ui': 3.0.5(vitest@3.0.5)
-      happy-dom: 16.2.6
+      '@types/node': 20.17.19
+      '@vitest/ui': 2.1.8(vitest@2.1.9)
+      happy-dom: 16.8.1
       jsdom: 25.0.1
     transitivePeerDependencies:
       - jiti
