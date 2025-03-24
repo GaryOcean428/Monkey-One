@@ -1,31 +1,31 @@
-import { LLMProvider } from './base';
+import { LLMProvider } from './base'
 
 export class GPT4oProvider extends LLMProvider {
   constructor(apiKey?: string) {
-    super(apiKey);
+    super(apiKey)
   }
 
   getName(): string {
-    return 'GPT-4o';
+    return 'GPT-4o'
   }
 
   getModelName(): string {
-    return 'gpt-4o-2024-11-06';
+    return 'gpt-4o'
   }
 
   getCostPerToken(): number {
-    return 0.0002;
+    return 0.0002
   }
 
   isAvailable(): boolean {
-    return !!this.apiKey;
+    return !!this.apiKey
   }
 
-  async generateResponse(prompt: string) {
-    throw new Error('Not implemented');
+  async generateResponse(_prompt: string) {
+    throw new Error('Not implemented')
   }
 
-  async generateStreamingResponse(prompt: string) {
-    throw new Error('Not implemented');
+  async generateStreamingResponse(_prompt: string) {
+    throw new Error('Not implemented')
   }
 }

@@ -1,15 +1,15 @@
-import type { LLMProvider } from './index';
-import type { Message } from '../../../types';
-import { HfInference } from '@huggingface/inference';
+import type { LLMProvider } from './index'
+import type { Message } from '../../../types'
+import { HfInference } from '@huggingface/inference'
 
 export class QwenProvider implements LLMProvider {
-  readonly id = 'qwen';
-  readonly name = 'Qwen';
-  readonly model = 'Qwen/Qwen2.5-Coder-32B-Instruct';
-  private client: HfInference;
+  readonly id = 'qwen'
+  readonly name = 'Qwen'
+  readonly model = 'Qwen/QwQ-32B-Preview'
+  private client: HfInference
 
   constructor(private token: string) {
-    this.client = new HfInference(token);
+    this.client = new HfInference(token)
   }
 
   async sendMessage(message: string, context: Message[] = []): Promise<string> {
@@ -18,19 +18,19 @@ export class QwenProvider implements LLMProvider {
         model: this.model,
         inputs: [
           ...context.map(msg => `${msg.role}: ${msg.content}`).join('\n'),
-          `user: ${message}`
+          `user: ${message}`,
         ].join('\n'),
         parameters: {
           max_new_tokens: 2000,
           temperature: 0.3,
           top_p: 0.9,
-          repetition_penalty: 1.1
-        }
-      });
+          repetition_penalty: 1.1,
+        },
+      })
 
-      return response.generated_text;
+      return response.generated_text
     } catch (error) {
-      throw new Error(`Qwen API error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(`Qwen API error: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
@@ -42,12 +42,12 @@ export class QwenProvider implements LLMProvider {
         max_new_tokens: 2000,
         temperature: 0.3,
         top_p: 0.9,
-        repetition_penalty: 1.1
-      }
-    });
+        repetition_penalty: 1.1,
+      },
+    })
 
     for await (const chunk of stream) {
-      onChunk(chunk.token.text);
+      onChunk(chunk.token.text)
     }
   }
 }
