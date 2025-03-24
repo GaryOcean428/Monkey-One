@@ -36,13 +36,37 @@ const server = createServer((req, res) => {
   // Route requests
   if (req.url?.startsWith('/api/ollama')) {
     ollamaProxy(req, res)
+  } else if (req.url === '/manifest.json' || req.url === '/site.webmanifest') {
+    // Allow access to manifest files without authentication
+    res.writeHead(200, { 'Content-Type': 'application/json' })
+    res.end(
+      JSON.stringify({
+        name: 'Monkey One',
+        short_name: 'Monkey One',
+        icons: [
+          {
+            src: '/android-chrome-192x192.png',
+            sizes: '192x192',
+            type: 'image/png',
+          },
+          {
+            src: '/android-chrome-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+          },
+        ],
+        theme_color: '#ffffff',
+        background_color: '#ffffff',
+        display: 'standalone',
+      })
+    )
   } else {
     res.writeHead(404)
     res.end('Not Found')
   }
 })
 
-const PORT = process.env.PROXY_PORT || 3002
+const PORT = process.env.PROXY_PORT || 3004
 server.listen(PORT, () => {
   console.log(`Proxy server running on port ${PORT}`)
 })
