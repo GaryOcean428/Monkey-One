@@ -5,6 +5,10 @@
 This document provides an overview of the AI models supported by the Monkey AI
 application, including their capabilities, use cases, and integration methods.
 
+## Vercel AI SDK Integration
+
+Monkey-One now uses the Vercel AI SDK to provide enhanced AI features with a unified interface across different model providers.
+
 ## Supported Models
 
 ### OpenAI Models
@@ -177,6 +181,70 @@ async function generateWithGemini() {
 - **Temperature**: Adjust temperature and other parameters based on the use case
 - **Token Usage**: Monitor and optimize token usage to control costs
 - **Caching**: Implement appropriate caching strategies
+
+## Vercel AI SDK Features
+
+### Streaming Responses
+
+The streaming API provides real-time responses from AI models, improving user experience:
+
+```typescript
+import { streamText } from 'ai';
+
+const stream = await streamText({
+  model: openaiModel,
+  prompt: "Explain quantum computing",
+});
+
+// Process stream in UI
+```
+
+### Structured Data Generation
+
+Generate structured, type-safe data directly from AI models using Zod schemas:
+
+```typescript
+import { generateObject } from 'ai';
+import { z } from 'zod';
+
+const schema = z.object({
+  sentiment: z.enum(['positive', 'neutral', 'negative']),
+  summary: z.string(),
+});
+
+const result = await generateObject({
+  model: openaiModel,
+  prompt: "Analyze this review: 'Great product, highly recommend!'",
+  schema,
+});
+
+// result.object is typed { sentiment: 'positive' | 'neutral' | 'negative', summary: string }
+```
+
+### Retrieval Augmented Generation (RAG)
+
+Our RAG implementation combines vector search with AI generation for context-aware responses:
+
+1. Store documents in the vector database
+2. When a query is received, retrieve relevant documents
+3. Include document content as context for the AI model
+4. Generate a response that incorporates this context
+
+```typescript
+// Adding documents to RAG
+await addDocumentsToRAG([
+  { 
+    text: "Document content", 
+    metadata: { source: "knowledge-base" } 
+  }
+]);
+
+// Generating RAG response
+const response = await generateRAGResponse({
+  query: "What does our pricing policy say?",
+  systemPrompt: "You are a helpful assistant.",
+});
+```
 
 ## Cost Management
 

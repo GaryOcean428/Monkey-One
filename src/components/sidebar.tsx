@@ -12,7 +12,9 @@ import {
   Users,
   GitBranch,
   Wrench,
-  FileText
+  FileText,
+  Github,
+  BrainCircuit
 } from "lucide-react"
 import { create } from "zustand"
 
@@ -33,6 +35,8 @@ const sidebarItems = [
   { href: "/workflow", label: "Workflow", icon: GitBranch },
   { href: "/tools", label: "Tools", icon: Wrench },
   { href: "/documents", label: "Documents", icon: FileText },
+  { href: "/github", label: "GitHub", icon: Github },
+  { href: "/ai", label: "AI Features", icon: BrainCircuit },
   { href: "/analytics", label: "Analytics", icon: BarChart },
   { href: "/settings", label: "Settings", icon: Settings }
 ]

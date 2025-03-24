@@ -40,7 +40,14 @@ export default defineConfig(({ mode }) => {
         input: {
           main: resolve(__dirname, 'index.html'),
         },
-        external: ['events', '@sentry/node', 'pino-pretty', 'winston', 'prom-client'],
+        external: [
+          'events', 
+          '@sentry/node', 
+          'pino-pretty', 
+          'winston', 
+          'prom-client',
+          'crypto'
+        ],
       },
       assetsDir: 'assets',
       copyPublicDir: true,
