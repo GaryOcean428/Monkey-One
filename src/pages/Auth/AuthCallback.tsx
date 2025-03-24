@@ -7,7 +7,7 @@ const supabase = createClient(
   import.meta.env.VITE_SUPABASE_ANON_KEY
 )
 
-export function AuthCallback() {
+export default function AuthCallback() {
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -17,11 +17,7 @@ export function AuthCallback() {
 
         if (error) {
           console.error('Error during auth callback:', error)
-          navigate('/login', {
-            state: {
-              error: 'Authentication failed. Please try again.'
-            }
-          })
+          navigate('/login', { state: { error: 'Authentication failed. Please try again.' } })
           return
         }
 
@@ -29,11 +25,7 @@ export function AuthCallback() {
         navigate('/dashboard')
       } catch (err) {
         console.error('Unexpected error during auth callback:', err)
-        navigate('/login', {
-          state: {
-            error: 'An unexpected error occurred. Please try again.'
-          }
-        })
+        navigate('/login', { state: { error: 'An unexpected error occurred. Please try again.' } })
       }
     }
 
