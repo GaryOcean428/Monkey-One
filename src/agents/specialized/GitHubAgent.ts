@@ -1,7 +1,9 @@
 import { Octokit } from '@octokit/rest'
 import { BaseAgent } from '../base/BaseAgent'
 import { AgentConfig, AgentType, Message } from '../../types'
-import { rateLimit, Request, Response, NextFunction } from 'express-rate-limit'
+import type { AgentConfig } from '../../types/agent';
+import type { Request, Response, NextFunction } from 'express';
+import { rateLimit } from 'express-rate-limit'
 import { logger } from '../../utils/logger'
 
 interface GitHubConfig {
@@ -27,10 +29,13 @@ interface RateLimitOptions {
 }
 
 interface GitHubComment {
-  body: string
-  path?: string
+  path: string
   position?: number
-  line?: number
+  body: string
+  line: number
+  side?: 'LEFT'|'RIGHT'
+  start_line?: number
+  start_side?: 'LEFT'|'RIGHT'
 }
 
 interface AnalysisResult {
@@ -90,6 +95,20 @@ export class GitHubAgent extends BaseAgent {
     this.setupCapabilities()
   }
 
+  async handleRequest(req: Request, res: Response): Promise<void> {
+    try {
+      const result = await this.processRequest(req);
+      res.status(200).json(result);
+    } catch (error) {
+      this.handleError(error as Error, res);
+    }
+  }
+
+  async handleToolUse(toolName: string, params: unknown): Promise<unknown> {
+    const tool = this.getTool(toolName);
+    return tool.execute(params);
+  }
+
   private async handleCodeReview(message: Message): Promise<{ success: boolean }> {
     try {
       // Extract PR number from message
@@ -97,7 +116,8 @@ export class GitHubAgent extends BaseAgent {
 
       // Check rate limit before proceeding
       const { data: rateLimit } = await this.octokit.rateLimit.get()
-      if (rateLimit.remaining < 10) {
+      const remaining = (rateLimit?.resources.core as { remaining: number }).remaining;
+      if (remaining < 10) {
         // Reserve some quota for other operations
         throw new Error('Insufficient API rate limit remaining')
       }
@@ -211,7 +231,29 @@ export class GitHubAgent extends BaseAgent {
       comments: fileAnalysis.map(file => ({
         body: `File ${file.filename} has ${file.changes} changes (${file.additions} additions, ${file.deletions} deletions)`,
         path: file.filename,
+        line: 1,
       })),
     }
   }
+
+  private getCapabilities() {
+    return {
+      codeReview: true,
+      issueTracking: true,
+      prManagement: true
+    };
+  }
+
+  private handleError(error: Error, res: Response): void {
+    logger.error(`GitHub Agent Error: ${error.message}`);
+    res.status(500).json({
+      error: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
 }
+
+apiRouter.use((error: Error, _req: Request, res: Response, _next: NextFunction) => {
+  const githubAgent = new GitHubAgent({} as GitHubConfig);
+  githubAgent.handleError(error, res);
+});

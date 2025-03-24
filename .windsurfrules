@@ -1,0 +1,37 @@
+  <language>typescript</language>
+  <framework>react</framework>
+  <typescript-version>5.5</typescript-version>
+  <node-version>20.x</node-version>
+  <package-manager>pnpm</package-manager>
+  <linter>eslint</linter>
+  <formatter>prettier</formatter>
+  <testing-framework>vitest</testing-framework>
+  <build-tool>vite</build-tool>
+</rules>
+
+<rules>
+  <indentation>spaces</indentation>
+  <indent-size>2</indent-size>
+  <max-line-length>100</max-line-length>
+  <naming-convention>
+    <variables>camelCase</variables>
+    <functions>camelCase</functions>
+    <classes>PascalCase</classes>
+    <interfaces>PascalCase</interfaces>
+    <enums>PascalCase</enums>
+    <constants>UPPER_SNAKE_CASE</constants>
+  </naming-convention>
+  <prefer-const>true</prefer-const>
+  <no-any>true</no-any>
+  <strict-null-checks>true</strict-null-checks>
+</rules>
+
+<rules>
+  <use-function-components>true</use-function-components>
+  <use-hooks>true</use-hooks>
+  <state-management>zustand</state-management>
+  <data-fetching>react-query</data-fetching>
+  <use-suspense>true</use-suspense>
+  <use-server-components>true</use-server-components>
+  <use-concurrent-mode>true</use-concurrent-mode>
+</rules>

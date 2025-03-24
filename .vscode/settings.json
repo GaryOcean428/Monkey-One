@@ -1,3 +1,18 @@
 {
-    "codium.codeCompletion.enable": true
+  "codium.codeCompletion.enable": true,
+  "workbench.editor.alwaysShowEditorActions": true,
+  "workbench.editor.autoLockGroups": {
+    "terminalEditor": false,
+    "mainThreadWebview-simpleBrowser.view": false,
+    "mainThreadWebview-browserPreview": false
+  },
+  "workbench.settings.openDefaultKeybindings": true,
+  "workbench.settings.openDefaultSettings": true,
+  "workbench.settings.useSplitJSON": true,
+  "remote.downloadExtensionsLocally": true,
+  "liveServer.settings.CustomBrowser": "chrome",
+  "vite.browserType": "system",
+  "vscode-edge-devtools.browserFlavor": "Canary",
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "notebook.defaultFormatter": "esbenp.prettier-vscode"
 }
