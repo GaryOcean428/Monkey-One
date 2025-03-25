@@ -18,7 +18,11 @@ const envVars = {
 }
 
 // Make environment variables accessible throughout the app
-window.ENV = envVars
+window.ENV = window.ENV || {}
+window.ENV.VITE_PUBLIC_URL = publicUrl
+
+// Log once that we're using a fallback for VITE_PUBLIC_URL
+console.info('Using detected public URL:', publicUrl)
 
 // Ensure error handling is initialized
 ErrorHandler.initBrowserErrorHandling()
