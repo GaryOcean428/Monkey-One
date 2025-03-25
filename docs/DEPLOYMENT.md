@@ -456,13 +456,14 @@ Vercel's Deployment Protection can block access to static files. Here are option
 
    - Set up a bypass token in Vercel project settings
    - Can be used for automated testing or CI/CD pipelines
-   - Example usage:
+   - Token is available as `VERCEL_AUTOMATION_BYPASS_SECRET` in all environments
+   - Example usage with query parameter:
      ```
-     GET /manifest.json?x-vercel-protection-bypass=<token>
+     GET /manifest.json?x-vercel-protection-bypass=FprJbxxrfBtasFrrF8zgDb3axO66OPIt
      ```
-   - Or with headers:
+   - Or with HTTP header:
      ```
-     x-vercel-protection-bypass: <token>
+     x-vercel-protection-bypass: FprJbxxrfBtasFrrF8zgDb3axO66OPIt
      ```
 
 3. **Deployment Protection Exceptions** (Enterprise/Pro+):
