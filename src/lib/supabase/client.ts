@@ -5,33 +5,26 @@ import { ErrorHandler } from '../../utils/errorHandler'
 // Safely extract environment variables
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ''
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
-// Set default for publicUrl
-const publicUrl = import.meta.env.VITE_PUBLIC_URL || window.location.origin || 'https://monkey-one.vercel.app'
 
-// Set global public URL if missing
-if (typeof window !== 'undefined' && !window.VITE_PUBLIC_URL) {
-  // Polyfill the environment variable at runtime
-  window.VITE_PUBLIC_URL = publicUrl;
+// Access the public URL through window.ENV (set in main.tsx) or fall back to runtime detection
+function getPublicUrl() {
+  const fromEnv = typeof import.meta.env !== 'undefined' && import.meta.env.VITE_PUBLIC_URL
+  const fromWindow = typeof window !== 'undefined' && (window.ENV?.VITE_PUBLIC_URL || window.PUBLIC_URL)
+  const origin = typeof window !== 'undefined' ? window.location.origin : null
   
-  // For compatibility with different access patterns
-  if (!import.meta.env.VITE_PUBLIC_URL) {
-    try {
-      // @ts-ignore - Runtime patching of environment variables
-      import.meta.env.VITE_PUBLIC_URL = publicUrl;
-    } catch (e) {
-      console.warn('Could not set VITE_PUBLIC_URL on import.meta.env');
-    }
+  return fromEnv || fromWindow || origin || 'https://monkey-one.vercel.app'
+}
+
+const publicUrl = getPublicUrl()
+
+// Ensure global access to publicUrl
+if (typeof window !== 'undefined') {
+  // Set on window.ENV object which is our safe environment variable container
+  if (!window.ENV) {
+    window.ENV = {}
   }
-  
-  // Also set it on process.env for compatibility
-  try {
-    // @ts-ignore - Runtime patching of environment variables
-    if (typeof process !== 'undefined' && process.env) {
-      process.env.VITE_PUBLIC_URL = publicUrl;
-    }
-  } catch (e) {
-    // Ignore if process is not available
-  }
+  window.ENV.VITE_PUBLIC_URL = publicUrl
+  window.PUBLIC_URL = publicUrl
 }
 
 // Log warning if environment variables are missing
