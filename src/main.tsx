@@ -7,13 +7,18 @@ import { ErrorHandler } from './utils/errorHandler'
 import { ErrorBoundary } from './components/error-boundary'
 
 // Set public URL if not available
-if (!import.meta.env.VITE_PUBLIC_URL) {
-  const publicUrl = window.location.origin || 'https://monkey-one.vercel.app'
-  // @ts-ignore - Runtime patching environment variables
-  import.meta.env.VITE_PUBLIC_URL = publicUrl
-  // Also set on window for easy access
-  window.VITE_PUBLIC_URL = publicUrl
+const publicUrl = window.location.origin || 'https://monkey-one.vercel.app'
+
+// Define a global variable without trying to modify import.meta.env (which is read-only)
+window.PUBLIC_URL = publicUrl
+
+// Use a safer approach for environment variables
+const envVars = {
+  VITE_PUBLIC_URL: publicUrl
 }
+
+// Make environment variables accessible throughout the app
+window.ENV = envVars
 
 // Ensure error handling is initialized
 ErrorHandler.initBrowserErrorHandling()
