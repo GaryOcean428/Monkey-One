@@ -5,6 +5,34 @@ import { ErrorHandler } from '../../utils/errorHandler'
 // Safely extract environment variables
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ''
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
+// Set default for publicUrl
+const publicUrl = import.meta.env.VITE_PUBLIC_URL || window.location.origin || 'https://monkey-one.vercel.app'
+
+// Set global public URL if missing
+if (typeof window !== 'undefined' && !window.VITE_PUBLIC_URL) {
+  // Polyfill the environment variable at runtime
+  window.VITE_PUBLIC_URL = publicUrl;
+  
+  // For compatibility with different access patterns
+  if (!import.meta.env.VITE_PUBLIC_URL) {
+    try {
+      // @ts-ignore - Runtime patching of environment variables
+      import.meta.env.VITE_PUBLIC_URL = publicUrl;
+    } catch (e) {
+      console.warn('Could not set VITE_PUBLIC_URL on import.meta.env');
+    }
+  }
+  
+  // Also set it on process.env for compatibility
+  try {
+    // @ts-ignore - Runtime patching of environment variables
+    if (typeof process !== 'undefined' && process.env) {
+      process.env.VITE_PUBLIC_URL = publicUrl;
+    }
+  } catch (e) {
+    // Ignore if process is not available
+  }
+}
 
 // Log warning if environment variables are missing
 if (!supabaseUrl || !supabaseAnonKey) {
