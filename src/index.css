@@ -106,7 +106,7 @@
 
 @layer base {
   * {
-    @apply border-border;
+    border-color: hsl(var(--border));
   }
 
   html {
@@ -116,63 +116,96 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
   /* Modern Typography Scale */
   h1 {
-    @apply scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl;
+    scroll-margin-top: 5rem;
+    font-size: 2.25rem;
+    line-height: 2.5rem;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    @media (min-width: 1024px) {
+      font-size: 3rem;
+      line-height: 1;
+    }
   }
 
   h2 {
-    @apply scroll-m-20 text-3xl font-semibold tracking-tight first:mt-0;
+    scroll-margin-top: 5rem;
+    font-size: 1.875rem;
+    line-height: 2.25rem;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+  }
+  h2:first-child {
+    margin-top: 0;
   }
 
   h3 {
-    @apply scroll-m-20 text-2xl font-semibold tracking-tight;
+    scroll-margin-top: 5rem;
+    font-size: 1.5rem;
+    line-height: 2rem;
+    font-weight: 600;
+    letter-spacing: -0.025em;
   }
 
   h4 {
-    @apply scroll-m-20 text-xl font-semibold tracking-tight;
+    scroll-margin-top: 5rem;
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+    font-weight: 600;
+    letter-spacing: -0.025em;
   }
 
   p {
-    @apply leading-7 [&:not(:first-child)]:mt-6;
+    line-height: 1.75rem;
+  }
+  p:not(:first-child) {
+    margin-top: 1.5rem;
   }
 
   /* Focus Styles */
   :focus-visible {
-    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+    outline: none;
+    box-shadow: 0 0 0 2px hsl(var(--ring)), 0 0 0 4px hsl(var(--background));
   }
 
   /* Scrollbar Styles */
   ::-webkit-scrollbar {
-    @apply w-2 h-2;
+    width: 0.5rem;
+    height: 0.5rem;
   }
 
   ::-webkit-scrollbar-track {
-    @apply bg-muted;
+    background-color: hsl(var(--muted));
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-muted-foreground/50 rounded-full;
+    background-color: hsl(var(--muted-foreground) / 0.5);
+    border-radius: 9999px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-muted-foreground;
+    background-color: hsl(var(--muted-foreground));
   }
 
   /* Selection Styles */
   ::selection {
-    @apply bg-primary/20 text-primary-foreground;
+    background-color: hsl(var(--primary) / 0.2);
+    color: hsl(var(--primary-foreground));
   }
 }
 
 /* Utility classes for transitions */
 @layer utilities {
   .transition-standard {
-    @apply transition-all duration-200 ease-in-out;
+    transition-property: all;
+    transition-duration: 200ms;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .transition-smooth {
