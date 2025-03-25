@@ -44,6 +44,8 @@ export default defineConfig(({ mode }) => {
       },
       assetsDir: 'assets',
       copyPublicDir: true,
+      // Ensure manifest.json and other static files are properly copied
+      manifest: true,
     },
     publicDir: 'public',
     optimizeDeps: {
