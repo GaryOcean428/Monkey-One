@@ -4,6 +4,12 @@ This document provides best practices for managing dependencies in the Monkey-On
 
 ## Recent Updates (March 2025)
 
+### TypeScript Error Resolution
+- Fixed critical syntax errors in multiple files (WorkflowAgent.ts, MLService.ts, AgentCommunicationService.ts)
+- Resolved file case sensitivity issues with sidebar components
+- Created documentation for addressing remaining TypeScript errors (see docs/TYPESCRIPT_ERROR_RESOLUTION.md)
+- Type errors are mostly in test files and not affecting runtime behavior
+
 ### Deprecated Types Removal
 - Removed `@types/dotenv`, `@types/ioredis`, `@types/puppeteer`, and `@types/axios`
 - These packages are now deprecated as the main packages provide their own type definitions
@@ -101,8 +107,37 @@ These ensure consistent versions of critical dependencies across all packages.
 
 ## Special Considerations
 
+### TypeScript Error Management
+
+When updating dependencies, TypeScript errors may appear due to:
+
+1. **Type Definition Changes**: 
+   - New major versions often include updated type definitions that are more strict
+   - Fix by updating your code to match the new type requirements rather than using type assertions
+
+2. **Import Path Changes**:
+   - Packages may change their export structure (e.g., React Router v6 → v7)
+   - Update import paths systematically using search and replace tools
+
+3. **Case Sensitivity Issues**:
+   - TypeScript is case-sensitive for file paths, even on case-insensitive file systems
+   - Ensure consistent casing in file names and imports
+   - When conflicts occur, consider renaming files to clearly indicate their purpose
+
+For resolving TypeScript errors after dependency updates:
+1. Fix syntax errors in main application code first
+2. Address type system structural issues next
+3. Fix test files last, as they don't affect runtime behavior
+4. Avoid using `// @ts-ignore` or `any` types as permanent solutions
+
 ### React and React DOM
-Keep React and React DOM versions in sync to avoid compatibility issues.
+Keep React and React DOM versions in sync to avoid compatibility issues. Currently, we use React 18.2.0 which includes:
+
+- Improved concurrent rendering
+- Automatic batching of state updates
+- Transitions for urgent vs non-urgent updates
+- Server components support
+- Suspense for data fetching
 
 ### TypeScript and Related Tools
 When updating TypeScript, also update related tools:

@@ -5,7 +5,7 @@ import { QueryClient } from '@tanstack/react-query'
 
 // Lazy load components to reduce the initial bundle size
 const Sidebar = React.lazy(() =>
-  import('./components/sidebar').then(module => ({
+  import('./components/Sidebar').then(module => ({
     default: module.Sidebar,
   }))
 )
