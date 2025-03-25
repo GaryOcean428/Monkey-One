@@ -10,21 +10,27 @@ import { WorkflowPanel } from './components/workflow/WorkflowPanel'
 import { ToolsPanel } from './components/tools/ToolsPanel'
 import { GithubPanel } from './pages/Github'
 
-// Lazy load route components
-const Dashboard = React.lazy(() => import('./pages/Dashboard'))
-const Chat = React.lazy(() => import('./pages/Chat'))
-const Agents = React.lazy(() => import('./pages/Agents'))
-const Workflow = React.lazy(() => import('./pages/Workflow'))
-const Tools = React.lazy(() => import('./pages/Tools'))
-const Documents = React.lazy(() => import('./pages/Documents'))
-const Analytics = React.lazy(() => import('./pages/Performance'))
-const Settings = React.lazy(() => import('./pages/Settings'))
-const Login = React.lazy(() => import('./pages/Login'))
-const Register = React.lazy(() => import('./pages/Register'))
-const AuthCallback = React.lazy(() => import('./pages/Auth/AuthCallback'))
-const PasswordReset = React.lazy(() => import('./pages/Auth/PasswordReset'))
-const AI = React.lazy(() => import('./pages/AI'))
-const Notes = React.lazy(() => import('./pages/Notes'))
+// Lazy load route components with explicit chunk names for better code splitting
+const Dashboard = React.lazy(() => import(/* webpackChunkName: "dashboard" */ './pages/Dashboard'))
+const Chat = React.lazy(() => import(/* webpackChunkName: "chat" */ './pages/Chat'))
+const Agents = React.lazy(() => import(/* webpackChunkName: "agents" */ './pages/Agents'))
+const Workflow = React.lazy(() => import(/* webpackChunkName: "workflow" */ './pages/Workflow'))
+const Tools = React.lazy(() => import(/* webpackChunkName: "tools" */ './pages/Tools'))
+const Documents = React.lazy(() => import(/* webpackChunkName: "documents" */ './pages/Documents'))
+const Analytics = React.lazy(
+  () => import(/* webpackChunkName: "analytics" */ './pages/Performance')
+)
+const Settings = React.lazy(() => import(/* webpackChunkName: "settings" */ './pages/Settings'))
+const Login = React.lazy(() => import(/* webpackChunkName: "login" */ './pages/Login'))
+const Register = React.lazy(() => import(/* webpackChunkName: "register" */ './pages/Register'))
+const AuthCallback = React.lazy(
+  () => import(/* webpackChunkName: "auth-callback" */ './pages/Auth/AuthCallback')
+)
+const PasswordReset = React.lazy(
+  () => import(/* webpackChunkName: "password-reset" */ './pages/Auth/PasswordReset')
+)
+const AI = React.lazy(() => import(/* webpackChunkName: "ai" */ './pages/AI'))
+const Notes = React.lazy(() => import(/* webpackChunkName: "notes" */ './pages/Notes'))
 
 // This component is not used but kept for future reference.
 // Using underscore prefix to avoid ESLint unused variable warning
