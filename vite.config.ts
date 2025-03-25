@@ -40,7 +40,7 @@ export default defineConfig(({ mode }) => {
         input: {
           main: resolve(__dirname, 'index.html'),
         },
-        external: ['events', '@sentry/node', 'pino-pretty', 'winston', 'prom-client'],
+        external: ['events', '@sentry/node', 'pino-pretty', 'winston', 'prom-client', 'crypto'],
       },
       assetsDir: 'assets',
       copyPublicDir: true,
@@ -61,9 +61,11 @@ export default defineConfig(({ mode }) => {
       port: 3000,
     },
     define: {
+      // Ensure all environment variables are properly defined with fallbacks
       'import.meta.env.VITE_PUBLIC_URL': JSON.stringify(
         env.VITE_PUBLIC_URL || 'http://localhost:3000'
       ),
+      'process.env.VITE_PUBLIC_URL': JSON.stringify(env.VITE_PUBLIC_URL || 'http://localhost:3000'),
       'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(env.VITE_SUPABASE_URL),
       'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(env.VITE_SUPABASE_ANON_KEY),
       'import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY': JSON.stringify(

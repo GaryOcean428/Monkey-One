@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
-  "devCommand": "npm run dev",
+  "buildCommand": "pnpm run build",
+  "devCommand": "pnpm run dev",
   "installCommand": "pnpm install",
   "framework": "vite",
   "outputDirectory": "dist",
@@ -20,6 +20,10 @@
       "destination": "/site.webmanifest"
     },
     {
+      "source": "/manifest.json",
+      "destination": "/manifest.json"
+    },
+    {
       "source": "/(.*)",
       "destination": "/"
     }
@@ -35,6 +39,47 @@
         {
           "key": "Access-Control-Allow-Origin",
           "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Accept, Authorization"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/manifest.json",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/manifest+json"
+        },
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Accept, Authorization"
+        },
+        {
+          "key": "Access-Control-Allow-Credentials",
+          "value": "true"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
         }
       ]
     },
@@ -47,11 +92,15 @@
         },
         {
           "key": "Access-Control-Allow-Methods",
-          "value": "GET,HEAD,PUT,PATCH,POST,DELETE"
+          "value": "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS"
         },
         {
           "key": "Access-Control-Allow-Headers",
           "value": "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+        },
+        {
+          "key": "Access-Control-Max-Age",
+          "value": "86400"
         }
       ]
     }
@@ -60,6 +109,7 @@
     "PINECONE_API_KEY": "${PINECONE_API_KEY}",
     "PINECONE_ENVIRONMENT": "${PINECONE_ENVIRONMENT}",
     "PINECONE_INDEX_NAME": "${PINECONE_INDEX_NAME}",
+    "VITE_PUBLIC_URL": "${VITE_PUBLIC_URL}",
     "VITE_SUPABASE_URL": "${VITE_SUPABASE_URL}",
     "VITE_SUPABASE_ANON_KEY": "${VITE_SUPABASE_ANON_KEY}",
     "VITE_SUPABASE_SERVICE_ROLE_KEY": "${VITE_SUPABASE_SERVICE_ROLE_KEY}",

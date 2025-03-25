@@ -3,7 +3,7 @@ import { Outlet } from 'react-router-dom'
 import { ProviderRegistry } from './providers/provider-registry'
 import { Sidebar } from './components/sidebar'
 import { LoadingOverlay } from './components/ui/loading-overlay'
-import { QueryClient } from 'react-query'
+import { QueryClient } from '@tanstack/react-query'
 
 const queryClient = new QueryClient({
   defaultOptions: {

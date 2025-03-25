@@ -2,7 +2,7 @@ import React, { Suspense } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import { Card } from '../ui/card'
 import { cn } from '@/lib/utils'
-import { Spinner } from '../ui/spinner'
+import { LoadingSpinner as Spinner } from '../ui/loading-spinner'
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
 import { AlertCircle } from 'lucide-react'
 

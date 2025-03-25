@@ -11,10 +11,13 @@ declare global {
 
 // Polyfill crypto for Node.js environment
 if (typeof window === 'undefined' && typeof global !== 'undefined') {
-  // In Node.js environment, import crypto module dynamically
-  import('crypto').then(({ webcrypto }) => {
-    ;(global as any).crypto = webcrypto
-  })
+  try {
+    // Use a require statement which Vite can properly handle during build
+    const nodeCrypto = require('crypto');
+    (global as any).crypto = nodeCrypto.webcrypto;
+  } catch (error) {
+    console.error('Failed to load crypto module:', error);
+  }
 } else if (typeof window !== 'undefined' && !window.crypto) {
   // In browser environment without crypto, throw an error
   throw new Error('Browser does not support the Web Crypto API')
