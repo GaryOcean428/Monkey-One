@@ -17,18 +17,27 @@ if (!supabaseUrl || !supabaseAnonKey) {
   })
 }
 
-// Create a singleton instance with fallback
+// Create a singleton instance with fallback - ensure it's only created once globally
 let instance: SupabaseClient<Database> | null = null
 
+// Use a more robust singleton pattern to prevent duplicate clients
 export const supabase = (() => {
+  // Return existing instance if already created
   if (instance) return instance
+
+  if (typeof window !== 'undefined') {
+    // Check if we already have a client in window object
+    if ((window as any).__SUPABASE_CLIENT__) {
+      return (window as any).__SUPABASE_CLIENT__ as SupabaseClient<Database>
+    }
+  }
 
   try {
     instance = createClient<Database>(supabaseUrl, supabaseAnonKey, {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
-        storageKey: 'monkey-one-auth-token',
+        storageKey: 'monkey-one-auth-token', // Use a unique storage key
       },
       global: {
         headers: {
@@ -36,6 +45,11 @@ export const supabase = (() => {
         },
       },
     })
+
+    // Store the client in window object to ensure it's a singleton
+    if (typeof window !== 'undefined') {
+      ;(window as any).__SUPABASE_CLIENT__ = instance
+    }
   } catch (error) {
     ErrorHandler.log('Failed to initialize Supabase client', {
       level: 'error',
