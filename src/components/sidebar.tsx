@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { motion } from 'framer-motion'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import {
   LayoutDashboard,
   BarChart,

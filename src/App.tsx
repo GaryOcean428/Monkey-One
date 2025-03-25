@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Outlet } from 'react-router-dom'
+import { Outlet } from 'react-router'
 import { ProviderRegistry } from './providers/provider-registry'
 import { QueryClient } from '@tanstack/react-query'
 

@@ -1,5 +1,6 @@
 import * as React from 'react'
-import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
+import { createBrowserRouter, Navigate } from 'react-router'
+import { RouterProvider } from 'react-router/dom'
 import { SuspenseBoundary } from '@/components/ui/suspense-boundary'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { App } from './App'
@@ -94,7 +95,8 @@ interface _ErrorFallbackProps {
   children: React.ReactElement
 }
 
-const router = createBrowserRouter([
+const router = createBrowserRouter(
+  [
   {
     path: '/',
     element: <App />,
@@ -288,7 +290,14 @@ const router = createBrowserRouter([
       </SuspenseBoundary>
     ),
   },
-])
+],
+  {
+    future: {
+      v7_relativeSplatPath: true,
+      v7_startTransition: true
+    }
+  }
+)
 
 export function AppRoutes() {
   return <RouterProvider router={router} />
