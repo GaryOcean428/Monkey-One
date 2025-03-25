@@ -40,6 +40,28 @@ export default defineConfig(({ mode }) => {
         input: {
           main: resolve(__dirname, 'index.html'),
         },
+        output: {
+          manualChunks: {
+            // Split React and related libraries
+            'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+            // Split UI components
+            'ui-vendor': [
+              '@radix-ui/react-dialog',
+              '@radix-ui/react-dropdown-menu',
+              '@radix-ui/react-navigation-menu',
+              '@radix-ui/react-tabs',
+              '@radix-ui/react-tooltip',
+            ],
+            // Split AI and data processing libraries
+            'ai-vendor': ['ai', 'openai', '@ai-sdk/openai', '@pinecone-database/pinecone'],
+            // Split charting and visualization libraries
+            'chart-vendor': ['chart.js', 'react-chartjs-2'],
+            // Split utilities
+            'utils-vendor': ['zustand', 'zod', 'axios', 'uuid', 'immer'],
+          },
+          // Limit chunk size to improve loading performance
+          chunkSizeWarningLimit: 500,
+        },
         external: ['events', '@sentry/node', 'pino-pretty', 'winston', 'prom-client', 'crypto'],
       },
       assetsDir: 'assets',
