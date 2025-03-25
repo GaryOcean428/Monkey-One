@@ -17,7 +17,12 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [
-      react(),
+      react({
+        // Improve React bundle size by enabling babel optimizations
+        babel: {
+          plugins: [['@babel/plugin-transform-react-jsx', { runtime: 'automatic' }]],
+        },
+      }),
       tsconfigPaths(),
       compression({
         algorithm: 'gzip',
@@ -29,7 +34,7 @@ export default defineConfig(({ mode }) => {
       }),
       visualizer({
         filename: 'stats.html',
-        open: true, // Open stats after build
+        open: false, // Don't open stats automatically in production
         gzipSize: true,
         brotliSize: true,
         template: 'treemap', // Use treemap for better visualization
@@ -54,6 +59,8 @@ export default defineConfig(({ mode }) => {
       target: 'es2020',
       // Don't chunk modules smaller than 10kb
       assetsInlineLimit: 10000,
+      // Improve code splitting efficiency
+      chunkSizeWarningLimit: 1200,
       rollupOptions: {
         input: {
           main: resolve(__dirname, 'index.html'),

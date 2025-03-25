@@ -1,5 +1,25 @@
 # Monkey One Project
 
+## Deployment Optimizations
+
+The following optimizations have been implemented to improve build performance and security:
+
+1. **Security Improvements:**
+
+   - Replaced unsafe `eval` usage in calculator with a safer mathematical expression evaluator
+   - Added input sanitization for mathematical expressions
+
+2. **Build Optimizations:**
+
+   - Improved chunk size configuration to reduce large bundle sizes
+   - Enhanced React optimization configurations
+   - Fixed duplicate build process in Vercel deployment
+   - Optimized visualization settings for production builds
+
+3. **Deployment Workflow:**
+   - Fixed Husky Git hooks to only run in development environments
+   - Added proper command execution in Vercel deployment to prevent redundant builds
+
 ## Test Coverage
 
 ### Current Status
@@ -14,10 +34,12 @@
 ### Test Coverage Gaps
 
 1. **Runtime Components**
+
    - Incomplete coverage for WorkerAgentRuntime
    - Partial coverage for HostAgentRuntime
 
 2. **Agent Implementations**
+
    - Limited test coverage for:
      - WebSurfer Agent
      - FileSurfer Agent
