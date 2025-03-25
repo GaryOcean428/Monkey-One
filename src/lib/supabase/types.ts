@@ -1,10 +1,4 @@
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[]
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
 export interface Database {
   public: {
@@ -30,6 +24,29 @@ export interface Database {
           username?: string | null
           full_name?: string | null
           avatar_url?: string | null
+        }
+      }
+      notes: {
+        Row: {
+          id: bigint
+          title: string
+          content?: string | null
+          created_at?: string
+          user_id?: string | null
+        }
+        Insert: {
+          id?: never // Generated as identity
+          title: string
+          content?: string | null
+          created_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          id?: never
+          title?: string
+          content?: string | null
+          created_at?: string
+          user_id?: string | null
         }
       }
     }

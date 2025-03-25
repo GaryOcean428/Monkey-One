@@ -24,22 +24,13 @@ const Register = React.lazy(() => import('./pages/Register'))
 const AuthCallback = React.lazy(() => import('./pages/Auth/AuthCallback'))
 const PasswordReset = React.lazy(() => import('./pages/Auth/PasswordReset'))
 const AI = React.lazy(() => import('./pages/AI'))
+const Notes = React.lazy(() => import('./pages/Notes'))
 
-interface ErrorFallbackProps {
+// This component is not used but kept for future reference.
+// Using underscore prefix to avoid ESLint unused variable warning
+interface _ErrorFallbackProps {
   error?: Error
   children: React.ReactElement
-}
-
-const ErrorFallback = ({ error, children }: ErrorFallbackProps) => {
-  if (error) {
-    return (
-      <div className="error-boundary">
-        <h2>Something went wrong:</h2>
-        <pre>{error.message}</pre>
-      </div>
-    )
-  }
-  return children
 }
 
 const router = createBrowserRouter([
@@ -145,6 +136,14 @@ const router = createBrowserRouter([
         element: (
           <SuspenseBoundary>
             <AI />
+          </SuspenseBoundary>
+        ),
+      },
+      {
+        path: 'notes',
+        element: (
+          <SuspenseBoundary>
+            <Notes />
           </SuspenseBoundary>
         ),
       },
