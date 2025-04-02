@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # Script to test Vercel environment variables and protection bypass
-# Usage: ./scripts/test-vercel-auth.sh [deploy_url]
+# Usage: ./scripts/test-vercel-auth.sh [deploy_url] [bypass_token]
+# Alternative: VERCEL_BYPASS_TOKEN=your_token ./scripts/test-vercel-auth.sh [deploy_url]
 
 # Colors for output
 GREEN='\033[0;32m'
@@ -11,7 +12,18 @@ NC='\033[0m' # No Color
 
 # If a URL is provided as an argument, use it; otherwise, use the default URL
 DEPLOY_URL=${1:-"https://monkey-one.vercel.app"}
-BYPASS_TOKEN="FprJbxxrfBtasFrrF8zgDb3axO66OPIt"
+
+# Get the bypass token from command line arg or environment variable
+BYPASS_TOKEN=${2:-$VERCEL_BYPASS_TOKEN}
+
+# Check if bypass token is provided
+if [ -z "$BYPASS_TOKEN" ]; then
+  echo -e "${RED}Error: No bypass token provided!${NC}"
+  echo "Please provide the token as either:"
+  echo "1. A second command-line argument: ./scripts/test-vercel-auth.sh [deploy_url] [bypass_token]"
+  echo "2. An environment variable: VERCEL_BYPASS_TOKEN=your_token ./scripts/test-vercel-auth.sh [deploy_url]"
+  exit 1
+fi
 
 echo -e "${YELLOW}Testing Vercel deployment at:${NC} $DEPLOY_URL"
 echo ""
