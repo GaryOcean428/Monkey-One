@@ -59,7 +59,7 @@ export class AgentCommunicationService {
   private async processMessageQueue(): Promise<void> {
     while (this.messageQueue.length > 0) {
       const message = this.messageQueue.shift()
-      if (!message) {
+      if (!message) continue
 
       const targetAgent = this.agents.get(message.metadata?.recipient || '')
       if (!targetAgent) continue

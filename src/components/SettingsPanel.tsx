@@ -5,7 +5,7 @@ import { Slider } from './ui/slider';
 import { Switch } from './ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Button } from './ui/button';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router';
 
 interface SettingsPanelProps {
   onClose?: () => void;

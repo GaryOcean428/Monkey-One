@@ -38,7 +38,11 @@ const server = createServer((req, res) => {
     ollamaProxy(req, res)
   } else if (req.url === '/manifest.json' || req.url === '/site.webmanifest') {
     // Allow access to manifest files without authentication
-    res.writeHead(200, { 'Content-Type': 'application/json' })
+    res.setHeader('Access-Control-Allow-Origin', '*')
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS')
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+    res.setHeader('Access-Control-Allow-Credentials', 'true')
+    res.writeHead(200, { 'Content-Type': 'application/manifest+json' })
     res.end(
       JSON.stringify({
         name: 'Monkey One',
@@ -58,6 +62,7 @@ const server = createServer((req, res) => {
         theme_color: '#ffffff',
         background_color: '#ffffff',
         display: 'standalone',
+        start_url: '/',
       })
     )
   } else {

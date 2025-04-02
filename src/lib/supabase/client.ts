@@ -6,10 +6,31 @@ import { ErrorHandler } from '../../utils/errorHandler'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ''
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
 
+// Access the public URL through window.ENV (set in main.tsx) or fall back to runtime detection
+function getPublicUrl() {
+  const fromEnv = typeof import.meta.env !== 'undefined' && import.meta.env.VITE_PUBLIC_URL
+  const fromWindow = typeof window !== 'undefined' && (window.ENV?.VITE_PUBLIC_URL || window.PUBLIC_URL)
+  const origin = typeof window !== 'undefined' ? window.location.origin : null
+  
+  return fromEnv || fromWindow || origin || 'https://monkey-one.vercel.app'
+}
+
+const publicUrl = getPublicUrl()
+
+// Ensure global access to publicUrl
+if (typeof window !== 'undefined') {
+  // Set on window.ENV object which is our safe environment variable container
+  if (!window.ENV) {
+    window.ENV = {}
+  }
+  window.ENV.VITE_PUBLIC_URL = publicUrl
+  window.PUBLIC_URL = publicUrl
+}
+
 // Log warning if environment variables are missing
 if (!supabaseUrl || !supabaseAnonKey) {
   ErrorHandler.log('Missing Supabase environment variables', {
-    level: 'error',
+    level: 'warn', // Change to warning instead of error
     context: {
       supabaseUrl: !!supabaseUrl,
       supabaseAnonKey: !!supabaseAnonKey,
@@ -17,18 +38,27 @@ if (!supabaseUrl || !supabaseAnonKey) {
   })
 }
 
-// Create a singleton instance with fallback
+// Create a singleton instance with fallback - ensure it's only created once globally
 let instance: SupabaseClient<Database> | null = null
 
+// Use a more robust singleton pattern to prevent duplicate clients
 export const supabase = (() => {
+  // Return existing instance if already created
   if (instance) return instance
+
+  if (typeof window !== 'undefined') {
+    // Check if we already have a client in window object
+    if ((window as any).__SUPABASE_CLIENT__) {
+      return (window as any).__SUPABASE_CLIENT__ as SupabaseClient<Database>
+    }
+  }
 
   try {
     instance = createClient<Database>(supabaseUrl, supabaseAnonKey, {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
-        storageKey: 'monkey-one-auth-token',
+        storageKey: 'monkey-one-auth-token', // Use a unique storage key
       },
       global: {
         headers: {
@@ -36,6 +66,11 @@ export const supabase = (() => {
         },
       },
     })
+
+    // Store the client in window object to ensure it's a singleton
+    if (typeof window !== 'undefined') {
+      ;(window as any).__SUPABASE_CLIENT__ = instance
+    }
   } catch (error) {
     ErrorHandler.log('Failed to initialize Supabase client', {
       level: 'error',
