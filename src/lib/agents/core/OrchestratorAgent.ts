@@ -3,6 +3,7 @@ import { AgentType, MessageType, AgentCapabilityType, Message } from '../../type
 import { Logger } from '../../logger/Logger'
 import { MessageHandler } from '../../decorators/MessageHandler'
 import { ToolExecutionError } from '../../errors/AgentErrors'
+import { searchAll } from '../../api/search' // Import the searchAll function
 
 const logger = new Logger('OrchestratorAgent')
 
@@ -34,13 +35,19 @@ export class OrchestratorAgent extends BaseAgent {
         throw new Error('Invalid task message format')
       }
 
-      const suitableAgent = this.findSuitableAgent(requirements)
-
-      if (suitableAgent) {
-        await this.assignTask(suitableAgent, task)
+      if (task.startsWith('search:')) {
+        const query = task.replace('search:', '').trim()
+        const results = await this.performParallelSearch(query)
+        logger.info(`Search results: ${JSON.stringify(results)}`)
       } else {
-        this.taskQueue.push(message)
-        logger.warn('No suitable agent found for task, queued for later')
+        const suitableAgent = this.findSuitableAgent(requirements)
+
+        if (suitableAgent) {
+          await this.assignTask(suitableAgent, task)
+        } else {
+          this.taskQueue.push(message)
+          logger.warn('No suitable agent found for task, queued for later')
+        }
       }
     } catch (error) {
       throw new ToolExecutionError('Failed to handle task assignment', {
@@ -134,6 +141,17 @@ export class OrchestratorAgent extends BaseAgent {
     }
 
     this.taskQueue = remainingTasks
+  }
+
+  private async performParallelSearch(query: string): Promise<any> {
+    try {
+      const filters = {} // Define any necessary filters
+      const results = await searchAll(query, filters)
+      return results
+    } catch (error) {
+      logger.error('Error performing parallel search:', error)
+      throw error
+    }
   }
 
   async handleMessage(message: Message): Promise<void> {
