@@ -6,13 +6,9 @@ import { ErrorHandler } from '../../utils/errorHandler'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ''
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
 
-// Access the public URL through window.ENV (set in main.tsx) or fall back to runtime detection
+// Access the public URL through import.meta.env or fall back to runtime detection
 function getPublicUrl() {
-  const fromEnv = typeof import.meta.env !== 'undefined' && import.meta.env.VITE_PUBLIC_URL
-  const fromWindow = typeof window !== 'undefined' && (window.ENV?.VITE_PUBLIC_URL || window.PUBLIC_URL)
-  const origin = typeof window !== 'undefined' ? window.location.origin : null
-  
-  return fromEnv || fromWindow || origin || 'https://monkey-one.vercel.app'
+  return import.meta.env.VITE_PUBLIC_URL || window.location.origin || 'https://monkey-one.vercel.app'
 }
 
 const publicUrl = getPublicUrl()
