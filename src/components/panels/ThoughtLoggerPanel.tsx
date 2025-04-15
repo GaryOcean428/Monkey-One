@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Brain, Search, Lightbulb, CheckCircle, AlertCircle, RefreshCw, Code, Database, Zap, Users, MessageSquare, HardDrive, List, Filter, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
-import { useThoughtStore } from '../../stores/thoughtStore';
+import { useThoughtLogger } from '../../hooks/useThoughtLogger';
 import type { Thought, ThoughtType } from '../../types/thought';
 import { BasePanel } from './BasePanel';
 import { Button } from '../ui/button';
@@ -150,7 +150,7 @@ export function ThoughtLoggerPanel() {
     setFilters,
     clearFilters,
     clearThoughts,
-  } = useThoughtStore();
+  } = useThoughtLogger();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState<ThoughtType | ''>('');

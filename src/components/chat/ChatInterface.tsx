@@ -2,13 +2,13 @@ import React, { useCallback, useRef, useEffect } from 'react';
 import { Send, Loader } from 'lucide-react';
 import { useChat } from '../../hooks/useChat';
 import { ChatMessage } from './ChatMessage';
-import { MessageInput } from './MessageInput';
+import { ChatInput } from './ChatInput';
 import { cn } from '../../lib/utils';
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
 
 export function ChatInterface() {
-  const { messages, isLoading, error, sendMessage, hasActiveAgent } = useChat();
+  const { messages, isProcessing, error, sendMessage, hasActiveAgent } = useChat();
   const [input, setInput] = React.useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -39,7 +39,7 @@ export function ChatInterface() {
     }
 
     const trimmedInput = input.trim();
-    if (!trimmedInput || isLoading) {
+    if (!trimmedInput || isProcessing) {
       return;
     }
 
@@ -98,7 +98,7 @@ export function ChatInterface() {
 
       <ChatInput
         onSendMessage={handleSubmit}
-        disabled={!hasActiveAgent || isLoading}
+        disabled={!hasActiveAgent || isProcessing}
         placeholder={hasActiveAgent ? "Type a message..." : "Select an agent to start chatting"}
       />
     </div>

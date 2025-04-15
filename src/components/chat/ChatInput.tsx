@@ -2,6 +2,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import { Textarea } from '../ui/textarea';
 import { Button } from '../ui/button';
 import { Send } from 'lucide-react';
+import { useChat } from '../../hooks/useChat';
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
@@ -16,17 +17,19 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 }) => {
   const [message, setMessage] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { sendMessage } = useChat();
 
   const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
     if (message.trim() && !disabled) {
       onSendMessage(message.trim());
+      sendMessage(message.trim());
       setMessage('');
       if (textareaRef.current) {
         textareaRef.current.style.height = 'auto';
       }
     }
-  }, [message, onSendMessage, disabled]);
+  }, [message, onSendMessage, sendMessage, disabled]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
