@@ -24,12 +24,13 @@ if (typeof window !== 'undefined') {
 }
 
 // Log warning if environment variables are missing
-if (!supabaseUrl || !supabaseAnonKey) {
-  ErrorHandler.log('Missing Supabase environment variables', {
+if (!supabaseUrl || !supabaseAnonKey || !publicUrl) {
+  ErrorHandler.log('Missing environment variables', {
     level: 'warn', // Change to warning instead of error
     context: {
       supabaseUrl: !!supabaseUrl,
       supabaseAnonKey: !!supabaseAnonKey,
+      publicUrl: !!publicUrl,
     },
   })
 }
