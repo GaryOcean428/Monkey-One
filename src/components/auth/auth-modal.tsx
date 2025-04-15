@@ -305,6 +305,18 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
               <Icons.google className="mr-2 h-4 w-4" />
               Google
             </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              className="w-full"
+              onClick={() => {
+                reset()
+                setError(null)
+              }}
+              disabled={isLoading}
+            >
+              Reset Password
+            </Button>
           </div>
         </motion.form>
       </DialogContent>

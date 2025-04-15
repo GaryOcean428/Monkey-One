@@ -1,10 +1,40 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { AlertTriangle, CheckCircle, Code, GitCommit } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Code, GitCommit, RefreshCw, Filter, SortAsc, SortDesc } from 'lucide-react';
+import { Button } from '../ui/button';
 
 export function InsightPanel() {
+  const [filterType, setFilterType] = useState<string | null>(null);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+
+  const handleRefresh = () => {
+    // Logic to refresh the insights
+  };
+
+  const handleFilter = () => {
+    // Logic to filter insights by type
+  };
+
+  const handleSort = () => {
+    // Logic to sort insights by name
+  };
+
   return (
     <div className="flex-1 p-4 overflow-y-auto">
+      <div className="flex justify-between mb-4">
+        <Button variant="outline" size="sm" onClick={handleRefresh}>
+          <RefreshCw className="w-4 h-4 mr-2" />
+          Refresh Insights
+        </Button>
+        <Button variant="outline" size="sm" onClick={handleFilter}>
+          <Filter className="w-4 h-4 mr-2" />
+          Filter by Type
+        </Button>
+        <Button variant="outline" size="sm" onClick={handleSort}>
+          {sortOrder === 'asc' ? <SortAsc className="w-4 h-4 mr-2" /> : <SortDesc className="w-4 h-4 mr-2" />}
+          Sort by Name
+        </Button>
+      </div>
       <h3 className="text-lg font-semibold mb-4 dark:text-white">Code Insights</h3>
       
       <div className="space-y-4">

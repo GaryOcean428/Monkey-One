@@ -36,12 +36,26 @@ export const PasswordReset: React.FC = () => {
           <p className="text-center text-gray-600 mb-6">
             If an account exists for {email}, you will receive password reset instructions.
           </p>
-          <Button
-            onClick={() => navigate('/login')}
-            className="w-full"
-          >
-            Return to Login
-          </Button>
+          <div className="space-y-4">
+            <Button
+              onClick={() => navigate('/login')}
+              className="w-full"
+            >
+              Return to Login
+            </Button>
+            <Button
+              onClick={() => navigate('/support')}
+              className="w-full"
+            >
+              Contact Support
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              className="w-full"
+            >
+              Retry Password Reset
+            </Button>
+          </div>
         </Card>
       </div>
     )
@@ -78,6 +92,24 @@ export const PasswordReset: React.FC = () => {
             disabled={isLoading}
           >
             Back to Login
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            className="w-full"
+            onClick={() => navigate('/support')}
+            disabled={isLoading}
+          >
+            Contact Support
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            className="w-full"
+            onClick={handleSubmit}
+            disabled={isLoading}
+          >
+            Retry Password Reset
           </Button>
         </form>
       </Card>

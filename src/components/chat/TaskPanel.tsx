@@ -44,6 +44,18 @@ export function TaskPanel({ task, actions }: TaskPanelProps) {
               </div>
             </div>
 
+            <div className="flex justify-between mb-4">
+              <Button variant="outline" size="sm">
+                Refresh Tasks
+              </Button>
+              <Button variant="outline" size="sm">
+                Filter by Type
+              </Button>
+              <Button variant="outline" size="sm">
+                Sort by Name
+              </Button>
+            </div>
+
             {actions.length > 0 && (
               <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
                 <h4 className="font-medium mb-3 dark:text-white">Pending Actions</h4>

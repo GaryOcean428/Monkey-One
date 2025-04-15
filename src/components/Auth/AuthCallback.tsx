@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router'
 import { createClient } from '@supabase/supabase-js'
+import { Button } from '../ui/button'
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
@@ -45,6 +46,11 @@ export function AuthCallback() {
       <div className="text-center">
         <h2 className="text-2xl font-semibold tracking-tight">Completing sign in...</h2>
         <p className="text-muted-foreground">You will be redirected shortly.</p>
+        <div className="mt-4 space-x-2">
+          <Button onClick={() => handleAuthCallback()}>Retry Authentication</Button>
+          <Button onClick={() => navigate('/login')}>Go Back to Login</Button>
+          <Button onClick={() => navigate('/support')}>Contact Support</Button>
+        </div>
       </div>
     </div>
   )

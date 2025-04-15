@@ -10,7 +10,8 @@ export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const { signIn, error: authError } = useAuth()
+  const [isSignUp, setIsSignUp] = useState(false)
+  const { signIn, signUp, resetPassword, signInWithGoogle, error: authError } = useAuth()
   const { toast } = useToast()
   const navigate = useNavigate()
 
@@ -19,7 +20,11 @@ export const LoginPage: React.FC = () => {
     setIsLoading(true)
 
     try {
-      await signIn(email, password)
+      if (isSignUp) {
+        await signUp(email, password)
+      } else {
+        await signIn(email, password)
+      }
       navigate('/dashboard')
     } catch (error) {
       console.error('Login error:', error)
@@ -30,6 +35,38 @@ export const LoginPage: React.FC = () => {
       })
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleResetPassword = async () => {
+    try {
+      await resetPassword(email)
+      toast({
+        title: 'Success',
+        description: 'Password reset email sent. Please check your inbox.',
+        variant: 'success',
+      })
+    } catch (error) {
+      console.error('Reset password error:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to send password reset email. Please try again.',
+        variant: 'destructive',
+      })
+    }
+  }
+
+  const handleSignInWithGoogle = async () => {
+    try {
+      await signInWithGoogle()
+      navigate('/dashboard')
+    } catch (error) {
+      console.error('Google sign-in error:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to sign in with Google. Please try again.',
+        variant: 'destructive',
+      })
     }
   }
 
@@ -79,14 +116,41 @@ export const LoginPage: React.FC = () => {
           )}
 
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? 'Signing in...' : 'Sign In'}
+            {isLoading ? 'Signing in...' : isSignUp ? 'Sign Up' : 'Sign In'}
           </Button>
         </form>
 
         <div className="mt-6 text-center text-sm">
-          <a href="#" className="text-primary hover:underline">
+          <button
+            type="button"
+            className="text-primary hover:underline"
+            onClick={handleResetPassword}
+            disabled={isLoading}
+          >
             Forgot password?
-          </a>
+          </button>
+        </div>
+
+        <div className="mt-6 text-center text-sm">
+          <button
+            type="button"
+            className="text-primary hover:underline"
+            onClick={() => setIsSignUp(!isSignUp)}
+            disabled={isLoading}
+          >
+            {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
+          </button>
+        </div>
+
+        <div className="mt-6 text-center text-sm">
+          <button
+            type="button"
+            className="text-primary hover:underline"
+            onClick={handleSignInWithGoogle}
+            disabled={isLoading}
+          >
+            Sign in with Google
+          </button>
         </div>
       </Card>
     </div>
