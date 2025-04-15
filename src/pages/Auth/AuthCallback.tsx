@@ -2,10 +2,18 @@ import { useEffect } from 'react'
 import { useNavigate } from 'react-router'
 import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-)
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('Supabase credentials not found. Please check your environment variables:', {
+    url: !!supabaseUrl,
+    key: !!supabaseAnonKey,
+  })
+  throw new Error('Supabase credentials are required')
+}
+
+const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 export default function AuthCallback() {
   const navigate = useNavigate()
