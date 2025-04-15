@@ -13,7 +13,11 @@ export const AuthCallback: React.FC = () => {
         navigate('/')
       } catch (error) {
         console.error('Auth callback error:', error)
-        navigate('/login')
+        navigate('/login', {
+          state: {
+            error: 'Authentication failed. Please try again.'
+          }
+        })
       }
     }
 

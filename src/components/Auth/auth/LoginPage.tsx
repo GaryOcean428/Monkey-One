@@ -10,7 +10,7 @@ export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const { signIn } = useAuth()
+  const { signIn, error: authError } = useAuth()
   const { toast } = useToast()
   const navigate = useNavigate()
 
@@ -71,6 +71,12 @@ export const LoginPage: React.FC = () => {
               required
             />
           </div>
+
+          {authError && (
+            <div className="text-sm text-red-600" role="alert">
+              {authError.message}
+            </div>
+          )}
 
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? 'Signing in...' : 'Sign In'}
