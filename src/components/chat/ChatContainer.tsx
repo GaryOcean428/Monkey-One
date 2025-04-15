@@ -9,7 +9,7 @@ import { Alert } from '../ui/alert'
 import { useAgentStore } from '../../store/agentStore'
 
 export const ChatContainer: React.FC = () => {
-  const { messages, isLoading, error, sendMessage } = useChat()
+  const { messages, isProcessing, error, sendMessage } = useChat()
   const [showThoughts] = useState(false)
   const [showIntegrations] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -40,7 +40,7 @@ export const ChatContainer: React.FC = () => {
           {messages.map((message, index) => (
             <ChatMessage key={message.id || index} message={message} />
           ))}
-          {isLoading && (
+          {isProcessing && (
             <div className="flex justify-center">
               <LoadingSpinner />
             </div>
@@ -57,7 +57,7 @@ export const ChatContainer: React.FC = () => {
         <div className="border-t border-gray-200 dark:border-gray-800">
           <ChatInput
             onSendMessage={handleSend}
-            disabled={isLoading || !activeAgent}
+            disabled={isProcessing || !activeAgent}
             placeholder={activeAgent ? 'Type a message...' : 'Select an agent to start chatting'}
           />
         </div>
