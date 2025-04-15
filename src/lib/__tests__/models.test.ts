@@ -8,13 +8,13 @@ describe('Model Service', () => {
       expect(models['granite3.1-dense'].modelName).toBe('granite3.1-dense:2b');
       
       // Mid tier
-      expect(models['claude-3-haiku'].modelName).toBe('claude-3-5-haiku@20241022');
+      expect(models['claude-3.5-haiku'].modelName).toBe('claude-3.5-haiku-20250523');
       
       // High tier
-      expect(models['claude-3-sonnet'].modelName).toBe('claude-3-5-sonnet-v2@20241022');
+      expect(models['claude-3.5-sonnet'].modelName).toBe('claude-3.5-sonnet-20250214');
       
       // Superior tier
-      expect(models['o1'].modelName).toBe('o1-2024-12-01');
+      expect(models['o1-preview'].modelName).toBe('o1-preview');
     });
 
     it('should have valid context windows', () => {

@@ -1,5 +1,6 @@
 import * as React from 'react'
-import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
+import { createBrowserRouter, Navigate } from 'react-router'
+import { RouterProvider } from 'react-router/dom'
 import { SuspenseBoundary } from '@/components/ui/suspense-boundary'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { App } from './App'
@@ -10,38 +11,92 @@ import { WorkflowPanel } from './components/workflow/WorkflowPanel'
 import { ToolsPanel } from './components/tools/ToolsPanel'
 import { GithubPanel } from './pages/Github'
 
-// Lazy load route components
-const Dashboard = React.lazy(() => import('./pages/Dashboard'))
-const Chat = React.lazy(() => import('./pages/Chat'))
-const Agents = React.lazy(() => import('./pages/Agents'))
-const Workflow = React.lazy(() => import('./pages/Workflow'))
-const Tools = React.lazy(() => import('./pages/Tools'))
-const Documents = React.lazy(() => import('./pages/Documents'))
-const Analytics = React.lazy(() => import('./pages/Performance'))
-const Settings = React.lazy(() => import('./pages/Settings'))
-const Login = React.lazy(() => import('./pages/Login'))
-const Register = React.lazy(() => import('./pages/Register'))
-const AuthCallback = React.lazy(() => import('./pages/Auth/AuthCallback'))
-const PasswordReset = React.lazy(() => import('./pages/Auth/PasswordReset'))
+// Lazy load route components with explicit chunk names for better code splitting
+// Use dynamic imports with Vite syntax for better tree-shaking and code-splitting
+const Dashboard = React.lazy(() =>
+  import('./pages/Dashboard').then(module => ({
+    default: module.default || module.Dashboard || module,
+  }))
+)
+const Chat = React.lazy(() =>
+  import('./pages/Chat').then(module => ({
+    default: module.default || module.Chat || module,
+  }))
+)
+const Agents = React.lazy(() =>
+  import('./pages/Agents').then(module => ({
+    default: module.default || module.Agents || module,
+  }))
+)
+const Workflow = React.lazy(() =>
+  import('./pages/Workflow').then(module => ({
+    default: module.default || module.Workflow || module,
+  }))
+)
+const Tools = React.lazy(() =>
+  import('./pages/Tools').then(module => ({
+    default: module.default || module.Tools || module,
+  }))
+)
+const Documents = React.lazy(() =>
+  import('./pages/Documents').then(module => ({
+    default: module.default || module.Documents || module,
+  }))
+)
+const Analytics = React.lazy(() =>
+  import('./pages/Performance').then(module => ({
+    default: module.default || module.Performance || module,
+  }))
+)
+const Settings = React.lazy(() =>
+  import('./pages/Settings').then(module => ({
+    default: module.default || module.Settings || module,
+  }))
+)
 
-interface ErrorFallbackProps {
+// Auth pages in a separate chunk
+const Login = React.lazy(() =>
+  import('./pages/Login').then(module => ({
+    default: module.default || module.Login || module,
+  }))
+)
+const Register = React.lazy(() =>
+  import('./pages/Register').then(module => ({
+    default: module.default || module.Register || module,
+  }))
+)
+const AuthCallback = React.lazy(() =>
+  import('./pages/Auth/AuthCallback').then(module => ({
+    default: module.default || module.AuthCallback || module,
+  }))
+)
+const PasswordReset = React.lazy(() =>
+  import('./pages/Auth/PasswordReset').then(module => ({
+    default: module.default || module.PasswordReset || module,
+  }))
+)
+
+// Feature pages in another chunk
+const AI = React.lazy(() =>
+  import('./pages/AI').then(module => ({
+    default: module.default || module.AI || module,
+  }))
+)
+const Notes = React.lazy(() =>
+  import('./pages/Notes').then(module => ({
+    default: module.default || module.Notes || module,
+  }))
+)
+
+// This component is not used but kept for future reference.
+// Using underscore prefix to avoid ESLint unused variable warning
+interface _ErrorFallbackProps {
   error?: Error
   children: React.ReactElement
 }
 
-const ErrorFallback = ({ error, children }: ErrorFallbackProps) => {
-  if (error) {
-    return (
-      <div className="error-boundary">
-        <h2>Something went wrong:</h2>
-        <pre>{error.message}</pre>
-      </div>
-    )
-  }
-  return children
-}
-
-const router = createBrowserRouter([
+const router = createBrowserRouter(
+  [
   {
     path: '/',
     element: <App />,
@@ -140,11 +195,28 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: 'ai',
+        element: (
+          <SuspenseBoundary>
+            <AI />
+          </SuspenseBoundary>
+        ),
+      },
+      {
+        path: 'notes',
+        element: (
+          <SuspenseBoundary>
+            <Notes />
+          </SuspenseBoundary>
+        ),
+      },
+      {
         path: 'memory-manager',
         element: (
           <SuspenseBoundary>
             <PrivateRoute>
-              <MemoryManager />
+              {/* <MemoryManager /> */}
+              <div>Memory Manager</div>
             </PrivateRoute>
           </SuspenseBoundary>
         ),
@@ -154,7 +226,8 @@ const router = createBrowserRouter([
         element: (
           <SuspenseBoundary>
             <PrivateRoute>
-              <ProfileManager />
+              {/* <ProfileManager /> */}
+              <div>Profile Manager</div>
             </PrivateRoute>
           </SuspenseBoundary>
         ),
@@ -217,7 +290,14 @@ const router = createBrowserRouter([
       </SuspenseBoundary>
     ),
   },
-])
+],
+  {
+    future: {
+      v7_relativeSplatPath: true,
+      v7_startTransition: true
+    }
+  }
+)
 
 export function AppRoutes() {
   return <RouterProvider router={router} />

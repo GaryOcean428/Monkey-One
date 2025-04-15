@@ -6,6 +6,13 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import { Toaster } from 'react-hot-toast'
 import { ErrorBoundary } from '@/components/error-boundary'
 
+// Dynamically import SupabaseProvider to reduce initial chunk size
+const SupabaseProvider = React.lazy(() =>
+  import('@/lib/supabase/provider').then(module => ({
+    default: module.SupabaseProvider,
+  }))
+)
+
 interface ProviderRegistryProps {
   children: React.ReactNode
 }
@@ -25,12 +32,22 @@ export function ProviderRegistry({ children }: ProviderRegistryProps) {
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
-          <ModalProvider>
-            <TooltipProvider>
-              <Toaster position="top-right" />
-              {children}
-            </TooltipProvider>
-          </ModalProvider>
+          <React.Suspense
+            fallback={
+              <div className="flex h-screen items-center justify-center">
+                Loading authentication...
+              </div>
+            }
+          >
+            <SupabaseProvider>
+              <ModalProvider>
+                <TooltipProvider>
+                  <Toaster position="top-right" />
+                  {children}
+                </TooltipProvider>
+              </ModalProvider>
+            </SupabaseProvider>
+          </React.Suspense>
         </ThemeProvider>
       </QueryClientProvider>
     </ErrorBoundary>

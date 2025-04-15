@@ -1,8 +1,8 @@
 import * as React from "react"
 import { NavBar } from "@/components/navbar"
-import { Sidebar } from "@/components/sidebar"
+import { Sidebar } from "@/components/Sidebar"
 import { ThemeProvider } from "@/theme/theme-provider"
-import { useSidebarStore } from "@/components/sidebar"
+import { useSidebarStore } from "@/components/sidebarStore"
 import { cn } from "@/lib/utils"
 
 interface MainLayoutProps {
