@@ -85,6 +85,14 @@ export const Register: React.FC = () => {
               Back to Sign In
             </Button>
           </div>
+          <div className="text-center">
+            <p className="text-sm text-gray-600">
+              Already have an account?{' '}
+              <a href="/login" className="text-blue-600 hover:underline">
+                Sign In
+              </a>
+            </p>
+          </div>
         </form>
       </Card>
     </div>
