@@ -22,7 +22,7 @@ export function NeuralPathway({ activity }: NeuralPathwayProps) {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) {
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
