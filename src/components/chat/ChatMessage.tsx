@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle2, XCircle, Clock, User, Bot } from 'lucide-react';
+import { CheckCircle2, XCircle, Clock, User, Bot, ThumbsUp, ThumbsDown, Flag } from 'lucide-react';
 import type { Message } from '../../types';
 import { cn } from '../../lib/utils';
 import { MarkdownRenderer } from './MarkdownRenderer';
@@ -67,6 +67,18 @@ export function ChatMessage({ message }: ChatMessageProps) {
             )}
           </div>
         )}
+      </div>
+
+      <div className="flex items-center gap-2">
+        <button className="text-green-500 hover:text-green-600">
+          <ThumbsUp size={16} />
+        </button>
+        <button className="text-red-500 hover:text-red-600">
+          <ThumbsDown size={16} />
+        </button>
+        <button className="text-yellow-500 hover:text-yellow-600">
+          <Flag size={16} />
+        </button>
       </div>
     </motion.div>
   );

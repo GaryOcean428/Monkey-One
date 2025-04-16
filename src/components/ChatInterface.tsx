@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { Send, Loader } from 'lucide-react'
+import { Send, Loader, RefreshCw, Filter, SortAsc, SortDesc } from 'lucide-react'
 import { ChatMessage } from './ChatMessage'
 import { useChat, Command } from '../hooks/useChat'
 import { cn } from '../lib/utils'
@@ -13,6 +13,8 @@ export function ChatInterface() {
   const [input, setInput] = useState('')
   const [selectedCommand, setSelectedCommand] = useState<Command | ''>('')
   const [streamingContent, setStreamingContent] = useState('')
+  const [filterUser, setFilterUser] = useState<string | null>(null)
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -69,15 +71,41 @@ export function ChatInterface() {
     textareaRef.current?.focus()
   }
 
+  const filteredMessages = filterUser
+    ? messages.filter(message => message.user === filterUser)
+    : messages
+
+  const sortedMessages = filteredMessages.sort((a, b) => {
+    if (sortOrder === 'asc') {
+      return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    } else {
+      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    }
+  })
+
   return (
     <div className="flex h-full flex-col" role="main">
+      <div className="mb-4 flex justify-between p-4">
+        <Button variant="outline" size="sm" onClick={scrollToBottom}>
+          <RefreshCw className="w-4 h-4 mr-2" />
+          Refresh Chat
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => setFilterUser(filterUser ? null : 'user')}>
+          <Filter className="w-4 h-4 mr-2" />
+          {filterUser ? 'Clear Filter' : 'Filter by User'}
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}>
+          {sortOrder === 'asc' ? <SortAsc className="w-4 h-4 mr-2" /> : <SortDesc className="w-4 h-4 mr-2" />}
+          Sort by Time
+        </Button>
+      </div>
       <div
         className="flex-1 space-y-4 overflow-y-auto p-4"
         role="log"
         aria-live="polite"
         aria-label="Chat Messages"
       >
-        {messages.length === 0 ? (
+        {sortedMessages.length === 0 ? (
           <div className="mt-8 text-center text-muted-foreground">
             <p className="text-lg font-semibold">Welcome to Monkey One!</p>
             <p className="mt-2">
@@ -109,7 +137,7 @@ export function ChatInterface() {
           </div>
         ) : (
           <>
-            {messages.map(message => (
+            {sortedMessages.map(message => (
               <ChatMessage key={message.id} message={message} />
             ))}
             {streamingContent && (

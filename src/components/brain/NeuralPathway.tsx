@@ -1,5 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
+import { Button } from '../ui/button';
+import { Filter, RefreshCw, SortAsc, SortDesc } from 'lucide-react';
 
 interface NeuralEvent {
   id: string;
@@ -15,13 +17,15 @@ interface NeuralPathwayProps {
 
 export function NeuralPathway({ activity }: NeuralPathwayProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [filterRegion, setFilterRegion] = useState<string | null>(null);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) {
 
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) {
 
     // Set canvas size
     canvas.width = canvas.offsetWidth;
@@ -31,10 +35,22 @@ export function NeuralPathway({ activity }: NeuralPathwayProps) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Draw neural pathways
-    activity.forEach((event, index) => {
-      drawPathway(ctx, event, index, activity.length);
+    const filteredActivity = filterRegion
+      ? activity.filter(event => event.from === filterRegion || event.to === filterRegion)
+      : activity;
+
+    const sortedActivity = filteredActivity.sort((a, b) => {
+      if (sortOrder === 'asc') {
+        return a.timestamp.localeCompare(b.timestamp);
+      } else {
+        return b.timestamp.localeCompare(a.timestamp);
+      }
     });
-  }, [activity]);
+
+    sortedActivity.forEach((event, index) => {
+      drawPathway(ctx, event, index, sortedActivity.length);
+    });
+  }, [activity, filterRegion, sortOrder]);
 
   const drawPathway = (
     ctx: CanvasRenderingContext2D,
@@ -103,6 +119,20 @@ export function NeuralPathway({ activity }: NeuralPathwayProps) {
 
   return (
     <div className="relative w-full h-full">
+      <div className="flex justify-between mb-4">
+        <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
+          <RefreshCw className="w-4 h-4 mr-2" />
+          Refresh Pathways
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => setFilterRegion(filterRegion ? null : 'region')}>
+          <Filter className="w-4 h-4 mr-2" />
+          {filterRegion ? 'Clear Filter' : 'Filter by Region'}
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}>
+          {sortOrder === 'asc' ? <SortAsc className="w-4 h-4 mr-2" /> : <SortDesc className="w-4 h-4 mr-2" />}
+          Sort by Value
+        </Button>
+      </div>
       <canvas
         ref={canvasRef}
         className="absolute inset-0 w-full h-full"

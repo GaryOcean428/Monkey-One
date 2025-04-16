@@ -4,7 +4,7 @@ import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Select } from '../ui/select'
 import { Alert, AlertTitle, AlertDescription } from '../ui/alert'
-import { Loader2, Plus, Trash2 } from 'lucide-react'
+import { Loader2, Plus, Trash2, Filter, SortAsc, SortDesc, Search } from 'lucide-react'
 import { useAgentStore } from '../../store/agentStore'
 import { DEFAULT_CAPABILITIES } from '../../lib/agents/capabilities'
 import { AgentType, AgentStatus } from '../../lib/types/agent'
@@ -14,6 +14,9 @@ export const AgentsPanel: React.FC = () => {
   const [error, setError] = useState<string | null>(null)
   const [newAgentName, setNewAgentName] = useState('')
   const [newAgentType, setNewAgentType] = useState<AgentType>(AgentType.BASE)
+  const [filterType, setFilterType] = useState<AgentType | null>(null)
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
+  const [searchQuery, setSearchQuery] = useState('')
   const { agents, activeAgent, setActiveAgent, addAgent, removeAgent } = useAgentStore()
 
   useEffect(() => {
@@ -85,6 +88,22 @@ export const AgentsPanel: React.FC = () => {
     }
   }
 
+  const filteredAgents = filterType
+    ? agents.filter(agent => agent.getType() === filterType)
+    : agents
+
+  const sortedAgents = filteredAgents.sort((a, b) => {
+    if (sortOrder === 'asc') {
+      return a.getStatus().localeCompare(b.getStatus())
+    } else {
+      return b.getStatus().localeCompare(a.getStatus())
+    }
+  })
+
+  const searchedAgents = sortedAgents.filter(agent =>
+    agent.getName().toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
   if (loading) {
     return (
       <div className="flex h-full items-center justify-center">
@@ -122,6 +141,30 @@ export const AgentsPanel: React.FC = () => {
         </div>
       </div>
 
+      <div className="flex items-center justify-between">
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => setFilterType(filterType ? null : AgentType.BASE)}>
+            <Filter className="w-4 h-4 mr-2" />
+            {filterType ? 'Clear Filter' : 'Filter by Type'}
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}>
+            {sortOrder === 'asc' ? <SortAsc className="w-4 h-4 mr-2" /> : <SortDesc className="w-4 h-4 mr-2" />}
+            Sort by Status
+          </Button>
+        </div>
+        <div className="flex gap-2">
+          <Input
+            placeholder="Search agents"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="w-48"
+          />
+          <Button variant="outline" size="sm">
+            <Search className="w-4 h-4" />
+          </Button>
+        </div>
+      </div>
+
       {error && (
         <Alert variant="destructive">
           <AlertTitle>Error</AlertTitle>
@@ -130,7 +173,7 @@ export const AgentsPanel: React.FC = () => {
       )}
 
       <div className="grid gap-4">
-        {agents.map(agent => (
+        {searchedAgents.map(agent => (
           <Card
             key={agent.getId()}
             className={`cursor-pointer p-4 transition-colors ${
