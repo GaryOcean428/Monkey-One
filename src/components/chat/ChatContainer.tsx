@@ -36,7 +36,7 @@ export const ChatContainer: React.FC = () => {
     ? messages.filter(message => message.user === filterUser)
     : messages
 
-  const sortedMessages = filteredMessages.sort((a, b) => {
+  const sortedMessages = [...filteredMessages].sort((a, b) => {
     if (sortOrder === 'asc') {
       return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
     } else {
