@@ -110,7 +110,7 @@ export function BrainVisualizer() {
   // Handle resize
   useEffect(() => {
     const handleResize = () => {
-      if (!containerRef.current || !rendererRef.current || !cameraRef.current) return;
+      if (!containerRef.current || !rendererRef.current || !cameraRef.current) {
 
       const width = containerRef.current.clientWidth;
       const height = containerRef.current.clientHeight;
