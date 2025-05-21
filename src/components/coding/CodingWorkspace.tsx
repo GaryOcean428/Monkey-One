@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Split, Code2, GitBranch, Play, Save, Settings2 } from 'lucide-react';
+import { Split, Code2, GitBranch, Play, Save, Settings2, RefreshCw, Filter, SortAsc, SortDesc } from 'lucide-react';
 import { CodeEditor } from './CodeEditor';
 import { InsightPanel } from './InsightPanel';
 import { ModelSelector } from './ModelSelector';
@@ -14,6 +14,8 @@ export function CodingWorkspace() {
   const [showInsights, setShowInsights] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { processCodingTask, isProcessing } = useCodeProcessor();
+  const [filterType, setFilterType] = useState<string | null>(null);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   const handleProcess = async () => {
     if (!code.trim()) {
@@ -29,6 +31,18 @@ export function CodingWorkspace() {
       setError(err instanceof Error ? err.message : 'An error occurred');
       toast.error('Failed to process code');
     }
+  };
+
+  const handleRefresh = () => {
+    // Logic to refresh the workspace
+  };
+
+  const handleFilter = () => {
+    // Logic to filter workspace by type
+  };
+
+  const handleSort = () => {
+    // Logic to sort workspace by name
   };
 
   return (
@@ -77,6 +91,18 @@ export function CodingWorkspace() {
             </Button>
             <Button variant="ghost" size="sm">
               <Settings2 className="w-4 h-4" />
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleRefresh}>
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Refresh Workspace
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleFilter}>
+              <Filter className="w-4 h-4 mr-2" />
+              Filter by Type
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleSort}>
+              {sortOrder === 'asc' ? <SortAsc className="w-4 h-4 mr-2" /> : <SortDesc className="w-4 h-4 mr-2" />}
+              Sort by Name
             </Button>
           </div>
         </div>

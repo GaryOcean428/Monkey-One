@@ -7,13 +7,17 @@ import { Integrations } from '../Integrations'
 import { LoadingSpinner } from '../ui/loading-spinner'
 import { Alert } from '../ui/alert'
 import { useAgentStore } from '../../store/agentStore'
+import { Button } from '../ui/button'
+import { RefreshCw, Filter, SortAsc, SortDesc } from 'lucide-react'
 
 export const ChatContainer: React.FC = () => {
-  const { messages, isLoading, error, sendMessage } = useChat()
+  const { messages, isProcessing, error, sendMessage } = useChat()
   const [showThoughts] = useState(false)
   const [showIntegrations] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const activeAgent = useAgentStore(state => state.activeAgent)
+  const [filterUser, setFilterUser] = useState<string | null>(null)
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
 
   const scrollToBottom = () => {
     containerRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -28,19 +32,45 @@ export const ChatContainer: React.FC = () => {
     }
   }
 
+  const filteredMessages = filterUser
+    ? messages.filter(message => message.user === filterUser)
+    : messages
+
+  const sortedMessages = [...filteredMessages].sort((a, b) => {
+    if (sortOrder === 'asc') {
+      return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    } else {
+      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    }
+  })
+
   return (
     <div className="flex h-full">
       {/* Main chat area */}
       <div className="flex h-full flex-1 flex-col">
         {/* Messages area */}
         <div className="flex-1 space-y-4 overflow-y-auto p-4">
+          <div className="mb-4 flex justify-between">
+            <Button variant="outline" size="sm" onClick={scrollToBottom}>
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Refresh Chat
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setFilterUser(filterUser ? null : 'user')}>
+              <Filter className="w-4 h-4 mr-2" />
+              {filterUser ? 'Clear Filter' : 'Filter by User'}
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}>
+              {sortOrder === 'asc' ? <SortAsc className="w-4 h-4 mr-2" /> : <SortDesc className="w-4 h-4 mr-2" />}
+              Sort by Time
+            </Button>
+          </div>
           {!activeAgent && (
             <Alert>Please select an agent from the Agents panel to start chatting</Alert>
           )}
-          {messages.map((message, index) => (
+          {sortedMessages.map((message, index) => (
             <ChatMessage key={message.id || index} message={message} />
           ))}
-          {isLoading && (
+          {isProcessing && (
             <div className="flex justify-center">
               <LoadingSpinner />
             </div>
@@ -57,7 +87,7 @@ export const ChatContainer: React.FC = () => {
         <div className="border-t border-gray-200 dark:border-gray-800">
           <ChatInput
             onSendMessage={handleSend}
-            disabled={isLoading || !activeAgent}
+            disabled={isProcessing || !activeAgent}
             placeholder={activeAgent ? 'Type a message...' : 'Select an agent to start chatting'}
           />
         </div>

@@ -73,6 +73,8 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
   const [isLoading, setIsLoading] = React.useState<boolean>(false)
   const [error, setError] = React.useState<string | null>(null)
+  const [showPassword, setShowPassword] = React.useState<boolean>(false)
+  const [passwordStrength, setPasswordStrength] = React.useState<string>('')
 
   const onSubmit = async (data: FormData) => {
     try {
@@ -110,6 +112,21 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
       setError(null)
     }
   }, [isOpen, reset])
+
+  // Password strength meter
+  const calculatePasswordStrength = (password: string) => {
+    let strength = ''
+    if (password.length >= 8) {
+      if (/[A-Z]/.test(password) && /[a-z]/.test(password) && /\d/.test(password) && /[@$!%*?&]/.test(password)) {
+        strength = 'Strong'
+      } else if (/[A-Z]/.test(password) || /[a-z]/.test(password) || /\d/.test(password) || /[@$!%*?&]/.test(password)) {
+        strength = 'Medium'
+      } else {
+        strength = 'Weak'
+      }
+    }
+    setPasswordStrength(strength)
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -157,16 +174,30 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                className={cn(
-                  'transition-all duration-200',
-                  errors.password && 'border-destructive focus-visible:ring-destructive'
-                )}
-                {...register('password')}
-                disabled={isLoading}
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  className={cn(
+                    'transition-all duration-200',
+                    errors.password && 'border-destructive focus-visible:ring-destructive'
+                  )}
+                  {...register('password')}
+                  disabled={isLoading}
+                  onChange={(e) => {
+                    register('password').onChange(e)
+                    calculatePasswordStrength(e.target.value)
+                  }}
+                />
+                <Button
+                  type="button"
+                  variant="link"
+                  className="absolute inset-y-0 right-0 flex items-center pr-3"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? 'Hide' : 'Show'}
+                </Button>
+              </div>
               {errors.password && (
                 <motion.p
                   className="text-sm text-destructive"
@@ -176,6 +207,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   {errors.password.message}
                 </motion.p>
               )}
+              <p className="text-sm text-muted-foreground">Password strength: {passwordStrength}</p>
             </div>
 
             {isSignUp && (
@@ -304,6 +336,70 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
             >
               <Icons.google className="mr-2 h-4 w-4" />
               Google
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={async () => {
+                try {
+                  setIsLoading(true)
+                  setError(null)
+                  const { error } = await supabase.auth.signInWithOAuth({
+                    provider: 'facebook',
+                    options: {
+                      redirectTo: `${window.location.origin}/auth/callback`,
+                    },
+                  })
+                  if (error) throw error
+                } catch (err) {
+                  setError(err instanceof Error ? err.message : 'Failed to sign in with Facebook')
+                  console.error('Facebook auth error:', err)
+                } finally {
+                  setIsLoading(false)
+                }
+              }}
+              disabled={isLoading}
+            >
+              <Icons.facebook className="mr-2 h-4 w-4" />
+              Facebook
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={async () => {
+                try {
+                  setIsLoading(true)
+                  setError(null)
+                  const { error } = await supabase.auth.signInWithOAuth({
+                    provider: 'twitter',
+                    options: {
+                      redirectTo: `${window.location.origin}/auth/callback`,
+                    },
+                  })
+                  if (error) throw error
+                } catch (err) {
+                  setError(err instanceof Error ? err.message : 'Failed to sign in with Twitter')
+                  console.error('Twitter auth error:', err)
+                } finally {
+                  setIsLoading(false)
+                }
+              }}
+              disabled={isLoading}
+            >
+              <Icons.twitter className="mr-2 h-4 w-4" />
+              Twitter
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              className="w-full"
+              onClick={() => {
+                reset()
+                setError(null)
+              }}
+              disabled={isLoading}
+            >
+              Remember Me
             </Button>
           </div>
         </motion.form>

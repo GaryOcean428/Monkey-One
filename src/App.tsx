@@ -2,6 +2,8 @@ import * as React from 'react'
 import { Outlet } from 'react-router'
 import { ProviderRegistry } from './providers/provider-registry'
 import { QueryClient } from '@tanstack/react-query'
+import { AuthModal } from './components/auth/auth-modal'
+import { useAuthContext } from './components/Auth/auth/AuthProvider'
 
 // Lazy load components to reduce the initial bundle size
 const Sidebar = React.lazy(() =>
@@ -26,6 +28,15 @@ const _queryClient = new QueryClient({
 })
 
 export function App() {
+  const { user, loading } = useAuthContext()
+  const [isAuthModalOpen, setAuthModalOpen] = React.useState(!user)
+
+  React.useEffect(() => {
+    if (!user) {
+      setAuthModalOpen(true)
+    }
+  }, [user])
+
   return (
     <ProviderRegistry>
       <div className="flex h-screen overflow-hidden bg-background">
@@ -41,6 +52,7 @@ export function App() {
       <React.Suspense fallback={null}>
         <LoadingOverlay />
       </React.Suspense>
+      <AuthModal isOpen={isAuthModalOpen} onClose={() => setAuthModalOpen(false)} />
     </ProviderRegistry>
   )
 }

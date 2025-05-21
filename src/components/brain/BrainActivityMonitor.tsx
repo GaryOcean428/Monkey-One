@@ -1,12 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Brain, Activity, AlertTriangle } from 'lucide-react';
+import { Brain, Activity, AlertTriangle, RefreshCw, Filter, SortAsc, SortDesc } from 'lucide-react';
 import { useBrainActivity } from '../../hooks/useBrainActivity';
 import { NeuralPathway } from './NeuralPathway';
 import { BrainRegionCard } from './BrainRegionCard';
 
 export function BrainActivityMonitor() {
   const { activity, regions, alerts } = useBrainActivity();
+  const [filterRegion, setFilterRegion] = useState<string | null>(null);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+
+  const filteredActivity = filterRegion
+    ? activity.filter(event => event.region === filterRegion)
+    : activity;
+
+  const sortedActivity = filteredActivity.sort((a, b) => {
+    if (sortOrder === 'asc') {
+      return a.value - b.value;
+    } else {
+      return b.value - a.value;
+    }
+  });
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
@@ -23,6 +37,21 @@ export function BrainActivityMonitor() {
         )}
       </div>
 
+      <div className="flex justify-between mb-4">
+        <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
+          <RefreshCw className="w-4 h-4 mr-2" />
+          Refresh Activity
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => setFilterRegion(filterRegion ? null : 'region')}>
+          <Filter className="w-4 h-4 mr-2" />
+          {filterRegion ? 'Clear Filter' : 'Filter by Region'}
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}>
+          {sortOrder === 'asc' ? <SortAsc className="w-4 h-4 mr-2" /> : <SortDesc className="w-4 h-4 mr-2" />}
+          Sort by Value
+        </Button>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
         {regions.map((region) => (
           <BrainRegionCard key={region.id} region={region} />
@@ -34,7 +63,7 @@ export function BrainActivityMonitor() {
       </div>
 
       <div className="space-y-2">
-        {activity.slice(-3).map((event, index) => (
+        {sortedActivity.slice(-3).map((event, index) => (
           <motion.div
             key={event.id}
             initial={{ opacity: 0, x: -20 }}

@@ -1,4 +1,4 @@
-// Centralized error handling utility
+ // Centralized error handling utility
 
 interface ErrorLogOptions {
   level?: 'info' | 'warn' | 'error'
@@ -127,8 +127,45 @@ export class ErrorHandler {
       }
     })
   }
+
+  /**
+   * Validate environment variables at startup and log errors for missing critical variables
+   */
+  static validateEnvVars() {
+    const requiredEnvVars = ['VITE_SUPABASE_URL', 'VITE_SUPABASE_ANON_KEY', 'VITE_PUBLIC_URL']
+
+    requiredEnvVars.forEach(varName => {
+      if (!import.meta.env[varName]) {
+        this.log(`Missing critical environment variable: ${varName}`, {
+          level: 'error',
+          context: {
+            type: 'Environment Configuration',
+          },
+        })
+      }
+    })
+  }
+
+  /**
+   * Define default values for environment variables in a central configuration module
+   */
+  static getEnvVar(varName: string, defaultValue: string): string {
+    const value = import.meta.env[varName] || defaultValue
+
+    if (value === defaultValue) {
+      this.log(`Using default value for environment variable: ${varName}`, {
+        level: 'warn',
+        context: {
+          type: 'Environment Configuration',
+        },
+      })
+    }
+
+    return value
+  }
 }
 
 // Initialize error handling when the module is imported
 ErrorHandler.initBrowserErrorHandling()
 ErrorHandler.safeApiCheck()
+ErrorHandler.validateEnvVars()

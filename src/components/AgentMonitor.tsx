@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card as BaseCard } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { Activity, AlertCircle, CheckCircle, Clock, Power } from 'lucide-react';
+import { Activity, AlertCircle, CheckCircle, Clock, Power, Filter, SortAsc, SortDesc } from 'lucide-react';
 import type { Agent } from '../types';
 
 interface AgentMonitorProps {
@@ -93,6 +93,21 @@ const AgentCard: React.FC<AgentCardProps> = ({ agent, isActive, onClick }) => {
 };
 
 export function AgentMonitor({ agents, activeAgent, onAgentSelect }: AgentMonitorProps) {
+  const [filterStatus, setFilterStatus] = useState<string | null>(null);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+
+  const filteredAgents = filterStatus
+    ? agents.filter(agent => agent.status === filterStatus)
+    : agents;
+
+  const sortedAgents = filteredAgents.sort((a, b) => {
+    if (sortOrder === 'asc') {
+      return a.name.localeCompare(b.name);
+    } else {
+      return b.name.localeCompare(a.name);
+    }
+  });
+
   return (
     <div className="h-full p-6 overflow-y-auto">
       <div className="mb-6 flex justify-between items-start">
@@ -105,10 +120,18 @@ export function AgentMonitor({ agents, activeAgent, onAgentSelect }: AgentMonito
             <Activity className="w-4 h-4 mr-2" />
             Refresh Status
           </Button>
+          <Button variant="outline" size="sm" onClick={() => setFilterStatus(filterStatus ? null : 'available')}>
+            <Filter className="w-4 h-4 mr-2" />
+            {filterStatus ? 'Clear Filter' : 'Filter by Status'}
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}>
+            {sortOrder === 'asc' ? <SortAsc className="w-4 h-4 mr-2" /> : <SortDesc className="w-4 h-4 mr-2" />}
+            Sort by Name
+          </Button>
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {agents?.map((agent) => (
+        {sortedAgents?.map((agent) => (
           <AgentCard
             key={agent.id}
             agent={agent}

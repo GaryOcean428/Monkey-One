@@ -17,7 +17,16 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const auth = useAuth()
 
-  return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>
+  return (
+    <AuthContext.Provider value={auth}>
+      {children}
+      <div className="auth-actions">
+        <button onClick={auth.signOut}>Sign Out</button>
+        <button onClick={() => auth.updatePassword('newPassword')}>Update Password</button>
+        <button onClick={() => auth.resetPassword('email@example.com')}>Reset Password</button>
+      </div>
+    </AuthContext.Provider>
+  )
 }
 
 export default AuthProvider

@@ -1,5 +1,6 @@
 import { Pinecone } from '@pinecone-database/pinecone'
 import { VectorMetadata } from './pinecone'
+import { searchAll } from '../../lib/api/search' // Import the searchAll function
 
 const pineconeApiKey = process.env.VITE_PINECONE_API_KEY
 const pineconeEnvironment = process.env.VITE_PINECONE_ENVIRONMENT
@@ -35,4 +36,15 @@ export async function upsert(
 
 export async function deleteVectors(ids: string[]) {
   return await index.deleteMany(ids)
+}
+
+// Add endpoint to handle parallel search requests from multiple providers
+export async function handleParallelSearch(query: string, filters: any) {
+  try {
+    const results = await searchAll(query, filters)
+    return results
+  } catch (error) {
+    console.error('Error handling parallel search:', error)
+    throw error
+  }
 }

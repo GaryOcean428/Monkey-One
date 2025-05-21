@@ -1,15 +1,17 @@
 import React, { useCallback, useRef, useEffect } from 'react';
-import { Send, Loader } from 'lucide-react';
+import { Send, Loader, RefreshCw, Filter, SortAsc, SortDesc } from 'lucide-react';
 import { useChat } from '../../hooks/useChat';
 import { ChatMessage } from './ChatMessage';
-import { MessageInput } from './MessageInput';
+import { ChatInput } from './ChatInput';
 import { cn } from '../../lib/utils';
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
 
 export function ChatInterface() {
-  const { messages, isLoading, error, sendMessage, hasActiveAgent } = useChat();
+  const { messages, isProcessing, error, sendMessage, hasActiveAgent, clearChat } = useChat();
   const [input, setInput] = React.useState('');
+  const [filterUser, setFilterUser] = React.useState<string | null>(null);
+  const [sortOrder, setSortOrder] = React.useState<'asc' | 'desc'>('asc');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -39,7 +41,7 @@ export function ChatInterface() {
     }
 
     const trimmedInput = input.trim();
-    if (!trimmedInput || isLoading) {
+    if (!trimmedInput || isProcessing) {
       return;
     }
 
@@ -70,10 +72,37 @@ export function ChatInterface() {
     textarea.style.height = `${textarea.scrollHeight}px`;
   };
 
+  const filteredMessages = filterUser
+    ? messages.filter(message => message.user === filterUser)
+    : messages;
+
+  const sortedMessages = filteredMessages.sort((a, b) => {
+    if (sortOrder === 'asc') {
+      return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
+    } else {
+      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+    }
+  });
+
   return (
     <div className="flex flex-col h-full">
+      <div className="flex justify-between p-4">
+        <Button variant="outline" size="sm" onClick={clearChat}>
+          <RefreshCw className="w-4 h-4 mr-2" />
+          Refresh Chat
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => setFilterUser(filterUser ? null : 'user')}>
+          <Filter className="w-4 h-4 mr-2" />
+          {filterUser ? 'Clear Filter' : 'Filter by User'}
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}>
+          {sortOrder === 'asc' ? <SortAsc className="w-4 h-4 mr-2" /> : <SortDesc className="w-4 h-4 mr-2" />}
+          Sort by Time
+        </Button>
+      </div>
+
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.length === 0 ? (
+        {sortedMessages.length === 0 ? (
           <div className="text-center text-muted-foreground mt-8">
             <p className="text-lg font-semibold">Welcome to Monkey One!</p>
             <p className="mt-2">
@@ -83,7 +112,7 @@ export function ChatInterface() {
             </p>
           </div>
         ) : (
-          messages.map((message) => (
+          sortedMessages.map((message) => (
             <ChatMessage key={message.id} message={message} />
           ))
         )}
@@ -98,7 +127,7 @@ export function ChatInterface() {
 
       <ChatInput
         onSendMessage={handleSubmit}
-        disabled={!hasActiveAgent || isLoading}
+        disabled={!hasActiveAgent || isProcessing}
         placeholder={hasActiveAgent ? "Type a message..." : "Select an agent to start chatting"}
       />
     </div>

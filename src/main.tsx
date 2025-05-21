@@ -7,7 +7,7 @@ import { ErrorHandler } from './utils/errorHandler'
 import { ErrorBoundary } from './components/error-boundary'
 
 // Set public URL if not available
-const publicUrl = window.location.origin || 'https://monkey-one.vercel.app'
+const publicUrl = import.meta.env.VITE_PUBLIC_URL || window.location.origin || 'https://monkey-one.vercel.app'
 
 // Define a global variable without trying to modify import.meta.env (which is read-only)
 window.PUBLIC_URL = publicUrl
