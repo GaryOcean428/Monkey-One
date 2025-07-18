@@ -247,7 +247,7 @@ export function AIStreamingChat() {
           </Button>
         </div>
       </form>
-
+      
       <div className="flex justify-between mb-4">
         <Button variant="outline" size="sm" onClick={refreshChat}>
           <RefreshCw className="w-4 h-4 mr-2" />
