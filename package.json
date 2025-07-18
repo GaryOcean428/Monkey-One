@@ -23,7 +23,7 @@
     "vercel-build": "echo \"Build already completed by buildCommand\"",
     "vercel-deploy": "vercel deploy --prod",
     "prepare": "husky",
-    "pre-commit": "lint-staged && npm run type-check",
+    "pre-commit": "lint-staged && pnpm run type-check",
     "validate": "npm-run-all --parallel type-check lint:fix format test",
     "prepare-model": "tsx scripts/prepare-model.ts",
     "ollama:status": "tsx scripts/manage-ollama.ts status",
