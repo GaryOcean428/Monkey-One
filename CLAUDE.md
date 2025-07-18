@@ -2,16 +2,16 @@
 
 ## Commands
 
-- Build: `npm run build`
-- Dev: `npm run dev` (Vite + proxy server)
-- Test: `npm run test` (all tests)
-- Test single file: `npm run test src/__tests__/path/to/file.test.ts`
-- Test watch: `npm run test:watch`
-- Lint: `npm run lint`
-- Lint fix: `npm run lint:fix`
-- Format: `npm run format`
-- Type check: `npm run type-check`
-- Validate all: `npm run validate`
+- Build: `pnpm run build`
+- Dev: `pnpm run dev` (Vite + proxy server)
+- Test: `pnpm run test` (all tests)
+- Test single file: `pnpm run test src/__tests__/path/to/file.test.ts`
+- Test watch: `pnpm run test:watch`
+- Lint: `pnpm run lint`
+- Lint fix: `pnpm run lint:fix`
+- Format: `pnpm run format`
+- Type check: `pnpm run type-check`
+- Validate all: `pnpm run validate`
 
 ## Code Style
 

@@ -35,10 +35,10 @@ git config --local --unset core.hooksPath
 
 Tests can be run manually using one of these commands:
 
-- `npm run test` - Run all tests
-- `npm run test:fast` - Run tests with passWithNoTests flag (faster)
-- `npm run test:watch` - Run tests in watch mode
-- `npm run test:coverage` - Run tests with coverage report
+- `pnpm run test` - Run all tests
+- `pnpm run test:fast` - Run tests with passWithNoTests flag (faster)
+- `pnpm run test:watch` - Run tests in watch mode
+- `pnpm run test:coverage` - Run tests with coverage report
 
 ## Known Issues with Tests
 
@@ -55,7 +55,7 @@ The team is working on addressing these issues. When making changes, focus on en
 The CI/CD pipeline runs the full test suite, so it's important to run tests manually before pushing to main branches:
 
 ```bash
-npm run test
+pnpm run test
 ```
 
 ## Customizing Hooks
@@ -71,6 +71,6 @@ If you need to modify the hooks:
 If you encounter issues with the hooks:
 
 1. Check the error messages carefully
-2. Make sure Husky is properly installed (`npm run prepare`)
+2. Make sure Husky is properly installed (`pnpm run prepare`)
 3. For errors in specific hooks, check the corresponding script
 4. Re-initialize hooks with `npx husky init` if needed
