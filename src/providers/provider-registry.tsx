@@ -13,6 +13,13 @@ const SupabaseProvider = React.lazy(() =>
   }))
 )
 
+// Import AuthProvider to fix the context issue
+const AuthProvider = React.lazy(() =>
+  import('@/components/Auth/auth/AuthProvider').then(module => ({
+    default: module.AuthProvider,
+  }))
+)
+
 interface ProviderRegistryProps {
   children: React.ReactNode
 }
@@ -40,12 +47,14 @@ export function ProviderRegistry({ children }: ProviderRegistryProps) {
             }
           >
             <SupabaseProvider>
-              <ModalProvider>
-                <TooltipProvider>
-                  <Toaster position="top-right" />
-                  {children}
-                </TooltipProvider>
-              </ModalProvider>
+              <AuthProvider>
+                <ModalProvider>
+                  <TooltipProvider>
+                    <Toaster position="top-right" />
+                    {children}
+                  </TooltipProvider>
+                </ModalProvider>
+              </AuthProvider>
             </SupabaseProvider>
           </React.Suspense>
         </ThemeProvider>

@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react'
-import { createClient, AuthError } from '@supabase/supabase-js'
+import { AuthError } from '@supabase/supabase-js'
+import { supabase } from '../lib/supabase/client' // Use the singleton client
 
 interface User {
   id: string
@@ -10,19 +11,6 @@ interface AuthResponse {
   user: User | null
   error: AuthError | null
 }
-
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('Supabase credentials not found. Please check your environment variables:', {
-    url: !!supabaseUrl,
-    key: !!supabaseAnonKey,
-  })
-  throw new Error('Supabase credentials are required')
-}
-
-const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null)
