@@ -3,7 +3,7 @@ import { Outlet } from 'react-router'
 import { ProviderRegistry } from './providers/provider-registry'
 import { QueryClient } from '@tanstack/react-query'
 import { AuthModal } from './components/auth/auth-modal'
-import { useAuthContext } from './components/Auth/auth/AuthProvider'
+import { useAuthContext } from './components/Auth/auth/AuthContext'
 
 // Lazy load components to reduce the initial bundle size
 const Sidebar = React.lazy(() =>
@@ -39,8 +39,8 @@ export function App() {
 
   return (
     <ProviderRegistry>
-      <div className="flex h-screen overflow-hidden bg-background">
-        <React.Suspense fallback={<div className="h-screen w-64 bg-muted"></div>}>
+      <div className="bg-background flex h-screen overflow-hidden">
+        <React.Suspense fallback={<div className="bg-muted h-screen w-64"></div>}>
           <Sidebar />
         </React.Suspense>
         <main className="flex-1 overflow-y-auto">
