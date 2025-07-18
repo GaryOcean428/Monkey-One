@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import { Card } from './ui/card'
 import { Button } from './ui/button'
-import { Plus, Play, Save, Settings } from 'lucide-react'
+import { Plus, Play, Save, Settings, Trash2, Edit3 } from 'lucide-react'
 import { useWorkflow, type Workflow } from '../hooks/useWorkflow'
 import { WorkflowVisualizer } from './workflow/WorkflowVisualizer'
 import { WorkflowDialog } from './workflow/WorkflowDialog'
 
 export function AgentWorkflow() {
-  const { workflows, createWorkflow, runWorkflow, saveWorkflow } = useWorkflow()
+  const { workflows, createWorkflow, runWorkflow, saveWorkflow, deleteWorkflow, editWorkflow } = useWorkflow()
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const activeWorkflow = workflows[0] // For now, just show the first workflow
 
@@ -53,6 +53,24 @@ export function AgentWorkflow() {
     }
   }
 
+  const handleDeleteWorkflow = async () => {
+    if (!activeWorkflow) return
+    try {
+      await deleteWorkflow(activeWorkflow.id)
+    } catch (error) {
+      console.error('Failed to delete workflow:', error)
+    }
+  }
+
+  const handleEditWorkflow = async () => {
+    if (!activeWorkflow) return
+    try {
+      await editWorkflow(activeWorkflow.id)
+    } catch (error) {
+      console.error('Failed to edit workflow:', error)
+    }
+  }
+
   return (
     <div className="h-full overflow-y-auto p-6">
       <div className="mb-6 flex items-start justify-between">
@@ -78,6 +96,14 @@ export function AgentWorkflow() {
               <Button variant="outline" onClick={handleSaveWorkflow}>
                 <Save className="mr-2 h-4 w-4" />
                 Save
+              </Button>
+              <Button variant="outline" onClick={handleDeleteWorkflow}>
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </Button>
+              <Button variant="outline" onClick={handleEditWorkflow}>
+                <Edit3 className="mr-2 h-4 w-4" />
+                Edit
               </Button>
               <Button variant="outline">
                 <Settings className="mr-2 h-4 w-4" />

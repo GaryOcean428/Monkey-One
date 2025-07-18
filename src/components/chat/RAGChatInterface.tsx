@@ -9,6 +9,7 @@ import { marked } from 'marked';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../ui/dialog';
 import { Label } from '../ui/label';
 import { Input } from '../ui/input';
+import { RefreshCw, Filter, SortAsc, SortDesc } from 'lucide-react';
 
 interface Message {
   role: 'user' | 'assistant' | 'system';
@@ -28,7 +29,9 @@ export function RAGChatInterface() {
   const [fileName, setFileName] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
-  
+  const [filterUser, setFilterUser] = useState<string | null>(null);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+
   // Auto-scroll to bottom of chat
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -140,6 +143,18 @@ export function RAGChatInterface() {
     }
   };
   
+  const filteredMessages = filterUser
+    ? messages.filter(message => message.role === filterUser)
+    : messages;
+
+  const sortedMessages = filteredMessages.sort((a, b) => {
+    if (sortOrder === 'asc') {
+      return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
+    } else {
+      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+    }
+  });
+
   return (
     <div className="flex flex-col space-y-4 max-w-3xl mx-auto">
       <div className="flex justify-between items-center">
@@ -155,13 +170,28 @@ export function RAGChatInterface() {
       {/* Chat Messages */}
       <Card className="p-4 overflow-y-auto max-h-[500px]">
         <div className="space-y-4">
-          {messages.length === 0 ? (
+
+          <div className="mb-4 flex justify-between">
+            <Button variant="outline" size="sm" onClick={() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })}>
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Refresh Chat
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setFilterUser(filterUser ? null : 'user')}>
+              <Filter className="w-4 h-4 mr-2" />
+              {filterUser ? 'Clear Filter' : 'Filter by User'}
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}>
+              {sortOrder === 'asc' ? <SortAsc className="w-4 h-4 mr-2" /> : <SortDesc className="w-4 h-4 mr-2" />}
+              Sort by Time
+            </Button>
+          </div>
+          {sortedMessages.length === 0 ? (
             <p className="text-center text-muted-foreground">
               Send a message to start chatting. This AI assistant uses Retrieval Augmented Generation (RAG) 
               to provide context-aware responses based on your knowledge base.
             </p>
           ) : (
-            messages.map((message, i) => (
+            sortedMessages.map((message, i) => (
               <div 
                 key={i} 
                 className={`p-3 rounded-lg ${

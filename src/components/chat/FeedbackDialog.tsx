@@ -14,11 +14,16 @@ interface FeedbackDialogProps {
 
 export function FeedbackDialog({ open, onOpenChange, message, rating }: FeedbackDialogProps) {
   const [comment, setComment] = useState('');
-  const { submitFeedback, isSubmitting } = useFeedbackStore();
+  const { submitFeedback, isSubmitting, clearPendingFeedback } = useFeedbackStore();
 
   const handleSubmit = async () => {
     await submitFeedback(message.id, rating, comment);
     onOpenChange(false);
+  };
+
+  const handleClear = () => {
+    setComment('');
+    clearPendingFeedback(message.id);
   };
 
   return (
@@ -43,6 +48,9 @@ export function FeedbackDialog({ open, onOpenChange, message, rating }: Feedback
         <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
+          </Button>
+          <Button variant="outline" onClick={handleClear}>
+            Clear
           </Button>
           <Button onClick={handleSubmit} disabled={isSubmitting}>
             {isSubmitting ? 'Submitting...' : 'Submit Feedback'}

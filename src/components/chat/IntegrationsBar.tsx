@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Mail, Github, Calendar, FileText, Cloud } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Mail, Github, Calendar, FileText, Cloud, RefreshCw, Filter, SortAsc, SortDesc } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useIntegrations } from '../../hooks/useIntegrations';
 import { Button } from '../ui/button';
@@ -9,6 +9,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 export function IntegrationsBar() {
   const [isExpanded, setIsExpanded] = useState(false);
   const { integrations, connectIntegration, disconnectIntegration } = useIntegrations();
+  const [filterType, setFilterType] = useState<string | null>(null);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   const handleIntegrationClick = async (id: string, isConnected: boolean) => {
     try {
@@ -21,6 +23,18 @@ export function IntegrationsBar() {
       console.error('Integration error:', error);
     }
   };
+
+  const filteredIntegrations = filterType
+    ? integrations.filter(integration => integration.type === filterType)
+    : integrations;
+
+  const sortedIntegrations = filteredIntegrations.sort((a, b) => {
+    if (sortOrder === 'asc') {
+      return a.name.localeCompare(b.name);
+    } else {
+      return b.name.localeCompare(a.name);
+    }
+  });
 
   return (
     <motion.div
@@ -50,8 +64,23 @@ export function IntegrationsBar() {
         {isExpanded && <span className="font-medium">Integrations</span>}
       </div>
 
+      <div className="p-2 flex justify-between">
+        <Button variant="outline" size="sm" onClick={() => setFilterType(filterType ? null : 'type')}>
+          <Filter className="w-4 h-4 mr-2" />
+          {filterType ? 'Clear Filter' : 'Filter by Type'}
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}>
+          {sortOrder === 'asc' ? <SortAsc className="w-4 h-4 mr-2" /> : <SortDesc className="w-4 h-4 mr-2" />}
+          Sort by Name
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
+          <RefreshCw className="w-4 h-4 mr-2" />
+          Refresh Integrations
+        </Button>
+      </div>
+
       <div className="flex-1 overflow-y-auto p-2">
-        {integrations.map(({ id, name, icon: Icon, status }) => (
+        {sortedIntegrations.map(({ id, name, icon: Icon, status }) => (
           <Tooltip key={id}>
             <TooltipTrigger asChild>
               <Button

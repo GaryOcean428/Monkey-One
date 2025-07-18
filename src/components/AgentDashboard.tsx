@@ -1,9 +1,10 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react'
+import React, { useState } from 'react'
 import { AgentMonitor } from './AgentMonitor'
 import { AgentWorkflow } from './AgentWorkflow'
 import { PerformanceMetrics } from './PerformanceMetrics'
 import { ObserverPanel } from './ObserverPanel'
 import { useAgents } from '../contexts/AgentContext'
+import { Button } from './ui/button'
 
 /**
  * AgentDashboard Component
@@ -13,14 +14,33 @@ import { useAgents } from '../contexts/AgentContext'
  */
 export function AgentDashboard() {
   const { agents, activeAgent } = useAgents()
+  const [showAgentMonitor, setShowAgentMonitor] = useState(true)
+  const [showAgentWorkflow, setShowAgentWorkflow] = useState(true)
+  const [showPerformanceMetrics, setShowPerformanceMetrics] = useState(true)
+  const [showObserverPanel, setShowObserverPanel] = useState(true)
 
   return (
     <div className="grid h-full grid-cols-12 gap-4 p-4" role="main">
       <h1 className="col-span-12 mb-4 text-2xl font-bold">Agent Dashboard</h1>
 
+      <div className="col-span-12 mb-4 flex justify-between">
+        <Button onClick={() => setShowAgentMonitor(!showAgentMonitor)}>
+          {showAgentMonitor ? 'Hide' : 'Show'} Agent Monitor
+        </Button>
+        <Button onClick={() => setShowAgentWorkflow(!showAgentWorkflow)}>
+          {showAgentWorkflow ? 'Hide' : 'Show'} Agent Workflow
+        </Button>
+        <Button onClick={() => setShowPerformanceMetrics(!showPerformanceMetrics)}>
+          {showPerformanceMetrics ? 'Hide' : 'Show'} Performance Metrics
+        </Button>
+        <Button onClick={() => setShowObserverPanel(!showObserverPanel)}>
+          {showObserverPanel ? 'Hide' : 'Show'} Observer Panel
+        </Button>
+      </div>
+
       <div className="col-span-8 space-y-4" role="region" aria-label="Agent Status and Workflow">
-        <AgentMonitor agents={agents} activeAgent={activeAgent} />
-        <AgentWorkflow />
+        {showAgentMonitor && <AgentMonitor agents={agents} activeAgent={activeAgent} />}
+        {showAgentWorkflow && <AgentWorkflow />}
       </div>
 
       <div
@@ -28,23 +48,27 @@ export function AgentDashboard() {
         role="complementary"
         aria-label="Performance and Monitoring"
       >
-        <section aria-labelledby="performance-heading">
-          <h2 id="performance-heading" className="text-2xl font-bold">
-            Performance Metrics
-          </h2>
-          <div className="mt-4">
-            <PerformanceMetrics />
-          </div>
-        </section>
+        {showPerformanceMetrics && (
+          <section aria-labelledby="performance-heading">
+            <h2 id="performance-heading" className="text-2xl font-bold">
+              Performance Metrics
+            </h2>
+            <div className="mt-4">
+              <PerformanceMetrics />
+            </div>
+          </section>
+        )}
 
-        <section aria-labelledby="observer-heading">
-          <h2 id="observer-heading" className="text-2xl font-bold">
-            Code Observer
-          </h2>
-          <div className="mt-4">
-            <ObserverPanel />
-          </div>
-        </section>
+        {showObserverPanel && (
+          <section aria-labelledby="observer-heading">
+            <h2 id="observer-heading" className="text-2xl font-bold">
+              Code Observer
+            </h2>
+            <div className="mt-4">
+              <ObserverPanel />
+            </div>
+          </section>
+        )}
       </div>
     </div>
   )

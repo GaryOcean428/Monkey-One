@@ -1,9 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle2, XCircle, Clock, User, Bot } from 'lucide-react';
+import { CheckCircle2, XCircle, Clock, User, Bot, ThumbsUp, ThumbsDown, Flag } from 'lucide-react';
 import type { Message } from '../types';
 import { cn } from '../lib/utils';
 import { MarkdownRenderer } from './chat/MarkdownRenderer';
+import { Button } from './ui/button';
 
 interface ChatMessageProps {
   message: Message;
@@ -67,6 +68,18 @@ export function ChatMessage({ message }: ChatMessageProps) {
             )}
           </div>
         )}
+      </div>
+
+      <div className="flex items-center gap-2">
+        <Button variant="ghost" size="sm">
+          <ThumbsUp className="w-4 h-4" />
+        </Button>
+        <Button variant="ghost" size="sm">
+          <ThumbsDown className="w-4 h-4" />
+        </Button>
+        <Button variant="ghost" size="sm">
+          <Flag className="w-4 h-4" />
+        </Button>
       </div>
     </motion.div>
   );

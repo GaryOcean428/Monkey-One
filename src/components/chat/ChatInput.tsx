@@ -1,7 +1,8 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { Textarea } from '../ui/textarea';
 import { Button } from '../ui/button';
-import { Send } from 'lucide-react';
+import { Send, X, Paperclip } from 'lucide-react';
+import { useChat } from '../../hooks/useChat';
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
@@ -16,17 +17,19 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 }) => {
   const [message, setMessage] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { sendMessage } = useChat();
 
   const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
     if (message.trim() && !disabled) {
       onSendMessage(message.trim());
+      sendMessage(message.trim());
       setMessage('');
       if (textareaRef.current) {
         textareaRef.current.style.height = 'auto';
       }
     }
-  }, [message, onSendMessage, disabled]);
+  }, [message, onSendMessage, sendMessage, disabled]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -43,6 +46,17 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     }
   }, []);
 
+  const handleClear = useCallback(() => {
+    setMessage('');
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+    }
+  }, []);
+
+  const handleAttachFile = useCallback(() => {
+    // Implement file attachment logic here
+  }, []);
+
   return (
     <form onSubmit={handleSubmit} className="flex items-center gap-2 p-4 border-t border-gray-200 dark:border-gray-700">
       <Textarea
@@ -56,6 +70,24 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         rows={1}
         aria-label="Chat input"
       />
+      <Button 
+        type="button" 
+        onClick={handleClear}
+        disabled={disabled}
+        variant="ghost"
+        size="icon"
+      >
+        <X className="h-5 w-5" />
+      </Button>
+      <Button 
+        type="button" 
+        onClick={handleAttachFile}
+        disabled={disabled}
+        variant="ghost"
+        size="icon"
+      >
+        <Paperclip className="h-5 w-5" />
+      </Button>
       <Button 
         type="submit" 
         disabled={!message.trim() || disabled}

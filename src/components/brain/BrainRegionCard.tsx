@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Activity, Brain, AlertTriangle } from 'lucide-react';
+import { Activity, Brain, AlertTriangle, RefreshCw, Filter, SortAsc, SortDesc } from 'lucide-react';
 
 interface BrainRegion {
   id: string;
@@ -15,6 +15,21 @@ interface BrainRegionCardProps {
 }
 
 export function BrainRegionCard({ region }: BrainRegionCardProps) {
+  const [filterStatus, setFilterStatus] = useState<string | null>(null);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+
+  const filteredRegions = filterStatus
+    ? [region].filter(r => r.status === filterStatus)
+    : [region];
+
+  const sortedRegions = filteredRegions.sort((a, b) => {
+    if (sortOrder === 'asc') {
+      return a.name.localeCompare(b.name);
+    } else {
+      return b.name.localeCompare(a.name);
+    }
+  });
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -32,6 +47,21 @@ export function BrainRegionCard({ region }: BrainRegionCardProps) {
             <span className="text-xs">{region.alerts.length}</span>
           </div>
         ) : null}
+      </div>
+
+      <div className="flex justify-between mb-4">
+        <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
+          <RefreshCw className="w-4 h-4 mr-2" />
+          Refresh Status
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => setFilterStatus(filterStatus ? null : 'active')}>
+          <Filter className="w-4 h-4 mr-2" />
+          {filterStatus ? 'Clear Filter' : 'Filter by Status'}
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}>
+          {sortOrder === 'asc' ? <SortAsc className="w-4 h-4 mr-2" /> : <SortDesc className="w-4 h-4 mr-2" />}
+          Sort by Name
+        </Button>
       </div>
 
       <div className="space-y-3">

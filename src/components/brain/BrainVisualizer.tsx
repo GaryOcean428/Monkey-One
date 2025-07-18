@@ -3,6 +3,8 @@ import * as THREE from 'three';
 import { motion } from 'framer-motion';
 import { useBrainCore } from '../../hooks/useBrainCore';
 import { useThrottledCallback } from '../../hooks/useThrottledCallback';
+import { Button } from '../ui/button';
+import { RefreshCw, Filter, SortAsc, SortDesc } from 'lucide-react';
 
 export function BrainVisualizer() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -14,6 +16,8 @@ export function BrainVisualizer() {
   
   const { brainState, neuralMetrics } = useBrainCore();
   const [isVisible, setIsVisible] = useState(false);
+  const [filterRegion, setFilterRegion] = useState<string | null>(null);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   // Throttle render updates for performance
   const updateRegions = useThrottledCallback((regions: THREE.Mesh[]) => {
@@ -106,7 +110,7 @@ export function BrainVisualizer() {
   // Handle resize
   useEffect(() => {
     const handleResize = () => {
-      if (!containerRef.current || !rendererRef.current || !cameraRef.current) return;
+      if (!containerRef.current || !rendererRef.current || !cameraRef.current) {
 
       const width = containerRef.current.clientWidth;
       const height = containerRef.current.clientHeight;
@@ -142,6 +146,21 @@ export function BrainVisualizer() {
           </div>
         </div>
       </motion.div>
+
+      <div className="absolute bottom-4 left-4 flex space-x-2">
+        <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
+          <RefreshCw className="w-4 h-4 mr-2" />
+          Refresh Visualizer
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => setFilterRegion(filterRegion ? null : 'region')}>
+          <Filter className="w-4 h-4 mr-2" />
+          {filterRegion ? 'Clear Filter' : 'Filter by Region'}
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}>
+          {sortOrder === 'asc' ? <SortAsc className="w-4 h-4 mr-2" /> : <SortDesc className="w-4 h-4 mr-2" />}
+          Sort by Value
+        </Button>
+      </div>
     </div>
   );
 }

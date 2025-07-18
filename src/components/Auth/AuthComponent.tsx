@@ -12,9 +12,11 @@ export function AuthComponent() {
     signInWithProvider,
     signOut,
     linkIdentity,
+    resetPassword,
   } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [isSignUp, setIsSignUp] = useState(false)
 
   if (loading) return <div>Loading...</div>
 
@@ -62,6 +64,13 @@ export function AuthComponent() {
           <h3>Social Login</h3>
           <button onClick={() => signInWithProvider('google')}>Sign in with Google</button>
           <button onClick={() => signInWithProvider('github')}>Sign in with GitHub</button>
+        </div>
+
+        <div>
+          <button onClick={() => setIsSignUp(!isSignUp)}>
+            {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
+          </button>
+          <button onClick={() => resetPassword(email)}>Reset Password</button>
         </div>
       </div>
     </div>

@@ -162,6 +162,32 @@ export function useAuth() {
     }
   }
 
+  const handleUserLogin = async (email: string, password: string) => {
+    try {
+      const { user, error } = await signIn(email, password)
+      if (error) {
+        setState(prev => ({
+          ...prev,
+          error: { message: error.message },
+        }))
+        return { user: null, error }
+      }
+      setState(prev => ({
+        ...prev,
+        user,
+        error: null,
+      }))
+      return { user, error: null }
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      setState(prev => ({
+        ...prev,
+        error: { message: errorMessage },
+      }))
+      return { user: null, error: new Error(errorMessage) }
+    }
+  }
+
   return {
     ...state,
     signIn,
@@ -169,5 +195,6 @@ export function useAuth() {
     signOut,
     resetPassword,
     updatePassword,
+    handleUserLogin,
   }
 }
