@@ -1,24 +1,24 @@
-import { ReactNode } from 'react';
-import { Navigate, useLocation } from 'react-router';
-import { useAuthContext } from './AuthProvider';
-import { Button } from '../ui/button';
+import { ReactNode } from 'react'
+import { Navigate, useLocation } from 'react-router'
+import { useAuthContext } from './AuthContext'
+import { Button } from '../ui/button'
 
 interface ProtectedRouteProps {
-  children: ReactNode;
-  requireAuth?: boolean;
+  children: ReactNode
+  requireAuth?: boolean
 }
 
 export function ProtectedRoute({ children, requireAuth = true }: ProtectedRouteProps) {
-  const { user, loading } = useAuthContext();
-  const location = useLocation();
+  const { user, loading } = useAuthContext()
+  const location = useLocation()
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div>Loading...</div>
   }
 
   if (requireAuth && !user) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
           <p className="text-gray-600">You must be logged in to view this page.</p>
           <div className="mt-4 space-x-2">
@@ -30,12 +30,12 @@ export function ProtectedRoute({ children, requireAuth = true }: ProtectedRouteP
           </div>
         </div>
       </div>
-    );
+    )
   }
 
   if (!requireAuth && user) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/dashboard" replace />
   }
 
-  return <>{children}</>;
+  return <>{children}</>
 }
