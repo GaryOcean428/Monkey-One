@@ -31,7 +31,7 @@ export function RAGChatInterface() {
   const { toast } = useToast();
   const [filterUser, setFilterUser] = useState<string | null>(null);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-  
+
   // Auto-scroll to bottom of chat
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -170,6 +170,7 @@ export function RAGChatInterface() {
       {/* Chat Messages */}
       <Card className="p-4 overflow-y-auto max-h-[500px]">
         <div className="space-y-4">
+
           <div className="mb-4 flex justify-between">
             <Button variant="outline" size="sm" onClick={() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })}>
               <RefreshCw className="w-4 h-4 mr-2" />
