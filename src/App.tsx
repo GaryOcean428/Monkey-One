@@ -28,7 +28,7 @@ const _queryClient = new QueryClient({
 })
 
 export function App() {
-  const { user, loading } = useAuthContext()
+  const { user } = useAuthContext()
   const [isAuthModalOpen, setAuthModalOpen] = React.useState(!user)
 
   React.useEffect(() => {

@@ -1,32 +1,10 @@
-import { createClient } from '@supabase/supabase-js'
+// This file is now deprecated - use the singleton client from ./client.ts
+// Importing from client.ts ensures we maintain a single instance
+import { supabase } from './client'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+// Re-export the singleton client to maintain backward compatibility
+export { supabase }
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables')
-}
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-  },
-  db: {
-    schema: 'public',
-  },
-})
-
-// Service role client for admin operations
-const serviceRoleKey = import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY
-export const supabaseAdmin = serviceRoleKey
-  ? createClient(supabaseUrl, serviceRoleKey, {
-      auth: {
-        autoRefreshToken: true,
-        persistSession: true,
-      },
-      db: {
-        schema: 'public',
-      },
-    })
-  : null
+// For admin operations, you should use the client.ts singleton
+// and handle admin operations through proper authentication flows
+export const supabaseAdmin = null

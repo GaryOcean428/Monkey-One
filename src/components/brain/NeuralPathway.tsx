@@ -23,9 +23,13 @@ export function NeuralPathway({ activity }: NeuralPathwayProps) {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) {
+      return;
+    }
 
     const ctx = canvas.getContext('2d');
     if (!ctx) {
+      return;
+    }
 
     // Set canvas size
     canvas.width = canvas.offsetWidth;
