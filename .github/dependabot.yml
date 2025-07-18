@@ -1,6 +1,6 @@
 version: 2
 updates:
-  - package-ecosystem: "npm" # Use the appropriate value for the package manager (e.g., npm, yarn, pip, etc.)
+  - package-ecosystem: "pnpm" # Use the appropriate value for the package manager (e.g., npm, yarn, pip, etc.)
     directory: "/" # Location of package manifests
     schedule:
       interval: "weekly"
