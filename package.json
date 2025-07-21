@@ -171,7 +171,7 @@
     "lint-staged": "^15.5.0",
     "msw": "^2.7.3",
     "node-fetch": "^3.3.2",
-    "npm-check-updates": "^17.1.16",
+    "npm-check-updates": "^18.0.1",
     "npm-run-all2": "^7.0.2",
     "ora": "^8.2.0",
     "postcss": "^8.5.3",
