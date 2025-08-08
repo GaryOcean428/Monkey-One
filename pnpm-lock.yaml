@@ -254,7 +254,7 @@ importers:
         version: 3.0.2
       tailwindcss-animate:
         specifier: ^1.0.7
-        version: 1.0.7(tailwindcss@4.0.15)
+        version: 1.0.7(tailwindcss@4.1.11)
       tar:
         specifier: ^7.4.3
         version: 7.4.3
@@ -285,13 +285,13 @@ importers:
         version: 1.51.1
       '@tailwindcss/forms':
         specifier: ^0.5.10
-        version: 0.5.10(tailwindcss@4.0.15)
+        version: 0.5.10(tailwindcss@4.1.11)
       '@tailwindcss/postcss':
         specifier: ^4.0.15
         version: 4.1.11
       '@tailwindcss/typography':
         specifier: ^0.5.16
-        version: 0.5.16(tailwindcss@4.0.15)
+        version: 0.5.16(tailwindcss@4.1.11)
       '@testing-library/dom':
         specifier: ^10.4.0
         version: 10.4.0
@@ -446,8 +446,8 @@ importers:
         specifier: ^5.14.0
         version: 5.14.0(rollup@4.45.1)
       tailwindcss:
-        specifier: ^4.0.15
-        version: 4.0.15
+        specifier: ^4.1.11
+        version: 4.1.11
       tsx:
         specifier: ^4.19.3
         version: 4.19.3
@@ -6408,9 +6408,6 @@ packages:
     peerDependencies:
       tailwindcss: '>=3.0.0 || insiders'
 
-  tailwindcss@4.0.15:
-    resolution: {integrity: sha512-6ZMg+hHdMJpjpeCCFasX7K+U615U9D+7k5/cDK/iRwl6GptF24+I/AbKgOnXhVKePzrEyIXutLv36n4cRsq3Sg==}
-
   tailwindcss@4.1.11:
     resolution: {integrity: sha512-2E9TBm6MDD/xKYe+dvJZAmg3yxIEDNRc0jwlNyDg/4Fil2QcSLjFKGVff0lAf1jjeaArlG/M75Ey/EYr/OJtBA==}
 
@@ -8665,10 +8662,10 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@tailwindcss/forms@0.5.10(tailwindcss@4.0.15)':
+  '@tailwindcss/forms@0.5.10(tailwindcss@4.1.11)':
     dependencies:
       mini-svg-data-uri: 1.4.4
-      tailwindcss: 4.0.15
+      tailwindcss: 4.1.11
 
   '@tailwindcss/node@4.1.11':
     dependencies:
@@ -8742,13 +8739,13 @@ snapshots:
       postcss: 8.5.3
       tailwindcss: 4.1.11
 
-  '@tailwindcss/typography@0.5.16(tailwindcss@4.0.15)':
+  '@tailwindcss/typography@0.5.16(tailwindcss@4.1.11)':
     dependencies:
       lodash.castarray: 4.4.0
       lodash.isplainobject: 4.0.6
       lodash.merge: 4.6.2
       postcss-selector-parser: 6.0.10
-      tailwindcss: 4.0.15
+      tailwindcss: 4.1.11
 
   '@tanstack/query-core@5.69.0': {}
 
@@ -13301,11 +13298,9 @@ snapshots:
 
   tailwind-merge@3.0.2: {}
 
-  tailwindcss-animate@1.0.7(tailwindcss@4.0.15):
+  tailwindcss-animate@1.0.7(tailwindcss@4.1.11):
     dependencies:
-      tailwindcss: 4.0.15
-
-  tailwindcss@4.0.15: {}
+      tailwindcss: 4.1.11
 
   tailwindcss@4.1.11: {}
 

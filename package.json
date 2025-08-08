@@ -180,7 +180,7 @@
     "react-hot-toast": "^2.5.2",
     "rimraf": "^6.0.1",
     "rollup-plugin-visualizer": "^5.14.0",
-    "tailwindcss": "^4.0.15",
+    "tailwindcss": "^4.1.11",
     "tsx": "^4.19.3",
     "typescript": "^5.8.2",
     "vercel": "^41.4.1",
