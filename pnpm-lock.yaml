@@ -259,8 +259,8 @@ importers:
         specifier: ^7.4.3
         version: 7.4.3
       three:
-        specifier: ^0.174.0
-        version: 0.174.0
+        specifier: ^0.179.1
+        version: 0.179.1
       undici:
         specifier: ^7.5.0
         version: 7.11.0
@@ -6458,8 +6458,8 @@ packages:
   text-hex@1.0.0:
     resolution: {integrity: sha512-uuVGNWzgJ4yhRaNSiubPY7OjISw4sw4E5Uv0wbjp+OzcbmVU/rsT8ujgcXJhn9ypzsgr5vlzpPqP+MBBKcGvbg==}
 
-  three@0.174.0:
-    resolution: {integrity: sha512-p+WG3W6Ov74alh3geCMkGK9NWuT62ee21cV3jEnun201zodVF4tCE5aZa2U122/mkLRmhJJUQmLLW1BH00uQJQ==}
+  three@0.179.1:
+    resolution: {integrity: sha512-5y/elSIQbrvKOISxpwXCR4sQqHtGiOI+MKLc3SsBdDXA2hz3Mdp3X59aUp8DyybMa34aeBwbFTpdoLJaUDEWSw==}
 
   throttleit@2.1.0:
     resolution: {integrity: sha512-nt6AMGKW1p/70DF/hGBdJB57B8Tspmbp5gfJ8ilhLnt7kkr2ye7hzD6NVG8GGErk2HWF34igrL2CXmNIkzKqKw==}
@@ -13386,7 +13386,7 @@ snapshots:
 
   text-hex@1.0.0: {}
 
-  three@0.174.0: {}
+  three@0.179.1: {}
 
   throttleit@2.1.0: {}
 
