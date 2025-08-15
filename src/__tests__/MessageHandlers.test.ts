@@ -1,4 +1,4 @@
-import { MessageHandler } from '../decorators/MessageHandlers';
+import { MessageHandler } from '../lib/decorators/MessageHandler';
 import type { Message } from '../types';
 import { MessageType } from '../types';
 import { describe, it, expect, beforeEach } from 'vitest';
@@ -25,7 +25,7 @@ class TestMessage implements Message {
 class TestMessageHandler {
     lastMessage?: Message;
 
-    @MessageHandler(TestMessage)
+    @MessageHandler(MessageType.COMMAND)
     async handleMessage(message: Message): Promise<string> {
         this.lastMessage = message;
         return `Processed: ${message.content}`;

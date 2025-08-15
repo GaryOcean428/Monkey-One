@@ -9,12 +9,12 @@ import {
 } from '../types/agent'
 
 export class BaseAgent implements Agent {
-  private id: string
-  private name: string
-  private type: AgentType
-  private status: AgentStatus
-  private capabilities: Set<AgentCapabilityType>
-  private metrics: AgentMetrics
+  protected id: string
+  protected name: string
+  protected type: AgentType
+  protected status: AgentStatus
+  protected capabilities: Set<AgentCapabilityType>
+  protected metrics: AgentMetrics
 
   constructor(
     id: string,

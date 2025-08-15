@@ -2,10 +2,13 @@
 export {
   MessageType,
   AgentType,
-  AgentStatus,
-  type Message,
-  type Agent,
-  type AgentCapability
+  AgentStatus
+} from '../lib/types/core';
+
+export type {
+  Message,
+  Agent,
+  AgentCapability
 } from '../lib/types/core';
 
 // Export additional types
