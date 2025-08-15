@@ -10,7 +10,8 @@ class TestAgent extends BaseAgent {
   async handleMessage() {
     const startTime = Date.now()
     // Test implementation
-    this.updateMetrics(startTime)
+    const endTime = Date.now()
+    this.updateMetrics(true, endTime - startTime)
     return { success: true }
   }
 

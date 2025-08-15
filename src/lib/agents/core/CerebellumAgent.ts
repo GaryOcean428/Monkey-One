@@ -1,5 +1,5 @@
 /// <reference types="node" />
-import { BaseAgent } from '../base/BaseAgent'
+import { BaseAgent } from '../BaseAgent'
 import { AgentMessage, AgentStatus, AgentType, AgentCapability } from '../../../lib/types/agent'
 import { randomUUID } from 'crypto'
 import { EventEmitter } from 'events'
@@ -32,7 +32,7 @@ export class CerebellumAgent extends BaseAgent {
   private capabilities: Set<AgentCapability>
 
   constructor() {
-    super(undefined, 'Cerebellum Agent', AgentType.SPECIALIST)
+    super('cerebellum-1', 'Cerebellum Agent', AgentType.SPECIALIST)
     this.motorPatterns = new Map()
     this.learningMetrics = new Map()
     this.eventEmitter = new EventEmitter()
@@ -127,39 +127,6 @@ export class CerebellumAgent extends BaseAgent {
     }
   }
 
-  protected async processMessage(message: AgentMessage): Promise<void> {
-    const patternId = randomUUID()
-    const pattern: MotorPattern = {
-      id: patternId,
-      name: `pattern-${patternId}`,
-      sequence: [message.content],
-      efficiency: 1.0,
-      lastUsed: Date.now(),
-      usageCount: 1,
-    }
-
-    // Check pattern limit before adding
-    if (this.motorPatterns.size >= this.MAX_PATTERNS) {
-      // Remove oldest pattern
-      const oldest = Array.from(this.motorPatterns.entries()).sort(
-        (a, b) => a[1].lastUsed - b[1].lastUsed
-      )[0]
-      if (oldest) {
-        this.motorPatterns.delete(oldest[0])
-        this.learningMetrics.delete(oldest[0])
-      }
-    }
-
-    this.motorPatterns.set(patternId, pattern)
-    await this.executeMotorPattern(pattern)
-    const response = await super.processMessage(message)
-
-    return {
-      ...response,
-      content: `Cerebellum processed: ${message.content}`,
-    }
-  }
-
   private async loadMotorPatterns(): Promise<void> {
     // Load patterns from storage or initialize defaults
     if (this.motorPatterns.size >= this.MAX_PATTERNS) {
@@ -224,6 +191,46 @@ export class CerebellumAgent extends BaseAgent {
     this.messageQueue = []
     if (this.optimizationInterval) {
       clearInterval(this.optimizationInterval)
+    }
+  }
+
+  // Public methods for external access
+  public getLearningMetrics(): Map<string, LearningMetric> {
+    return new Map(this.learningMetrics)
+  }
+
+  public getMotorPatterns(): Map<string, MotorPattern> {
+    return new Map(this.motorPatterns)
+  }
+
+  public async processMessage(message: AgentMessage): Promise<{ content: string }> {
+    const patternId = randomUUID()
+    const pattern: MotorPattern = {
+      id: patternId,
+      name: `pattern-${patternId}`,
+      sequence: [message.content],
+      efficiency: 1.0,
+      lastUsed: Date.now(),
+      usageCount: 1,
+    }
+
+    // Check pattern limit before adding
+    if (this.motorPatterns.size >= this.MAX_PATTERNS) {
+      // Remove oldest pattern
+      const oldest = Array.from(this.motorPatterns.entries()).sort(
+        (a, b) => a[1].lastUsed - b[1].lastUsed
+      )[0]
+      if (oldest) {
+        this.motorPatterns.delete(oldest[0])
+        this.learningMetrics.delete(oldest[0])
+      }
+    }
+
+    this.motorPatterns.set(patternId, pattern)
+    await this.executeMotorPattern(pattern)
+
+    return {
+      content: `Executed motor pattern: ${message.content}`,
     }
   }
 }

@@ -17,6 +17,10 @@ export enum AgentType {
   BRAINSTEM = 'brainstem',
   CEREBELLUM = 'cerebellum',
   ORCHESTRATOR = 'orchestrator',
+  SPECIALIST = 'specialist',
+  CODER = 'coder',
+  WEBSURFER = 'websurfer',
+  FILESURFER = 'filesurfer',
 }
 
 export enum AgentStatus {

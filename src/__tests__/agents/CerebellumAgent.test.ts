@@ -18,8 +18,8 @@ describe('CerebellumAgent', () => {
   });
 
   it('should initialize with correct properties', () => {
-    expect(agent.id).toBe('cerebellum-1');
-    expect(agent.name).toBe('Cerebellum Agent');
+    expect(agent.getId()).toBe('cerebellum-1');
+    expect(agent.getName()).toBe('Cerebellum Agent');
   });
 
   it('should handle motor pattern messages', async () => {

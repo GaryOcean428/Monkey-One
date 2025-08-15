@@ -1,33 +1,81 @@
 import { OrchestratorAgent } from '../../lib/agents/core/OrchestratorAgent';
-import { Agent, AgentStatus, AgentType, Message, MessageType } from '../../types';
+import { Agent, AgentStatus, AgentType, AgentCapabilityType, Message, MessageType } from '../../types';
 import { RuntimeError } from '../../lib/errors/AgentErrors';
 
 // Mock child agent for testing
 class MockChildAgent implements Agent {
     id: string;
+    name: string;
     type: AgentType;
     status: AgentStatus;
-    capabilities: string[];
+    capabilities: AgentCapabilityType[];
+    metrics: { lastExecutionTime: number; totalRequests: number; successfulRequests: number; failedRequests: number; averageResponseTime: number };
 
     constructor(id: string) {
         this.id = id;
+        this.name = `MockAgent-${id}`;
         this.type = AgentType.BASE;
         this.status = AgentStatus.IDLE;
-        this.capabilities = ['test'];
+        this.capabilities = [];
+        this.metrics = {
+            lastExecutionTime: 0,
+            totalRequests: 0,
+            successfulRequests: 0,
+            failedRequests: 0,
+            averageResponseTime: 0
+        };
     }
 
-    async initialize(): Promise<void> {}
+    getId(): string { return this.id; }
+    getName(): string { return this.name; }
+    getType(): AgentType { return this.type; }
+    getStatus(): AgentStatus { return this.status; }
+    getCapabilities(): AgentCapabilityType[] { return this.capabilities; }
+    hasCapability(capability: AgentCapabilityType): boolean { return this.capabilities.includes(capability); }
+    addCapability(capability: AgentCapabilityType): void { this.capabilities.push(capability); }
+    removeCapability(capability: AgentCapabilityType): void { 
+        this.capabilities = this.capabilities.filter(c => c !== capability); 
+    }
+    getMetrics() { return this.metrics; }
+    
+    async handleMessage(message: Message): Promise<{ success: boolean }> {
+        return { success: true };
+    }
+    
+    async handleRequest(request: unknown): Promise<unknown> {
+        return request;
+    }
+    
+    async handleToolUse(tool: unknown): Promise<{ status: 'success' | 'error'; data: unknown }> {
+        return { status: 'success', data: tool };
+    }
 
-    async handleMessage(message: Message): Promise<Message> {
+    async processMessage(message: Message): Promise<Message> {
         return {
             id: `response-${message.id}`,
             type: MessageType.RESPONSE,
-            sender: this.id,
-            recipient: message.sender,
-            content: `Processed by ${this.id}`,
-            timestamp: Date.now()
+            content: `Processed: ${message.content}`,
+            timestamp: Date.now(),
+            metadata: { originalMessage: message.id }
         };
     }
+
+    setStatus(status: AgentStatus): void {
+        this.status = status;
+    }
+
+    updateMetrics(success: boolean, executionTime: number): void {
+        this.metrics.lastExecutionTime = executionTime;
+        this.metrics.totalRequests++;
+        if (success) {
+            this.metrics.successfulRequests++;
+        } else {
+            this.metrics.failedRequests++;
+        }
+    }
+
+    async initialize(): Promise<void> {}
+    async shutdown(): Promise<void> {}
 }
 
 describe('OrchestratorAgent', () => {

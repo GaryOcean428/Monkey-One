@@ -1,16 +1,16 @@
 import React from 'react';
 import { Tabs, TabsContent } from './ui/tabs';
 import { ChatPanel } from './panels/ChatPanel';
-import MemoryPanel from './panels/MemoryPanel';
-import AgentDashboard from './panels/AgentDashboard';
-import WorkflowPanel from './panels/WorkflowPanel';
-import DocumentsPanel from './panels/DocumentsPanel';
-import DashboardPanel from './panels/DashboardPanel';
-import ToolsPanel from './panels/ToolsPanel';
-import SearchPanel from './panels/SearchPanel';
-import VectorStorePanel from './panels/VectorStorePanel';
-import GitHubPanel from './panels/GitHubPanel';
-import PerformancePanel from './panels/PerformancePanel';
+import { MemoryPanel } from './panels/MemoryPanel';
+import { AgentDashboard } from './panels/AgentDashboard';
+import { WorkflowPanel } from './panels/WorkflowPanel';
+import { DocumentsPanel } from './panels/DocumentsPanel';
+import { DashboardPanel } from './panels/DashboardPanel';
+import { ToolsPanel } from './panels/ToolsPanel';
+import { SearchPanel } from './panels/SearchPanel';
+import { VectorStorePanel } from './panels/VectorStorePanel';
+import { GitHubPanel } from './panels/GitHubPanel';
+import { PerformancePanel } from './panels/PerformancePanel';
 import { useNavigationStore } from '../store/navigationStore';
 
 export function MainPanel() {

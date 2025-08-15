@@ -1,5 +1,5 @@
 import { GitHubAgent } from './GitHubAgent';
-import { jest } from '@jest/globals';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import type { Octokit } from '@octokit/rest';
 
 describe('GitHubAgent', () => {
@@ -7,15 +7,15 @@ describe('GitHubAgent', () => {
   const mockOctokit = {
     rest: {
       pulls: {
-        get: jest.fn(),
-        listFiles: jest.fn(),
-        createReview: jest.fn(),
+        get: vi.fn(),
+        listFiles: vi.fn(),
+        createReview: vi.fn(),
       },
       issues: {
-        createComment: jest.fn(),
+        createComment: vi.fn(),
       },
       rateLimit: {
-        get: jest.fn(),
+        get: vi.fn(),
       },
     },
   } as unknown as Octokit;
@@ -35,8 +35,8 @@ describe('GitHubAgent', () => {
   test('handleRequest should process valid requests', async () => {
     const mockReq = { body: { action: 'pr_review', prNumber: 123 } };
     const mockRes = {
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn(),
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn(),
     };
 
     await agent.handleRequest(mockReq as any, mockRes as any);
