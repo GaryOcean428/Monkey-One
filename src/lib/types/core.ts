@@ -9,7 +9,18 @@ export interface MemoryStats {
   arrayBuffers: number
 }
 
-export type MessageType = 'SYSTEM' | 'USER' | 'ASSISTANT' | 'ERROR' | 'WARNING' | 'INFO' | 'DEBUG'
+export enum MessageType {
+  SYSTEM = 'SYSTEM',
+  USER = 'USER', 
+  ASSISTANT = 'ASSISTANT',
+  ERROR = 'ERROR',
+  WARNING = 'WARNING',
+  INFO = 'INFO',
+  DEBUG = 'DEBUG',
+  TASK = 'TASK',
+  RESPONSE = 'RESPONSE',
+  BROADCAST = 'BROADCAST'
+}
 
 export interface Message {
   id: string
@@ -26,9 +37,8 @@ export interface SystemConfig {
   debugMode: boolean
 }
 
-import type { AgentType, AgentStatus, AgentCapabilityType, AgentMetrics } from './agent'
-
-export type { AgentType, AgentStatus, AgentCapabilityType, AgentMetrics }
+export { AgentType, AgentStatus } from './agent'
+export type { AgentCapabilityType, AgentMetrics } from './agent'
 
 export interface LogLevel {
   ERROR: 0
@@ -67,3 +77,6 @@ export interface Metrics {
 export type MessageHandler = (message: Message) => Promise<Message>
 export type ErrorHandler = (error: Error) => void
 export type ResponseHandler = (response: ApiResponse) => void
+
+// Import Agent interface from agent types
+export type { Agent, AgentCapabilityType as AgentCapability } from './agent'
