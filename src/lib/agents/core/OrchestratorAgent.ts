@@ -1,4 +1,4 @@
-import { BaseAgent } from './BaseAgent'
+import { BaseAgent } from '../BaseAgent'
 import { AgentType, MessageType, AgentCapabilityType, Message } from '../../types/core'
 import { Logger } from '../../logger/Logger'
 import { MessageHandler } from '../../decorators/MessageHandler'
@@ -11,15 +11,12 @@ export class OrchestratorAgent extends BaseAgent {
   private activeAgents: Map<string, BaseAgent>
   private taskQueue: Message[]
 
-  constructor() {
-    super({
-      type: AgentType.ORCHESTRATOR,
-      capabilities: [
-        AgentCapabilityType.TOOLS,
-        AgentCapabilityType.MEMORY,
-        AgentCapabilityType.CODE,
-      ],
-    })
+  constructor(id?: string, name?: string) {
+    super(id || 'orchestrator-1', name || 'Orchestrator Agent', AgentType.ORCHESTRATOR, [
+      AgentCapabilityType.TOOLS,
+      AgentCapabilityType.MEMORY,
+      AgentCapabilityType.CODE,
+    ])
 
     this.activeAgents = new Map()
     this.taskQueue = []
@@ -183,5 +180,31 @@ export class OrchestratorAgent extends BaseAgent {
         error: error instanceof Error ? error.message : String(error),
       })
     }
+  }
+
+  // Public methods for external access
+  public async registerAgent(agent: BaseAgent): Promise<void> {
+    const agentId = agent.getId()
+    
+    if (this.activeAgents.has(agentId)) {
+      throw new Error(`Agent ${agentId} is already registered`)
+    }
+    
+    this.activeAgents.set(agentId, agent)
+    await this.processQueuedTasks()
+    logger.info(`Agent ${agentId} registered successfully`)
+  }
+
+  public async unregisterAgent(agentId: string): Promise<void> {
+    if (!this.activeAgents.has(agentId)) {
+      throw new Error(`Agent ${agentId} is not registered`)
+    }
+    
+    this.activeAgents.delete(agentId)
+    logger.info(`Agent ${agentId} unregistered successfully`)
+  }
+
+  public getAgents(): BaseAgent[] {
+    return Array.from(this.activeAgents.values())
   }
 }
