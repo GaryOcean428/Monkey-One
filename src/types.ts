@@ -25,6 +25,7 @@ export enum AgentType {
   CODER = 'coder',
   WEBSURFER = 'websurfer',
   FILESURFER = 'filesurfer',
+  SPECIALIST = 'specialist',
 }
 
 export type SessionStore = {
@@ -51,6 +52,7 @@ export enum AgentStatus {
   BUSY = 'BUSY',
   ERROR = 'ERROR',
   OFFLINE = 'OFFLINE',
+  AVAILABLE = 'AVAILABLE',
 }
 
 // Local MessageType for this module (backwards compatibility)
@@ -60,6 +62,8 @@ export enum MessageType {
   COMMAND = 'COMMAND',
   RESPONSE = 'RESPONSE',
   ERROR = 'ERROR',
+  TASK = 'TASK',
+  BROADCAST = 'BROADCAST',
 }
 
 // Local Message interface for this module (backwards compatibility)

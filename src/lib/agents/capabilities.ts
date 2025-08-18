@@ -67,8 +67,45 @@ export const TOOL_USE_CAPABILITY: AgentCapabilityType = {
   },
 }
 
+export const TOOLS_CAPABILITY: AgentCapabilityType = {
+  name: 'tools',
+  description: 'Ability to manage and execute tools',
+  version: '1.0.0',
+  parameters: {
+    tool: {
+      type: 'string',
+      description: 'Tool identifier',
+      required: true,
+    },
+    params: {
+      type: 'object',
+      description: 'Tool parameters',
+      required: true,
+    },
+  },
+}
+
+export const MEMORY_CAPABILITY: AgentCapabilityType = {
+  name: 'memory',
+  description: 'Ability to store and retrieve from memory systems',
+  version: '1.0.0',
+  parameters: {
+    action: {
+      type: 'string',
+      description: 'Memory action (store, retrieve, search)',
+      required: true,
+    },
+    data: {
+      type: 'object',
+      description: 'Data to store or search criteria',
+      required: true,
+    },
+  },
+}
+
 export const DEFAULT_CAPABILITIES = {
   general: [CHAT_CAPABILITY, SEARCH_CAPABILITY],
   specialist: [CHAT_CAPABILITY, CODE_CAPABILITY, TOOL_USE_CAPABILITY],
   assistant: [CHAT_CAPABILITY],
+  orchestrator: [CHAT_CAPABILITY, TOOLS_CAPABILITY, MEMORY_CAPABILITY, CODE_CAPABILITY],
 }

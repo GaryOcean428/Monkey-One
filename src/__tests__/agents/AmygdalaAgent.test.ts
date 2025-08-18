@@ -31,7 +31,7 @@ describe('AmygdalaAgent', () => {
       const message = {
         id: 'test',
         type: MessageType.TASK,
-        role: 'user',
+        
         content: 'dangerous situation',
         timestamp: Date.now()
       };
@@ -43,7 +43,7 @@ describe('AmygdalaAgent', () => {
       const message = {
         id: 'test',
         type: MessageType.TASK,
-        role: 'user',
+        
         content: 'great success',
         timestamp: Date.now()
       };
@@ -58,7 +58,7 @@ describe('AmygdalaAgent', () => {
       await agent.processMessage({
         id: 'test',
         type: MessageType.TASK,
-        role: 'user',
+        
         content: 'positive experience',
         timestamp: Date.now()
       });
@@ -71,7 +71,7 @@ describe('AmygdalaAgent', () => {
       await agent.processMessage({
         id: 'test',
         type: MessageType.TASK,
-        role: 'user',
+        
         content: 'memorable event',
         timestamp: Date.now()
       });

@@ -102,6 +102,18 @@ export class BaseAgent implements Agent {
     }
   }
 
+  async processMessage(message: Message): Promise<void> {
+    const startTime = Date.now()
+    try {
+      // Basic message processing logic
+      console.log(`Agent ${this.name} processing message:`, message)
+      this.updateMetrics(true, Date.now() - startTime)
+    } catch (error) {
+      this.updateMetrics(false, Date.now() - startTime)
+      throw error
+    }
+  }
+
   async handleRequest(request: unknown): Promise<unknown> {
     const startTime = Date.now()
     try {
