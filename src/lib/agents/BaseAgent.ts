@@ -9,12 +9,12 @@ import {
 } from '../types/agent'
 
 export class BaseAgent implements Agent {
-  private id: string
-  private name: string
-  private type: AgentType
-  private status: AgentStatus
-  private capabilities: Set<AgentCapabilityType>
-  private metrics: AgentMetrics
+  protected id: string
+  protected name: string
+  protected type: AgentType
+  protected status: AgentStatus
+  protected capabilities: Set<AgentCapabilityType>
+  protected metrics: AgentMetrics
 
   constructor(
     id: string,
@@ -99,6 +99,18 @@ export class BaseAgent implements Agent {
     } catch (error) {
       this.updateMetrics(false, Date.now() - startTime)
       return { success: false }
+    }
+  }
+
+  async processMessage(message: Message): Promise<void> {
+    const startTime = Date.now()
+    try {
+      // Basic message processing logic
+      console.log(`Agent ${this.name} processing message:`, message)
+      this.updateMetrics(true, Date.now() - startTime)
+    } catch (error) {
+      this.updateMetrics(false, Date.now() - startTime)
+      throw error
     }
   }
 

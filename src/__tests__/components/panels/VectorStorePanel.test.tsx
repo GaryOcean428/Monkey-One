@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import VectorStorePanel from '../../../components/panels/VectorStorePanel';
+import { VectorStorePanel } from '../../../components/panels/VectorStorePanel';
 import { ThemeProvider } from '../../../components/ThemeProvider';
 
 describe('VectorStorePanel', () => {

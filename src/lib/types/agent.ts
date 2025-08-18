@@ -17,6 +17,10 @@ export enum AgentType {
   BRAINSTEM = 'brainstem',
   CEREBELLUM = 'cerebellum',
   ORCHESTRATOR = 'orchestrator',
+  SPECIALIST = 'specialist',
+  CODER = 'coder',
+  WEBSURFER = 'websurfer',
+  FILESURFER = 'filesurfer',
 }
 
 export enum AgentStatus {
@@ -46,6 +50,7 @@ export interface Agent {
   removeCapability(capability: AgentCapabilityType): void
   getMetrics(): AgentMetrics
   handleMessage(message: Message): Promise<{ success: boolean }>
+  processMessage(message: Message): Promise<void>
   handleRequest(request: unknown): Promise<unknown>
   handleToolUse(tool: unknown): Promise<MessageResponse>
 }

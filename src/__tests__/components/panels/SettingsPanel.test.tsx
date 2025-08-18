@@ -1,7 +1,7 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { SettingsProvider } from '../../../contexts/SettingsContext';
-import SettingsPanel from '../../../components/panels/SettingsPanel';
+import { SettingsPanel } from '../../../components/panels/SettingsPanel';
 
 describe('SettingsPanel', () => {
   it('renders settings panel', () => {

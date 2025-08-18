@@ -12,12 +12,20 @@ export type WorkerStatus = {
   lastHeartbeat?: Date
 }
 
+// Import primary types from core
+import { AgentType as CoreAgentType, AgentStatus as CoreAgentStatus, MessageType as CoreMessageType, Message as CoreMessage } from './lib/types/core';
+
+// Re-export core types
+export { AgentType as CoreAgentType, AgentStatus as CoreAgentStatus, MessageType as CoreMessageType, Message as CoreMessage } from './lib/types/core';
+
+// Local AgentType for this module (backwards compatibility)
 export enum AgentType {
   BASE = 'BASE',
   ORCHESTRATOR = 'orchestrator',
   CODER = 'coder',
   WEBSURFER = 'websurfer',
   FILESURFER = 'filesurfer',
+  SPECIALIST = 'specialist',
 }
 
 export type SessionStore = {
@@ -38,21 +46,27 @@ export interface Tool {
   execute(args: Record<string, unknown>): Promise<unknown>
 }
 
+// Local AgentStatus for this module (backwards compatibility)
 export enum AgentStatus {
   IDLE = 'IDLE',
   BUSY = 'BUSY',
   ERROR = 'ERROR',
   OFFLINE = 'OFFLINE',
+  AVAILABLE = 'AVAILABLE',
 }
 
+// Local MessageType for this module (backwards compatibility)
 export enum MessageType {
   USER = 'USER',
   SYSTEM = 'SYSTEM',
   COMMAND = 'COMMAND',
   RESPONSE = 'RESPONSE',
   ERROR = 'ERROR',
+  TASK = 'TASK',
+  BROADCAST = 'BROADCAST',
 }
 
+// Local Message interface for this module (backwards compatibility)
 export interface Message {
   id: string
   type: MessageType
