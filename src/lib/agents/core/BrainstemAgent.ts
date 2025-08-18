@@ -1,5 +1,5 @@
-import { BaseAgent } from '../base';
-import type { Message } from '../../../types';
+import { BaseAgent } from '../BaseAgent';
+import { AgentType } from '../../types/agent';
 import { memoryManager } from '../../../lib/memory';
 
 interface VitalSign {
@@ -17,13 +17,11 @@ interface SystemState {
 
 export class BrainstemAgent extends BaseAgent {
   private systemState: SystemState;
-  private readonly ALERT_THRESHOLD = 0.7;
   private readonly UPDATE_INTERVAL = 1000; // 1 second
-  private updateTimer: NodeJS.Timer;
-  private reflexes: Map<string, () => Promise<void>> = new Map();
+  private updateTimer?: NodeJS.Timer;
 
   constructor(id: string = 'brainstem-1', name: string = 'Brainstem Agent') {
-    super(id, name);
+    super(id, name, AgentType.BRAINSTEM);
 
     this.systemState = {
       vitalSigns: [],
@@ -32,13 +30,26 @@ export class BrainstemAgent extends BaseAgent {
       resourceUtilization: 0.0
     };
 
-    // Add default capabilities
-    this.addCapability({ name: 'vital_regulation', description: 'Regulates vital system functions' });
-    this.addCapability({ name: 'arousal_control', description: 'Controls system arousal levels' });
-    this.addCapability({ name: 'reflex_coordination', description: 'Coordinates system reflexes' });
-    this.addCapability({ name: 'homeostasis', description: 'Maintains system stability' });
-
     this.initializeBrainstem();
+  }
+
+  async processMessage(message: any): Promise<{ content: string }> {
+    const currentAlertness = this.systemState.alertness;
+    
+    // Update alertness based on message urgency
+    if (message.content.includes('urgent') || message.content.includes('alert')) {
+      this.systemState.alertness = Math.min(1.0, currentAlertness + 0.3);
+    }
+    
+    // Store in memory
+    await memoryManager.add(`Brainstem processed: ${message.content}`, { 
+      agent: 'brainstem',
+      alertness: this.systemState.alertness 
+    });
+    
+    return {
+      content: `System operating at elevated alertness (${this.systemState.alertness.toFixed(2)}). Vital signs monitored.`
+    };
   }
 
   private async initializeBrainstem(): Promise<void> {

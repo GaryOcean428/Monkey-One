@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { Outlet } from 'react-router'
 import { ProviderRegistry } from './providers/provider-registry'
-import { QueryClient } from '@tanstack/react-query'
 import { AuthModal } from './components/auth/auth-modal'
 import { useAuthContext } from './components/Auth/auth/AuthContext'
 
@@ -16,16 +15,6 @@ const LoadingOverlay = React.lazy(() =>
     default: module.LoadingOverlay,
   }))
 )
-
-// Using underscore prefix to indicate this is defined but unused
-const _queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      refetchOnWindowFocus: false,
-    },
-  },
-})
 
 export function App() {
   const { user } = useAuthContext()

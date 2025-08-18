@@ -8,7 +8,8 @@ export {
 export type {
   Message,
   Agent,
-  AgentCapability
+  AgentCapabilityType as AgentCapability,
+  AgentCapabilityType
 } from '../lib/types/core';
 
 // Export additional types

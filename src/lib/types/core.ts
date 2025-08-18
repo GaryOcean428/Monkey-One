@@ -38,7 +38,7 @@ export interface SystemConfig {
 }
 
 export { AgentType, AgentStatus } from './agent'
-export type { AgentCapabilityType, AgentMetrics } from './agent'
+export type { AgentCapabilityType, AgentMetrics, AgentCapabilityType as AgentCapability } from './agent'
 
 export interface LogLevel {
   ERROR: 0
@@ -79,4 +79,4 @@ export type ErrorHandler = (error: Error) => void
 export type ResponseHandler = (response: ApiResponse) => void
 
 // Import Agent interface from agent types
-export type { Agent, AgentCapabilityType as AgentCapability } from './agent'
+export type { Agent } from './agent'

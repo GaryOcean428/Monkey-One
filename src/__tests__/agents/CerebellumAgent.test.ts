@@ -26,7 +26,7 @@ describe('CerebellumAgent', () => {
     const message = {
       id: '1',
       type: MessageType.TASK,
-      role: 'user',
+      
       content: 'move and rotate',
       timestamp: Date.now()
     };
@@ -39,7 +39,7 @@ describe('CerebellumAgent', () => {
     const message = {
       id: '1',
       type: MessageType.TASK,
-      role: 'user',
+      
       content: 'move and rotate',
       timestamp: Date.now()
     };
@@ -52,7 +52,7 @@ describe('CerebellumAgent', () => {
     const message = {
       id: '1',
       type: MessageType.TASK,
-      role: 'user',
+      
       content: '',
       timestamp: Date.now()
     };
@@ -65,28 +65,31 @@ describe('CerebellumAgent', () => {
     const message = {
       id: '1',
       type: MessageType.TASK,
-      role: 'user',
+      
       content: 'move and rotate',
       timestamp: Date.now()
     };
 
     await agent.processMessage(message);
     const metrics = agent.getLearningMetrics();
-    expect(metrics.errorRate).toBeDefined();
-    expect(metrics.refinementLevel).toBeDefined();
+    expect(metrics.size).toBeGreaterThan(0);
+    // Check that metrics map has values
+    const firstMetric = Array.from(metrics.values())[0];
+    expect(firstMetric.successRate).toBeDefined();
+    expect(firstMetric.adaptationScore).toBeDefined();
   });
 
   it('should maintain motor patterns', async () => {
     const message = {
       id: '1',
       type: MessageType.TASK,
-      role: 'user',
+      
       content: 'move and rotate',
       timestamp: Date.now()
     };
 
     await agent.processMessage(message);
     const patterns = agent.getMotorPatterns();
-    expect(patterns.length).toBeGreaterThan(0);
+    expect(patterns.size).toBeGreaterThan(0);
   });
 });
