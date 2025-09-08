@@ -156,7 +156,7 @@
     "async-mutex": "^0.5.0",
     "autoprefixer": "^10.4.21",
     "chalk": "^5.4.1",
-    "chart.js": "^4.4.8",
+    "chart.js": "^4.5.0",
     "depcheck": "^1.4.7",
     "dotenv": "^17.2.0",
     "eslint": "^9.23.0",
