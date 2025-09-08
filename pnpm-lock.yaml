@@ -263,7 +263,7 @@ importers:
         version: 0.174.0
       undici:
         specifier: ^7.5.0
-        version: 7.11.0
+        version: 7.15.0
       uuid:
         specifier: ^11.1.0
         version: 11.1.0
@@ -6684,8 +6684,8 @@ packages:
   undici-types@7.8.0:
     resolution: {integrity: sha512-9UJ2xGDvQ43tYyVMpuHlsgApydB8ZKfVYTsLDhXkFL/6gfkp+U8xTGdh8pMJv1SpZna0zxG1DwsKZsreLbXBxw==}
 
-  undici@7.11.0:
-    resolution: {integrity: sha512-heTSIac3iLhsmZhUCjyS3JQEkZELateufzZuBaVM5RHXdSBMb1LPMQf5x+FH7qjsZYDP0ttAc3nnVpUB+wYbOg==}
+  undici@7.15.0:
+    resolution: {integrity: sha512-7oZJCPvvMvTd0OlqWsIxTuItTpJBpU1tcbVl24FMn3xt3+VSunwUasmfPJRE57oNO1KsZ4PgA1xTdAX4hq8NyQ==}
     engines: {node: '>=20.18.1'}
 
   universal-user-agent@7.0.2:
@@ -9452,7 +9452,7 @@ snapshots:
       ts-morph: 12.0.0
       ts-node: 10.9.1(@types/node@16.18.11)(typescript@4.9.5)
       typescript: 4.9.5
-      undici: 7.11.0
+      undici: 7.15.0
     transitivePeerDependencies:
       - '@swc/core'
       - '@swc/wasm'
@@ -13617,7 +13617,7 @@ snapshots:
 
   undici-types@7.8.0: {}
 
-  undici@7.11.0: {}
+  undici@7.15.0: {}
 
   universal-user-agent@7.0.2: {}
 
