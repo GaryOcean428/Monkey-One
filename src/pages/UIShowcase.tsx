@@ -2,8 +2,10 @@ import React from 'react'
 import { Button } from '../components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
 import { Input } from '../components/ui/input'
-import { Skeleton, SkeletonCard, SkeletonListItem } from '../components/ui/skeleton'
+import { Skeleton, SkeletonCard } from '../components/ui/skeleton'
 import { CommandPalette, useCommandPalette, CommandItem } from '../components/ui/command-palette'
+import { ThemeCustomizer } from '../components/ui/theme-customizer'
+import { ThemeInsights } from '../components/ui/theme-insights'
 import { Search, Sparkles, Palette, Zap, Settings, Home, FileText, Users } from 'lucide-react'
 
 export function UIShowcase() {
@@ -272,6 +274,46 @@ export function UIShowcase() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Theme Customizer */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <ThemeCustomizer />
+        
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Palette className="h-5 w-5" />
+              Dynamic Theming
+            </CardTitle>
+            <CardDescription>
+              Advanced theming features introduced in Phase 6
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <h4 className="font-medium">Features:</h4>
+              <ul className="space-y-1 text-sm text-muted-foreground">
+                <li>• 8 Dynamic accent colors with localStorage persistence</li>
+                <li>• Light, dark, and system theme modes</li>
+                <li>• High-contrast theme for accessibility</li>
+                <li>• Time-based adaptive theming (6 PM - 6 AM)</li>
+                <li>• Reduced motion support</li>
+                <li>• Real-time theme updates without reload</li>
+              </ul>
+            </div>
+            
+            <div className="p-4 rounded-lg border bg-muted/50">
+              <p className="text-sm">
+                <strong>Try it:</strong> Change the accent color or theme mode using the customizer. 
+                Your preferences are automatically saved and will persist across sessions.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Theme Analytics & Insights */}
+      <ThemeInsights />
 
       <CommandPalette
         isOpen={commandPalette.isOpen}
