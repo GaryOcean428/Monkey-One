@@ -120,6 +120,23 @@
     --z-popover: 1060;
     --z-tooltip: 1070;
     --z-toast: 1080;
+    
+    /* Performance optimization variables */
+    --content-visibility-auto: auto;
+    --content-visibility-visible: visible;
+    --content-visibility-hidden: hidden;
+    --contain-layout: layout;
+    --contain-paint: paint;
+    --contain-size: size;
+    --contain-style: style;
+    
+    /* Animation performance variables */
+    --animation-duration: var(--transition-duration);
+    --animation-duration-fast: var(--transition-duration-fast);
+    --animation-duration-slow: var(--transition-duration-slow);
+    --transform-gpu: translateZ(0);
+    --backface-visibility: hidden;
+    --perspective: 1000px;
   }
 
   .dark {
@@ -535,5 +552,226 @@
   
   .animate-scale-in {
     animation: scale-in 0.2s var(--transition-ease);
+  }
+  
+  /* Performance optimization utilities */
+  .content-visibility-auto {
+    content-visibility: auto;
+  }
+  
+  .content-visibility-hidden {
+    content-visibility: hidden;
+  }
+  
+  .content-visibility-visible {
+    content-visibility: visible;
+  }
+  
+  .contain-layout {
+    contain: layout;
+  }
+  
+  .contain-paint {
+    contain: paint;
+  }
+  
+  .contain-size {
+    contain: size;
+  }
+  
+  .contain-strict {
+    contain: strict;
+  }
+  
+  .contain-content {
+    contain: content;
+  }
+  
+  .will-change-transform {
+    will-change: transform;
+  }
+  
+  .will-change-scroll {
+    will-change: scroll-position;
+  }
+  
+  .will-change-contents {
+    will-change: contents;
+  }
+  
+  .gpu-accelerated {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+  }
+  
+  .layer-promotion {
+    transform: translate3d(0, 0, 0);
+  }
+  
+  /* Accessibility utilities */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  
+  .not-sr-only {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: 0;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+  }
+  
+  .focus\:not-sr-only:focus {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: 0;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+  }
+  
+  .skip-link {
+    position: absolute;
+    top: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    padding: 0.5rem 1rem;
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    border-radius: 0.375rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: top 0.2s ease;
+  }
+  
+  .skip-link:focus {
+    top: 1rem;
+  }
+  
+  /* Focus management */
+  .focus-trap {
+    position: relative;
+  }
+  
+  .focus-visible-only:focus {
+    outline: none;
+  }
+  
+  .focus-visible-only:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+  
+  /* High contrast mode detection */
+  @media (prefers-contrast: high) {
+    .high-contrast-auto {
+      --border: 0 0% 50%;
+      --ring: 0 0% 80%;
+      filter: contrast(1.2);
+    }
+  }
+  
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    .motion-reduce-friendly {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+    
+    .motion-reduce-friendly *,
+    .motion-reduce-friendly *:before,
+    .motion-reduce-friendly *:after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+  
+  /* Animation utilities with reduced motion support */
+  .animate-fade-in-up {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fade-in-up 0.6s ease-out forwards;
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    .animate-fade-in-up {
+      opacity: 1;
+      transform: translateY(0);
+      animation: none;
+    }
+  }
+  
+  .animate-slide-in-left {
+    opacity: 0;
+    transform: translateX(-20px);
+    animation: slide-in-left 0.6s ease-out forwards;
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    .animate-slide-in-left {
+      opacity: 1;
+      transform: translateX(0);
+      animation: none;
+    }
+  }
+  
+  /* Loading states */
+  .loading-placeholder {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted)) 25%,
+      hsl(var(--muted-foreground) / 0.1) 50%,
+      hsl(var(--muted)) 75%
+    );
+    background-size: 200% 100%;
+    animation: loading-shimmer 2s infinite;
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    .loading-placeholder {
+      background: hsl(var(--muted));
+      animation: none;
+    }
+  }
+}
+
+/* Additional animation keyframes */
+@keyframes fade-in-up {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-left {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes loading-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
   }
 }

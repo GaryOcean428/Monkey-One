@@ -88,6 +88,11 @@ const UIShowcase = React.lazy(() =>
     default: module.default || module.UIShowcase || module,
   }))
 )
+const PerformanceAccessibilityShowcase = React.lazy(() =>
+  import('./pages/PerformanceAccessibilityShowcase').then(module => ({
+    default: module.default || module.PerformanceAccessibilityShowcase || module,
+  }))
+)
 
 // Component panels - should be lazy loaded
 const ChatContainer = React.lazy(() =>
@@ -203,6 +208,14 @@ const router = createBrowserRouter(
           element: (
             <SuspenseBoundary>
               <UIShowcase />
+            </SuspenseBoundary>
+          ),
+        },
+        {
+          path: 'performance-accessibility',
+          element: (
+            <SuspenseBoundary>
+              <PerformanceAccessibilityShowcase />
             </SuspenseBoundary>
           ),
         },
