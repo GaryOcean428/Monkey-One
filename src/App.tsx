@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Outlet } from 'react-router'
+import { Outlet } from 'react-router-dom'
 import { AuthModal } from './components/auth/auth-modal'
 import { useAuthContext } from './components/Auth/auth/AuthContext'
 
