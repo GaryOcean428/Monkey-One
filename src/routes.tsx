@@ -5,6 +5,7 @@ import { SuspenseBoundary } from '@/components/ui/suspense-boundary'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { App } from './App'
 import { PrivateRoute } from './components/Auth/PrivateRoute'
+import { ProviderRegistry } from './providers/provider-registry'
 
 // Lazy load route components with explicit chunk names for better code splitting
 // Use dynamic imports with Vite syntax for better tree-shaking and code-splitting
@@ -335,7 +336,11 @@ const router = createBrowserRouter(
 )
 
 export function AppRoutes() {
-  return <RouterProvider router={router} />
+  return (
+    <ProviderRegistry>
+      <RouterProvider router={router} />
+    </ProviderRegistry>
+  )
 }
 
 export { router }
