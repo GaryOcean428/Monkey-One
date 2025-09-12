@@ -82,6 +82,11 @@ const Notes = React.lazy(() =>
     default: module.default || module.Notes || module,
   }))
 )
+const UIShowcase = React.lazy(() =>
+  import('./pages/UIShowcase').then(module => ({
+    default: module.default || module.UIShowcase || module,
+  }))
+)
 
 // Component panels - should be lazy loaded
 const ChatContainer = React.lazy(() =>
@@ -189,6 +194,14 @@ const router = createBrowserRouter(
           element: (
             <SuspenseBoundary>
               <Settings />
+            </SuspenseBoundary>
+          ),
+        },
+        {
+          path: 'ui-showcase',
+          element: (
+            <SuspenseBoundary>
+              <UIShowcase />
             </SuspenseBoundary>
           ),
         },

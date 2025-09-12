@@ -70,16 +70,83 @@ module.exports = {
   				'5': 'hsl(var(--chart-5))'
   			}
   		},
+  		spacing: {
+  			'0': 'var(--space-0)',
+  			'1': 'var(--space-1)',
+  			'2': 'var(--space-2)',
+  			'3': 'var(--space-3)',
+  			'4': 'var(--space-4)',
+  			'5': 'var(--space-5)',
+  			'6': 'var(--space-6)',
+  			'8': 'var(--space-8)',
+  			'10': 'var(--space-10)',
+  			'12': 'var(--space-12)',
+  			'16': 'var(--space-16)',
+  			'20': 'var(--space-20)',
+  			'24': 'var(--space-24)'
+  		},
+  		fontSize: {
+  			'xs': 'var(--text-xs)',
+  			'sm': 'var(--text-sm)',
+  			'base': 'var(--text-base)',
+  			'lg': 'var(--text-lg)',
+  			'xl': 'var(--text-xl)',
+  			'2xl': 'var(--text-2xl)',
+  			'3xl': 'var(--text-3xl)',
+  			'4xl': 'var(--text-4xl)'
+  		},
   		borderRadius: {
+  			'xs': 'var(--radius-xs)',
+  			'sm': 'var(--radius-sm)',
+  			'md': 'var(--radius-md)',
+  			'lg': 'var(--radius-lg)',
+  			'xl': 'var(--radius-xl)',
+  			'2xl': 'var(--radius-2xl)',
+  			'full': 'var(--radius-full)',
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
+  		},
+  		boxShadow: {
+  			'xs': 'var(--shadow-xs)',
+  			'sm': 'var(--shadow-sm)',
+  			'md': 'var(--shadow-md)',
+  			'lg': 'var(--shadow-lg)',
+  			'xl': 'var(--shadow-xl)',
+  			'2xl': 'var(--shadow-2xl)',
+  			'inner': 'var(--shadow-inner)',
+  			'glass': 'var(--glass-shadow)'
+  		},
+  		backdropBlur: {
+  			'glass': 'var(--glass-blur)',
+  			'glass-heavy': 'var(--glass-blur-heavy)'
+  		},
+  		zIndex: {
+  			'dropdown': 'var(--z-dropdown)',
+  			'sticky': 'var(--z-sticky)',
+  			'fixed': 'var(--z-fixed)',
+  			'modal-backdrop': 'var(--z-modal-backdrop)',
+  			'modal': 'var(--z-modal)',
+  			'popover': 'var(--z-popover)',
+  			'tooltip': 'var(--z-tooltip)',
+  			'toast': 'var(--z-toast)'
   		},
   		fontFamily: {
   			sans: [
   				'var(--font-sans)',
                     ...fontFamily.sans
                 ]
+  		},
+  		transitionTimingFunction: {
+  			'ease': 'var(--transition-ease)',
+  			'ease-gentle': 'var(--transition-ease-gentle)',
+  			'ease-snappy': 'var(--transition-ease-snappy)',
+  			'ease-spring': 'var(--transition-ease-spring)'
+  		},
+  		transitionDuration: {
+  			'fast': 'var(--transition-duration-fast)',
+  			'normal': 'var(--transition-duration)',
+  			'slow': 'var(--transition-duration-slow)'
   		},
   		keyframes: {
   			'accordion-down': {
@@ -97,11 +164,36 @@ module.exports = {
   				to: {
   					height: 0
   				}
+  			},
+  			'fade-in': {
+  				from: { opacity: '0' },
+  				to: { opacity: '1' }
+  			},
+  			'slide-up': {
+  				from: { transform: 'translateY(10px)', opacity: '0' },
+  				to: { transform: 'translateY(0)', opacity: '1' }
+  			},
+  			'slide-down': {
+  				from: { transform: 'translateY(-10px)', opacity: '0' },
+  				to: { transform: 'translateY(0)', opacity: '1' }
+  			},
+  			'scale-in': {
+  				from: { transform: 'scale(0.95)', opacity: '0' },
+  				to: { transform: 'scale(1)', opacity: '1' }
+  			},
+  			'shimmer': {
+  				'0%': { transform: 'translateX(-100%)' },
+  				'100%': { transform: 'translateX(100%)' }
   			}
   		},
   		animation: {
   			'accordion-down': 'accordion-down 0.2s ease-out',
-  			'accordion-up': 'accordion-up 0.2s ease-out'
+  			'accordion-up': 'accordion-up 0.2s ease-out',
+  			'fade-in': 'fade-in 0.3s var(--transition-ease)',
+  			'slide-up': 'slide-up 0.3s var(--transition-ease)',
+  			'slide-down': 'slide-down 0.3s var(--transition-ease)',
+  			'scale-in': 'scale-in 0.2s var(--transition-ease-spring)',
+  			'shimmer': 'shimmer 2s infinite'
   		}
   	}
   },

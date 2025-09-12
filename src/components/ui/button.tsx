@@ -1,46 +1,64 @@
 import * as React from 'react'
 import { Loader2 } from 'lucide-react'
 import { cn } from '../../lib/utils'
+import { cva, type VariantProps } from 'class-variance-authority'
 
-export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'danger' | 'outline'
-  size?: 'sm' | 'md' | 'lg'
-  className?: string
+const buttonVariants = cva(
+  'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 focus-ring active-press disabled:pointer-events-none disabled:opacity-50 relative overflow-hidden',
+  {
+    variants: {
+      variant: {
+        primary: 'bg-primary text-primary-foreground shadow-md hover-lift hover:shadow-lg',
+        secondary: 'bg-secondary text-secondary-foreground hover-lift hover:bg-secondary/80',
+        ghost: 'hover:bg-accent hover:text-accent-foreground transition-colors',
+        outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground shadow-sm hover-lift',
+        destructive: 'bg-destructive text-destructive-foreground shadow-md hover:bg-destructive/90 hover-lift',
+        glass: 'bg-white/5 backdrop-blur-lg border border-white/10 text-foreground hover-scale',
+        gradient: 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-lg hover-lift hover:shadow-xl',
+      },
+      size: {
+        sm: 'h-8 px-3 text-sm rounded-md',
+        default: 'h-10 px-4 py-2',
+        lg: 'h-12 px-6 text-lg',
+        xl: 'h-14 px-8 text-xl',
+        icon: 'h-10 w-10',
+      },
+    },
+    defaultVariants: {
+      variant: 'primary',
+      size: 'default',
+    },
+  }
+)
+
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {
   isLoading?: boolean
-  children: React.ReactNode
+  loadingText?: string
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = 'primary', size = 'md', children, isLoading, ...props }, ref) => {
-    const variants = {
-      primary: 'bg-blue-600 text-white hover:bg-blue-700',
-      secondary:
-        'bg-gray-100 text-gray-900 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700',
-      danger: 'bg-red-600 text-white hover:bg-red-700',
-      outline:
-        'border border-gray-300 bg-transparent hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-800',
-    }
-
-    const sizes = {
-      sm: 'h-8 px-3 text-sm',
-      md: 'h-10 px-4',
-      lg: 'h-12 px-6',
-    }
-
+  ({ className, variant, size, children, isLoading, loadingText, disabled, ...props }, ref) => {
     return (
       <button
-        className={cn(
-          'inline-flex items-center justify-center gap-2 rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
-          variants[variant],
-          sizes[size],
-          className
-        )}
-        disabled={isLoading}
+        className={cn(buttonVariants({ variant, size, className }))}
+        disabled={isLoading || disabled}
         ref={ref}
         {...props}
       >
-        {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-        {children}
+        {isLoading && (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin" />
+            {loadingText && <span>{loadingText}</span>}
+          </>
+        )}
+        {!isLoading && children}
+        
+        {/* Subtle shine effect for gradient variant */}
+        {variant === 'gradient' && (
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] hover:translate-x-[100%] transition-transform duration-700 ease-out" />
+        )}
       </button>
     )
   }
@@ -48,4 +66,4 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
 Button.displayName = 'Button'
 
-export { Button }
+export { Button, buttonVariants }
