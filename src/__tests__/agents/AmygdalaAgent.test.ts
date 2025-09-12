@@ -12,9 +12,9 @@ describe('AmygdalaAgent', () => {
 
   describe('initialization', () => {
     it('should initialize with correct properties', () => {
-      expect(agent.id).toBe('amygdala-1');
-      expect(agent.type).toBe(AgentType.SPECIALIST);
-      expect(agent.capabilities).toContainEqual(
+      expect(agent.getId()).toBe('amygdala-1');
+      expect(agent.getType()).toBe(AgentType.SPECIALIST);
+      expect(agent.getCapabilities()).toContainEqual(
         expect.objectContaining({ name: 'emotional_processing' })
       );
     });
@@ -31,7 +31,7 @@ describe('AmygdalaAgent', () => {
       const message = {
         id: 'test',
         type: MessageType.TASK,
-        role: 'user',
+        
         content: 'dangerous situation',
         timestamp: Date.now()
       };
@@ -43,7 +43,7 @@ describe('AmygdalaAgent', () => {
       const message = {
         id: 'test',
         type: MessageType.TASK,
-        role: 'user',
+        
         content: 'great success',
         timestamp: Date.now()
       };
@@ -58,7 +58,7 @@ describe('AmygdalaAgent', () => {
       await agent.processMessage({
         id: 'test',
         type: MessageType.TASK,
-        role: 'user',
+        
         content: 'positive experience',
         timestamp: Date.now()
       });
@@ -71,7 +71,7 @@ describe('AmygdalaAgent', () => {
       await agent.processMessage({
         id: 'test',
         type: MessageType.TASK,
-        role: 'user',
+        
         content: 'memorable event',
         timestamp: Date.now()
       });

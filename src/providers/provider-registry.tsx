@@ -6,14 +6,7 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import { Toaster } from 'react-hot-toast'
 import { ErrorBoundary } from '@/components/error-boundary'
 
-// Dynamically import SupabaseProvider to reduce initial chunk size
-const SupabaseProvider = React.lazy(() =>
-  import('@/lib/supabase/provider').then(module => ({
-    default: module.SupabaseProvider,
-  }))
-)
-
-// Import AuthProvider to fix the context issue
+// Import AuthProvider to provide authentication context
 const AuthProvider = React.lazy(() =>
   import('@/components/Auth/auth/AuthProvider').then(module => ({
     default: module.AuthProvider,
@@ -46,16 +39,14 @@ export function ProviderRegistry({ children }: ProviderRegistryProps) {
               </div>
             }
           >
-            <SupabaseProvider>
-              <AuthProvider>
-                <ModalProvider>
-                  <TooltipProvider>
-                    <Toaster position="top-right" />
-                    {children}
-                  </TooltipProvider>
-                </ModalProvider>
-              </AuthProvider>
-            </SupabaseProvider>
+            <AuthProvider>
+              <ModalProvider>
+                <TooltipProvider>
+                  <Toaster position="top-right" />
+                  {children}
+                </TooltipProvider>
+              </ModalProvider>
+            </AuthProvider>
           </React.Suspense>
         </ThemeProvider>
       </QueryClientProvider>

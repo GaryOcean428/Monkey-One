@@ -5,6 +5,7 @@ import { SuspenseBoundary } from '@/components/ui/suspense-boundary'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { App } from './App'
 import { PrivateRoute } from './components/Auth/PrivateRoute'
+import { ProviderRegistry } from './providers/provider-registry'
 
 // Lazy load route components with explicit chunk names for better code splitting
 // Use dynamic imports with Vite syntax for better tree-shaking and code-splitting
@@ -80,6 +81,16 @@ const AI = React.lazy(() =>
 const Notes = React.lazy(() =>
   import('./pages/Notes').then(module => ({
     default: module.default || module.Notes || module,
+  }))
+)
+const UIShowcase = React.lazy(() =>
+  import('./pages/UIShowcase').then(module => ({
+    default: module.default || module.UIShowcase || module,
+  }))
+)
+const PerformanceAccessibilityShowcase = React.lazy(() =>
+  import('./pages/PerformanceAccessibilityShowcase').then(module => ({
+    default: module.default || module.PerformanceAccessibilityShowcase || module,
   }))
 )
 
@@ -189,6 +200,22 @@ const router = createBrowserRouter(
           element: (
             <SuspenseBoundary>
               <Settings />
+            </SuspenseBoundary>
+          ),
+        },
+        {
+          path: 'ui-showcase',
+          element: (
+            <SuspenseBoundary>
+              <UIShowcase />
+            </SuspenseBoundary>
+          ),
+        },
+        {
+          path: 'performance-accessibility',
+          element: (
+            <SuspenseBoundary>
+              <PerformanceAccessibilityShowcase />
             </SuspenseBoundary>
           ),
         },
@@ -322,7 +349,11 @@ const router = createBrowserRouter(
 )
 
 export function AppRoutes() {
-  return <RouterProvider router={router} />
+  return (
+    <ProviderRegistry>
+      <RouterProvider router={router} />
+    </ProviderRegistry>
+  )
 }
 
 export { router }

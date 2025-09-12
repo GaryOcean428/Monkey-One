@@ -1,9 +1,10 @@
-import { BaseAgent } from './BaseAgent'
+import { BaseAgent } from '../BaseAgent'
 import { AgentType, MessageType, AgentCapabilityType, Message } from '../../types/core'
 import { Logger } from '../../logger/Logger'
 import { MessageHandler } from '../../decorators/MessageHandler'
-import { ToolExecutionError } from '../../errors/AgentErrors'
+import { ToolExecutionError, RuntimeError } from '../../errors/AgentErrors'
 import { searchAll } from '../../api/search' // Import the searchAll function
+import { TOOLS_CAPABILITY, MEMORY_CAPABILITY, CODE_CAPABILITY } from '../capabilities'
 
 const logger = new Logger('OrchestratorAgent')
 
@@ -11,15 +12,12 @@ export class OrchestratorAgent extends BaseAgent {
   private activeAgents: Map<string, BaseAgent>
   private taskQueue: Message[]
 
-  constructor() {
-    super({
-      type: AgentType.ORCHESTRATOR,
-      capabilities: [
-        AgentCapabilityType.TOOLS,
-        AgentCapabilityType.MEMORY,
-        AgentCapabilityType.CODE,
-      ],
-    })
+  constructor(id?: string, name?: string) {
+    super(id || 'orchestrator-1', name || 'Orchestrator Agent', AgentType.ORCHESTRATOR, [
+      TOOLS_CAPABILITY,
+      MEMORY_CAPABILITY,
+      CODE_CAPABILITY,
+    ])
 
     this.activeAgents = new Map()
     this.taskQueue = []
@@ -56,7 +54,7 @@ export class OrchestratorAgent extends BaseAgent {
     }
   }
 
-  @MessageHandler(MessageType.SYSTEM)
+  @MessageHandler(MessageType.INFO)
   async handleAgentRegistration(message: Message): Promise<void> {
     try {
       const agentId = message.sender
@@ -75,7 +73,7 @@ export class OrchestratorAgent extends BaseAgent {
     }
   }
 
-  @MessageHandler(MessageType.SYSTEM)
+  @MessageHandler(MessageType.WARNING)
   async handleAgentDeregistration(message: Message): Promise<void> {
     try {
       const agentId = message.sender
@@ -110,11 +108,12 @@ export class OrchestratorAgent extends BaseAgent {
       const message: Message = {
         id: `task-${Date.now()}`,
         type: MessageType.TASK,
-        role: 'system',
         content: task,
         timestamp: Date.now(),
-        sender: this.getId(),
-        recipient: agent.getId(),
+        metadata: {
+          sender: this.getId(),
+          recipient: agent.getId(),
+        }
       }
 
       await agent.handleMessage(message)
@@ -183,5 +182,44 @@ export class OrchestratorAgent extends BaseAgent {
         error: error instanceof Error ? error.message : String(error),
       })
     }
+  }
+
+  // Public methods for external access
+  public async registerAgent(agent: BaseAgent): Promise<void> {
+    const agentId = agent.getId()
+    
+    if (this.activeAgents.has(agentId)) {
+      throw new RuntimeError(`Agent ${agentId} is already registered`)
+    }
+    
+    this.activeAgents.set(agentId, agent)
+    await this.processQueuedTasks()
+    logger.info(`Agent ${agentId} registered successfully`)
+  }
+
+  public async unregisterAgent(agentId: string): Promise<void> {
+    if (!this.activeAgents.has(agentId)) {
+      throw new RuntimeError(`Agent ${agentId} is not registered`)
+    }
+    
+    this.activeAgents.delete(agentId)
+    logger.info(`Agent ${agentId} unregistered successfully`)
+  }
+
+  public getAgents(): BaseAgent[] {
+    return Array.from(this.activeAgents.values())
+  }
+
+  public async broadcast(message: Message): Promise<{ success: boolean }[]> {
+    const promises = Array.from(this.activeAgents.values()).map(async (agent) => {
+      try {
+        return await agent.handleMessage(message)
+      } catch (error) {
+        logger.error(`Failed to broadcast to agent ${agent.getId()}:`, error)
+        return { success: false }
+      }
+    })
+    
+    return Promise.all(promises)
   }
 }

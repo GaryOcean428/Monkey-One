@@ -8,7 +8,9 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
 
 // Access the public URL through import.meta.env or fall back to runtime detection
 function getPublicUrl() {
-  return import.meta.env.VITE_PUBLIC_URL || window.location.origin || 'https://monkey-one.vercel.app'
+  return (
+    import.meta.env.VITE_PUBLIC_URL || window.location.origin || 'https://monkey-one.vercel.app'
+  )
 }
 
 const publicUrl = getPublicUrl()
@@ -46,7 +48,8 @@ export const supabase = (() => {
   if (typeof window !== 'undefined') {
     // Check if we already have a client in window object
     if ((window as any).__SUPABASE_CLIENT__) {
-      return (window as any).__SUPABASE_CLIENT__ as SupabaseClient<Database>
+      instance = (window as any).__SUPABASE_CLIENT__ as SupabaseClient<Database>
+      return instance
     }
   }
 
@@ -56,6 +59,8 @@ export const supabase = (() => {
         persistSession: true,
         autoRefreshToken: true,
         storageKey: 'monkey-one-auth-token', // Use a unique storage key
+        detectSessionInUrl: true,
+        flowType: 'pkce', // Use PKCE flow for better security
       },
       global: {
         headers: {
@@ -68,6 +73,9 @@ export const supabase = (() => {
     if (typeof window !== 'undefined') {
       ;(window as any).__SUPABASE_CLIENT__ = instance
     }
+
+    // Log successful initialization
+    console.info('Supabase client initialized successfully')
   } catch (error) {
     ErrorHandler.log('Failed to initialize Supabase client', {
       level: 'error',
