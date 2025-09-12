@@ -37,24 +37,22 @@ if (!supabaseUrl || !supabaseAnonKey || !publicUrl) {
   })
 }
 
-// Create a singleton instance with fallback - ensure it's only created once globally
-let instance: SupabaseClient<Database> | null = null
+// Global variable to store the single instance
+declare global {
+  interface Window {
+    __MONKEY_ONE_SUPABASE_CLIENT__?: SupabaseClient<Database>
+  }
+}
 
-// Use a more robust singleton pattern to prevent duplicate clients
-export const supabase = (() => {
-  // Return existing instance if already created
-  if (instance) return instance
-
-  if (typeof window !== 'undefined') {
-    // Check if we already have a client in window object
-    if ((window as any).__SUPABASE_CLIENT__) {
-      instance = (window as any).__SUPABASE_CLIENT__ as SupabaseClient<Database>
-      return instance
-    }
+// Create a singleton instance with proper error handling
+function createSupabaseClient(): SupabaseClient<Database> {
+  // Check if we already have a client in the global scope
+  if (typeof window !== 'undefined' && window.__MONKEY_ONE_SUPABASE_CLIENT__) {
+    return window.__MONKEY_ONE_SUPABASE_CLIENT__
   }
 
   try {
-    instance = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+    const client = createClient<Database>(supabaseUrl, supabaseAnonKey, {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
@@ -69,21 +67,21 @@ export const supabase = (() => {
       },
     })
 
-    // Store the client in window object to ensure it's a singleton
+    // Store the client globally to ensure singleton behavior
     if (typeof window !== 'undefined') {
-      ;(window as any).__SUPABASE_CLIENT__ = instance
+      window.__MONKEY_ONE_SUPABASE_CLIENT__ = client
     }
 
-    // Log successful initialization
     console.info('Supabase client initialized successfully')
+    return client
   } catch (error) {
     ErrorHandler.log('Failed to initialize Supabase client', {
       level: 'error',
       context: { error },
     })
 
-    // Provide a no-op client to prevent further errors
-    instance = {
+    // Create a no-op client to prevent app crashes
+    const noOpClient = {
       auth: {
         onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
         getSession: async () => ({ data: { session: null }, error: null }),
@@ -100,7 +98,14 @@ export const supabase = (() => {
         resetPasswordForEmail: async () => ({ error: null }),
       },
     } as unknown as SupabaseClient<Database>
-  }
 
-  return instance
-})()
+    if (typeof window !== 'undefined') {
+      window.__MONKEY_ONE_SUPABASE_CLIENT__ = noOpClient
+    }
+
+    return noOpClient
+  }
+}
+
+// Export the singleton instance
+export const supabase = createSupabaseClient()
