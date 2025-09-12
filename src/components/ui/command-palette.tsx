@@ -120,22 +120,26 @@ export function CommandPalette({
   return (
     <Dialog.Root open={isOpen} onOpenChange={onClose}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-modal-backdrop bg-black/50 animate-fade-in" />
+        <Dialog.Overlay className="fixed inset-0 z-modal-backdrop bg-black/50 backdrop-blur-sm animate-fade-in" />
         <Dialog.Content
           className={cn(
             "fixed left-1/2 top-1/2 z-modal w-full max-w-lg -translate-x-1/2 -translate-y-1/2",
-            "bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl",
-            "animate-scale-in"
+            "bg-white/5 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl",
+            "animate-scale-in overflow-hidden",
+            "shadow-[0_8px_32px_0_rgba(31,38,135,0.37)]"
           )}
           onKeyDown={handleKeyDown}
         >
+          {/* Enhanced glass overlay */}
+          <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-white/5 to-white/10 pointer-events-none" />
+          
           {/* Search Input */}
-          <div className="flex items-center border-b border-border p-4">
+          <div className="relative flex items-center border-b border-white/10 p-4 backdrop-blur-sm">
             <Search className="h-4 w-4 text-muted-foreground" />
             <input
               className={cn(
                 "flex-1 bg-transparent px-3 py-1 text-sm outline-none",
-                "placeholder:text-muted-foreground"
+                "placeholder:text-muted-foreground text-foreground"
               )}
               placeholder={placeholder}
               value={query}
@@ -146,7 +150,7 @@ export function CommandPalette({
           </div>
 
           {/* Results */}
-          <div className="max-h-96 overflow-y-auto p-2">
+          <div className="relative max-h-96 overflow-y-auto p-2">
             {Object.keys(groupedItems).length === 0 ? (
               <div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
                 {emptyText}
@@ -165,11 +169,11 @@ export function CommandPalette({
                       <button
                         key={item.id}
                         className={cn(
-                          "w-full text-left rounded-md px-3 py-2 text-sm transition-colors",
-                          "flex items-center justify-between gap-3",
+                          "w-full text-left rounded-lg px-3 py-2 text-sm transition-all duration-200",
+                          "flex items-center justify-between gap-3 hover-scale",
                           isSelected 
-                            ? "bg-primary text-primary-foreground" 
-                            : "hover:bg-accent hover:text-accent-foreground"
+                            ? "bg-accent-500/20 text-accent-600 border border-accent-500/30 shadow-md scale-[1.02]" 
+                            : "hover:bg-white/10 hover:text-foreground border border-transparent"
                         )}
                         onClick={() => {
                           item.action()
@@ -179,7 +183,7 @@ export function CommandPalette({
                       >
                         <div className="flex items-center gap-3 flex-1 min-w-0">
                           {item.icon && (
-                            <div className="flex-shrink-0">
+                            <div className="flex-shrink-0 transition-transform duration-200">
                               {item.icon}
                             </div>
                           )}
@@ -191,7 +195,7 @@ export function CommandPalette({
                               <div className={cn(
                                 "text-xs truncate",
                                 isSelected 
-                                  ? "text-primary-foreground/70" 
+                                  ? "text-accent-600/80" 
                                   : "text-muted-foreground"
                               )}>
                                 {item.description}
@@ -214,26 +218,26 @@ export function CommandPalette({
           </div>
 
           {/* Footer */}
-          <div className="border-t border-border p-2 text-xs text-muted-foreground">
+          <div className="relative border-t border-white/10 p-2 text-xs text-muted-foreground bg-black/20 backdrop-blur-sm">
             <div className="flex items-center justify-between">
               <span>
                 {filteredItems.length} result{filteredItems.length !== 1 ? 's' : ''}
               </span>
               <div className="flex items-center gap-4">
                 <span className="flex items-center gap-1">
-                  <kbd className="inline-flex h-4 min-w-[16px] items-center justify-center rounded border border-border bg-muted px-1 text-xs">
+                  <kbd className="inline-flex h-4 min-w-[16px] items-center justify-center rounded border border-white/20 bg-white/10 px-1 text-xs">
                     ↑↓
                   </kbd>
                   navigate
                 </span>
                 <span className="flex items-center gap-1">
-                  <kbd className="inline-flex h-4 min-w-[16px] items-center justify-center rounded border border-border bg-muted px-1 text-xs">
+                  <kbd className="inline-flex h-4 min-w-[16px] items-center justify-center rounded border border-white/20 bg-white/10 px-1 text-xs">
                     ↵
                   </kbd>
                   select
                 </span>
                 <span className="flex items-center gap-1">
-                  <kbd className="inline-flex h-4 min-w-[16px] items-center justify-center rounded border border-border bg-muted px-1 text-xs">
+                  <kbd className="inline-flex h-4 min-w-[16px] items-center justify-center rounded border border-white/20 bg-white/10 px-1 text-xs">
                     esc
                   </kbd>
                   close
