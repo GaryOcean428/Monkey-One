@@ -121,14 +121,29 @@
     --z-tooltip: 1070;
     --z-toast: 1080;
     
-    /* Performance optimization variables */
-    --content-visibility-auto: auto;
-    --content-visibility-visible: visible;
-    --content-visibility-hidden: hidden;
-    --contain-layout: layout;
-    --contain-paint: paint;
-    --contain-size: size;
-    --contain-style: style;
+    /* Gradient utilities */
+    --gradient-primary: var(--gradient-primary, linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.8) 100%));
+    --gradient-secondary: var(--gradient-secondary, linear-gradient(135deg, hsl(var(--secondary)) 0%, hsl(var(--secondary) / 0.8) 100%));
+    --gradient-accent: var(--gradient-accent, linear-gradient(135deg, hsl(var(--accent)) 0%, hsl(var(--accent) / 0.8) 100%));
+    --gradient-subtle: var(--gradient-subtle, linear-gradient(135deg, hsl(var(--muted)) 0%, hsl(var(--muted) / 0.5) 100%));
+    --gradient-glass: var(--gradient-glass, linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%));
+    --gradient-mesh: var(--gradient-mesh, 
+      radial-gradient(at 40% 20%, hsl(var(--primary) / 0.1) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, hsl(var(--accent) / 0.1) 0px, transparent 50%),
+      radial-gradient(at 0% 50%, hsl(var(--secondary) / 0.1) 0px, transparent 50%));
+    
+    /* Enhanced accent color system */
+    --accent-50: hsl(220, 30%, 95%);
+    --accent-100: hsl(220, 35%, 90%);
+    --accent-200: hsl(220, 40%, 85%);
+    --accent-300: hsl(220, 45%, 80%);
+    --accent-400: hsl(220, 60%, 75%);
+    --accent-500: hsl(220, 70%, 50%);
+    --accent-600: hsl(220, 70%, 40%);
+    --accent-700: hsl(220, 70%, 30%);
+    --accent-800: hsl(220, 70%, 20%);
+    --accent-900: hsl(220, 70%, 15%);
+    --accent-950: hsl(220, 70%, 10%);
     
     /* Animation performance variables */
     --animation-duration: var(--transition-duration);
@@ -178,12 +193,18 @@
     --input: 215 27.9% 16.9%;
     --ring: 216 12.2% 83.9%;
 
-    /* Chart colors with better contrast for dark mode */
-    --chart-1: 199 89% 48%;
-    --chart-2: 142 76% 36%;
-    --chart-3: 38 92% 50%;
-    --chart-4: 324 71% 54%;
-    --chart-5: 262 83% 58%;
+    /* Enhanced accent colors for dark mode */
+    --accent-50: hsl(220, 70%, 10%);
+    --accent-100: hsl(220, 70%, 15%);
+    --accent-200: hsl(220, 70%, 20%);
+    --accent-300: hsl(220, 70%, 30%);
+    --accent-400: hsl(220, 70%, 40%);
+    --accent-500: hsl(220, 70%, 60%);
+    --accent-600: hsl(220, 60%, 70%);
+    --accent-700: hsl(220, 50%, 80%);
+    --accent-800: hsl(220, 40%, 85%);
+    --accent-900: hsl(220, 30%, 90%);
+    --accent-950: hsl(220, 20%, 95%);
     
     /* Dark mode glass adjustments */
     --glass-border: rgba(255, 255, 255, 0.15);
@@ -434,17 +455,35 @@
 
 /* Glassmorphism components - examples (these are provided via Tailwind classes) */
 @layer components {
-  /* Gradient utilities */
+  /* Enhanced gradient utilities */
+  .gradient-primary {
+    background: var(--gradient-primary);
+  }
+  
+  .gradient-secondary {
+    background: var(--gradient-secondary);
+  }
+  
+  .gradient-accent {
+    background: var(--gradient-accent);
+  }
+  
   .gradient-subtle {
-    background: linear-gradient(135deg, 
-      rgba(99, 102, 241, 0.05) 0%, 
-      rgba(168, 85, 247, 0.05) 100%);
+    background: var(--gradient-subtle);
+  }
+  
+  .gradient-glass {
+    background: var(--gradient-glass);
+  }
+  
+  .gradient-mesh {
+    background: var(--gradient-mesh);
   }
   
   .gradient-text {
     background: linear-gradient(135deg, 
-      rgb(99, 102, 241) 0%, 
-      rgb(168, 85, 247) 100%);
+      hsl(var(--accent-500)) 0%, 
+      hsl(var(--accent-700)) 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -461,11 +500,55 @@
     inset: 0;
     padding: 1px;
     background: linear-gradient(135deg, 
-      rgba(99, 102, 241, 0.3), 
-      rgba(168, 85, 247, 0.3));
+      hsl(var(--accent-400) / 0.3), 
+      hsl(var(--accent-600) / 0.3));
     border-radius: inherit;
     mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     mask-composite: xor;
+    -webkit-mask-composite: xor;
+  }
+
+  /* Glass surface utilities */
+  .glass-surface {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .glass-surface-heavy {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(30px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+  }
+  
+  .glass-surface-light {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(15px) saturate(120%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  /* Enhanced interactive elements */
+  .interactive-lift {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .interactive-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+  
+  .interactive-lift:active {
+    transform: translateY(0);
+    transition-duration: 0.1s;
+  }
+
+  /* Glow effects */
+  .glow-accent {
+    box-shadow: 0 0 20px hsl(var(--accent-500) / 0.3);
+  }
+  
+  .glow-accent-strong {
+    box-shadow: 0 0 40px hsl(var(--accent-500) / 0.4);
   }
 }
 
@@ -479,12 +562,37 @@
   }
 }
 
+@keyframes shimmer-enhanced {
+  0% {
+    transform: translateX(-100%) skewX(-15deg);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%) skewX(-15deg);
+    opacity: 0;
+  }
+}
+
 @keyframes fade-in {
   from {
     opacity: 0;
   }
   to {
     opacity: 1;
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -502,6 +610,17 @@
 @keyframes slide-in-right {
   from {
     transform: translateX(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    transform: translateX(-20px);
     opacity: 0;
   }
   to {
@@ -532,10 +651,63 @@
   }
 }
 
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes bounce-subtle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 20px hsl(var(--accent-500) / 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px hsl(var(--accent-500) / 0.6);
+  }
+}
+
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes loading-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
 /* Animation utilities */
 @layer utilities {
+  /* Enhanced animation utilities */
   .animate-fade-in {
     animation: fade-in 0.3s var(--transition-ease);
+  }
+
+  .animate-fade-in-up {
+    animation: fade-in-up 0.6s ease-out;
   }
 
   .animate-slide-in-bottom {
@@ -546,12 +718,49 @@
     animation: slide-in-right 0.3s var(--transition-ease);
   }
   
+  .animate-slide-in-left {
+    animation: slide-in-left 0.6s ease-out;
+  }
+  
   .animate-pulse-ring {
     animation: pulse-ring 1.5s ease-out infinite;
   }
   
   .animate-scale-in {
     animation: scale-in 0.2s var(--transition-ease);
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-bounce-subtle {
+    animation: bounce-subtle 2s ease-in-out infinite;
+  }
+
+  .animate-glow-pulse {
+    animation: glow-pulse 2s ease-in-out infinite;
+  }
+
+  .animate-gradient-shift {
+    background-size: 200% 200%;
+    animation: gradient-shift 3s ease infinite;
+  }
+
+  .animate-shimmer-enhanced {
+    animation: shimmer-enhanced 2s ease-in-out infinite;
+  }
+
+  .animate-scale-out {
+    animation: scale-out 0.2s var(--transition-ease);
+  }
+
+  .animate-slide-out-right {
+    animation: slide-out-right 0.3s var(--transition-ease);
+  }
+
+  .animate-fade-out {
+    animation: fade-out 0.3s var(--transition-ease);
   }
   
   /* Performance optimization utilities */
@@ -773,5 +982,37 @@
   }
   100% {
     background-position: 200% 0;
+  }
+}
+
+/* Additional keyframes for enhanced animations */
+@keyframes scale-out {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+}
+
+@keyframes slide-out-right {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
   }
 }
