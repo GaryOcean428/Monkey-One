@@ -1,43 +1,17 @@
 import { useEffect } from 'react'
-import {
-  Menu,
-  MessageSquare,
-  Settings,
-  Brain,
-  Users,
-  X,
-  LayoutDashboard,
-  Wrench,
-  FileText,
-  Github,
-  Activity,
-  Network,
-  UserCircle,
-} from 'lucide-react'
+import { Menu, X } from 'lucide-react'
 import { useNavigationStore } from '../store/navigationStore'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { getMainRoutes, getUserRoutes, getSidebarRoutes } from '@/config/routes'
 
 export function Sidebar() {
   const { isCollapsed, toggleSidebar, setActiveTab } = useNavigationStore()
   const location = useLocation()
   const navigate = useNavigate()
 
-  const tabs = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
-    { id: 'chat', label: 'Chat', icon: MessageSquare, path: '/chat' },
-    { id: 'agents', label: 'Agents', icon: Users, path: '/agents' },
-    { id: 'workflow', label: 'Workflow', icon: Network, path: '/workflow' },
-    { id: 'memory', label: 'Memory', icon: Brain, path: '/memory-manager' },
-    { id: 'documents', label: 'Documents', icon: FileText, path: '/documents' },
-    { id: 'tools', label: 'Tools', icon: Wrench, path: '/tools' },
-    { id: 'github', label: 'GitHub', icon: Github, path: '/github' },
-    { id: 'performance', label: 'Performance', icon: Activity, path: '/analytics' },
-  ]
-
-  const userTabs = [
-    { id: 'profile', label: 'Profile', icon: UserCircle, path: '/profile-manager' },
-    { id: 'settings', label: 'Settings', icon: Settings, path: '/settings' },
-  ]
+  // Use centralized route configuration
+  const tabs = getMainRoutes()
+  const userTabs = getUserRoutes()
 
   // Sync active tab with current route
   useEffect(() => {
