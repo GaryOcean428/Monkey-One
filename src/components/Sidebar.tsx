@@ -27,15 +27,15 @@ export function Sidebar() {
     { id: 'chat', label: 'Chat', icon: MessageSquare, path: '/chat' },
     { id: 'agents', label: 'Agents', icon: Users, path: '/agents' },
     { id: 'workflow', label: 'Workflow', icon: Network, path: '/workflow' },
-    { id: 'memory', label: 'Memory', icon: Brain, path: '/memory' },
+    { id: 'memory', label: 'Memory', icon: Brain, path: '/memory-manager' },
     { id: 'documents', label: 'Documents', icon: FileText, path: '/documents' },
     { id: 'tools', label: 'Tools', icon: Wrench, path: '/tools' },
     { id: 'github', label: 'GitHub', icon: Github, path: '/github' },
-    { id: 'performance', label: 'Performance', icon: Activity, path: '/performance' },
+    { id: 'performance', label: 'Performance', icon: Activity, path: '/analytics' },
   ]
 
   const userTabs = [
-    { id: 'profile', label: 'Profile', icon: UserCircle, path: '/profile' },
+    { id: 'profile', label: 'Profile', icon: UserCircle, path: '/profile-manager' },
     { id: 'settings', label: 'Settings', icon: Settings, path: '/settings' },
   ]
 
