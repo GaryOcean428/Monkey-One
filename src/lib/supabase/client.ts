@@ -80,7 +80,7 @@ function createSupabaseClient(): SupabaseClient<Database> {
       context: { error },
     })
 
-    // Create a no-op client to prevent app crashes
+    // Create a more complete no-op client to prevent app crashes
     const noOpClient = {
       auth: {
         onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
@@ -96,6 +96,29 @@ function createSupabaseClient(): SupabaseClient<Database> {
         signOut: async () => ({ error: null }),
         updateUser: async () => ({ data: null, error: new Error('Supabase not initialized') }),
         resetPasswordForEmail: async () => ({ error: null }),
+      },
+      from: (table: string) => ({
+        select: () => ({
+          eq: () => ({
+            single: async () => ({ data: null, error: new Error('Supabase not initialized') }),
+          }),
+        }),
+        insert: async () => ({ data: null, error: new Error('Supabase not initialized') }),
+        update: async () => ({ data: null, error: new Error('Supabase not initialized') }),
+        delete: async () => ({ data: null, error: new Error('Supabase not initialized') }),
+      }),
+      storage: {
+        from: () => ({
+          upload: async () => ({ data: null, error: new Error('Supabase not initialized') }),
+          download: async () => ({ data: null, error: new Error('Supabase not initialized') }),
+          getPublicUrl: () => ({ data: { publicUrl: '' } }),
+        }),
+      },
+      realtime: {
+        channel: () => ({
+          on: () => ({ subscribe: () => {} }),
+          off: () => {},
+        }),
       },
     } as unknown as SupabaseClient<Database>
 

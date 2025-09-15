@@ -134,9 +134,49 @@ export function getComponentByName(componentName: string): React.LazyExoticCompo
     console.warn(`Component "${componentName}" not found, returning fallback`)
     return React.lazy(() =>
       Promise.resolve({
-        default: () => <div className="p-4">Component "{componentName}" not implemented</div>,
+        default: () => (
+          <div className="flex items-center justify-center p-8">
+            <div className="text-center">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                Component Not Available
+              </h3>
+              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                The "{componentName}" component is not yet implemented.
+              </p>
+            </div>
+          </div>
+        ),
       })
     )
   }
-  return component
+  
+  // Wrap the component with error handling to catch import failures
+  return React.lazy(async () => {
+    try {
+      const module = await component
+      return module
+    } catch (error) {
+      console.error(`Failed to load component "${componentName}":`, error)
+      return {
+        default: () => (
+          <div className="flex items-center justify-center p-8">
+            <div className="text-center">
+              <h3 className="text-lg font-medium text-red-600 dark:text-red-400">
+                Component Load Error
+              </h3>
+              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                Failed to load "{componentName}" component.
+              </p>
+              <button
+                onClick={() => window.location.reload()}
+                className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                Reload Page
+              </button>
+            </div>
+          </div>
+        ),
+      }
+    }
+  })
 }
