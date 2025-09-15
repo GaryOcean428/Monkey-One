@@ -77,183 +77,208 @@ export default defineConfig(({ mode }) => {
             objectShorthand: true,
           },
           manualChunks: id => {
-            // Focus on the largest dependencies first - these are most likely causing the large index chunk
-
-            // TensorFlow - these are very large
+            // Priority-based chunking: Split largest dependencies first for maximum impact
+            
+            // Critical ML Libraries (largest impact on bundle size)
             if (id.includes('@tensorflow')) {
               if (id.includes('@tensorflow/tfjs-core')) {
-                return 'tensorflow-core'
+                return 'ml-tensorflow-core' // Core TensorFlow functionality
               }
               if (id.includes('@tensorflow/tfjs-layers')) {
-                return 'tensorflow-layers'
+                return 'ml-tensorflow-layers' // High-level layer APIs
               }
               if (id.includes('@tensorflow/tfjs-node')) {
-                return 'tensorflow-node'
+                return 'ml-tensorflow-node' // Node.js backend (often unused in browser)
               }
-              return 'tensorflow'
+              return 'ml-tensorflow-base' // Base TensorFlow utilities
             }
 
-            // Transformers library
+            // Transformers library - often very large
             if (id.includes('@xenova/transformers')) {
-              return 'transformers'
+              return 'ml-transformers' // Separate from TensorFlow for better loading
             }
 
-            // Node modules chunking strategy - more granular
+            // Puppeteer and browser automation (very large, rarely used immediately)
+            if (id.includes('puppeteer')) {
+              return 'automation-puppeteer'
+            }
+
+            // Node modules chunking strategy - optimize for critical rendering path
             if (id.includes('node_modules')) {
-              // React core
+              // React ecosystem - keep together for optimal loading
               if (id.includes('react/') || id.includes('scheduler')) {
-                return 'react-core'
+                return 'framework-react-core'
               }
 
-              // React DOM
+              // React DOM - separate for SSR flexibility
               if (id.includes('react-dom')) {
-                return 'react-dom'
+                return 'framework-react-dom'
               }
 
-              // React Router
+              // React Router - navigation critical
               if (id.includes('react-router')) {
-                return 'react-router'
+                return 'framework-react-router'
               }
 
-              // Tanstack Query
+              // State management - core functionality
+              if (id.includes('zustand') || id.includes('immer')) {
+                return 'framework-state'
+              }
+
+              // Data fetching - often critical
               if (id.includes('@tanstack/react-query')) {
-                return 'tanstack-query'
+                return 'framework-data-fetching'
               }
 
-              // Radix UI - split by component type
-              if (
-                id.includes('@radix-ui/react-dialog') ||
-                id.includes('@radix-ui/react-popover') ||
-                id.includes('@radix-ui/react-modal')
-              ) {
-                return 'radix-overlays'
-              }
-
-              if (
-                id.includes('@radix-ui/react-dropdown-menu') ||
-                id.includes('@radix-ui/react-navigation-menu') ||
-                id.includes('@radix-ui/react-tabs')
-              ) {
-                return 'radix-navigation'
-              }
-
-              if (id.includes('@radix-ui/react-tooltip') || id.includes('@radix-ui/react-toast')) {
-                return 'radix-feedback'
-              }
-
-              if (
-                id.includes('@radix-ui/react-form') ||
-                id.includes('@radix-ui/react-select') ||
-                id.includes('@radix-ui/react-checkbox') ||
-                id.includes('@radix-ui/react-radio') ||
-                id.includes('@radix-ui/react-switch')
-              ) {
-                return 'radix-inputs'
-              }
-
-              // Other Radix components
+              // UI component library chunking - group by usage patterns
               if (id.includes('@radix-ui')) {
-                return 'radix-other'
+                // Form and input components - often loaded together
+                if (
+                  id.includes('@radix-ui/react-form') ||
+                  id.includes('@radix-ui/react-select') ||
+                  id.includes('@radix-ui/react-checkbox') ||
+                  id.includes('@radix-ui/react-radio') ||
+                  id.includes('@radix-ui/react-switch') ||
+                  id.includes('@radix-ui/react-slider') ||
+                  id.includes('@radix-ui/react-progress')
+                ) {
+                  return 'ui-radix-forms'
+                }
+
+                // Overlay components - dialog, popover, modal (often used together)
+                if (
+                  id.includes('@radix-ui/react-dialog') ||
+                  id.includes('@radix-ui/react-popover') ||
+                  id.includes('@radix-ui/react-tooltip')
+                ) {
+                  return 'ui-radix-overlays'
+                }
+
+                // Navigation components
+                if (
+                  id.includes('@radix-ui/react-dropdown-menu') ||
+                  id.includes('@radix-ui/react-navigation-menu') ||
+                  id.includes('@radix-ui/react-tabs')
+                ) {
+                  return 'ui-radix-navigation'
+                }
+
+                // Feedback components
+                if (id.includes('@radix-ui/react-toast') || id.includes('@radix-ui/react-alert')) {
+                  return 'ui-radix-feedback'
+                }
+
+                // Other Radix components
+                return 'ui-radix-misc'
               }
 
-              // Animation libraries
+              // Animation and visual effects
               if (id.includes('framer-motion')) {
-                return 'animation-libs'
+                return 'ui-animations'
               }
 
-              // AI core libraries
-              if (id.includes('ai/') || id.includes('@ai-sdk')) {
+              // Charting libraries - often large and conditionally loaded
+              if (id.includes('chart.js')) {
+                return 'viz-chart-core'
+              }
+              if (id.includes('react-chartjs')) {
+                return 'viz-chart-react'
+              }
+
+              // AI and ML providers - split by provider for better caching
+              if (id.includes('openai')) {
+                return 'ai-openai'
+              }
+              if (id.includes('@ai-sdk/openai')) {
+                return 'ai-sdk-openai'
+              }
+              if (id.includes('@huggingface/inference')) {
+                return 'ai-huggingface'
+              }
+              if (id.includes('ai/') && !id.includes('openai')) {
                 return 'ai-core'
               }
 
-              // LLM providers
-              if (id.includes('openai') || id.includes('anthropic') || id.includes('huggingface')) {
-                return 'llm-providers'
+              // Database and storage
+              if (id.includes('@supabase')) {
+                if (id.includes('@supabase/auth-helpers')) {
+                  return 'db-supabase-auth'
+                }
+                if (id.includes('@supabase/ssr')) {
+                  return 'db-supabase-ssr'
+                }
+                return 'db-supabase-core'
               }
 
               // Vector databases
-              if (id.includes('pinecone') || id.includes('chroma') || id.includes('weaviate')) {
-                return 'vector-dbs'
+              if (id.includes('@pinecone-database/pinecone')) {
+                return 'db-vector-pinecone'
               }
 
-              // Tensorflow and ML libraries
-              if (id.includes('@tensorflow') || id.includes('@xenova/transformers')) {
-                return 'ml-libs'
-              }
-
-              // Charting core
-              if (id.includes('chart.js')) {
-                return 'chart-core'
-              }
-
-              // Chart components
-              if (id.includes('react-chartjs')) {
-                return 'chart-components'
-              }
-
-              // State management
-              if (id.includes('zustand') || id.includes('immer')) {
-                return 'state-management'
-              }
-
-              // Form libraries
-              if (id.includes('react-hook-form') || id.includes('@hookform/resolvers')) {
-                return 'form-libs'
-              }
-
-              // Validation libraries
-              if (id.includes('zod') || id.includes('yup') || id.includes('validator')) {
-                return 'validation-libs'
-              }
-
-              // HTTP and networking
+              // Networking and HTTP
               if (
                 id.includes('axios') ||
                 id.includes('cross-fetch') ||
                 id.includes('isomorphic-fetch') ||
                 id.includes('undici')
               ) {
-                return 'http-libs'
+                return 'network-http'
               }
 
-              // Date libraries
-              if (id.includes('date-fns')) {
-                return 'date-libs'
-              }
-
-              // Utility libraries
+              // Utilities and helpers - commonly used
               if (
                 id.includes('uuid') ||
-                id.includes('lodash') ||
                 id.includes('debug') ||
                 id.includes('clsx') ||
                 id.includes('class-variance-authority') ||
                 id.includes('tailwind-merge')
               ) {
-                return 'utils-libs'
+                return 'utils-common'
               }
 
-              // Supabase
-              if (id.includes('@supabase')) {
-                return 'supabase'
+              // Date and time utilities
+              if (id.includes('date-fns')) {
+                return 'utils-date'
               }
 
-              // Monitoring and analytics
-              if (
-                id.includes('@sentry') ||
-                id.includes('@vercel/analytics') ||
-                id.includes('prom-client')
-              ) {
-                return 'monitoring'
+              // Form utilities
+              if (id.includes('react-hook-form') || id.includes('@hookform/resolvers')) {
+                return 'utils-forms'
               }
 
-              // Markdown and syntax highlighting
+              // Validation libraries
+              if (id.includes('zod') || id.includes('yup')) {
+                return 'utils-validation'
+              }
+
+              // Monitoring and observability
+              if (id.includes('@sentry/browser')) {
+                return 'monitoring-sentry'
+              }
+              if (id.includes('@vercel/analytics')) {
+                return 'monitoring-analytics'
+              }
+              if (id.includes('prom-client')) {
+                return 'monitoring-metrics'
+              }
+
+              // Development and testing utilities
+              if (id.includes('msw') || id.includes('testing-library')) {
+                return 'dev-testing'
+              }
+
+              // Markdown and content processing
               if (id.includes('marked') || id.includes('highlight.js')) {
-                return 'markdown-libs'
+                return 'content-markdown'
               }
 
-              // Other third-party libraries
-              return 'vendor'
+              // Large icon libraries
+              if (id.includes('@heroicons/react') || id.includes('lucide-react')) {
+                return 'ui-icons'
+              }
+
+              // Other vendor libraries
+              return 'vendor-misc'
             }
 
             // Application code chunking strategy - more specific

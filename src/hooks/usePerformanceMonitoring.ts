@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { useLocation } from 'react-router-dom'
 
 export interface PerformanceMetrics {
   /** Largest Contentful Paint */
@@ -19,6 +20,18 @@ export interface PerformanceMetrics {
     totalJSHeapSize: number
     jsHeapSizeLimit: number
   }
+  /** Custom metrics */
+  routeLoadTime?: number
+  componentRenderTime?: number
+  bundleLoadTime?: number
+  interactionLatency: number[]
+  scrollPerformance: number[]
+  resourceCounts: {
+    scripts: number
+    stylesheets: number
+    images: number
+    total: number
+  }
 }
 
 export interface PerformanceThresholds {
@@ -29,7 +42,20 @@ export interface PerformanceThresholds {
   ttfb: { good: number; needsImprovement: number }
 }
 
-// Core Web Vitals thresholds (in milliseconds, except CLS)
+export interface PerformanceAnalysis {
+  score: number
+  grade: 'A' | 'B' | 'C' | 'D' | 'F'
+  recommendations: string[]
+  criticalIssues: string[]
+  optimizationOpportunities: string[]
+  resourceAnalysis: {
+    largeResources: Array<{ name: string; size: number; type: string }>
+    slowResources: Array<{ name: string; duration: number; type: string }>
+    blockingResources: Array<{ name: string; reason: string }>
+  }
+}
+
+// Enhanced Core Web Vitals thresholds
 const DEFAULT_THRESHOLDS: PerformanceThresholds = {
   lcp: { good: 2500, needsImprovement: 4000 },
   fid: { good: 100, needsImprovement: 300 },
@@ -44,9 +70,231 @@ function getPerformanceRating(value: number, threshold: { good: number; needsImp
   return 'poor'
 }
 
+function calculateGrade(score: number): 'A' | 'B' | 'C' | 'D' | 'F' {
+  if (score >= 90) return 'A'
+  if (score >= 80) return 'B'
+  if (score >= 70) return 'C'
+  if (score >= 60) return 'D'
+  return 'F'
+}
+
 export function usePerformanceMonitoring(thresholds: PerformanceThresholds = DEFAULT_THRESHOLDS) {
-  const [metrics, setMetrics] = React.useState<PerformanceMetrics>({})
+  const location = useLocation()
+  const [metrics, setMetrics] = React.useState<PerformanceMetrics>({
+    interactionLatency: [],
+    scrollPerformance: [],
+    resourceCounts: { scripts: 0, stylesheets: 0, images: 0, total: 0 }
+  })
+  const [analysis, setAnalysis] = React.useState<PerformanceAnalysis>({
+    score: 0,
+    grade: 'F',
+    recommendations: [],
+    criticalIssues: [],
+    optimizationOpportunities: [],
+    resourceAnalysis: {
+      largeResources: [],
+      slowResources: [],
+      blockingResources: []
+    }
+  })
   const [isSupported, setIsSupported] = React.useState(false)
+  
+  const routeStartTime = React.useRef<number>(0)
+  const componentStartTime = React.useRef<number>(0)
+
+  // Enhanced resource analysis
+  const analyzeResources = React.useCallback(() => {
+    if (typeof window === 'undefined' || !('performance' in window)) return
+
+    const resources = performance.getEntriesByType('resource') as PerformanceResourceTiming[]
+    
+    // Analyze resource types and sizes
+    const resourceCounts = { scripts: 0, stylesheets: 0, images: 0, total: resources.length }
+    const largeResources: Array<{ name: string; size: number; type: string }> = []
+    const slowResources: Array<{ name: string; duration: number; type: string }> = []
+    const blockingResources: Array<{ name: string; reason: string }> = []
+
+    resources.forEach(resource => {
+      const size = resource.transferSize || 0
+      const duration = resource.responseEnd - resource.requestStart
+      const url = new URL(resource.name)
+      const extension = url.pathname.split('.').pop()?.toLowerCase()
+      
+      // Categorize by type
+      if (extension === 'js' || resource.initiatorType === 'script') {
+        resourceCounts.scripts++
+      } else if (extension === 'css' || resource.initiatorType === 'css') {
+        resourceCounts.stylesheets++
+      } else if (['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'].includes(extension || '')) {
+        resourceCounts.images++
+      }
+
+      // Identify large resources (>100KB)
+      if (size > 100000) {
+        largeResources.push({
+          name: url.pathname.split('/').pop() || resource.name,
+          size: Math.round(size / 1024), // KB
+          type: extension || 'unknown'
+        })
+      }
+
+      // Identify slow resources (>1s)
+      if (duration > 1000) {
+        slowResources.push({
+          name: url.pathname.split('/').pop() || resource.name,
+          duration: Math.round(duration),
+          type: extension || 'unknown'
+        })
+      }
+
+      // Identify render-blocking resources
+      if (resource.renderBlockingStatus === 'blocking') {
+        blockingResources.push({
+          name: url.pathname.split('/').pop() || resource.name,
+          reason: 'Render blocking'
+        })
+      }
+    })
+
+    setMetrics(prev => ({ ...prev, resourceCounts }))
+    setAnalysis(prev => ({
+      ...prev,
+      resourceAnalysis: {
+        largeResources: largeResources.sort((a, b) => b.size - a.size).slice(0, 10),
+        slowResources: slowResources.sort((a, b) => b.duration - a.duration).slice(0, 10),
+        blockingResources
+      }
+    }))
+  }, [])
+
+  // Enhanced performance analysis
+  const analyzePerformance = React.useCallback(() => {
+    const { lcp, fid, cls, fcp, ttfb, memory, routeLoadTime, bundleLoadTime, interactionLatency, scrollPerformance } = metrics
+    
+    let score = 100
+    const recommendations: string[] = []
+    const criticalIssues: string[] = []
+    const optimizationOpportunities: string[] = []
+
+    // Core Web Vitals analysis
+    if (lcp !== undefined) {
+      const lcpRating = getPerformanceRating(lcp, thresholds.lcp)
+      if (lcpRating === 'poor') {
+        score -= 25
+        criticalIssues.push(`LCP is critically slow (${Math.round(lcp)}ms > 4s)`)
+        recommendations.push('Optimize images, remove unused CSS, improve server response times')
+      } else if (lcpRating === 'needs-improvement') {
+        score -= 15
+        recommendations.push('LCP could be improved - optimize critical rendering path')
+      }
+    }
+
+    if (fid !== undefined) {
+      const fidRating = getPerformanceRating(fid, thresholds.fid)
+      if (fidRating === 'poor') {
+        score -= 20
+        criticalIssues.push(`FID indicates unresponsive UI (${Math.round(fid)}ms > 300ms)`)
+        recommendations.push('Reduce main thread work, split large JavaScript tasks')
+      } else if (fidRating === 'needs-improvement') {
+        score -= 10
+        recommendations.push('FID could be improved - optimize JavaScript execution')
+      }
+    }
+
+    if (cls !== undefined) {
+      const clsRating = getPerformanceRating(cls, thresholds.cls)
+      if (clsRating === 'poor') {
+        score -= 20
+        criticalIssues.push(`CLS causes layout instability (${cls.toFixed(3)} > 0.25)`)
+        recommendations.push('Set dimensions for images/videos, avoid inserting content above existing content')
+      } else if (clsRating === 'needs-improvement') {
+        score -= 10
+        optimizationOpportunities.push('CLS could be improved - ensure stable layouts')
+      }
+    }
+
+    // Custom metrics analysis
+    if (routeLoadTime !== undefined && routeLoadTime > 300) {
+      score -= 10
+      optimizationOpportunities.push(`Route transitions are slow (${Math.round(routeLoadTime)}ms)`)
+    }
+
+    if (memory && memory.usedJSHeapSize > 50 * 1024 * 1024) { // 50MB
+      const memoryMB = Math.round(memory.usedJSHeapSize / 1024 / 1024)
+      if (memoryMB > 100) {
+        score -= 15
+        criticalIssues.push(`High memory usage (${memoryMB}MB)`)
+        recommendations.push('Check for memory leaks, optimize data structures')
+      } else {
+        score -= 5
+        optimizationOpportunities.push(`Memory usage is elevated (${memoryMB}MB)`)
+      }
+    }
+
+    if (bundleLoadTime !== undefined && bundleLoadTime > 2000) {
+      score -= 15
+      recommendations.push('Bundle loading is slow - implement better code splitting')
+    }
+
+    // Interaction and scroll performance
+    const avgInteractionLatency = interactionLatency.length > 0 
+      ? interactionLatency.reduce((a, b) => a + b, 0) / interactionLatency.length 
+      : 0
+    
+    if (avgInteractionLatency > 100) {
+      score -= 10
+      optimizationOpportunities.push(`Interaction latency is high (${Math.round(avgInteractionLatency)}ms)`)
+    }
+
+    const avgScrollFPS = scrollPerformance.length > 0
+      ? scrollPerformance.reduce((a, b) => a + b, 0) / scrollPerformance.length
+      : 60
+
+    if (avgScrollFPS < 45) {
+      score -= 10
+      recommendations.push(`Scroll performance is choppy (${Math.round(avgScrollFPS)} FPS)`)
+    }
+
+    // Resource analysis recommendations
+    const { largeResources, slowResources, blockingResources } = analysis.resourceAnalysis
+    
+    if (largeResources.length > 3) {
+      score -= 10
+      recommendations.push(`${largeResources.length} large resources detected - optimize or lazy load`)
+    }
+
+    if (slowResources.length > 2) {
+      score -= 5
+      optimizationOpportunities.push(`${slowResources.length} slow-loading resources detected`)
+    }
+
+    if (blockingResources.length > 0) {
+      score -= 15
+      recommendations.push(`${blockingResources.length} render-blocking resources - defer or async load`)
+    }
+
+    score = Math.max(0, score)
+    const grade = calculateGrade(score)
+
+    setAnalysis(prev => ({
+      ...prev,
+      score,
+      grade,
+      recommendations: [...new Set(recommendations)],
+      criticalIssues: [...new Set(criticalIssues)],
+      optimizationOpportunities: [...new Set(optimizationOpportunities)]
+    }))
+  }, [metrics, thresholds, analysis.resourceAnalysis])
+
+  // Route performance tracking
+  const trackRoutePerformance = React.useCallback(() => {
+    routeStartTime.current = performance.now()
+    
+    requestAnimationFrame(() => {
+      const loadTime = performance.now() - routeStartTime.current
+      setMetrics(prev => ({ ...prev, routeLoadTime: loadTime }))
+    })
+  }, [])
 
   React.useEffect(() => {
     // Check for Performance Observer support
@@ -63,71 +311,103 @@ export function usePerformanceMonitoring(thresholds: PerformanceThresholds = DEF
     let clsObserver: PerformanceObserver | null = null
 
     try {
-      // Observe LCP (Largest Contentful Paint)
+      // Enhanced LCP observation
       lcpObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries()
         const lastEntry = entries[entries.length - 1] as PerformanceEntry & { startTime: number }
         
-        setMetrics(prev => ({
-          ...prev,
-          lcp: lastEntry.startTime
-        }))
+        setMetrics(prev => ({ ...prev, lcp: lastEntry.startTime }))
       })
       lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] })
 
-      // Observe FID (First Input Delay)
+      // Enhanced FID observation
       fidObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries()
         entries.forEach((entry: any) => {
+          const delay = entry.processingStart - entry.startTime
           setMetrics(prev => ({
             ...prev,
-            fid: entry.processingStart - entry.startTime
+            fid: delay,
+            interactionLatency: [...prev.interactionLatency.slice(-9), delay]
           }))
         })
       })
       fidObserver.observe({ entryTypes: ['first-input'] })
 
-      // Observe CLS (Cumulative Layout Shift)
+      // Enhanced CLS observation with session tracking
       let clsValue = 0
+      let sessionValue = 0
+      let sessionEntries: any[] = []
+      
       clsObserver = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
           const layoutShift = entry as any
           if (!layoutShift.hadRecentInput) {
-            clsValue += layoutShift.value
+            if (sessionEntries.length === 0 || entry.startTime - sessionEntries[sessionEntries.length - 1].startTime < 1000) {
+              sessionValue += layoutShift.value
+              sessionEntries.push(layoutShift)
+            } else {
+              clsValue = Math.max(clsValue, sessionValue)
+              sessionValue = layoutShift.value
+              sessionEntries = [layoutShift]
+            }
+            clsValue = Math.max(clsValue, sessionValue)
           }
         }
         
-        setMetrics(prev => ({
-          ...prev,
-          cls: clsValue
-        }))
+        setMetrics(prev => ({ ...prev, cls: clsValue }))
       })
       clsObserver.observe({ entryTypes: ['layout-shift'] })
 
-      // Get FCP (First Contentful Paint) from navigation timing
+      // Enhanced navigation and paint metrics
       const navTiming = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming
       const paintEntries = performance.getEntriesByType('paint')
       const fcpEntry = paintEntries.find(entry => entry.name === 'first-contentful-paint')
+
+      // Calculate bundle load time from JavaScript resources
+      const jsResources = performance.getEntriesByType('resource')
+        .filter((resource: any) => resource.name.includes('.js') && !resource.name.includes('node_modules'))
+      
+      const bundleLoadTime = jsResources.length > 0 
+        ? jsResources.reduce((total: number, resource: any) => 
+            total + (resource.responseEnd - resource.requestStart), 0)
+        : undefined
 
       setMetrics(prev => ({
         ...prev,
         fcp: fcpEntry?.startTime,
         ttfb: navTiming.responseStart - navTiming.requestStart,
-        navigationTiming: navTiming
+        navigationTiming: navTiming,
+        bundleLoadTime
       }))
 
-      // Memory usage (if available)
+      // Enhanced memory monitoring
       if ('memory' in performance) {
-        const memory = (performance as any).memory
-        setMetrics(prev => ({
-          ...prev,
-          memory: {
-            usedJSHeapSize: memory.usedJSHeapSize,
-            totalJSHeapSize: memory.totalJSHeapSize,
-            jsHeapSizeLimit: memory.jsHeapSizeLimit
-          }
-        }))
+        const updateMemory = () => {
+          const memory = (performance as any).memory
+          setMetrics(prev => ({
+            ...prev,
+            memory: {
+              usedJSHeapSize: memory.usedJSHeapSize,
+              totalJSHeapSize: memory.totalJSHeapSize,
+              jsHeapSizeLimit: memory.jsHeapSizeLimit
+            }
+          }))
+        }
+        
+        updateMemory()
+        const memoryInterval = setInterval(updateMemory, 5000)
+        
+        return () => {
+          clearInterval(memoryInterval)
+          lcpObserver?.disconnect()
+          fidObserver?.disconnect()
+          clsObserver?.disconnect()
+        }
       }
+
+      // Analyze resources
+      analyzeResources()
 
     } catch (error) {
       console.warn('Performance monitoring setup failed:', error)
@@ -138,7 +418,17 @@ export function usePerformanceMonitoring(thresholds: PerformanceThresholds = DEF
       fidObserver?.disconnect()
       clsObserver?.disconnect()
     }
-  }, [])
+  }, [analyzeResources])
+
+  // Track route changes
+  React.useEffect(() => {
+    trackRoutePerformance()
+  }, [location.pathname, trackRoutePerformance])
+
+  // Analyze performance when metrics change
+  React.useEffect(() => {
+    analyzePerformance()
+  }, [analyzePerformance])
 
   const getMetricRating = React.useCallback((metric: keyof PerformanceMetrics) => {
     const value = metrics[metric] as number
@@ -170,32 +460,34 @@ export function usePerformanceMonitoring(thresholds: PerformanceThresholds = DEF
     }
   }, [metrics, getMetricRating, thresholds])
 
-  const getPerformanceScore = React.useCallback(() => {
-    const vitals = getCoreWebVitals()
-    const ratings = Object.values(vitals)
-      .map(vital => vital.rating)
-      .filter(rating => rating !== null)
-    
-    if (ratings.length === 0) return null
-    
-    const scores = ratings.map(rating => {
-      switch (rating) {
-        case 'good': return 100
-        case 'needs-improvement': return 50
-        case 'poor': return 0
-        default: return 0
-      }
-    })
-    
-    return Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length)
-  }, [getCoreWebVitals])
+  const getPerformanceScore = React.useCallback(() => analysis.score, [analysis.score])
+
+  // Component performance tracking utilities
+  const startComponentTimer = React.useCallback(() => {
+    componentStartTime.current = performance.now()
+  }, [])
+
+  const endComponentTimer = React.useCallback(() => {
+    if (componentStartTime.current > 0) {
+      const renderTime = performance.now() - componentStartTime.current
+      setMetrics(prev => ({ ...prev, componentRenderTime: renderTime }))
+      componentStartTime.current = 0
+    }
+  }, [])
 
   return {
     metrics,
+    analysis,
     isSupported,
     getMetricRating,
     getCoreWebVitals,
-    getPerformanceScore
+    getPerformanceScore,
+    startComponentTimer,
+    endComponentTimer,
+    refreshMetrics: React.useCallback(() => {
+      analyzeResources()
+      analyzePerformance()
+    }, [analyzeResources, analyzePerformance])
   }
 }
 
