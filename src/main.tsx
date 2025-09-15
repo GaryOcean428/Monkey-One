@@ -42,12 +42,19 @@ function renderApp() {
     // Create React root with error handling
     const root = ReactDOM.createRoot(rootElement)
     
-    // Wrap in error boundary first, then StrictMode
+    // Only use StrictMode in development to avoid production issues
+    const AppComponent = import.meta.env.DEV ? (
+      <React.StrictMode>
+        <AppRoutes />
+      </React.StrictMode>
+    ) : (
+      <AppRoutes />
+    )
+    
+    // Wrap in error boundary
     root.render(
       <ErrorBoundary>
-        <React.StrictMode>
-          <AppRoutes />
-        </React.StrictMode>
+        {AppComponent}
       </ErrorBoundary>
     )
   } catch (error) {

@@ -1,12 +1,7 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router'
-import { createClient } from '@supabase/supabase-js'
+import { supabase } from '../../lib/supabase/client'
 import { Button } from '../ui/button'
-
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-)
 
 export function AuthCallback() {
   const navigate = useNavigate()
