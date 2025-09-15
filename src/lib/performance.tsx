@@ -2,7 +2,7 @@
  * Performance optimization utilities for UI components
  */
 
-import { useEffect, useRef, useState, useCallback } from 'react'
+import React, { useEffect, useRef, useState, useCallback } from 'react'
 
 /**
  * Hook to detect if user prefers reduced motion
