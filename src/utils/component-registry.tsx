@@ -115,16 +115,16 @@ export const lazyComponents = {
     }))
   ),
 
-  // Placeholder components for routes without implementations
+  // Actual implemented components
   MemoryManager: React.lazy(() =>
-    Promise.resolve({
-      default: () => <div className="p-4">Memory Manager - Component coming soon</div>,
-    })
+    import('../components/memory/MemoryManager').then(module => ({
+      default: module.default || module.MemoryManager || module,
+    }))
   ),
   ProfileManager: React.lazy(() =>
-    Promise.resolve({
-      default: () => <div className="p-4">Profile Manager - Component coming soon</div>,
-    })
+    import('../pages/ProfileManager').then(module => ({
+      default: module.default || module.ProfileManager || module,
+    }))
   ),
 }
 
