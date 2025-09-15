@@ -15,7 +15,7 @@ import {
   UserCircle,
 } from 'lucide-react'
 import { useNavigationStore } from '../store/navigationStore'
-import { useLocation, useNavigate } from 'react-router'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 export function Sidebar() {
   const { isCollapsed, toggleSidebar, setActiveTab } = useNavigationStore()
