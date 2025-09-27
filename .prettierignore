@@ -1,0 +1,2 @@
+# Exclude Vite config from Prettier due to parser conflicts in CI hooks
+vite.config.ts

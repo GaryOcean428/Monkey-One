@@ -1,4 +1,4 @@
-import { defineConfig, loadEnv } from 'vite'
+import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
 import compression from 'vite-plugin-compression'
@@ -11,11 +11,7 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => {
-  // Load env file based on mode
-  const env = loadEnv(mode, __dirname, '')
-
-  return {
+export default defineConfig({
     plugins: [
       react({
         // Improve React bundle size by enabling babel optimizations
@@ -48,15 +44,15 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       outDir: 'dist',
-      sourcemap: true,
-      minify: 'esbuild',
+      sourcemap: false,
+      minify: 'terser',
       cssMinify: true,
-      cssCodeSplit: true,
+      cssCodeSplit: false,
       modulePreload: {
         polyfill: true,
       },
-      // Target modern browsers for smaller bundles
-      target: 'es2020',
+      // Target broad compatibility to avoid SIGILL issues
+      target: ['es2015', 'edge88', 'firefox78', 'chrome87', 'safari13'],
       // Don't chunk modules smaller than 10kb
       assetsInlineLimit: 10000,
       // Improve code splitting efficiency
@@ -65,6 +61,7 @@ export default defineConfig(({ mode }) => {
         input: {
           main: resolve(__dirname, 'index.html'),
         },
+        // @ts-ignore
         output: {
           // Avoid emitting empty chunks
           compact: true,
@@ -423,37 +420,17 @@ export default defineConfig(({ mode }) => {
     },
     publicDir: 'public',
     optimizeDeps: {
-      exclude: ['@sentry/node'],
+      exclude: ['@sentry/node', '@supabase/supabase-js'],
+      esbuildOptions: {
+        target: 'es2015'
+      }
     },
     server: {
-      port: 3000,
+      port: 4000,
       host: true,
-      // Ensure static assets are served correctly
       fs: {
         allow: ['.'],
       },
-    },
-    preview: {
-      port: 3000,
-    },
-    define: {
-      // Ensure all environment variables are properly defined with fallbacks
-      'import.meta.env.VITE_PUBLIC_URL': JSON.stringify(
-        env.VITE_PUBLIC_URL || 'http://localhost:3000'
-      ),
-      'process.env.VITE_PUBLIC_URL': JSON.stringify(env.VITE_PUBLIC_URL || 'http://localhost:3000'),
-      'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(env.VITE_SUPABASE_URL),
-      'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(env.VITE_SUPABASE_ANON_KEY),
-      'import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY': JSON.stringify(
-        env.VITE_SUPABASE_SERVICE_ROLE_KEY
-      ),
-      'import.meta.env.VITE_SUPABASE_JWT_SECRET': JSON.stringify(env.VITE_SUPABASE_JWT_SECRET),
-      'import.meta.env.VITE_PINECONE_API_KEY': JSON.stringify(env.VITE_PINECONE_API_KEY),
-      'import.meta.env.VITE_PINECONE_ENVIRONMENT': JSON.stringify(env.VITE_PINECONE_ENVIRONMENT),
-      'import.meta.env.VITE_PINECONE_INDEX_NAME': JSON.stringify(env.VITE_PINECONE_INDEX_NAME),
-      'import.meta.env.VITE_OLLAMA_BASE_URL': JSON.stringify(env.VITE_OLLAMA_BASE_URL),
-      'import.meta.env.VITE_CHROMA_CLOUD_TOKEN': JSON.stringify(env.VITE_CHROMA_CLOUD_TOKEN),
-      'import.meta.env.VITE_OPENAI_API_KEY': JSON.stringify(env.VITE_OPENAI_API_KEY),
-    },
+    }
   }
 })

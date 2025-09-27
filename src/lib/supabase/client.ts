@@ -17,11 +17,11 @@ const publicUrl = getPublicUrl()
 
 // Ensure global access to publicUrl
 if (typeof window !== 'undefined') {
-  // Set on window.ENV object which is our safe environment variable container
   if (!window.ENV) {
-    window.ENV = {}
+    window.ENV = { VITE_PUBLIC_URL: publicUrl }
+  } else {
+    window.ENV.VITE_PUBLIC_URL = publicUrl
   }
-  window.ENV.VITE_PUBLIC_URL = publicUrl
   window.PUBLIC_URL = publicUrl
 }
 
@@ -41,6 +41,8 @@ if (!supabaseUrl || !supabaseAnonKey || !publicUrl) {
 declare global {
   interface Window {
     __MONKEY_ONE_SUPABASE_CLIENT__?: SupabaseClient<Database>
+    ENV: { [key: string]: string; VITE_PUBLIC_URL: string }
+    PUBLIC_URL: string
   }
 }
 
@@ -97,7 +99,7 @@ function createSupabaseClient(): SupabaseClient<Database> {
         updateUser: async () => ({ data: null, error: new Error('Supabase not initialized') }),
         resetPasswordForEmail: async () => ({ error: null }),
       },
-      from: (table: string) => ({
+      from: (_table: string) => ({
         select: () => ({
           eq: () => ({
             single: async () => ({ data: null, error: new Error('Supabase not initialized') }),

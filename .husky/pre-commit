@@ -1,6 +1,1 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
-# Run only lint-staged for quick formatting and linting
-# Skip full test suite for faster commits
-npm run pre-commit
+pnpm exec lint-staged

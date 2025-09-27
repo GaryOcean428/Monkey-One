@@ -7,15 +7,9 @@
   "outputDirectory": "dist",
   "public": true,
   "functions": {
-    "api/**/*.ts": {
-      "runtime": "@vercel/node@2.0.0"
-    }
+    "api/**/*.ts": {}
   },
   "rewrites": [
-    {
-      "source": "/api/ollama/(.*)",
-      "destination": "http://localhost:11434/api/$1"
-    },
     {
       "source": "/site.webmanifest",
       "destination": "/site.webmanifest"
@@ -87,10 +81,7 @@
     {
       "source": "/(.*)",
       "headers": [
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "*"
-        },
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
         {
           "key": "Access-Control-Allow-Methods",
           "value": "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS"
@@ -99,10 +90,17 @@
           "key": "Access-Control-Allow-Headers",
           "value": "Origin, X-Requested-With, Content-Type, Accept, Authorization"
         },
+        { "key": "Access-Control-Max-Age", "value": "86400" },
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" },
+        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
         {
-          "key": "Access-Control-Max-Age",
-          "value": "86400"
-        }
+          "key": "Permissions-Policy",
+          "value": "accelerometer=(), autoplay=(), camera=(), webgl=(self)"
+        },
+        { "key": "Cross-Origin-Embedder-Policy", "value": "unsafe-none" },
+        { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" }
       ]
     }
   ],

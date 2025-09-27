@@ -4,10 +4,10 @@ import tseslintParser from '@typescript-eslint/parser'
 
 export default [
   {
-    ignores: ['**/dist/**', '**/node_modules/**'],
+    ignores: ['**/dist/**', '**/node_modules/**', 'vite.config.ts'],
   },
   {
-    files: ['**/*.ts', '**/*.tsx', 'vite.config.ts'],
+    files: ['**/*.ts', '**/*.tsx'],
     languageOptions: {
       parser: tseslintParser,
       parserOptions: {

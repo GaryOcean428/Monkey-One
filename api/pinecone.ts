@@ -40,7 +40,11 @@ export async function upsertVectors(
 ) {
   try {
     return await index.upsert(
-      vectors.map(vector => ({ ...vector, metadata: vector.metadata as VectorMetadata }))
+      vectors.map(vector => ({
+        id: vector.id,
+        values: vector.values,
+        metadata: (vector.metadata ?? {}) as Record<string, any>,
+      })) as any
     )
   } catch (error) {
     console.error('Error upserting vectors:', error)

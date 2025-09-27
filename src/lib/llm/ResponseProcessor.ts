@@ -3,6 +3,10 @@ import { llmManager } from './providers'
 import type { Message } from '../../types'
 import { adaptMessagesForLLM } from './messageAdapter'
 
+type ResponseEvents = {
+  chunk: (data: string) => void
+}
+
 interface ProcessedResponse {
   content: string
   confidence: number
@@ -22,7 +26,7 @@ interface ProcessedResponse {
   }
 }
 
-export class ResponseProcessor extends EventEmitter {
+export class ResponseProcessor extends EventEmitter<ResponseEvents> {
   private static readonly MAX_RETRIES = 3
   private static readonly RETRY_DELAY = 1000 // ms
 

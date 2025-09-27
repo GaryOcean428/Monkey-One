@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { Menu, X } from 'lucide-react'
 import { useNavigationStore } from '../store/navigationStore'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { getMainRoutes, getUserRoutes, getSidebarRoutes } from '@/config/routes'
+import { getMainRoutes, getUserRoutes } from '@/config/routes'
 
 export function Sidebar() {
   const { isCollapsed, toggleSidebar, setActiveTab } = useNavigationStore()
