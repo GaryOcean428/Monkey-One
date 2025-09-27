@@ -16,6 +16,7 @@ export class ResponseCache {
   private cache: Map<string, CacheEntry>;
   private config: CacheConfig;
   private readonly cleanupInterval: number = 1000 * 60 * 5; // Cleanup every 5 minutes
+  private cleanupTimer: NodeJS.Timeout | null = null;
 
   constructor(config: Partial<CacheConfig> = {}) {
     this.cache = new Map();
@@ -26,7 +27,7 @@ export class ResponseCache {
     };
     
     // Start periodic cleanup
-    setInterval(() => this.cleanup(), this.cleanupInterval);
+    this.cleanupTimer = setInterval(() => this.cleanup(), this.cleanupInterval);
   }
 
   private generateKey(cacheKey: string, options: any): string {
@@ -106,5 +107,13 @@ export class ResponseCache {
       maxSize: this.config.maxSize,
       ttl: this.config.ttl
     };
+  }
+
+  destroy(): void {
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer);
+      this.cleanupTimer = null;
+    }
+    this.clear();
   }
 }
