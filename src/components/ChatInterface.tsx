@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { Send, Loader, RefreshCw, Filter, SortAsc, SortDesc } from 'lucide-react'
 import { ChatMessage } from './ChatMessage'
 import { useChat, Command } from '../hooks/useChat'
@@ -7,7 +7,7 @@ import { Button } from './ui/button'
 import { Textarea } from './ui/textarea'
 import { Select } from './ui/select'
 
-export function ChatInterface() {
+export const ChatInterface = React.memo(function ChatInterface() {
   const { messages, isProcessing, error, sendMessage, hasActiveAgent, availableCommands } =
     useChat()
   const [input, setInput] = useState('')
@@ -30,7 +30,7 @@ export function ChatInterface() {
     textareaRef.current?.focus()
   }, [])
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
     if (!input.trim() || isProcessing || !hasActiveAgent) return
 
@@ -47,41 +47,45 @@ export function ChatInterface() {
     } catch (err) {
       console.error('Failed to send message:', err)
     }
-  }
+  }, [input, isProcessing, hasActiveAgent, sendMessage])
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       void handleSubmit(e as unknown as React.FormEvent)
     }
-  }
+  }, [handleSubmit])
 
-  const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleTextareaChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value)
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto'
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`
     }
-  }
+  }, [])
 
-  const handleCommandSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleCommandSelect = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     const command = e.target.value as Command
     setSelectedCommand(command)
     setInput(command)
     textareaRef.current?.focus()
-  }
+  }, [])
 
-  const filteredMessages = filterUser
-    ? messages.filter(message => message.user === filterUser)
-    : messages
+  const filteredMessages = useMemo(() => {
+    return filterUser
+      ? messages.filter(message => message.user === filterUser)
+      : messages
+  }, [messages, filterUser])
 
-  const sortedMessages = filteredMessages.sort((a, b) => {
-    if (sortOrder === 'asc') {
-      return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-    } else {
-      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-    }
-  })
+  const sortedMessages = useMemo(() => {
+    return [...filteredMessages].sort((a, b) => {
+      if (sortOrder === 'asc') {
+        return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      } else {
+        return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      }
+    })
+  }, [filteredMessages, sortOrder])
 
   return (
     <div className="flex h-full flex-col" role="main">
@@ -212,4 +216,4 @@ export function ChatInterface() {
       </form>
     </div>
   )
-}
+})

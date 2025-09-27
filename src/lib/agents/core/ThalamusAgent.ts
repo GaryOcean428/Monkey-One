@@ -275,4 +275,8 @@ export class ThalamusAgent extends BaseAgent {
       clearInterval(this.metricsTimer);
     }
   }
+
+  destroy(): void {
+    this.cleanup();
+  }
 }
