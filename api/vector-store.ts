@@ -1,3 +1,4 @@
+import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { Pinecone } from '@pinecone-database/pinecone'
 
 if (!process.env.PINECONE_API_KEY) {
@@ -9,22 +10,36 @@ if (!process.env.PINECONE_INDEX_NAME) {
 }
 
 const pinecone = new Pinecone({
-  apiKey: process.env.PINECONE_API_KEY,
+  apiKey: process.env.PINECONE_API_KEY!,
 })
 
-const index = pinecone.Index(process.env.PINECONE_INDEX_NAME)
+const index = pinecone.Index(process.env.PINECONE_INDEX_NAME!)
 
-export const config = {
-  runtime: 'edge',
-}
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
 
-export default async function handler(req: Request) {
+  if (req.method === 'OPTIONS') {
+    res.status(200).end()
+    return
+  }
+
   try {
-    const { operation, data } = await req.json()
+    const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body ?? {})
+    const { operation, data } = body as { operation?: string; data?: any }
 
     switch (operation) {
-      case 'search':
-        const { vector, k = 5, filter } = data
+      case 'search': {
+        const {
+          vector,
+          k = 5,
+          filter,
+        } = (data ?? {}) as {
+          vector: number[]
+          k?: number
+          filter?: Record<string, unknown>
+        }
         const searchResponse = await index.query({
           vector,
           topK: k,
@@ -32,37 +47,30 @@ export default async function handler(req: Request) {
           includeMetadata: true,
           includeValues: true,
         })
-        return new Response(JSON.stringify(searchResponse), {
-          status: 200,
-          headers: { 'Content-Type': 'application/json' },
-        })
-
-      case 'store':
-        const { vectors } = data
+        res.status(200).json(searchResponse)
+        return
+      }
+      case 'store': {
+        const { vectors } = (data ?? {}) as { vectors: any[] }
         await index.upsert(vectors)
-        return new Response(JSON.stringify({ success: true }), {
-          status: 200,
-          headers: { 'Content-Type': 'application/json' },
-        })
-
-      case 'delete':
-        const { ids } = data
+        res.status(200).json({ success: true })
+        return
+      }
+      case 'delete': {
+        const { ids } = (data ?? {}) as { ids: string[] }
         await index.deleteMany(ids)
-        return new Response(JSON.stringify({ success: true }), {
-          status: 200,
-          headers: { 'Content-Type': 'application/json' },
-        })
-
-      default:
-        return new Response(JSON.stringify({ error: 'Invalid operation' }), {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' },
-        })
+        res.status(200).json({ success: true })
+        return
+      }
+      default: {
+        res.status(400).json({ error: 'Invalid operation' })
+        return
+      }
     }
-  } catch (error) {
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    })
+  } catch (err) {
+    try {
+      console.error('vector-store handler error', err)
+    } catch {}
+    res.status(500).json({ error: 'Internal server error' })
   }
 }

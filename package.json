@@ -17,7 +17,7 @@
     "test:coverage": "vitest run --coverage",
     "test:fast": "vitest run --passWithNoTests",
     "test:ci": "vitest run --passWithNoTests --reporter=basic",
-    "lint": "eslint api/health.ts api/pinecone.ts src/hooks/usePerformanceMonitoring.ts src/hooks/useAgents.ts src/utils/component-registry.tsx src/components/panels/AgentDashboard.tsx src/components/panels/AgentMonitor.tsx",
+    "lint": "eslint api/health.ts api/pinecone.ts api/vector-store.ts src/hooks/usePerformanceMonitoring.ts src/hooks/useAgents.ts src/utils/component-registry.tsx src/components/panels/AgentDashboard.tsx src/components/panels/AgentMonitor.tsx",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css}\"",
