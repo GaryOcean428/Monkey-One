@@ -1,19 +1,19 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { Pinecone } from '@pinecone-database/pinecone'
 
-if (!process.env.PINECONE_API_KEY) {
-  throw new Error('PINECONE_API_KEY environment variable is not set')
+type Vector = { id: string; values: number[]; metadata?: Record<string, string | number | boolean> }
+
+let cachedIndex: ReturnType<Pinecone['Index']> | null = null
+function getIndex() {
+  const apiKey = process.env.PINECONE_API_KEY || process.env.VITE_PINECONE_API_KEY
+  const indexName = process.env.PINECONE_INDEX_NAME || process.env.VITE_PINECONE_INDEX_NAME
+  if (!apiKey || !indexName) return null
+  if (!cachedIndex) {
+    const pinecone = new Pinecone({ apiKey })
+    cachedIndex = pinecone.Index(indexName)
+  }
+  return cachedIndex
 }
-
-if (!process.env.PINECONE_INDEX_NAME) {
-  throw new Error('PINECONE_INDEX_NAME environment variable is not set')
-}
-
-const pinecone = new Pinecone({
-  apiKey: process.env.PINECONE_API_KEY!,
-})
-
-const index = pinecone.Index(process.env.PINECONE_INDEX_NAME!)
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*')
@@ -25,9 +25,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return
   }
 
+  const index = getIndex()
+  if (!index) {
+    res.status(503).json({ error: 'Vector store not configured' })
+    return
+  }
+
   try {
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body ?? {})
-    const { operation, data } = body as { operation?: string; data?: any }
+    const { operation, data } = (body ?? {}) as { operation?: string; data?: unknown }
 
     switch (operation) {
       case 'search': {
@@ -51,7 +57,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return
       }
       case 'store': {
-        const { vectors } = (data ?? {}) as { vectors: any[] }
+        const { vectors } = (data ?? {}) as { vectors: Vector[] }
         await index.upsert(vectors)
         res.status(200).json({ success: true })
         return
