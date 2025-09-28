@@ -61,21 +61,14 @@ export default defineConfig({
         input: {
           main: resolve(__dirname, 'index.html'),
         },
-        // @ts-ignore
         output: {
-          // Avoid emitting empty chunks
           compact: true,
-          // Improve tree-shaking
           preserveModules: false,
-          // Dedupe and minimize code
           generatedCode: {
-            preset: 'es2020',
-            constBindings: true,
-            objectShorthand: true,
+            preset: 'es2015'
           },
-          manualChunks: id => {
-            // Priority-based chunking: Split largest dependencies first for maximum impact
-            
+          manualChunks: (id: string) => {
+            // Priority-based chunking: Split largest dependencies first for maximum impact            
             // Critical ML Libraries (largest impact on bundle size)
             if (id.includes('@tensorflow')) {
               if (id.includes('@tensorflow/tfjs-core')) {
@@ -405,8 +398,6 @@ export default defineConfig({
             // Default chunk
             return null
           },
-          // These settings help balance chunk size and number of requests
-          chunkSizeWarningLimit: 1000, // Temporarily increase for clearer focus on critical chunks
           entryFileNames: 'assets/[name]-[hash].js',
           chunkFileNames: 'assets/[name]-[hash].js',
           assetFileNames: 'assets/[name]-[hash].[ext]',

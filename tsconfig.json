@@ -40,6 +40,7 @@
     "src/components/examples",
     "src/lib/testing",
     "src/test",
+    "src/__tests__",
     "**/*.stories.*"
   ],
   "references": [{ "path": "./tsconfig.node.json" }]

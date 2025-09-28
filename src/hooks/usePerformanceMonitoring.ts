@@ -153,7 +153,10 @@ export function usePerformanceMonitoring(thresholds: PerformanceThresholds = DEF
       }
 
       // Identify render-blocking resources
-      if ((resource as any).renderBlockingStatus === 'blocking') {
+      if (
+        'renderBlockingStatus' in resource &&
+        (resource as { renderBlockingStatus?: string }).renderBlockingStatus === 'blocking'
+      ) {
         blockingResources.push({
           name: url.pathname.split('/').pop() || resource.name,
           reason: 'Render blocking',

@@ -4,131 +4,133 @@ import * as React from 'react'
 export const lazyComponents = {
   // Main pages
   Dashboard: React.lazy(() =>
-    import('../pages/Dashboard').then((module: any) => ({
-      default: module.default || module.Dashboard || module,
+    import('../pages/Dashboard').then(mod => ({
+      default: (mod as any).default || (mod as any),
     }))
   ),
   Chat: React.lazy(() =>
-    import('../pages/Chat').then((module: any) => ({
-      default: module.default || module.Chat || module,
+    import('../pages/Chat').then(mod => ({
+      default: (mod as any).default || (mod as any),
     }))
   ),
   Agents: React.lazy(() =>
-    import('../pages/Agents').then((module: any) => ({
-      default: module.default || module.Agents || module,
+    import('../pages/Agents').then(mod => ({
+      default: (mod as any).default || (mod as any),
     }))
   ),
   Workflow: React.lazy(() =>
-    import('../pages/Workflow').then((module: any) => ({
-      default: module.default || module.Workflow || module,
+    import('../pages/Workflow').then(mod => ({
+      default: (mod as any).default || (mod as any),
     }))
   ),
   Tools: React.lazy(() =>
-    import('../pages/Tools').then((module: any) => ({
-      default: module.default || module.Tools || module,
+    import('../pages/Tools').then(mod => ({
+      default: (mod as any).default || (mod as any),
     }))
   ),
   Documents: React.lazy(() =>
-    import('../pages/Documents').then((module: any) => ({
-      default: module.default || module.Documents || module,
+    import('../pages/Documents').then(mod => ({
+      default: (mod as any).default || (mod as any),
     }))
   ),
   Analytics: React.lazy(() =>
-    import('../pages/Performance').then((module: any) => ({
-      default: module.default || module.Performance || module,
+    import('../pages/Performance').then(mod => ({
+      default: (mod as any).default || (mod as any),
     }))
   ),
   Settings: React.lazy(() =>
-    import('../pages/Settings').then((module: any) => ({
-      default: module.default || module.Settings || module,
+    import('../pages/Settings').then(mod => ({
+      default: (mod as any).default || (mod as any),
     }))
   ),
 
   // Auth pages
   Login: React.lazy(() =>
-    import('../pages/Login').then((module: any) => ({
-      default: module.default || module.Login || module,
+    import('../pages/Login').then(mod => ({
+      default: (mod as any).default || (mod as any),
     }))
   ),
   Register: React.lazy(() =>
-    import('../pages/Register').then((module: any) => ({
-      default: module.default || module.Register || module,
+    import('../pages/Register').then(mod => ({
+      default: (mod as any).default || (mod as any),
     }))
   ),
   AuthCallback: React.lazy(() =>
-    import('../pages/Auth/AuthCallback').then((module: any) => ({
-      default: module.default || module.AuthCallback || module,
+    import('../pages/Auth/AuthCallback').then(mod => ({
+      default: (mod as any).default || (mod as any),
     }))
   ),
   PasswordReset: React.lazy(() =>
-    import('../pages/Auth/PasswordReset').then((module: any) => ({
-      default: module.default || module.PasswordReset || module,
+    import('../pages/Auth/PasswordReset').then(mod => ({
+      default: (mod as any).default || (mod as any),
     }))
   ),
 
   // Feature pages
   AI: React.lazy(() =>
-    import('../pages/AI').then((module: any) => ({
-      default: module.default || module.AI || module,
+    import('../pages/AI').then(mod => ({
+      default: (mod as any).default || (mod as any),
     }))
   ),
   Notes: React.lazy(() =>
-    import('../pages/Notes').then((module: any) => ({
-      default: module.default || module.Notes || module,
+    import('../pages/Notes').then(mod => ({
+      default: (mod as any).default || (mod as any),
     }))
   ),
   UIShowcase: React.lazy(() =>
-    import('../pages/UIShowcase').then((module: any) => ({
-      default: module.default || module.UIShowcase || module,
+    import('../pages/UIShowcase').then(mod => ({
+      default: (mod as any).default || (mod as any),
     }))
   ),
   PerformanceAccessibilityShowcase: React.lazy(() =>
-    import('../pages/PerformanceAccessibilityShowcase').then((module: any) => ({
-      default: module.default || module.PerformanceAccessibilityShowcase || module,
+    import('../pages/PerformanceAccessibilityShowcase').then(mod => ({
+      default: (mod as any).default || (mod as any),
     }))
   ),
 
   // Component panels
   ChatContainer: React.lazy(() =>
-    import('../components/chat/ChatContainer').then((module: any) => ({
-      default: module.default || module.ChatContainer || module,
+    import('../components/chat/ChatContainer').then(mod => ({
+      default: (mod as any).default || (mod as any),
     }))
   ),
   AgentsPanel: React.lazy(() =>
-    import('../components/agents/AgentsPanel').then((module: any) => ({
-      default: module.default || module.AgentsPanel || module,
+    import('../components/agents/AgentsPanel').then(mod => ({
+      default: (mod as any).default || (mod as any),
     }))
   ),
   WorkflowPanel: React.lazy(() =>
-    import('../components/workflow/WorkflowPanel').then((module: any) => ({
-      default: module.default || module.WorkflowPanel || module,
+    import('../components/workflow/WorkflowPanel').then(mod => ({
+      default: (mod as any).default || (mod as any),
     }))
   ),
   ToolsPanel: React.lazy(() =>
-    import('../components/tools/ToolsPanel').then((module: any) => ({
-      default: module.default || module.ToolsPanel || module,
+    import('../components/tools/ToolsPanel').then(mod => ({
+      default: (mod as any).default || (mod as any),
     }))
   ),
   GithubPanel: React.lazy(() =>
-    import('../pages/Github').then((module: any) => ({
-      default: module.default || module.GithubPanel || module,
+    import('../pages/Github').then(mod => ({
+      default: (mod as any).default || (mod as any),
     }))
   ),
 
   // Actual implemented components
   MemoryManager: React.lazy(() =>
-    import('../components/memory/MemoryManager').then((module: any) => ({
-      default: module.default || module.MemoryManager || module,
+    import('../components/memory/MemoryManager').then(mod => ({
+      default: (mod as any).default || (mod as any),
     }))
   ),
   ProfileManager: React.lazy(() =>
-    import('../pages/ProfileManager').then((module: any) => ({
-      default: module.default || module.ProfileManager || module,
+    import('../pages/ProfileManager').then(mod => ({
+      default: (mod as any).default || (mod as any),
     }))
   ),
 }
 
-export function getComponentByName(componentName: string): React.LazyExoticComponent<any> {
+export function getComponentByName(
+  componentName: string
+): React.LazyExoticComponent<React.ComponentType<any>> {
   const component = lazyComponents[componentName as keyof typeof lazyComponents]
   if (!component) {
     console.warn(`Component "${componentName}" not found, returning fallback`)

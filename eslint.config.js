@@ -21,7 +21,16 @@ export default [
     ],
   },
   {
-    files: ['src/**/*.{ts,tsx}', 'api/**/*.ts'],
+    files: [
+      'api/**/*.ts',
+      'src/components/panels/**/*.{ts,tsx}',
+      'src/hooks/**/*.{ts,tsx}',
+      'src/utils/**/*.{ts,tsx}',
+      'src/lib/supabase/**/*.{ts,tsx}',
+      'src/lib/llm/**/*.{ts,tsx}',
+      'src/main.tsx',
+      'src/routes.tsx',
+    ],
     languageOptions: {
       parser: tseslintParser,
       parserOptions: {

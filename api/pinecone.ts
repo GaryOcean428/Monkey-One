@@ -39,13 +39,12 @@ export async function upsertVectors(
   vectors: { id: string; values: number[]; metadata?: VectorMetadata }[]
 ) {
   try {
-    return await index.upsert(
-      vectors.map(vector => ({
-        id: vector.id,
-        values: vector.values,
-        metadata: (vector.metadata ?? {}) as Record<string, any>,
-      })) as any
-    )
+    const payload = vectors.map(vector => ({
+      id: vector.id,
+      values: vector.values,
+      metadata: vector.metadata ?? {},
+    }))
+    return await index.upsert(payload as any)
   } catch (error) {
     console.error('Error upserting vectors:', error)
     throw error

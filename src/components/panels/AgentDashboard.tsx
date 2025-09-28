@@ -10,7 +10,7 @@ export default function AgentDashboard() {
   return (
     <div className="grid h-full grid-cols-12 gap-4 p-4">
       <div className="col-span-8 space-y-4">
-        <AgentMonitor agents={agents as any} activeAgent={activeAgent as any} />
+        <AgentMonitor agents={agents} activeAgent={activeAgent} />
         <AgentWorkflow />
       </div>
       <div className="col-span-4 space-y-4">
