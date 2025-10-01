@@ -1,0 +1,32 @@
+# Modern Husky v9+ format
+
+# Exit on any error
+set -e
+
+echo "🔍 Running STRICT pre-commit checks..."
+
+# Run lint-staged for formatting and linting
+echo "📝 Running lint-staged..."
+pnpm lint-staged
+
+# Strict type checking
+echo "🔍 Strict type checking..."
+pnpm run type-check:strict
+
+# Security audit (strict)
+echo "🔒 Security audit (strict)..."
+pnpm audit --audit-level moderate --production
+
+# Check for secrets in staged files (strict)
+echo "🔐 Checking for secrets (strict)..."
+git diff --cached --name-only | xargs grep -l -E "(api_key|secret|password|token)" 2>/dev/null && {
+  echo "❌ Potential secrets detected in staged files!"
+  echo "Please review and remove any sensitive information before committing."
+  exit 1
+} || true
+
+# Run tests
+echo "🧪 Running tests..."
+pnpm run test:fast
+
+echo "✅ STRICT pre-commit checks passed!"

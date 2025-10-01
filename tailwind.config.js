@@ -23,52 +23,79 @@ module.exports = {
   	},
   	extend: {
   		colors: {
+  			// Brand Colors
+  			'brand-cyan': 'var(--brand-cyan)',
+  			'brand-purple': 'var(--brand-purple)',
+  			
+  			// Backgrounds
+  			bg: {
+  				primary: 'var(--bg-primary)',
+  				secondary: 'var(--bg-secondary)',
+  				tertiary: 'var(--bg-tertiary)',
+  				interactive: 'var(--bg-interactive)',
+  				elevated: 'var(--bg-elevated)',
+  			},
+  			
+  			// Text
+  			text: {
+  				primary: 'var(--text-primary)',
+  				secondary: 'var(--text-secondary)',
+  				muted: 'var(--text-muted)',
+  				inverse: 'var(--text-inverse)',
+  			},
+  			
+  			// Borders
+  			border: {
+  				subtle: 'var(--border-subtle)',
+  				moderate: 'var(--border-moderate)',
+  				strong: 'var(--border-strong)',
+  			},
+  			
+  			// Semantic Colors
+  			success: 'var(--success)',
+  			warning: 'var(--warning)',
+  			error: 'var(--error)',
+  			info: 'var(--info)',
+  			
+  			// Legacy support (keeping existing colors for compatibility)
   			'neon-pink': 'rgb(255, 0, 128)',
   			'neon-blue': 'rgb(0, 191, 255)',
   			'neon-purple': 'rgb(187, 0, 255)',
   			'bg-darker': 'rgb(4, 4, 8)',
   			'bg-dark': 'rgb(8, 8, 13)',
   			'bg-light': 'rgb(24, 24, 36)',
-  			border: 'hsl(var(--border))',
-  			input: 'hsl(var(--input))',
-  			ring: 'hsl(var(--ring))',
-  			background: 'hsl(var(--background))',
-  			foreground: 'hsl(var(--foreground))',
+  			
+  			// Shadcn compatibility
+  			background: 'var(--bg-primary)',
+  			foreground: 'var(--text-primary)',
   			primary: {
-  				DEFAULT: 'hsl(var(--primary))',
-  				foreground: 'hsl(var(--primary-foreground))'
+  				DEFAULT: 'var(--brand-cyan)',
+  				foreground: '#001018'
   			},
   			secondary: {
-  				DEFAULT: 'hsl(var(--secondary))',
-  				foreground: 'hsl(var(--secondary-foreground))'
+  				DEFAULT: 'var(--bg-secondary)',
+  				foreground: 'var(--text-primary)'
   			},
   			destructive: {
-  				DEFAULT: 'hsl(var(--destructive))',
-  				foreground: 'hsl(var(--destructive-foreground))'
+  				DEFAULT: 'var(--error)',
+  				foreground: '#ffffff'
   			},
   			muted: {
-  				DEFAULT: 'hsl(var(--muted))',
-  				foreground: 'hsl(var(--muted-foreground))'
+  				DEFAULT: 'var(--bg-tertiary)',
+  				foreground: 'var(--text-muted)'
   			},
   			accent: {
-  				DEFAULT: 'hsl(var(--accent))',
-  				foreground: 'hsl(var(--accent-foreground))'
+  				DEFAULT: 'var(--brand-purple)',
+  				foreground: '#ffffff'
   			},
   			popover: {
-  				DEFAULT: 'hsl(var(--popover))',
-  				foreground: 'hsl(var(--popover-foreground))'
+  				DEFAULT: 'var(--bg-elevated)',
+  				foreground: 'var(--text-primary)'
   			},
   			card: {
-  				DEFAULT: 'hsl(var(--card))',
-  				foreground: 'hsl(var(--card-foreground))'
+  				DEFAULT: 'var(--bg-secondary)',
+  				foreground: 'var(--text-primary)'
   			},
-  			chart: {
-  				'1': 'hsl(var(--chart-1))',
-  				'2': 'hsl(var(--chart-2))',
-  				'3': 'hsl(var(--chart-3))',
-  				'4': 'hsl(var(--chart-4))',
-  				'5': 'hsl(var(--chart-5))'
-  			}
   		},
   		spacing: {
   			'0': 'var(--space-0)',
@@ -108,13 +135,14 @@ module.exports = {
   			sm: 'calc(var(--radius) - 4px)'
   		},
   		boxShadow: {
-  			'xs': 'var(--shadow-xs)',
-  			'sm': 'var(--shadow-sm)',
-  			'md': 'var(--shadow-md)',
-  			'lg': 'var(--shadow-lg)',
-  			'xl': 'var(--shadow-xl)',
-  			'2xl': 'var(--shadow-2xl)',
-  			'inner': 'var(--shadow-inner)',
+  			'elev-0': 'var(--shadow-0)',
+  			'elev-1': 'var(--shadow-1)',
+  			'elev-2': 'var(--shadow-2)',
+  			'elev-3': 'var(--shadow-3)',
+  			'elev-4': 'var(--shadow-4)',
+  			'glow-cyan': 'var(--glow-cyan)',
+  			'glow-purple': 'var(--glow-purple)',
+  			'glow-mixed': 'var(--glow-mixed)',
   			'glass': 'var(--glass-shadow)'
   		},
   		backdropBlur: {
@@ -122,6 +150,7 @@ module.exports = {
   			'glass-heavy': 'var(--glass-blur-heavy)'
   		},
   		zIndex: {
+  			'base': 'var(--z-base)',
   			'dropdown': 'var(--z-dropdown)',
   			'sticky': 'var(--z-sticky)',
   			'fixed': 'var(--z-fixed)',
@@ -147,6 +176,14 @@ module.exports = {
   			'fast': 'var(--transition-duration-fast)',
   			'normal': 'var(--transition-duration)',
   			'slow': 'var(--transition-duration-slow)'
+  		},
+  		backgroundImage: {
+  			'gradient-brand': 'var(--gradient-brand)',
+  			'gradient-ambient': 'var(--gradient-ambient)',
+  		},
+  		backdropBlur: {
+  			'glass': 'var(--glass-blur)',
+  			'glass-heavy': 'var(--glass-blur-heavy)',
   		},
   		keyframes: {
   			'accordion-down': {

@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Agent, AgentType, AgentStatus, Message, MessageType, AgentCapability } from '../../types';
-import { Logger } from '../../utils/logger';
+import { logger } from '../../utils/logger';
 import { RuntimeError } from '../../lib/errors/AgentErrors';
 import { AgentMonitor } from '../../lib/monitoring/AgentMonitor';
 
-const logger = new Logger('test');
+// Use imported logger
 
 vi.mock('../../lib/memory');
 

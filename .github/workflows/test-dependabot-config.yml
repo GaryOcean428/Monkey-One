@@ -1,0 +1,159 @@
+name: Test Dependabot Configuration
+
+on:
+  push:
+    paths:
+      - '.github/dependabot.yml'
+      - '.github/workflows/dependabot-*.yml'
+  pull_request:
+    paths:
+      - '.github/dependabot.yml'
+      - '.github/workflows/dependabot-*.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate-config:
+    name: Validate Dependabot Configuration
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate Dependabot YAML
+        run: |
+          echo "🔍 Validating Dependabot configuration..."
+          python3 -c "
+          import yaml
+          import sys
+          
+          try:
+              with open('.github/dependabot.yml', 'r') as f:
+                  config = yaml.safe_load(f)
+              
+              # Basic validation
+              assert config.get('version') == 2, 'Version must be 2'
+              assert 'updates' in config, 'Must have updates section'
+              assert len(config['updates']) > 0, 'Must have at least one update configuration'
+              
+              for update in config['updates']:
+                  assert 'package-ecosystem' in update, 'Each update must specify package-ecosystem'
+                  assert 'directory' in update, 'Each update must specify directory'
+                  assert 'schedule' in update, 'Each update must specify schedule'
+                  
+                  # Validate schedule
+                  schedule = update['schedule']
+                  assert 'interval' in schedule, 'Schedule must specify interval'
+                  assert schedule['interval'] in ['daily', 'weekly', 'monthly'], 'Invalid interval'
+              
+              print('✅ Dependabot configuration is valid')
+              
+          except Exception as e:
+              print(f'❌ Dependabot configuration error: {e}')
+              sys.exit(1)
+          "
+
+      - name: Validate workflow files
+        run: |
+          echo "🔍 Validating workflow files..."
+          for workflow in .github/workflows/dependabot-*.yml; do
+            if [ -f "$workflow" ]; then
+              echo "Checking $workflow..."
+              python3 -c "
+              import yaml
+              import sys
+              
+              try:
+                  with open('$workflow', 'r') as f:
+                      workflow_config = yaml.safe_load(f)
+                  
+                  # Basic workflow validation
+                  assert 'name' in workflow_config, 'Workflow must have a name'
+                  assert 'on' in workflow_config, 'Workflow must specify triggers'
+                  assert 'jobs' in workflow_config, 'Workflow must have jobs'
+                  
+                  print(f'✅ {workflow} is valid')
+                  
+              except Exception as e:
+                  print(f'❌ {workflow} error: {e}')
+                  sys.exit(1)
+              "
+            fi
+          done
+
+      - name: Check for required permissions
+        run: |
+          echo "🔍 Checking workflow permissions..."
+          
+          # Check auto-merge workflow has required permissions
+          if grep -q "contents: write" .github/workflows/dependabot-automerge.yml && \
+             grep -q "pull-requests: write" .github/workflows/dependabot-automerge.yml; then
+            echo "✅ Auto-merge workflow has required permissions"
+          else
+            echo "❌ Auto-merge workflow missing required permissions"
+            exit 1
+          fi
+          
+          # Check auto-approve workflow has required permissions  
+          if grep -q "pull-requests: write" .github/workflows/dependabot-approve.yml; then
+            echo "✅ Auto-approve workflow has required permissions"
+          else
+            echo "❌ Auto-approve workflow missing required permissions"
+            exit 1
+          fi
+
+      - name: Validate grouping strategy
+        run: |
+          echo "🔍 Validating dependency grouping..."
+          python3 -c "
+          import yaml
+          
+          with open('.github/dependabot.yml', 'r') as f:
+              config = yaml.safe_load(f)
+          
+          npm_update = None
+          for update in config['updates']:
+              if update['package-ecosystem'] == 'npm':
+                  npm_update = update
+                  break
+          
+          if not npm_update:
+              print('❌ No npm package ecosystem found')
+              exit(1)
+          
+          groups = npm_update.get('groups', {})
+          expected_groups = [
+              'react-ecosystem',
+              'typescript-tooling', 
+              'testing-framework',
+              'ui-styling',
+              'ai-ml-dependencies',
+              'database-storage',
+              'dev-utilities',
+              'security-updates'
+          ]
+          
+          for group in expected_groups:
+              if group not in groups:
+                  print(f'❌ Missing expected group: {group}')
+                  exit(1)
+          
+          print(f'✅ All {len(expected_groups)} expected groups are configured')
+          "
+
+      - name: Summary
+        run: |
+          echo "📋 Configuration Summary:"
+          echo "✅ Dependabot YAML syntax valid"
+          echo "✅ Workflow files syntax valid"
+          echo "✅ Required permissions configured"
+          echo "✅ Dependency grouping strategy complete"
+          echo ""
+          echo "🎯 Expected behavior:"
+          echo "- Monthly dependency updates (reduced from weekly/daily)"
+          echo "- Maximum 10 total open PRs (5+3+2)"
+          echo "- 8 intelligent dependency groups"
+          echo "- Auto-merge for safe updates"
+          echo "- Manual review for major versions"

@@ -50,7 +50,10 @@ declare global {
   }
 
   // DOM Types
-  interface Window extends globalThis.Window {}
+  interface Window extends globalThis.Window {
+    PUBLIC_URL?: string;
+    ENV?: Record<string, any>;
+  }
   interface Document extends globalThis.Document {}
   interface Navigator extends globalThis.Navigator {}
   interface Storage extends globalThis.Storage {}

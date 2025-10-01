@@ -1,14 +1,14 @@
 version: 2
 updates:
-  # Enable version updates for pnpm
+  # pnpm package updates (reduced frequency and better grouping)
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"  # Reduced from weekly to monthly
       day: "monday"
       time: "09:00"
       timezone: "UTC"
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 5  # Reduced from 10 to 5
     commit-message:
       prefix: "deps"
       prefix-development: "deps-dev"
@@ -19,24 +19,97 @@ updates:
       - "GaryOcean428"
     labels:
       - "dependencies"
-      - "automated"
-    # Group updates by dependency type
+      - "automerge"  # Enable auto-merge label
+    
+    # Intelligent grouping to reduce PR count
     groups:
-      production-dependencies:
-        dependency-type: "production"
+      # React ecosystem updates (major framework updates)
+      react-ecosystem:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "@types/react*"
+          - "react-*"
         update-types:
           - "minor"
           - "patch"
-      development-dependencies:
+      
+      # TypeScript and build tools
+      typescript-tooling:
+        patterns:
+          - "typescript"
+          - "@typescript-eslint/*"
+          - "eslint*"
+          - "prettier*"
+          - "vite*"
+          - "@vitejs/*"
+        update-types:
+          - "minor"
+          - "patch"
+      
+      # Testing framework updates
+      testing-framework:
+        patterns:
+          - "vitest*"
+          - "@vitest/*"
+          - "@testing-library/*"
+          - "playwright*"
+          - "@playwright/*"
+          - "msw"
+        update-types:
+          - "minor"
+          - "patch"
+      
+      # UI and styling dependencies
+      ui-styling:
+        patterns:
+          - "@radix-ui/*"
+          - "tailwindcss*"
+          - "@tailwindcss/*"
+          - "framer-motion"
+          - "lucide-react"
+          - "@heroicons/*"
+        update-types:
+          - "minor"
+          - "patch"
+      
+      # AI and ML dependencies
+      ai-ml-dependencies:
+        patterns:
+          - "openai"
+          - "@ai-sdk/*"
+          - "@huggingface/*"
+          - "@tensorflow/*"
+          - "@xenova/*"
+          - "ai"
+        update-types:
+          - "minor"
+          - "patch"
+      
+      # Database and storage
+      database-storage:
+        patterns:
+          - "@supabase/*"
+          - "@pinecone-database/*"
+          - "redis"
+          - "ioredis"
+        update-types:
+          - "minor"
+          - "patch"
+      
+      # Development utilities (patch only to minimize disruption)
+      dev-utilities:
         dependency-type: "development"
         update-types:
-          - "minor"
           - "patch"
+      
+      # Security updates (always separate and high priority)
       security-updates:
         dependency-type: "all"
         update-types:
           - "security"
-    # Ignore specific packages that need manual updates
+    
+    # Ignore major version updates for critical dependencies
     ignore:
       - dependency-name: "react"
         update-types: ["version-update:semver-major"]
@@ -46,35 +119,48 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "@types/react-dom"
         update-types: ["version-update:semver-major"]
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "node"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
 
-  # Enable version updates for GitHub Actions
+  # GitHub Actions updates (monthly)
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"  # Reduced from weekly
       day: "monday"
-      time: "09:00"
+      time: "10:00"
       timezone: "UTC"
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 3  # Reduced limit
     commit-message:
       prefix: "ci"
       include: "scope"
     labels:
       - "github-actions"
-      - "automated"
+      - "automerge"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
 
-  # Enable version updates for Docker
+  # Docker updates (quarterly for stability)
   - package-ecosystem: "docker"
     directory: "/.devcontainer"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
       day: "monday"
-      time: "09:00"
+      time: "11:00"
       timezone: "UTC"
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 2
     commit-message:
       prefix: "docker"
       include: "scope"
     labels:
       - "docker"
-      - "automated"
+      - "automerge"

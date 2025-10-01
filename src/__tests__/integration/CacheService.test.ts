@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { LRUCache, SlidingWindowCache, TieredCache, PrefetchCache } from '../../lib/cache/strategies';
-import { sleep } from '../../lib/utils';
+import { sleep } from '../../types/test-utils';
 
 describe('Cache Strategies Integration Tests', () => {
   describe('LRU Cache', () => {

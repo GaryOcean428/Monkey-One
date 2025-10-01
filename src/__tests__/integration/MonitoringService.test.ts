@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { monitoring } from '../../lib/monitoring/MonitoringService';
-import { sleep } from '../../lib/utils';
+import { sleep } from '../../types/test-utils';
 
 describe('Monitoring Service Integration Tests', () => {
   describe('Metrics', () => {

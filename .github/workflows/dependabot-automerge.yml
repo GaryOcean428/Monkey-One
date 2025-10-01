@@ -1,0 +1,244 @@
+name: Dependabot Auto-merge
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
+
+permissions:
+  contents: write
+  pull-requests: write
+  checks: read
+  statuses: read
+
+jobs:
+  dependabot-automerge:
+    name: Auto-merge Dependabot PRs
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Determine auto-merge eligibility
+        id: automerge-check
+        run: |
+          echo "PR Details:"
+          echo "- Update type: ${{ steps.metadata.outputs.update-type }}"
+          echo "- Dependency type: ${{ steps.metadata.outputs.dependency-type }}"
+          echo "- Package ecosystem: ${{ steps.metadata.outputs.package-ecosystem }}"
+          echo "- Dependency names: ${{ steps.metadata.outputs.dependency-names }}"
+          
+          # Initialize variables
+          SHOULD_AUTOMERGE="false"
+          MERGE_METHOD="squash"
+          
+          # Security updates - always auto-merge after CI passes
+          if [[ "${{ steps.metadata.outputs.update-type }}" == "version-update:semver-patch" ]] && [[ "${{ contains(github.event.pull_request.labels.*.name, 'security') }}" == "true" ]]; then
+            echo "✅ Security patch update - eligible for auto-merge"
+            SHOULD_AUTOMERGE="true"
+          
+          # Patch updates for production dependencies
+          elif [[ "${{ steps.metadata.outputs.update-type }}" == "version-update:semver-patch" ]] && [[ "${{ steps.metadata.outputs.dependency-type }}" == "direct:production" ]]; then
+            echo "✅ Production patch update - eligible for auto-merge"
+            SHOULD_AUTOMERGE="true"
+          
+          # Patch updates for development dependencies
+          elif [[ "${{ steps.metadata.outputs.update-type }}" == "version-update:semver-patch" ]] && [[ "${{ steps.metadata.outputs.dependency-type }}" == "direct:development" ]]; then
+            echo "✅ Development patch update - eligible for auto-merge"
+            SHOULD_AUTOMERGE="true"
+          
+          # Minor updates for development dependencies only
+          elif [[ "${{ steps.metadata.outputs.update-type }}" == "version-update:semver-minor" ]] && [[ "${{ steps.metadata.outputs.dependency-type }}" == "direct:development" ]]; then
+            echo "✅ Development minor update - eligible for auto-merge"
+            SHOULD_AUTOMERGE="true"
+          
+          # GitHub Actions updates (usually safe)
+          elif [[ "${{ steps.metadata.outputs.package-ecosystem }}" == "github-actions" ]]; then
+            echo "✅ GitHub Actions update - eligible for auto-merge"
+            SHOULD_AUTOMERGE="true"
+          
+          # Docker updates (if they pass CI)
+          elif [[ "${{ steps.metadata.outputs.package-ecosystem }}" == "docker" ]]; then
+            echo "✅ Docker update - eligible for auto-merge"
+            SHOULD_AUTOMERGE="true"
+          
+          # Grouped updates with automerge label
+          elif [[ "${{ contains(github.event.pull_request.labels.*.name, 'automerge') }}" == "true" ]]; then
+            echo "✅ Labeled for auto-merge - eligible"
+            SHOULD_AUTOMERGE="true"
+          
+          # Major updates - never auto-merge
+          elif [[ "${{ steps.metadata.outputs.update-type }}" == "version-update:semver-major" ]]; then
+            echo "❌ Major version update - requires manual review"
+            SHOULD_AUTOMERGE="false"
+          
+          # Minor updates for production dependencies - be cautious
+          elif [[ "${{ steps.metadata.outputs.update-type }}" == "version-update:semver-minor" ]] && [[ "${{ steps.metadata.outputs.dependency-type }}" == "direct:production" ]]; then
+            echo "⚠️  Production minor update - requires manual review"
+            SHOULD_AUTOMERGE="false"
+          
+          else
+            echo "❓ Unknown update type - requires manual review"
+            SHOULD_AUTOMERGE="false"
+          fi
+          
+          echo "should-automerge=$SHOULD_AUTOMERGE" >> $GITHUB_OUTPUT
+          echo "merge-method=$MERGE_METHOD" >> $GITHUB_OUTPUT
+
+      - name: Wait for CI checks
+        if: steps.automerge-check.outputs.should-automerge == 'true'
+        uses: fountainhead/action-wait-for-check@v1.2.0
+        id: wait-for-ci
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          checkName: "Quality Gate"  # Wait for our main CI check
+          ref: ${{ github.event.pull_request.head.sha }}
+          timeoutSeconds: 1800  # 30 minutes max wait
+          intervalSeconds: 30
+
+      - name: Wait for additional checks
+        if: steps.automerge-check.outputs.should-automerge == 'true' && steps.wait-for-ci.outputs.conclusion == 'success'
+        uses: fountainhead/action-wait-for-check@v1.2.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          checkName: "Security Summary"  # Wait for security checks
+          ref: ${{ github.event.pull_request.head.sha }}
+          timeoutSeconds: 900  # 15 minutes max wait
+          intervalSeconds: 30
+
+      - name: Enable auto-merge
+        if: steps.automerge-check.outputs.should-automerge == 'true' && steps.wait-for-ci.outputs.conclusion == 'success'
+        uses: peter-evans/enable-pull-request-automerge@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          pull-request-number: ${{ github.event.pull_request.number }}
+          merge-method: ${{ steps.automerge-check.outputs.merge-method }}
+
+      - name: Add auto-merge comment
+        if: steps.automerge-check.outputs.should-automerge == 'true' && steps.wait-for-ci.outputs.conclusion == 'success'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_request_number: context.issue.number,
+            });
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `🤖 **Auto-merge enabled**
+              
+              This Dependabot PR has been automatically approved for merging because:
+              - ✅ Update type: \`${{ steps.metadata.outputs.update-type }}\`
+              - ✅ Dependency type: \`${{ steps.metadata.outputs.dependency-type }}\`
+              - ✅ All CI checks passed
+              - ✅ Security scans completed
+              
+              The PR will be automatically merged when all required checks pass.
+              
+              **Dependencies updated:**
+              ${{ steps.metadata.outputs.dependency-names }}
+              
+              ---
+              *To disable auto-merge, remove the \`automerge\` label or comment \`@dependabot ignore\`*`
+            });
+
+      - name: Add manual review comment
+        if: steps.automerge-check.outputs.should-automerge == 'false'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `🔍 **Manual review required**
+              
+              This Dependabot PR requires manual review because:
+              - Update type: \`${{ steps.metadata.outputs.update-type }}\`
+              - Dependency type: \`${{ steps.metadata.outputs.dependency-type }}\`
+              
+              **Dependencies updated:**
+              ${{ steps.metadata.outputs.dependency-names }}
+              
+              Please review the changes and merge manually if appropriate.
+              
+              ---
+              *To enable auto-merge for this PR, add the \`automerge\` label*`
+            });
+
+      - name: Handle CI failure
+        if: steps.automerge-check.outputs.should-automerge == 'true' && steps.wait-for-ci.outputs.conclusion != 'success'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `❌ **Auto-merge cancelled**
+              
+              This Dependabot PR was eligible for auto-merge but CI checks failed:
+              - CI Status: \`${{ steps.wait-for-ci.outputs.conclusion }}\`
+              
+              Please review the failing checks and fix any issues before merging.
+              
+              **Dependencies updated:**
+              ${{ steps.metadata.outputs.dependency-names }}`
+            });
+
+  # Separate job to handle immediate security updates
+  security-automerge:
+    name: Fast-track Security Updates
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]' && contains(github.event.pull_request.labels.*.name, 'security')
+    
+    steps:
+      - name: Get Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Auto-approve security updates
+        uses: hmarr/auto-approve-action@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Add security update comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `🚨 **Security Update - Fast-tracked**
+              
+              This is a security update and has been automatically approved.
+              It will be merged as soon as CI checks pass.
+              
+              **Security advisory:** Please review the security implications of this update.
+              
+              **Dependencies updated:**
+              ${{ steps.metadata.outputs.dependency-names }}`
+            });
+
+      - name: Enable auto-merge for security
+        uses: peter-evans/enable-pull-request-automerge@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          pull-request-number: ${{ github.event.pull_request.number }}
+          merge-method: squash
