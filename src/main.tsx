@@ -3,9 +3,8 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import './index.css'
 
-// Set public URL if not available
-const publicUrl =
-  import.meta.env.VITE_PUBLIC_URL || window.location.origin || 'https://monkey-one-nine.vercel.app'
+// Set public URL - prioritize environment variable over current origin
+const publicUrl = import.meta.env.VITE_PUBLIC_URL || 'https://monkey-one.dev'
 
 // Define a global variable without trying to modify import.meta.env (which is read-only)
 if (typeof window !== 'undefined') {
