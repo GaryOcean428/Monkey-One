@@ -1,0 +1,66 @@
+name: Validate Workflows
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/**'
+  push:
+    paths:
+      - '.github/workflows/**'
+
+jobs:
+  validate:
+    name: Validate GitHub Actions
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate workflow syntax
+        run: |
+          echo "Validating GitHub Actions workflow syntax..."
+
+          # Check for common issues
+          for file in .github/workflows/*.yml .github/workflows/*.yaml; do
+            if [ -f "$file" ]; then
+              echo "Checking $file..."
+              
+              # Basic YAML syntax validation
+              python3 -c "import yaml; yaml.safe_load(open('$file'))" || {
+                echo "❌ YAML syntax error in $file"
+                exit 1
+              }
+              
+              # Check for proper secret access patterns
+              if grep -q '\${{ env\.' "$file" && grep -q 'secrets\.' "$file"; then
+                echo "⚠️  Mixed env and secrets usage in $file - verify context access"
+              fi
+              
+              echo "✅ $file validated"
+            fi
+          done
+
+          echo "All workflows validated successfully!"
+
+      - name: Check for security best practices
+        run: |
+          echo "Checking security best practices..."
+
+          # Check for hardcoded secrets (should use secrets context)
+          if grep -r "token.*=" .github/workflows/ | grep -v "secrets\." | grep -v "#"; then
+            echo "❌ Potential hardcoded tokens found"
+            exit 1
+          fi
+
+          # Check for proper permissions
+          for file in .github/workflows/*.yml .github/workflows/*.yaml; do
+            if [ -f "$file" ] && ! grep -q "permissions:" "$file"; then
+              echo "⚠️  No permissions specified in $file - consider adding explicit permissions"
+            fi
+          done
+
+          echo "✅ Security checks passed"

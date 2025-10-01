@@ -14,5 +14,6 @@
   "vite.browserType": "system",
   "vscode-edge-devtools.browserFlavor": "Canary",
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "notebook.defaultFormatter": "esbenp.prettier-vscode"
+  "notebook.defaultFormatter": "esbenp.prettier-vscode",
+  "svn.ignoreMissingSvnWarning": true
 }
