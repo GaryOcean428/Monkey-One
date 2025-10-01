@@ -427,17 +427,9 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       port: 4000,
-      host: true,
-      // Allow Gitpod and other development hosts
-      allowedHosts: [
-        'localhost',
-        '.gitpod.dev',
-        '.gitpod.io',
-        '.github.dev',
-        '.codespaces.githubusercontent.com',
-        'monkey-one.dev',
-        'monkey-one-nine.vercel.app'
-      ],
+      host: '0.0.0.0',
+      // Allow all hosts for development
+      allowedHosts: 'all',
       // Ensure static assets are served correctly
       fs: {
         allow: ['.'],
