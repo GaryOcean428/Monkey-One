@@ -113,10 +113,5 @@
         }
       ]
     }
-  ],
-
-  "skewProtection": {
-    "enabled": true,
-    "maxAge": "12h"
-  }
+  ]
 }
