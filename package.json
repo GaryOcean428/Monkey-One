@@ -23,7 +23,7 @@
     "vercel-build": "echo \"Build already completed by buildCommand\"",
     "vercel-deploy": "vercel deploy --prod",
     "prepare": "husky",
-    "pre-commit": "lint-staged && pnpm run type-check",
+    "pre-commit": "lint-staged",
     "validate": "npm-run-all --parallel type-check lint:fix format test",
     "prepare-model": "tsx scripts/prepare-model.ts",
     "ollama:status": "tsx scripts/manage-ollama.ts status",
@@ -191,15 +191,23 @@
   },
   "lint-staged": {
     "*.{ts,tsx}": [
-      "eslint --fix",
-      "prettier --write"
+      "eslint --fix --max-warnings 0",
+      "prettier --write",
+      "git add"
     ],
     "*.{js,jsx}": [
-      "eslint --fix",
-      "prettier --write"
+      "eslint --fix --max-warnings 0", 
+      "prettier --write",
+      "git add"
     ],
-    "*.{json,css,md}": [
-      "prettier --write"
+    "*.{json,css,md,yml,yaml}": [
+      "prettier --write",
+      "git add"
+    ],
+    "package.json": [
+      "sort-package-json",
+      "prettier --write",
+      "git add"
     ]
   },
   "resolutions": {

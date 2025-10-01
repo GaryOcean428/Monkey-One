@@ -1,6 +1,32 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-# Run only lint-staged for quick formatting and linting
-# Skip full test suite for faster commits
-npm run pre-commit
+# Exit on any error
+set -e
+
+echo "🔍 Running pre-commit checks..."
+
+# Run lint-staged for formatting and linting
+echo "📝 Running lint-staged..."
+pnpm lint-staged
+
+# Type checking
+echo "🔍 Type checking..."
+pnpm run type-check
+
+# Security audit (quick check)
+echo "🔒 Security audit..."
+pnpm audit --audit-level moderate --production || {
+  echo "⚠️  Security vulnerabilities found. Run 'pnpm audit fix' to resolve."
+  exit 1
+}
+
+# Check for secrets in staged files
+echo "🔐 Checking for secrets..."
+git diff --cached --name-only | xargs grep -l -E "(api_key|secret|password|token)" 2>/dev/null && {
+  echo "❌ Potential secrets detected in staged files!"
+  echo "Please review and remove any sensitive information before committing."
+  exit 1
+} || true
+
+echo "✅ Pre-commit checks passed!"
