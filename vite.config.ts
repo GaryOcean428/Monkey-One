@@ -448,9 +448,13 @@ export default defineConfig(({ mode }) => {
     define: {
       // Ensure all environment variables are properly defined with fallbacks
       'import.meta.env.VITE_PUBLIC_URL': JSON.stringify(
-        env.VITE_PUBLIC_URL || 'http://localhost:4000'
+        env.VITE_PUBLIC_URL ||
+          (mode === 'development' ? 'http://localhost:4000' : 'https://monkey-one.dev')
       ),
-      'process.env.VITE_PUBLIC_URL': JSON.stringify(env.VITE_PUBLIC_URL || 'http://localhost:4000'),
+      'process.env.VITE_PUBLIC_URL': JSON.stringify(
+        env.VITE_PUBLIC_URL ||
+          (mode === 'development' ? 'http://localhost:4000' : 'https://monkey-one.dev')
+      ),
       'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(env.VITE_SUPABASE_URL),
       'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(env.VITE_SUPABASE_ANON_KEY),
       'import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY': JSON.stringify(
