@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import { useAgentStore } from '../store/agentStore'
-import type { Agent } from '@/lib/types/agent'
+import type { Agent } from '../types'
 
 export function useAgents() {
   const { agents, activeAgent, setActiveAgent, updateAgentStatus } = useAgentStore()
