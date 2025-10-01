@@ -1,0 +1,33 @@
+
+> monkey-one@0.1.0 dev /workspaces/Monkey-One
+> concurrently "vite --port 4000" "tsx src/server/proxy.ts"
+
+[0] 
+[0]   VITE v6.3.6  ready in 310 ms
+[0] 
+[0]   ➜  Local:   http://localhost:4000/
+[0]   ➜  Network: http://100.64.189.50:4000/
+[1] node:events:496
+[1]       throw er; // Unhandled 'error' event
+[1]       ^
+[1] 
+[1] Error: listen EADDRINUSE: address already in use :::3004
+[1]     at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+[1]     at listenInCluster (node:net:1997:12)
+[1]     at Server.listen (node:net:2102:7)
+[1]     at <anonymous> (/workspaces/Monkey-One/src/server/proxy.ts:75:8)
+[1]     at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
+[1]     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+[1]     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+[1] Emitted 'error' event on Server instance at:
+[1]     at emitErrorNT (node:net:1976:8)
+[1]     at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+[1]   code: 'EADDRINUSE',
+[1]   errno: -98,
+[1]   syscall: 'listen',
+[1]   address: '::',
+[1]   port: 3004
+[1] }
+[1] 
+[1] Node.js v22.17.0
+[1] tsx src/server/proxy.ts exited with code 1

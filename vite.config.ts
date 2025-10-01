@@ -426,22 +426,32 @@ export default defineConfig(({ mode }) => {
       exclude: ['@sentry/node'],
     },
     server: {
-      port: 3000,
+      port: 4000,
       host: true,
+      // Allow Gitpod and other development hosts
+      allowedHosts: [
+        'localhost',
+        '.gitpod.dev',
+        '.gitpod.io',
+        '.github.dev',
+        '.codespaces.githubusercontent.com',
+        'monkey-one.dev',
+        'monkey-one-nine.vercel.app'
+      ],
       // Ensure static assets are served correctly
       fs: {
         allow: ['.'],
       },
     },
     preview: {
-      port: 3000,
+      port: 4000,
     },
     define: {
       // Ensure all environment variables are properly defined with fallbacks
       'import.meta.env.VITE_PUBLIC_URL': JSON.stringify(
-        env.VITE_PUBLIC_URL || 'http://localhost:3000'
+        env.VITE_PUBLIC_URL || 'http://localhost:4000'
       ),
-      'process.env.VITE_PUBLIC_URL': JSON.stringify(env.VITE_PUBLIC_URL || 'http://localhost:3000'),
+      'process.env.VITE_PUBLIC_URL': JSON.stringify(env.VITE_PUBLIC_URL || 'http://localhost:4000'),
       'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(env.VITE_SUPABASE_URL),
       'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(env.VITE_SUPABASE_ANON_KEY),
       'import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY': JSON.stringify(

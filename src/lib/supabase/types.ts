@@ -6,24 +6,36 @@ export interface Database {
       profiles: {
         Row: {
           id: string
-          updated_at: string | null
-          username: string | null
-          full_name: string | null
+          user_id: string
+          username: string
+          email: string
+          name: string
           avatar_url: string | null
+          created_at: string
+          updated_at: string
+          preferences: Json | null
         }
         Insert: {
-          id: string
-          updated_at?: string | null
-          username?: string | null
-          full_name?: string | null
+          id?: string
+          user_id: string
+          username: string
+          email: string
+          name: string
           avatar_url?: string | null
+          created_at?: string
+          updated_at?: string
+          preferences?: Json | null
         }
         Update: {
           id?: string
-          updated_at?: string | null
-          username?: string | null
-          full_name?: string | null
+          user_id?: string
+          username?: string
+          email?: string
+          name?: string
           avatar_url?: string | null
+          created_at?: string
+          updated_at?: string
+          preferences?: Json | null
         }
       }
       notes: {
