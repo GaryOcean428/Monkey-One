@@ -43,21 +43,31 @@ async function renderApp() {
     rootElement.innerHTML = '<div style="padding: 20px; text-align: center;">Loading...</div>'
 
     // Dynamically import components to catch import errors
-    const [{ AppRoutes }, { SimpleErrorBoundary }] = await Promise.all([
-      import('./routes').catch(err => {
-        console.error('Failed to load routes:', err)
-        throw new Error('Failed to load application routes')
-      }),
-      import('./components/simple-error-boundary').catch(err => {
-        console.error('Failed to load error boundary:', err)
-        // Provide fallback error boundary
-        return {
-          SimpleErrorBoundary: ({ children }: { children: React.ReactNode }) => (
-            <div>{children}</div>
-          ),
-        }
-      }),
-    ])
+    let AppRoutes: React.ComponentType
+    let SimpleErrorBoundary: React.ComponentType<{ children: React.ReactNode }>
+
+    try {
+      const routesModule = await import('./routes')
+      AppRoutes = routesModule.AppRoutes
+      if (!AppRoutes) {
+        throw new Error('AppRoutes component not found in routes module')
+      }
+    } catch (err) {
+      console.error('Failed to load routes:', err)
+      throw new Error('Failed to load application routes')
+    }
+
+    try {
+      const errorBoundaryModule = await import('./components/simple-error-boundary')
+      SimpleErrorBoundary = errorBoundaryModule.SimpleErrorBoundary
+      if (!SimpleErrorBoundary) {
+        throw new Error('SimpleErrorBoundary component not found')
+      }
+    } catch (err) {
+      console.error('Failed to load error boundary:', err)
+      // Provide fallback error boundary
+      SimpleErrorBoundary = ({ children }: { children: React.ReactNode }) => <div>{children}</div>
+    }
 
     // Create React root with error handling
     const root = ReactDOM.createRoot(rootElement)
@@ -71,8 +81,21 @@ async function renderApp() {
       <AppRoutes />
     )
 
-    // Wrap in error boundary
-    root.render(<SimpleErrorBoundary>{AppComponent}</SimpleErrorBoundary>)
+    // Wrap in error boundary with additional safety checks
+    if (React.isValidElement(AppComponent)) {
+      root.render(<SimpleErrorBoundary>{AppComponent}</SimpleErrorBoundary>)
+    } else {
+      console.error('AppComponent is not a valid React element')
+      root.render(
+        <SimpleErrorBoundary>
+          <div style={{ padding: '20px', textAlign: 'center' }}>
+            <h2>Application Error</h2>
+            <p>Failed to load the main application component.</p>
+            <button onClick={() => window.location.reload()}>Reload Page</button>
+          </div>
+        </SimpleErrorBoundary>
+      )
+    }
   } catch (error) {
     console.error('Failed to render React app:', error)
     // Fallback for render errors

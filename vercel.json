@@ -5,24 +5,32 @@
   "installCommand": "pnpm install",
   "framework": "vite",
   "outputDirectory": "dist",
-  "public": true,
+
   "functions": {
     "api/**/*.ts": {
       "runtime": "@vercel/node@2.0.0"
     }
   },
+  "routes": [
+    {
+      "src": "/manifest.json",
+      "headers": {
+        "Content-Type": "application/manifest+json",
+        "Cache-Control": "public, max-age=0, must-revalidate"
+      }
+    },
+    {
+      "src": "/site.webmanifest",
+      "headers": {
+        "Content-Type": "application/manifest+json",
+        "Cache-Control": "public, max-age=0, must-revalidate"
+      }
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/ollama/(.*)",
       "destination": "http://localhost:11434/api/$1"
-    },
-    {
-      "source": "/site.webmanifest",
-      "destination": "/site.webmanifest"
-    },
-    {
-      "source": "/manifest.json",
-      "destination": "/manifest.json"
     },
     {
       "source": "/(.*)",
@@ -117,6 +125,14 @@
     "VITE_SUPABASE_JWT_SECRET": "${VITE_SUPABASE_JWT_SECRET}",
     "VITE_OLLAMA_BASE_URL": "${VITE_OLLAMA_BASE_URL}",
     "VITE_CHROMA_CLOUD_TOKEN": "${VITE_CHROMA_CLOUD_TOKEN}",
-    "VITE_OPENAI_API_KEY": "${VITE_OPENAI_API_KEY}"
+    "VITE_OPENAI_API_KEY": "${VITE_OPENAI_API_KEY}",
+    "VERCEL_OIDC_TOKEN": "@vercel-oidc-token"
+  },
+  "oidc": {
+    "issuerMode": "team"
+  },
+  "skewProtection": {
+    "enabled": true,
+    "maxAge": "12h"
   }
 }
