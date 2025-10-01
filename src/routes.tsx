@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { RouterProvider } from 'react-router-dom'
-import { ErrorBoundary } from '@/components/error-boundary'
+import { SimpleErrorBoundary } from '@/components/simple-error-boundary'
 import { App } from './App'
 import { ProviderRegistry } from './providers/provider-registry'
 import { routeConfigs } from '@/config/routes'
@@ -36,7 +36,7 @@ const router = createBrowserRouter(
     {
       path: '/',
       element: <App />,
-      errorElement: <ErrorBoundary />,
+      errorElement: <SimpleErrorBoundary />,
       children: [
         {
           index: true,
@@ -65,16 +65,18 @@ const router = createBrowserRouter(
 
 export function AppRoutes() {
   return (
-    <ErrorBoundary fallback={
-      <div style={{ padding: '20px', textAlign: 'center' }}>
-        <h2>Something went wrong</h2>
-        <button onClick={() => window.location.reload()}>Reload Page</button>
-      </div>
-    }>
+    <SimpleErrorBoundary
+      fallback={
+        <div style={{ padding: '20px', textAlign: 'center' }}>
+          <h2>Something went wrong</h2>
+          <button onClick={() => window.location.reload()}>Reload Page</button>
+        </div>
+      }
+    >
       <ProviderRegistry>
         <RouterProvider router={router} />
       </ProviderRegistry>
-    </ErrorBoundary>
+    </SimpleErrorBoundary>
   )
 }
 

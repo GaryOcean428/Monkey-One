@@ -1,4 +1,16 @@
-import { AccentColor, ThemeMode, ContrastMode } from '../hooks/useTheme'
+// Forward declarations to avoid circular dependency
+export type AccentColor =
+  | 'blue'
+  | 'emerald'
+  | 'violet'
+  | 'rose'
+  | 'amber'
+  | 'cyan'
+  | 'pink'
+  | 'indigo'
+
+export type ThemeMode = 'light' | 'dark' | 'system'
+export type ContrastMode = 'normal' | 'high'
 
 export interface ThemeAnalytics {
   themeSwitches: number
@@ -22,13 +34,13 @@ function getDefaultAnalytics(): ThemeAnalytics {
     lastUsed: new Date().toISOString(),
     favoriteAccentColor: 'blue',
     preferredThemeMode: 'system',
-    averageSessionDuration: 0
+    averageSessionDuration: 0,
   }
 }
 
 function loadAnalytics(): ThemeAnalytics {
   if (typeof window === 'undefined') return getDefaultAnalytics()
-  
+
   try {
     const stored = window.localStorage.getItem(ANALYTICS_KEY)
     if (stored) {
@@ -43,7 +55,7 @@ function loadAnalytics(): ThemeAnalytics {
 
 function saveAnalytics(analytics: ThemeAnalytics) {
   if (typeof window === 'undefined') return
-  
+
   try {
     window.localStorage.setItem(ANALYTICS_KEY, JSON.stringify(analytics))
   } catch (error) {
@@ -62,12 +74,12 @@ export class ThemeAnalyticsTracker {
     amber: 0,
     cyan: 0,
     pink: 0,
-    indigo: 0
+    indigo: 0,
   }
   private themeModeHistory: Record<ThemeMode, number> = {
     light: 0,
     dark: 0,
-    system: 0
+    system: 0,
   }
 
   constructor() {
@@ -78,7 +90,7 @@ export class ThemeAnalyticsTracker {
 
   private loadUsageHistory() {
     if (typeof window === 'undefined') return
-    
+
     try {
       const colorHistory = window.localStorage.getItem('monkey-one-accent-color-history')
       if (colorHistory) {
@@ -96,10 +108,16 @@ export class ThemeAnalyticsTracker {
 
   private saveUsageHistory() {
     if (typeof window === 'undefined') return
-    
+
     try {
-      window.localStorage.setItem('monkey-one-accent-color-history', JSON.stringify(this.accentColorHistory))
-      window.localStorage.setItem('monkey-one-theme-mode-history', JSON.stringify(this.themeModeHistory))
+      window.localStorage.setItem(
+        'monkey-one-accent-color-history',
+        JSON.stringify(this.accentColorHistory)
+      )
+      window.localStorage.setItem(
+        'monkey-one-theme-mode-history',
+        JSON.stringify(this.themeModeHistory)
+      )
     } catch (error) {
       console.warn('Failed to save usage history:', error)
     }
@@ -136,14 +154,16 @@ export class ThemeAnalyticsTracker {
   }
 
   private updateFavoriteAccentColor() {
-    const maxColor = Object.entries(this.accentColorHistory).reduce((a, b) => 
-      this.accentColorHistory[a[0] as AccentColor] > this.accentColorHistory[b[0] as AccentColor] ? a : b
+    const maxColor = Object.entries(this.accentColorHistory).reduce((a, b) =>
+      this.accentColorHistory[a[0] as AccentColor] > this.accentColorHistory[b[0] as AccentColor]
+        ? a
+        : b
     )
     this.analytics.favoriteAccentColor = maxColor[0] as AccentColor
   }
 
   private updatePreferredThemeMode() {
-    const maxTheme = Object.entries(this.themeModeHistory).reduce((a, b) => 
+    const maxTheme = Object.entries(this.themeModeHistory).reduce((a, b) =>
       this.themeModeHistory[a[0] as ThemeMode] > this.themeModeHistory[b[0] as ThemeMode] ? a : b
     )
     this.analytics.preferredThemeMode = maxTheme[0] as ThemeMode
@@ -173,7 +193,10 @@ export class ThemeAnalyticsTracker {
 
   getUsageInsights() {
     // We track total interactions for analytics but don't need to use these specific totals
-    const totalInteractions = this.analytics.themeSwitches + this.analytics.accentColorChanges + this.analytics.contrastModeChanges
+    const totalInteractions =
+      this.analytics.themeSwitches +
+      this.analytics.accentColorChanges +
+      this.analytics.contrastModeChanges
 
     return {
       totalInteractions,
@@ -182,7 +205,7 @@ export class ThemeAnalyticsTracker {
       mostUsedColor: this.analytics.favoriteAccentColor,
       mostUsedTheme: this.analytics.preferredThemeMode,
       engagementLevel: this.calculateEngagementLevel(),
-      recommendations: this.generateRecommendations()
+      recommendations: this.generateRecommendations(),
     }
   }
 
@@ -220,8 +243,14 @@ export class ThemeAnalyticsTracker {
   reset() {
     this.analytics = getDefaultAnalytics()
     this.accentColorHistory = {
-      blue: 0, emerald: 0, violet: 0, rose: 0,
-      amber: 0, cyan: 0, pink: 0, indigo: 0
+      blue: 0,
+      emerald: 0,
+      violet: 0,
+      rose: 0,
+      amber: 0,
+      cyan: 0,
+      pink: 0,
+      indigo: 0,
     }
     this.themeModeHistory = { light: 0, dark: 0, system: 0 }
     this.save()
@@ -236,6 +265,6 @@ export function useThemeAnalytics() {
   return {
     analytics: themeAnalytics.getAnalytics(),
     insights: themeAnalytics.getUsageInsights(),
-    reset: () => themeAnalytics.reset()
+    reset: () => themeAnalytics.reset(),
   }
 }

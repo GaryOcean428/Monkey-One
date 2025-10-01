@@ -1,4 +1,28 @@
-import type { LLMProvider } from './index'
+// Forward declaration to avoid circular dependency
+import type { Message } from '../../../types'
+
+export interface LLMProvider {
+  id: string
+  name: string
+  sendMessage(
+    message: string,
+    context?: Message[],
+    options?: {
+      useRag?: boolean
+      documents?: string[]
+      maxTokens?: number
+    }
+  ): Promise<string>
+  streamResponse?(
+    message: string,
+    onChunk: (chunk: string) => void,
+    options?: {
+      useRag?: boolean
+      documents?: string[]
+      maxTokens?: number
+    }
+  ): Promise<void>
+}
 import type { Message } from '../../../types'
 
 // Use global fetch for API requests

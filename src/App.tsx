@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom'
 import { AuthModal } from './components/auth/auth-modal'
 import { useAuthContext } from './components/Auth/auth/AuthContext'
 import { Sidebar } from './components/Sidebar'
+import { ErrorBoundaryWrapper } from './components/error-boundary-wrapper'
 
 // Lazy load non-critical components to reduce the initial bundle size
 const LoadingOverlay = React.lazy(() =>
@@ -23,16 +24,24 @@ export function App() {
 
   return (
     <div className="bg-background flex h-screen overflow-hidden">
-      <Sidebar />
+      <ErrorBoundaryWrapper context="sidebar">
+        <Sidebar />
+      </ErrorBoundaryWrapper>
       <main className="flex-1 overflow-y-auto">
         <div className="min-h-full p-4 md:p-6 lg:p-8">
-          <Outlet />
+          <ErrorBoundaryWrapper context="main content">
+            <Outlet />
+          </ErrorBoundaryWrapper>
         </div>
       </main>
       <React.Suspense fallback={null}>
-        <LoadingOverlay />
+        <ErrorBoundaryWrapper context="loading overlay">
+          <LoadingOverlay />
+        </ErrorBoundaryWrapper>
       </React.Suspense>
-      <AuthModal isOpen={isAuthModalOpen} onClose={() => setAuthModalOpen(false)} />
+      <ErrorBoundaryWrapper context="auth modal">
+        <AuthModal isOpen={isAuthModalOpen} onClose={() => setAuthModalOpen(false)} />
+      </ErrorBoundaryWrapper>
     </div>
   )
 }

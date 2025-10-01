@@ -4,7 +4,7 @@ import { ThemeProvider } from './theme-provider'
 import { ModalProvider } from '@/contexts/ModalContext'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { Toaster } from 'react-hot-toast'
-import { ErrorBoundary } from '@/components/error-boundary'
+import { SimpleErrorBoundary } from '@/components/simple-error-boundary'
 
 // Import AuthProvider to provide authentication context
 const AuthProvider = React.lazy(() =>
@@ -29,7 +29,7 @@ const queryClient = new QueryClient({
 
 export function ProviderRegistry({ children }: ProviderRegistryProps) {
   return (
-    <ErrorBoundary>
+    <SimpleErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
           <React.Suspense
@@ -50,6 +50,6 @@ export function ProviderRegistry({ children }: ProviderRegistryProps) {
           </React.Suspense>
         </ThemeProvider>
       </QueryClientProvider>
-    </ErrorBoundary>
+    </SimpleErrorBoundary>
   )
 }

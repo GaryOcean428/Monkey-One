@@ -1,4 +1,12 @@
-import { RelevanceMetrics } from '../relevance/RelevanceScorer'
+// Forward declaration to avoid circular dependency
+export interface RelevanceMetrics {
+  temporalScore: number
+  contextualScore: number
+  frequencyScore: number
+  sourceScore: number
+  tagScore: number
+  finalScore: number
+}
 
 export interface VectorMetadata {
   id: string
