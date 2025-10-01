@@ -18,10 +18,8 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       react({
-        // Improve React bundle size by enabling babel optimizations
-        babel: {
-          plugins: [['@babel/plugin-transform-react-jsx', { runtime: 'automatic' }]],
-        },
+        jsxRuntime: 'automatic',
+        fastRefresh: true,
       }),
       tsconfigPaths(),
       compression({
@@ -72,13 +70,13 @@ export default defineConfig(({ mode }) => {
           preserveModules: false,
           // Dedupe and minimize code
           generatedCode: {
-            preset: 'es2020',
+            preset: 'es2015',
             constBindings: true,
             objectShorthand: true,
           },
           manualChunks: id => {
             // Priority-based chunking: Split largest dependencies first for maximum impact
-            
+
             // Critical ML Libraries (largest impact on bundle size)
             if (id.includes('@tensorflow')) {
               if (id.includes('@tensorflow/tfjs-core')) {
@@ -428,8 +426,17 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 4000,
       host: '0.0.0.0',
-      // Allow all hosts for development
-      allowedHosts: 'all',
+      // Allow specific hosts for development
+      allowedHosts: [
+        'localhost',
+        '127.0.0.1',
+        '4000--01999ce6-c3fb-7b1a-9f1e-48cbfd2197c8.us-east-1-01.gitpod.dev',
+        '.gitpod.dev',
+        '.github.dev',
+        '.codespaces.githubusercontent.com',
+        'monkey-one.dev',
+        'monkey-one-nine.vercel.app',
+      ],
       // Ensure static assets are served correctly
       fs: {
         allow: ['.'],
