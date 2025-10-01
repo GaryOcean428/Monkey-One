@@ -193,22 +193,18 @@
   "lint-staged": {
     "*.{ts,tsx}": [
       "eslint --fix --max-warnings 0",
-      "prettier --write",
-      "git add"
+      "prettier --write"
     ],
     "*.{js,jsx}": [
       "eslint --fix --max-warnings 0",
-      "prettier --write",
-      "git add"
+      "prettier --write"
     ],
     "*.{json,css,md,yml,yaml}": [
-      "prettier --write",
-      "git add"
+      "prettier --write"
     ],
     "package.json": [
       "sort-package-json",
-      "prettier --write",
-      "git add"
+      "prettier --write"
     ]
   },
   "resolutions": {

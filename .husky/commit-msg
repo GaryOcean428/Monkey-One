@@ -1,5 +1,4 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
+# Modern Husky v9+ format
 
 # Exit on any error
 set -e
