@@ -19,6 +19,11 @@ const Register = React.lazy(() =>
     default: module.default || module.Register || module,
   }))
 )
+const AuthCallback = React.lazy(() =>
+  import('./pages/AuthCallback').then(module => ({
+    default: module.AuthCallback,
+  }))
+)
 
 // Generate routes dynamically from configuration
 function generateRoutes() {
@@ -53,6 +58,10 @@ const router = createBrowserRouter(
     {
       path: 'register',
       element: createSimpleRoute(Register),
+    },
+    {
+      path: 'auth/callback',
+      element: createSimpleRoute(AuthCallback),
     },
   ],
   {

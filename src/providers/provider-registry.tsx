@@ -8,7 +8,7 @@ import { SimpleErrorBoundary } from '@/components/simple-error-boundary'
 
 // Import AuthProvider to provide authentication context
 const AuthProvider = React.lazy(() =>
-  import('@/components/Auth/auth/AuthProvider').then(module => ({
+  import('@/contexts/AuthContext').then(module => ({
     default: module.AuthProvider,
   }))
 )

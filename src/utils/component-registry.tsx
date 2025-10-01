@@ -56,8 +56,13 @@ export const lazyComponents = {
     }))
   ),
   AuthCallback: React.lazy(() =>
-    import('../pages/Auth/AuthCallback').then(module => ({
-      default: module.default || module.AuthCallback || module,
+    import('../pages/AuthCallback').then(module => ({
+      default: module.AuthCallback,
+    }))
+  ),
+  AuthTest: React.lazy(() =>
+    import('../pages/AuthTest').then(module => ({
+      default: module.AuthTest,
     }))
   ),
   PasswordReset: React.lazy(() =>
