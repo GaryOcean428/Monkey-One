@@ -1,0 +1,28 @@
+# PNPM Configuration
+# Allow build scripts for trusted packages
+enable-pre-post-scripts=true
+
+# Approve build scripts for specific packages
+@tailwindcss:registry=https://registry.npmjs.org/
+@tailwindcss/oxide:registry=https://registry.npmjs.org/
+
+# Hoist patterns for better compatibility
+hoist-pattern[]=*eslint*
+hoist-pattern[]=*prettier*
+hoist-pattern[]=@types/*
+
+# Shamefully hoist for compatibility with some packages
+shamefully-hoist=false
+
+# Store directory (optional - uses default)
+# store-dir=~/.pnpm-store
+
+# Lockfile settings
+lockfile=true
+prefer-frozen-lockfile=false
+
+# Node linker
+node-linker=isolated
+
+# Auto install peers
+auto-install-peers=true

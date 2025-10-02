@@ -407,7 +407,7 @@ export default defineConfig(({ mode }) => {
             return null
           },
           // These settings help balance chunk size and number of requests
-          chunkSizeWarningLimit: 1000, // Temporarily increase for clearer focus on critical chunks
+          // Note: chunkSizeWarningLimit moved to build.chunkSizeWarningLimit in newer Vite versions
           entryFileNames: 'assets/[name]-[hash].js',
           chunkFileNames: 'assets/[name]-[hash].js',
           assetFileNames: 'assets/[name]-[hash].[ext]',
