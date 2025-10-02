@@ -31,7 +31,7 @@ export interface AuthState {
 /**
  * Initialize Google OAuth2 authentication
  */
-export function initializeGoogleAuth(config: GoogleAuthConfig): Promise<void> {
+export function initializeGoogleAuth(_config: GoogleAuthConfig): Promise<void> {
   return new Promise((resolve, reject) => {
     // Load Google Identity Services script
     if (typeof window === 'undefined') {
@@ -51,15 +51,8 @@ export function initializeGoogleAuth(config: GoogleAuthConfig): Promise<void> {
     script.defer = true
 
     script.onload = () => {
-      // Initialize the Google OAuth2 client
-      window.google.accounts.oauth2.initCodeClient({
-        client_id: config.clientId,
-        scope: (config.scope || ['openid', 'email', 'profile']).join(' '),
-        ux_mode: 'popup',
-        callback: (response: unknown) => {
-          console.log('Google OAuth callback:', response)
-        },
-      })
+      // Google Identity Services library loaded
+      // Client will be initialized in signInWithGoogle with redirect mode
       resolve()
     }
 
@@ -73,45 +66,87 @@ export function initializeGoogleAuth(config: GoogleAuthConfig): Promise<void> {
 
 /**
  * Sign in with Google OAuth2
+ * Uses direct OAuth2 URL construction for better reliability
  */
-export async function signInWithGoogle(config: GoogleAuthConfig): Promise<GoogleUser | null> {
+export async function signInWithGoogle(config: GoogleAuthConfig): Promise<void> {
   try {
-    await initializeGoogleAuth(config)
+    // Store the redirect URI for the callback
+    globalThis.localStorage.setItem('oauth_redirect_uri', config.redirectUri)
 
-    return new Promise((resolve, reject) => {
-      const client = window.google.accounts.oauth2.initCodeClient({
-        client_id: config.clientId,
-        scope: (config.scope || ['openid', 'email', 'profile']).join(' '),
-        ux_mode: 'popup',
-        callback: async (response: { error?: string; code?: string }) => {
-          try {
-            if (response.error) {
-              reject(new Error(response.error))
-              return
-            }
+    // Construct OAuth2 authorization URL manually
+    const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth')
+    authUrl.searchParams.set('client_id', config.clientId)
+    authUrl.searchParams.set('redirect_uri', config.redirectUri)
+    authUrl.searchParams.set('response_type', 'code')
+    authUrl.searchParams.set('scope', (config.scope || ['openid', 'email', 'profile']).join(' '))
+    authUrl.searchParams.set('access_type', 'offline')
+    authUrl.searchParams.set('prompt', 'consent')
 
-            // Exchange authorization code for tokens
-            const tokenResponse = await exchangeCodeForTokens(response.code, config)
+    console.log('Redirecting to Google OAuth:', authUrl.toString())
 
-            if (!tokenResponse) {
-              reject(new Error('Failed to exchange code for tokens'))
-              return
-            }
-
-            // Get user info
-            const userInfo = await getUserInfo(tokenResponse.access_token)
-            resolve(userInfo)
-          } catch (error) {
-            reject(error)
-          }
-        },
-      })
-
-      client.requestCode()
-    })
+    // Redirect to Google's OAuth authorization page
+    window.location.href = authUrl.toString()
   } catch (error) {
     console.error('Google sign-in failed:', error)
-    return null
+    throw error
+  }
+}
+
+/**
+ * Handle OAuth callback after redirect from Google
+ */
+export async function handleOAuthCallback(config: GoogleAuthConfig): Promise<GoogleUser | null> {
+  try {
+    // Check if we have an authorization code in the URL
+    const urlParams = new URLSearchParams(window.location.search)
+    const code = urlParams.get('code')
+    const error = urlParams.get('error')
+
+    if (error) {
+      console.error('OAuth error:', error)
+      throw new Error(`OAuth error: ${error}`)
+    }
+
+    if (!code) {
+      console.error('No authorization code found in callback')
+      return null
+    }
+
+    console.log('Processing OAuth callback with code:', code.substring(0, 10) + '...')
+
+    // Get the stored redirect URI
+    const storedRedirectUri = globalThis.localStorage.getItem('oauth_redirect_uri')
+    const redirectUri = storedRedirectUri || config.redirectUri
+
+    console.log('Using redirect URI for token exchange:', redirectUri)
+
+    // Exchange authorization code for tokens
+    const tokenResponse = await exchangeCodeForTokens(code, {
+      ...config,
+      redirectUri,
+    })
+
+    if (!tokenResponse) {
+      throw new Error('Failed to exchange code for tokens')
+    }
+
+    // Get user info
+    const userInfo = await getUserInfo(tokenResponse.access_token)
+
+    if (userInfo) {
+      // Store user info
+      storeGoogleUser(userInfo)
+      // Clean up the stored redirect URI
+      globalThis.localStorage.removeItem('oauth_redirect_uri')
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname)
+    }
+
+    return userInfo
+  } catch (error) {
+    console.error('OAuth callback handling failed:', error)
+    globalThis.localStorage.removeItem('oauth_redirect_uri')
+    throw error
   }
 }
 
@@ -123,8 +158,7 @@ async function exchangeCodeForTokens(
   config: GoogleAuthConfig
 ): Promise<{ access_token: string; id_token: string } | null> {
   try {
-    const clientSecret =
-      import.meta.env.VITE_GOOGLE_CLIENT_SECRET || process.env.GOOGLE_CLIENT_SECRET
+    const clientSecret = import.meta.env.VITE_GOOGLE_CLIENT_SECRET || ''
 
     if (!clientSecret) {
       console.error('Google Client Secret is missing')
@@ -186,7 +220,7 @@ async function getUserInfo(accessToken: string): Promise<GoogleUser | null> {
  * Create Google Auth configuration from environment variables
  */
 export function createGoogleAuthConfig(): GoogleAuthConfig | null {
-  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID
+  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
 
   // Determine the current URL for redirect
   let currentUrl = 'http://localhost:4000'
@@ -194,8 +228,7 @@ export function createGoogleAuthConfig(): GoogleAuthConfig | null {
     currentUrl = window.location.origin
   } else {
     // Server-side: use environment variable
-    currentUrl =
-      import.meta.env.VITE_PUBLIC_URL || process.env.VITE_PUBLIC_URL || 'http://localhost:4000'
+    currentUrl = import.meta.env.VITE_PUBLIC_URL || 'http://localhost:4000'
   }
 
   if (!clientId) {

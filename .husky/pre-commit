@@ -1,9 +1,16 @@
 # Modern Husky v9+ format
 
-# Exit on any error
+# Exit on any error (but allow pnpm not found)
 set -e
 
 echo "🔍 Running pre-commit checks..."
+
+# Check if pnpm is available
+if ! command -v pnpm &> /dev/null; then
+  echo "⚠️  pnpm not found in PATH, skipping pre-commit hooks"
+  echo "ℹ️  Install pnpm globally or run: corepack enable"
+  exit 0
+fi
 
 # Run lint-staged for formatting and linting
 echo "📝 Running lint-staged..."
