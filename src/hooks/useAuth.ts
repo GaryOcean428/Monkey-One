@@ -93,6 +93,36 @@ export function useAuth() {
     }
   }, [])
 
+  const signInWithGoogle = useCallback(async (): Promise<AuthResponse> => {
+    try {
+      setLoading(true)
+      const { error: signInError } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      })
+
+      if (signInError) {
+        setError(signInError)
+        return { user: null, error: signInError }
+      }
+
+      // OAuth redirects, so we don't get user data immediately
+      return { user: null, error: null }
+    } catch (error) {
+      const authError = error as AuthError
+      setError(authError)
+      return { user: null, error: authError }
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
   const signOut = useCallback(async () => {
     try {
       setLoading(true)
@@ -115,6 +145,7 @@ export function useAuth() {
     error,
     loading,
     signIn,
+    signInWithGoogle,
     signOut,
   }
 }
