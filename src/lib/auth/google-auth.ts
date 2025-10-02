@@ -4,7 +4,7 @@
  * Provides Google OAuth2 authentication for user login and OIDC for backend access
  */
 
-import { getGCPCredentials, createGCPConfigFromEnv } from './oidc-gcp'
+// import { getGCPCredentials, createGCPConfigFromEnv } from './oidc-gcp'
 import { getValidOIDCToken } from './oidc'
 
 export interface GoogleUser {
@@ -49,20 +49,20 @@ export function initializeGoogleAuth(config: GoogleAuthConfig): Promise<void> {
     script.src = 'https://accounts.google.com/gsi/client'
     script.async = true
     script.defer = true
-    
+
     script.onload = () => {
       // Initialize the Google OAuth2 client
       window.google.accounts.oauth2.initCodeClient({
         client_id: config.clientId,
         scope: (config.scope || ['openid', 'email', 'profile']).join(' '),
         ux_mode: 'popup',
-        callback: (response: any) => {
+        callback: (response: unknown) => {
           console.log('Google OAuth callback:', response)
         },
       })
       resolve()
     }
-    
+
     script.onerror = () => {
       reject(new Error('Failed to load Google Identity Services'))
     }
@@ -83,7 +83,7 @@ export async function signInWithGoogle(config: GoogleAuthConfig): Promise<Google
         client_id: config.clientId,
         scope: (config.scope || ['openid', 'email', 'profile']).join(' '),
         ux_mode: 'popup',
-        callback: async (response: any) => {
+        callback: async (response: { error?: string; code?: string }) => {
           try {
             if (response.error) {
               reject(new Error(response.error))
@@ -92,7 +92,7 @@ export async function signInWithGoogle(config: GoogleAuthConfig): Promise<Google
 
             // Exchange authorization code for tokens
             const tokenResponse = await exchangeCodeForTokens(response.code, config)
-            
+
             if (!tokenResponse) {
               reject(new Error('Failed to exchange code for tokens'))
               return
@@ -123,13 +123,22 @@ async function exchangeCodeForTokens(
   config: GoogleAuthConfig
 ): Promise<{ access_token: string; id_token: string } | null> {
   try {
-    const response = await fetch('https://oauth2.googleapis.com/token', {
+    const clientSecret =
+      import.meta.env.VITE_GOOGLE_CLIENT_SECRET || process.env.GOOGLE_CLIENT_SECRET
+
+    if (!clientSecret) {
+      console.error('Google Client Secret is missing')
+      return null
+    }
+
+    const response = await globalThis.fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: new URLSearchParams({
         client_id: config.clientId,
+        client_secret: clientSecret,
         code,
         grant_type: 'authorization_code',
         redirect_uri: config.redirectUri,
@@ -154,7 +163,7 @@ async function exchangeCodeForTokens(
  */
 async function getUserInfo(accessToken: string): Promise<GoogleUser | null> {
   try {
-    const response = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+    const response = await globalThis.fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -178,14 +187,15 @@ async function getUserInfo(accessToken: string): Promise<GoogleUser | null> {
  */
 export function createGoogleAuthConfig(): GoogleAuthConfig | null {
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID
-  
+
   // Determine the current URL for redirect
   let currentUrl = 'http://localhost:4000'
   if (typeof window !== 'undefined') {
     currentUrl = window.location.origin
   } else {
     // Server-side: use environment variable
-    currentUrl = import.meta.env.VITE_PUBLIC_URL || process.env.VITE_PUBLIC_URL || 'http://localhost:4000'
+    currentUrl =
+      import.meta.env.VITE_PUBLIC_URL || process.env.VITE_PUBLIC_URL || 'http://localhost:4000'
   }
 
   if (!clientId) {
@@ -206,7 +216,7 @@ export function createGoogleAuthConfig(): GoogleAuthConfig | null {
 export function isFullyAuthenticated(): boolean {
   const oidcToken = getValidOIDCToken()
   const googleUser = getStoredGoogleUser()
-  
+
   return !!(oidcToken && googleUser)
 }
 
@@ -219,7 +229,7 @@ export function getStoredGoogleUser(): GoogleUser | null {
   }
 
   try {
-    const stored = localStorage.getItem('monkey-one-google-user')
+    const stored = globalThis.localStorage.getItem('monkey-one-google-user')
     return stored ? JSON.parse(stored) : null
   } catch (error) {
     console.error('Failed to get stored Google user:', error)
@@ -236,7 +246,7 @@ export function storeGoogleUser(user: GoogleUser): void {
   }
 
   try {
-    localStorage.setItem('monkey-one-google-user', JSON.stringify(user))
+    globalThis.localStorage.setItem('monkey-one-google-user', JSON.stringify(user))
   } catch (error) {
     console.error('Failed to store Google user:', error)
   }
@@ -251,7 +261,7 @@ export function clearStoredGoogleUser(): void {
   }
 
   try {
-    localStorage.removeItem('monkey-one-google-user')
+    globalThis.localStorage.removeItem('monkey-one-google-user')
   } catch (error) {
     console.error('Failed to clear stored Google user:', error)
   }
@@ -282,7 +292,7 @@ export async function signOut(): Promise<void> {
 export function getAuthStatus(): AuthState {
   const user = getStoredGoogleUser()
   const oidcToken = getValidOIDCToken()
-  
+
   return {
     user,
     isAuthenticated: !!(user && oidcToken),
@@ -297,7 +307,7 @@ declare global {
     google?: {
       accounts: {
         oauth2: {
-          initCodeClient: (config: any) => any
+          initCodeClient: (config: unknown) => { requestCode: () => void }
           revoke: (accessToken: string, callback?: () => void) => void
         }
       }
