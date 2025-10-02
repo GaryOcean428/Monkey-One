@@ -93,6 +93,10 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
         if (hasCode)
         {
           console.log('OAuth callback detected, processing...')
+
+          // Clean up URL IMMEDIATELY to prevent hydration issues
+          window.history.replaceState({}, document.title, window.location.pathname)
+
           const config = createGoogleAuthConfig()
           if (config)
           {

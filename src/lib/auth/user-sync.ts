@@ -25,40 +25,27 @@ export interface SupabaseProfile {
 
 /**
  * Sync Google OAuth user to Supabase
+ * Creates or updates profile in Supabase database (no OAuth needed - we already authenticated with Google)
  */
-export async function syncGoogleUserToSupabase(googleUser: GoogleUser): Promise<SupabaseProfile | null> {
+export async function syncGoogleUserToSupabase(
+  googleUser: GoogleUser
+): Promise<SupabaseProfile | null> {
   try {
-    // First, sign in the user to Supabase using their Google email
-    // This creates a Supabase auth user if one doesn't exist
-    const { data: authData, error: authError } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        skipBrowserRedirect: true,
-        queryParams: {
-          access_type: 'offline',
-          prompt: 'consent',
-        },
-      },
-    })
-
-    if (authError) {
-      console.warn('Supabase OAuth sign-in failed, creating manual profile:', authError)
-      return await createManualProfile(googleUser)
-    }
-
     // Check if profile already exists
     const { data: existingProfile, error: profileError } = await supabase
       .from('profiles')
       .select('*')
       .eq('email', googleUser.email)
-      .single()
+      .maybeSingle()
 
     if (existingProfile && !profileError) {
       // Update existing profile with latest Google data
+      console.log('Updating existing Supabase profile for:', googleUser.email)
       return await updateProfile(existingProfile.id, googleUser)
     }
 
     // Create new profile
+    console.log('Creating new Supabase profile for:', googleUser.email)
     return await createProfile(googleUser)
   } catch (error) {
     console.error('Failed to sync Google user to Supabase:', error)
@@ -84,11 +71,7 @@ async function createProfile(googleUser: GoogleUser): Promise<SupabaseProfile | 
       },
     }
 
-    const { data, error } = await supabase
-      .from('profiles')
-      .insert(profileData)
-      .select()
-      .single()
+    const { data, error } = await supabase.from('profiles').insert(profileData).select().single()
 
     if (error) {
       console.error('Failed to create profile:', error)
@@ -104,49 +87,12 @@ async function createProfile(googleUser: GoogleUser): Promise<SupabaseProfile | 
 }
 
 /**
- * Create manual profile when OAuth fails
- */
-async function createManualProfile(googleUser: GoogleUser): Promise<SupabaseProfile | null> {
-  try {
-    // Generate a unique ID for manual profiles
-    const manualUserId = `google_${googleUser.id}`
-    
-    const profileData = {
-      user_id: manualUserId,
-      username: generateUsername(googleUser.email),
-      email: googleUser.email,
-      name: googleUser.name,
-      avatar_url: googleUser.picture,
-      preferences: {
-        theme: 'system' as const,
-        language: 'en',
-        notifications: true,
-      },
-    }
-
-    const { data, error } = await supabase
-      .from('profiles')
-      .insert(profileData)
-      .select()
-      .single()
-
-    if (error) {
-      console.error('Failed to create manual profile:', error)
-      return null
-    }
-
-    console.log('Created manual Supabase profile for Google user:', googleUser.email)
-    return data
-  } catch (error) {
-    console.error('Error creating manual profile:', error)
-    return null
-  }
-}
-
-/**
  * Update existing profile with Google data
  */
-async function updateProfile(profileId: string, googleUser: GoogleUser): Promise<SupabaseProfile | null> {
+async function updateProfile(
+  profileId: string,
+  googleUser: GoogleUser
+): Promise<SupabaseProfile | null> {
   try {
     const updateData = {
       name: googleUser.name,
@@ -211,10 +157,7 @@ export async function getSupabaseProfile(googleUser: GoogleUser): Promise<Supaba
  */
 export async function deleteUserProfile(email: string): Promise<boolean> {
   try {
-    const { error } = await supabase
-      .from('profiles')
-      .delete()
-      .eq('email', email)
+    const { error } = await supabase.from('profiles').delete().eq('email', email)
 
     if (error) {
       console.error('Failed to delete profile:', error)
@@ -234,14 +177,10 @@ export async function deleteUserProfile(email: string): Promise<boolean> {
  */
 export async function userExistsInSupabase(email: string): Promise<boolean> {
   try {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('email', email)
-      .single()
+    const { data, error } = await supabase.from('profiles').select('id').eq('email', email).single()
 
     return !error && !!data
-  } catch (error) {
+  } catch {
     return false
   }
 }
