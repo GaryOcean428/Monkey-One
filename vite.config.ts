@@ -446,14 +446,16 @@ export default defineConfig(({ mode }) => {
       port: 4000,
     },
     define: {
-      // Ensure all environment variables are properly defined with fallbacks
+      // Force production URL for builds - prioritize custom domain
       'import.meta.env.VITE_PUBLIC_URL': JSON.stringify(
-        env.VITE_PUBLIC_URL ||
-          (mode === 'development' ? 'http://localhost:4000' : 'https://monkey-one.dev')
+        mode === 'production'
+          ? 'https://monkey-one.dev'
+          : env.VITE_PUBLIC_URL || 'http://localhost:4000'
       ),
       'process.env.VITE_PUBLIC_URL': JSON.stringify(
-        env.VITE_PUBLIC_URL ||
-          (mode === 'development' ? 'http://localhost:4000' : 'https://monkey-one.dev')
+        mode === 'production'
+          ? 'https://monkey-one.dev'
+          : env.VITE_PUBLIC_URL || 'http://localhost:4000'
       ),
       'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(env.VITE_SUPABASE_URL),
       'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(env.VITE_SUPABASE_ANON_KEY),
