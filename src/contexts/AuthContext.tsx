@@ -92,12 +92,13 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
         if (hasCode) {
           console.log('OAuth callback detected, processing...')
 
-          // Clean up URL IMMEDIATELY to prevent hydration issues
-          window.history.replaceState({}, document.title, window.location.pathname)
-
           const config = createGoogleAuthConfig()
           if (config) {
+            // The callback needs to read the code parameter from the URL
             const user = await handleOAuthCallback(config)
+            
+            // Clean up URL after processing to prevent hydration issues
+            window.history.replaceState({}, document.title, window.location.pathname)
             if (user) {
               console.log('OAuth callback processed successfully:', user)
               // Sync user to Supabase
