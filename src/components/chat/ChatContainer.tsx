@@ -52,15 +52,27 @@ export const ChatContainer: React.FC = () => {
         <div className="flex-1 space-y-4 overflow-y-auto p-4">
           <div className="mb-4 flex justify-between">
             <Button variant="outline" size="sm" onClick={scrollToBottom}>
-              <RefreshCw className="w-4 h-4 mr-2" />
+              <RefreshCw className="mr-2 h-4 w-4" />
               Refresh Chat
             </Button>
-            <Button variant="outline" size="sm" onClick={() => setFilterUser(filterUser ? null : 'user')}>
-              <Filter className="w-4 h-4 mr-2" />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setFilterUser(filterUser ? null : 'user')}
+            >
+              <Filter className="mr-2 h-4 w-4" />
               {filterUser ? 'Clear Filter' : 'Filter by User'}
             </Button>
-            <Button variant="outline" size="sm" onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}>
-              {sortOrder === 'asc' ? <SortAsc className="w-4 h-4 mr-2" /> : <SortDesc className="w-4 h-4 mr-2" />}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+            >
+              {sortOrder === 'asc' ? (
+                <SortAsc className="mr-2 h-4 w-4" />
+              ) : (
+                <SortDesc className="mr-2 h-4 w-4" />
+              )}
               Sort by Time
             </Button>
           </div>

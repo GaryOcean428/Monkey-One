@@ -30,12 +30,12 @@ const QuickAction: React.FC<QuickActionProps> = ({ icon: Icon, title, descriptio
       onClick={() => navigate(path)}
     >
       <div className="flex items-start space-x-4">
-        <div className="rounded-lg bg-primary/10 p-2">
-          <Icon className="h-6 w-6 text-primary" />
+        <div className="bg-primary/10 rounded-lg p-2">
+          <Icon className="text-primary h-6 w-6" />
         </div>
         <div className="flex-1">
           <h3 className="text-lg font-semibold">{title}</h3>
-          <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+          <p className="text-muted-foreground mt-1 text-sm">{description}</p>
         </div>
         <Button variant="secondary" size="sm">
           <ArrowRight className="h-4 w-4" />
@@ -57,14 +57,14 @@ const MetricCard: React.FC<MetricCardProps> = ({ icon: Icon, title, value, trend
   <Card className="p-6">
     <div className="flex items-start justify-between">
       <div>
-        <p className="text-sm font-medium text-muted-foreground">{title}</p>
+        <p className="text-muted-foreground text-sm font-medium">{title}</p>
         <h3 className="mt-2 text-2xl font-semibold">{value}</h3>
         {trend && (
           <p className={cn('mt-2 text-sm', trendUp ? 'text-green-600' : 'text-red-600')}>{trend}</p>
         )}
       </div>
-      <div className="rounded-lg bg-primary/10 p-2">
-        <Icon className="h-6 w-6 text-primary" />
+      <div className="bg-primary/10 rounded-lg p-2">
+        <Icon className="text-primary h-6 w-6" />
       </div>
     </div>
   </Card>
@@ -76,7 +76,7 @@ export const DashboardHome: React.FC = () => {
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold">Dashboard</h1>
-        <p className="mt-2 text-muted-foreground">
+        <p className="text-muted-foreground mt-2">
           Welcome back! Here's an overview of your system.
         </p>
       </div>

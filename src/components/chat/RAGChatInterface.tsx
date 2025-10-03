@@ -1,235 +1,249 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { useToast } from '../ui/use-toast';
-import { Button } from '../ui/button';
-import { Textarea } from '../ui/textarea';
-import { Card } from '../ui/card';
-import { LoadingSpinner } from '../ui/loading-spinner';
-import { generateRAGResponse, addDocumentsToRAG } from '@/lib/ai';
-import { marked } from 'marked';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../ui/dialog';
-import { Label } from '../ui/label';
-import { Input } from '../ui/input';
-import { RefreshCw, Filter, SortAsc, SortDesc } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react'
+import { useToast } from '../ui/use-toast'
+import { Button } from '../ui/button'
+import { Textarea } from '../ui/textarea'
+import { Card } from '../ui/card'
+import { LoadingSpinner } from '../ui/loading-spinner'
+import { generateRAGResponse, addDocumentsToRAG } from '@/lib/ai'
+import { marked } from 'marked'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '../ui/dialog'
+import { Label } from '../ui/label'
+import { Input } from '../ui/input'
+import { RefreshCw, Filter, SortAsc, SortDesc } from 'lucide-react'
 
 interface Message {
-  role: 'user' | 'assistant' | 'system';
-  content: string;
+  role: 'user' | 'assistant' | 'system'
+  content: string
 }
 
 export function RAGChatInterface() {
-  const [prompt, setPrompt] = useState('');
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [isDocDialogOpen, setIsDocDialogOpen] = useState(false);
-  const [docContent, setDocContent] = useState('');
-  const [docSource, setDocSource] = useState('');
-  const [isUploading, setIsUploading] = useState(false);
-  const [fileContent, setFileContent] = useState<string | null>(null);
-  const [fileName, setFileName] = useState('');
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const { toast } = useToast();
-  const [filterUser, setFilterUser] = useState<string | null>(null);
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [prompt, setPrompt] = useState('')
+  const [messages, setMessages] = useState<Message[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const [isDocDialogOpen, setIsDocDialogOpen] = useState(false)
+  const [docContent, setDocContent] = useState('')
+  const [docSource, setDocSource] = useState('')
+  const [isUploading, setIsUploading] = useState(false)
+  const [fileContent, setFileContent] = useState<string | null>(null)
+  const [fileName, setFileName] = useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const { toast } = useToast()
+  const [filterUser, setFilterUser] = useState<string | null>(null)
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
 
   // Auto-scroll to bottom of chat
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-  
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
+
   // Handle file selection
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    
-    setFileName(file.name);
-    
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const content = event.target?.result as string;
-      setFileContent(content);
-      setDocContent(content);
-      setDocSource(file.name);
-    };
-    reader.readAsText(file);
-  };
-  
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setFileName(file.name)
+
+    const reader = new FileReader()
+    reader.onload = event => {
+      const content = event.target?.result as string
+      setFileContent(content)
+      setDocContent(content)
+      setDocSource(file.name)
+    }
+    reader.readAsText(file)
+  }
+
   // Handle document upload to vector store
   const handleDocumentUpload = async () => {
     try {
-      setIsUploading(true);
-      
+      setIsUploading(true)
+
       const documentToAdd = {
         text: docContent,
         metadata: {
           source: docSource || 'manual-entry',
           timestamp: new Date().toISOString(),
-        }
-      };
-      
-      await addDocumentsToRAG([documentToAdd]);
-      
+        },
+      }
+
+      await addDocumentsToRAG([documentToAdd])
+
       toast({
         title: 'Document Added',
         description: 'Document has been added to the knowledge base.',
-      });
-      
-      setIsDocDialogOpen(false);
-      setDocContent('');
-      setDocSource('');
-      setFileContent(null);
-      setFileName('');
-      
+      })
+
+      setIsDocDialogOpen(false)
+      setDocContent('')
+      setDocSource('')
+      setFileContent(null)
+      setFileName('')
+
       if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+        fileInputRef.current.value = ''
       }
-      
     } catch (error) {
       toast({
         title: 'Error',
         description: 'Failed to add document to knowledge base',
         variant: 'destructive',
-      });
-      console.error('Error adding document:', error);
+      })
+      console.error('Error adding document:', error)
     } finally {
-      setIsUploading(false);
+      setIsUploading(false)
     }
-  };
-  
+  }
+
   // Handle chat form submission
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!prompt.trim()) return;
-    
+    e.preventDefault()
+
+    if (!prompt.trim()) return
+
     // Add user message to chat
-    const userMessage = { role: 'user', content: prompt };
-    setMessages(prev => [...prev, userMessage]);
-    
+    const userMessage = { role: 'user', content: prompt }
+    setMessages(prev => [...prev, userMessage])
+
     try {
-      setIsLoading(true);
-      
+      setIsLoading(true)
+
       // Get response using RAG
       const response = await fetch('/api/ai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prompt,
-          system: 'You are a helpful AI assistant with RAG capabilities. Use the provided context to answer questions accurately.',
+          system:
+            'You are a helpful AI assistant with RAG capabilities. Use the provided context to answer questions accurately.',
           useRag: true,
           stream: false,
         }),
-      });
-      
+      })
+
       if (!response.ok) {
-        throw new Error('Failed to get RAG response');
+        throw new Error('Failed to get RAG response')
       }
-      
-      const data = await response.json();
-      
+
+      const data = await response.json()
+
       // Add the assistant message to chat
-      setMessages(prev => [...prev, { role: 'assistant', content: data.response }]);
-      
+      setMessages(prev => [...prev, { role: 'assistant', content: data.response }])
     } catch (error) {
       toast({
         title: 'Error',
         description: 'Failed to get AI response',
         variant: 'destructive',
-      });
-      console.error('Error getting AI response:', error);
+      })
+      console.error('Error getting AI response:', error)
     } finally {
-      setIsLoading(false);
-      setPrompt('');
+      setIsLoading(false)
+      setPrompt('')
     }
-  };
-  
+  }
+
   const filteredMessages = filterUser
     ? messages.filter(message => message.role === filterUser)
-    : messages;
+    : messages
 
   const sortedMessages = filteredMessages.sort((a, b) => {
     if (sortOrder === 'asc') {
-      return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
+      return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
     } else {
-      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     }
-  });
+  })
 
   return (
-    <div className="flex flex-col space-y-4 max-w-3xl mx-auto">
-      <div className="flex justify-between items-center">
+    <div className="mx-auto flex max-w-3xl flex-col space-y-4">
+      <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">RAG-Powered AI Chat</h2>
-        <Button
-          onClick={() => setIsDocDialogOpen(true)}
-          variant="outline"
-        >
+        <Button onClick={() => setIsDocDialogOpen(true)} variant="outline">
           Add Document
         </Button>
       </div>
-      
-      {/* Chat Messages */}
-      <Card className="p-4 overflow-y-auto max-h-[500px]">
-        <div className="space-y-4">
 
+      {/* Chat Messages */}
+      <Card className="max-h-[500px] overflow-y-auto p-4">
+        <div className="space-y-4">
           <div className="mb-4 flex justify-between">
-            <Button variant="outline" size="sm" onClick={() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })}>
-              <RefreshCw className="w-4 h-4 mr-2" />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })}
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
               Refresh Chat
             </Button>
-            <Button variant="outline" size="sm" onClick={() => setFilterUser(filterUser ? null : 'user')}>
-              <Filter className="w-4 h-4 mr-2" />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setFilterUser(filterUser ? null : 'user')}
+            >
+              <Filter className="mr-2 h-4 w-4" />
               {filterUser ? 'Clear Filter' : 'Filter by User'}
             </Button>
-            <Button variant="outline" size="sm" onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}>
-              {sortOrder === 'asc' ? <SortAsc className="w-4 h-4 mr-2" /> : <SortDesc className="w-4 h-4 mr-2" />}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+            >
+              {sortOrder === 'asc' ? (
+                <SortAsc className="mr-2 h-4 w-4" />
+              ) : (
+                <SortDesc className="mr-2 h-4 w-4" />
+              )}
               Sort by Time
             </Button>
           </div>
           {sortedMessages.length === 0 ? (
-            <p className="text-center text-muted-foreground">
-              Send a message to start chatting. This AI assistant uses Retrieval Augmented Generation (RAG) 
-              to provide context-aware responses based on your knowledge base.
+            <p className="text-muted-foreground text-center">
+              Send a message to start chatting. This AI assistant uses Retrieval Augmented
+              Generation (RAG) to provide context-aware responses based on your knowledge base.
             </p>
           ) : (
             sortedMessages.map((message, i) => (
-              <div 
-                key={i} 
-                className={`p-3 rounded-lg ${
-                  message.role === 'user' 
-                    ? 'bg-primary/10 ml-auto max-w-[80%]' 
+              <div
+                key={i}
+                className={`rounded-lg p-3 ${
+                  message.role === 'user'
+                    ? 'bg-primary/10 ml-auto max-w-[80%]'
                     : 'bg-secondary/10 mr-auto max-w-[80%]'
                 }`}
               >
-                <div 
+                <div
                   className="prose dark:prose-invert"
-                  dangerouslySetInnerHTML={{ 
-                    __html: marked(message.content) 
+                  dangerouslySetInnerHTML={{
+                    __html: marked(message.content),
                   }}
                 />
               </div>
             ))
           )}
-          
+
           {/* Auto-scroll anchor */}
           <div ref={messagesEndRef} />
         </div>
       </Card>
-      
+
       {/* Input Form */}
       <form onSubmit={handleSubmit} className="space-y-2">
         <Textarea
           placeholder="Ask a question about your documents..."
           value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
+          onChange={e => setPrompt(e.target.value)}
           disabled={isLoading}
           className="min-h-[100px]"
         />
-        
-        <Button 
-          type="submit" 
-          disabled={isLoading || !prompt.trim()}
-          className="w-full"
-        >
+
+        <Button type="submit" disabled={isLoading || !prompt.trim()} className="w-full">
           {isLoading ? (
             <>
               <LoadingSpinner size="sm" className="mr-2" />
@@ -240,7 +254,7 @@ export function RAGChatInterface() {
           )}
         </Button>
       </form>
-      
+
       {/* Document Upload Dialog */}
       <Dialog open={isDocDialogOpen} onOpenChange={setIsDocDialogOpen}>
         <DialogContent className="sm:max-w-[600px]">
@@ -250,7 +264,7 @@ export function RAGChatInterface() {
               Upload a text file or paste content to add to your RAG knowledge base.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="docSource" className="text-right">
@@ -260,11 +274,11 @@ export function RAGChatInterface() {
                 id="docSource"
                 placeholder="Document name or source"
                 value={docSource}
-                onChange={(e) => setDocSource(e.target.value)}
+                onChange={e => setDocSource(e.target.value)}
                 className="col-span-3"
               />
             </div>
-            
+
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="fileUpload" className="text-right">
                 File
@@ -277,35 +291,29 @@ export function RAGChatInterface() {
                   onChange={handleFileChange}
                   accept=".txt,.md"
                 />
-                {fileName && <p className="text-sm mt-1">Selected: {fileName}</p>}
+                {fileName && <p className="mt-1 text-sm">Selected: {fileName}</p>}
               </div>
             </div>
-            
+
             <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="docContent" className="text-right pt-2">
+              <Label htmlFor="docContent" className="pt-2 text-right">
                 Content
               </Label>
               <Textarea
                 id="docContent"
                 placeholder="Paste document content here..."
                 value={docContent}
-                onChange={(e) => setDocContent(e.target.value)}
+                onChange={e => setDocContent(e.target.value)}
                 className="col-span-3 min-h-[200px]"
               />
             </div>
           </div>
-          
+
           <DialogFooter>
-            <Button 
-              variant="outline" 
-              onClick={() => setIsDocDialogOpen(false)}
-            >
+            <Button variant="outline" onClick={() => setIsDocDialogOpen(false)}>
               Cancel
             </Button>
-            <Button 
-              onClick={handleDocumentUpload}
-              disabled={isUploading || !docContent.trim()}
-            >
+            <Button onClick={handleDocumentUpload} disabled={isUploading || !docContent.trim()}>
               {isUploading ? (
                 <>
                   <LoadingSpinner size="sm" className="mr-2" />
@@ -319,5 +327,5 @@ export function RAGChatInterface() {
         </DialogContent>
       </Dialog>
     </div>
-  );
+  )
 }

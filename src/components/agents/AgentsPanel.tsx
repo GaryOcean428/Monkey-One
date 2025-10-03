@@ -143,12 +143,24 @@ export const AgentsPanel: React.FC = () => {
 
       <div className="flex items-center justify-between">
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => setFilterType(filterType ? null : AgentType.BASE)}>
-            <Filter className="w-4 h-4 mr-2" />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setFilterType(filterType ? null : AgentType.BASE)}
+          >
+            <Filter className="mr-2 h-4 w-4" />
             {filterType ? 'Clear Filter' : 'Filter by Type'}
           </Button>
-          <Button variant="outline" size="sm" onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}>
-            {sortOrder === 'asc' ? <SortAsc className="w-4 h-4 mr-2" /> : <SortDesc className="w-4 h-4 mr-2" />}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+          >
+            {sortOrder === 'asc' ? (
+              <SortAsc className="mr-2 h-4 w-4" />
+            ) : (
+              <SortDesc className="mr-2 h-4 w-4" />
+            )}
             Sort by Status
           </Button>
         </div>
@@ -160,7 +172,7 @@ export const AgentsPanel: React.FC = () => {
             className="w-48"
           />
           <Button variant="outline" size="sm">
-            <Search className="w-4 h-4" />
+            <Search className="h-4 w-4" />
           </Button>
         </div>
       </div>

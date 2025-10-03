@@ -1,28 +1,28 @@
-import React, { createContext, useContext, useRef } from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { ToolhouseErrorBoundary } from '../components/ErrorBoundary/ToolhouseErrorBoundary';
+import React, { createContext, useContext, useRef } from 'react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { ToolhouseErrorBoundary } from '../components/ErrorBoundary/ToolhouseErrorBoundary'
 
 interface ToolhouseContextValue {
-  queryClient: QueryClient;
+  queryClient: QueryClient
 }
 
-const ToolhouseContext = createContext<ToolhouseContextValue | null>(null);
+const ToolhouseContext = createContext<ToolhouseContextValue | null>(null)
 
 export const useToolhouseContext = () => {
-  const context = useContext(ToolhouseContext);
+  const context = useContext(ToolhouseContext)
   if (!context) {
-    throw new Error('useToolhouseContext must be used within a ToolhouseProvider');
+    throw new Error('useToolhouseContext must be used within a ToolhouseProvider')
   }
-  return context;
-};
+  return context
+}
 
 interface ToolhouseProviderProps {
-  children: React.ReactNode;
+  children: React.ReactNode
 }
 
 export const ToolhouseProvider: React.FC<ToolhouseProviderProps> = ({ children }) => {
-  const queryClientRef = useRef<QueryClient>();
+  const queryClientRef = useRef<QueryClient>()
   if (!queryClientRef.current) {
     queryClientRef.current = new QueryClient({
       defaultOptions: {
@@ -36,17 +36,15 @@ export const ToolhouseProvider: React.FC<ToolhouseProviderProps> = ({ children }
           retry: parseInt(import.meta.env.VITE_AI_RETRY_ATTEMPTS || '3'),
         },
       },
-    });
+    })
   }
 
   return (
     <QueryClientProvider client={queryClientRef.current}>
       <ToolhouseContext.Provider value={{ queryClient: queryClientRef.current }}>
-        <ToolhouseErrorBoundary>
-          {children}
-        </ToolhouseErrorBoundary>
+        <ToolhouseErrorBoundary>{children}</ToolhouseErrorBoundary>
       </ToolhouseContext.Provider>
       {import.meta.env.DEV && <ReactQueryDevtools />}
     </QueryClientProvider>
-  );
-};
+  )
+}

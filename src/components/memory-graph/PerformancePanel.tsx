@@ -1,25 +1,25 @@
 /**
  * Performance Panel Component
- * 
+ *
  * Displays comprehensive performance metrics, health status,
  * and monitoring data for the memory graph system.
  */
 
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import React, { useState, useEffect } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Progress } from '@/components/ui/progress'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   ResponsiveContainer,
   AreaChart,
   Area,
@@ -27,9 +27,9 @@ import {
   Bar,
   PieChart,
   Pie,
-  Cell
-} from 'recharts';
-import { 
+  Cell,
+} from 'recharts'
+import {
   Activity,
   AlertTriangle,
   CheckCircle,
@@ -46,58 +46,58 @@ import {
   X,
   Eye,
   BarChart3,
-  Gauge
-} from 'lucide-react';
+  Gauge,
+} from 'lucide-react'
 
-import { PerformanceMonitor } from '../../lib/memory-graph/performance-monitor';
-import type { 
-  PerformanceMetrics, 
-  HealthCheck, 
+import { PerformanceMonitor } from '../../lib/memory-graph/performance-monitor'
+import type {
+  PerformanceMetrics,
+  HealthCheck,
   Alert as AlertType,
-  OperationStats
-} from '../../lib/memory-graph/performance-monitor';
+  OperationStats,
+} from '../../lib/memory-graph/performance-monitor'
 
 interface PerformancePanelProps {
-  monitor: PerformanceMonitor;
-  className?: string;
+  monitor: PerformanceMonitor
+  className?: string
 }
 
 const HEALTH_STATUS_COLORS = {
   healthy: 'text-green-600 bg-green-50 border-green-200',
   warning: 'text-yellow-600 bg-yellow-50 border-yellow-200',
   critical: 'text-red-600 bg-red-50 border-red-200',
-  unknown: 'text-gray-600 bg-gray-50 border-gray-200'
-};
+  unknown: 'text-gray-600 bg-gray-50 border-gray-200',
+}
 
 const ALERT_SEVERITY_COLORS = {
   low: 'text-blue-600 bg-blue-50 border-blue-200',
   medium: 'text-yellow-600 bg-yellow-50 border-yellow-200',
   high: 'text-orange-600 bg-orange-50 border-orange-200',
-  critical: 'text-red-600 bg-red-50 border-red-200'
-};
+  critical: 'text-red-600 bg-red-50 border-red-200',
+}
 
-const COLORS = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6'];
+const COLORS = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6']
 
 export function PerformancePanel({ monitor, className = '' }: PerformancePanelProps) {
-  const [metrics, setMetrics] = useState<PerformanceMetrics | null>(null);
-  const [healthStatus, setHealthStatus] = useState(monitor.getHealthStatus());
-  const [alerts, setAlerts] = useState(monitor.getAlerts());
-  const [analysis, setAnalysis] = useState(monitor.getPerformanceAnalysis());
-  const [isMonitoring, setIsMonitoring] = useState(false);
-  const [historicalData, setHistoricalData] = useState<any[]>([]);
+  const [metrics, setMetrics] = useState<PerformanceMetrics | null>(null)
+  const [healthStatus, setHealthStatus] = useState(monitor.getHealthStatus())
+  const [alerts, setAlerts] = useState(monitor.getAlerts())
+  const [analysis, setAnalysis] = useState(monitor.getPerformanceAnalysis())
+  const [isMonitoring, setIsMonitoring] = useState(false)
+  const [historicalData, setHistoricalData] = useState<any[]>([])
 
   const refreshData = () => {
-    setMetrics(monitor.getMetrics());
-    setHealthStatus(monitor.getHealthStatus());
-    setAlerts(monitor.getAlerts());
-    setAnalysis(monitor.getPerformanceAnalysis());
-  };
+    setMetrics(monitor.getMetrics())
+    setHealthStatus(monitor.getHealthStatus())
+    setAlerts(monitor.getAlerts())
+    setAnalysis(monitor.getPerformanceAnalysis())
+  }
 
   useEffect(() => {
-    refreshData();
-    const interval = setInterval(refreshData, 5000); // Refresh every 5 seconds
-    return () => clearInterval(interval);
-  }, [monitor]);
+    refreshData()
+    const interval = setInterval(refreshData, 5000) // Refresh every 5 seconds
+    return () => clearInterval(interval)
+  }, [monitor])
 
   // Simulate historical data for charts
   useEffect(() => {
@@ -107,83 +107,87 @@ export function PerformancePanel({ monitor, className = '' }: PerformancePanelPr
         queryTime: metrics.operations.queries.avgTime,
         memoryUsage: metrics.system.memoryUsage.percentage,
         errorRate: metrics.errors.rate,
-        throughput: metrics.operations.queries.throughput
-      };
+        throughput: metrics.operations.queries.throughput,
+      }
 
       setHistoricalData(prev => {
-        const updated = [...prev, newDataPoint];
-        return updated.slice(-20); // Keep last 20 data points
-      });
+        const updated = [...prev, newDataPoint]
+        return updated.slice(-20) // Keep last 20 data points
+      })
     }
-  }, [metrics]);
+  }, [metrics])
 
   const handleStartMonitoring = () => {
-    monitor.startMonitoring(5000);
-    setIsMonitoring(true);
-  };
+    monitor.startMonitoring(5000)
+    setIsMonitoring(true)
+  }
 
   const handleStopMonitoring = () => {
-    monitor.stopMonitoring();
-    setIsMonitoring(false);
-  };
+    monitor.stopMonitoring()
+    setIsMonitoring(false)
+  }
 
   const handleResolveAlert = (alertId: string) => {
-    monitor.resolveAlert(alertId);
-    refreshData();
-  };
+    monitor.resolveAlert(alertId)
+    refreshData()
+  }
 
   const formatUptime = (uptime: number): string => {
-    const seconds = Math.floor(uptime / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
+    const seconds = Math.floor(uptime / 1000)
+    const minutes = Math.floor(seconds / 60)
+    const hours = Math.floor(minutes / 60)
+    const days = Math.floor(hours / 24)
 
-    if (days > 0) return `${days}d ${hours % 24}h`;
-    if (hours > 0) return `${hours}h ${minutes % 60}m`;
-    if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
-    return `${seconds}s`;
-  };
+    if (days > 0) return `${days}d ${hours % 24}h`
+    if (hours > 0) return `${hours}h ${minutes % 60}m`
+    if (minutes > 0) return `${minutes}m ${seconds % 60}s`
+    return `${seconds}s`
+  }
 
   const formatBytes = (bytes: number): string => {
-    const sizes = ['B', 'KB', 'MB', 'GB'];
-    if (bytes === 0) return '0 B';
-    const i = Math.floor(Math.log(bytes) / Math.log(1024));
-    return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${sizes[i]}`;
-  };
+    const sizes = ['B', 'KB', 'MB', 'GB']
+    if (bytes === 0) return '0 B'
+    const i = Math.floor(Math.log(bytes) / Math.log(1024))
+    return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${sizes[i]}`
+  }
 
   const getHealthIcon = (status: HealthCheck['status']) => {
     switch (status) {
-      case 'healthy': return <CheckCircle className="h-4 w-4 text-green-600" />;
-      case 'warning': return <AlertTriangle className="h-4 w-4 text-yellow-600" />;
-      case 'critical': return <AlertTriangle className="h-4 w-4 text-red-600" />;
-      default: return <Eye className="h-4 w-4 text-gray-600" />;
+      case 'healthy':
+        return <CheckCircle className="h-4 w-4 text-green-600" />
+      case 'warning':
+        return <AlertTriangle className="h-4 w-4 text-yellow-600" />
+      case 'critical':
+        return <AlertTriangle className="h-4 w-4 text-red-600" />
+      default:
+        return <Eye className="h-4 w-4 text-gray-600" />
     }
-  };
+  }
 
   const getTrendIcon = (trend: string) => {
     switch (trend) {
       case 'improving':
       case 'decreasing':
-        return <TrendingUp className="h-4 w-4 text-green-600" />;
+        return <TrendingUp className="h-4 w-4 text-green-600" />
       case 'degrading':
       case 'increasing':
-        return <TrendingDown className="h-4 w-4 text-red-600" />;
+        return <TrendingDown className="h-4 w-4 text-red-600" />
       default:
-        return <Activity className="h-4 w-4 text-gray-600" />;
+        return <Activity className="h-4 w-4 text-gray-600" />
     }
-  };
+  }
 
   if (!metrics) {
     return (
       <Card className={className}>
-        <CardContent className="flex items-center justify-center h-64">
+        <CardContent className="flex h-64 items-center justify-center">
           <div className="text-center">
-            <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-2" />
+            <RefreshCw className="mx-auto mb-2 h-8 w-8 animate-spin" />
             <p>Loading performance metrics...</p>
           </div>
         </CardContent>
       </Card>
-    );
+    )
   }
 
   return (
@@ -191,7 +195,7 @@ export function PerformancePanel({ monitor, className = '' }: PerformancePanelPr
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold flex items-center gap-2">
+          <h2 className="flex items-center gap-2 text-2xl font-bold">
             <Gauge className="h-6 w-6" />
             Performance Monitor
             <Badge className={HEALTH_STATUS_COLORS[healthStatus.overall]}>
@@ -199,7 +203,8 @@ export function PerformancePanel({ monitor, className = '' }: PerformancePanelPr
             </Badge>
           </h2>
           <p className="text-sm text-gray-600">
-            Uptime: {formatUptime(metrics.system.uptime)} • Health Score: {healthStatus.score.toFixed(0)}%
+            Uptime: {formatUptime(metrics.system.uptime)} • Health Score:{' '}
+            {healthStatus.score.toFixed(0)}%
           </p>
         </div>
 
@@ -210,20 +215,20 @@ export function PerformancePanel({ monitor, className = '' }: PerformancePanelPr
               {alerts.length} alerts
             </Badge>
           )}
-          
+
           <Button
             onClick={isMonitoring ? handleStopMonitoring : handleStartMonitoring}
-            variant={isMonitoring ? "destructive" : "default"}
+            variant={isMonitoring ? 'destructive' : 'default'}
             size="sm"
           >
             {isMonitoring ? (
               <>
-                <X className="h-4 w-4 mr-2" />
+                <X className="mr-2 h-4 w-4" />
                 Stop Monitoring
               </>
             ) : (
               <>
-                <Activity className="h-4 w-4 mr-2" />
+                <Activity className="mr-2 h-4 w-4" />
                 Start Monitoring
               </>
             )}
@@ -236,15 +241,18 @@ export function PerformancePanel({ monitor, className = '' }: PerformancePanelPr
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Memory Usage</p>
-                <p className="text-2xl font-bold">{metrics.system.memoryUsage.percentage.toFixed(1)}%</p>
+                <p className="text-muted-foreground text-sm font-medium">Memory Usage</p>
+                <p className="text-2xl font-bold">
+                  {metrics.system.memoryUsage.percentage.toFixed(1)}%
+                </p>
                 <p className="text-xs text-gray-500">
-                  {formatBytes(metrics.system.memoryUsage.used)} / {formatBytes(metrics.system.memoryUsage.total)}
+                  {formatBytes(metrics.system.memoryUsage.used)} /{' '}
+                  {formatBytes(metrics.system.memoryUsage.total)}
                 </p>
               </div>
               <HardDrive className="h-8 w-8 text-blue-500" />
@@ -257,11 +265,11 @@ export function PerformancePanel({ monitor, className = '' }: PerformancePanelPr
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Avg Query Time</p>
-                <p className="text-2xl font-bold">{metrics.operations.queries.avgTime.toFixed(0)}ms</p>
-                <p className="text-xs text-gray-500">
-                  {metrics.operations.queries.count} queries
+                <p className="text-muted-foreground text-sm font-medium">Avg Query Time</p>
+                <p className="text-2xl font-bold">
+                  {metrics.operations.queries.avgTime.toFixed(0)}ms
                 </p>
+                <p className="text-xs text-gray-500">{metrics.operations.queries.count} queries</p>
               </div>
               <Clock className="h-8 w-8 text-green-500" />
             </div>
@@ -272,11 +280,9 @@ export function PerformancePanel({ monitor, className = '' }: PerformancePanelPr
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Error Rate</p>
+                <p className="text-muted-foreground text-sm font-medium">Error Rate</p>
                 <p className="text-2xl font-bold">{metrics.errors.rate}</p>
-                <p className="text-xs text-gray-500">
-                  {metrics.errors.total} total errors
-                </p>
+                <p className="text-xs text-gray-500">{metrics.errors.total} total errors</p>
               </div>
               <AlertTriangle className="h-8 w-8 text-red-500" />
             </div>
@@ -287,8 +293,10 @@ export function PerformancePanel({ monitor, className = '' }: PerformancePanelPr
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Throughput</p>
-                <p className="text-2xl font-bold">{metrics.operations.queries.throughput.toFixed(1)}</p>
+                <p className="text-muted-foreground text-sm font-medium">Throughput</p>
+                <p className="text-2xl font-bold">
+                  {metrics.operations.queries.throughput.toFixed(1)}
+                </p>
                 <p className="text-xs text-gray-500">queries/sec</p>
               </div>
               <Zap className="h-8 w-8 text-purple-500" />
@@ -315,7 +323,7 @@ export function PerformancePanel({ monitor, className = '' }: PerformancePanelPr
                   <AlertDescription>
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
+                        <div className="mb-1 flex items-center gap-2">
                           <span className="font-medium">{alert.title}</span>
                           <Badge variant="outline" className="text-xs">
                             {alert.severity.toUpperCase()}
@@ -325,7 +333,7 @@ export function PerformancePanel({ monitor, className = '' }: PerformancePanelPr
                           </Badge>
                         </div>
                         <p className="text-sm">{alert.description}</p>
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="mt-1 text-xs text-gray-500">
                           {alert.timestamp.toLocaleString()}
                         </p>
                       </div>
@@ -356,7 +364,7 @@ export function PerformancePanel({ monitor, className = '' }: PerformancePanelPr
 
         <TabsContent value="overview" className="space-y-6">
           {/* Performance Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <Card>
               <CardHeader>
                 <CardTitle>Query Performance</CardTitle>
@@ -368,10 +376,10 @@ export function PerformancePanel({ monitor, className = '' }: PerformancePanelPr
                     <XAxis dataKey="timestamp" />
                     <YAxis />
                     <Tooltip />
-                    <Line 
-                      type="monotone" 
-                      dataKey="queryTime" 
-                      stroke="#3b82f6" 
+                    <Line
+                      type="monotone"
+                      dataKey="queryTime"
+                      stroke="#3b82f6"
                       strokeWidth={2}
                       name="Query Time (ms)"
                     />
@@ -391,10 +399,10 @@ export function PerformancePanel({ monitor, className = '' }: PerformancePanelPr
                     <XAxis dataKey="timestamp" />
                     <YAxis />
                     <Tooltip />
-                    <Area 
-                      type="monotone" 
-                      dataKey="memoryUsage" 
-                      stroke="#10b981" 
+                    <Area
+                      type="monotone"
+                      dataKey="memoryUsage"
+                      stroke="#10b981"
                       fill="#10b981"
                       fillOpacity={0.3}
                       name="Memory Usage (%)"
@@ -406,7 +414,7 @@ export function PerformancePanel({ monitor, className = '' }: PerformancePanelPr
           </div>
 
           {/* System Overview */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             <Card>
               <CardHeader>
                 <CardTitle>Graph Statistics</CardTitle>
@@ -474,12 +482,14 @@ export function PerformancePanel({ monitor, className = '' }: PerformancePanelPr
                     <span>Recent (1h):</span>
                     <span className="font-bold">{metrics.errors.rate}</span>
                   </div>
-                  {Object.entries(metrics.errors.byType).slice(0, 3).map(([type, count]) => (
-                    <div key={type} className="flex justify-between text-sm">
-                      <span>{type}:</span>
-                      <span>{count}</span>
-                    </div>
-                  ))}
+                  {Object.entries(metrics.errors.byType)
+                    .slice(0, 3)
+                    .map(([type, count]) => (
+                      <div key={type} className="flex justify-between text-sm">
+                        <span>{type}:</span>
+                        <span>{count}</span>
+                      </div>
+                    ))}
                 </div>
               </CardContent>
             </Card>
@@ -488,7 +498,7 @@ export function PerformancePanel({ monitor, className = '' }: PerformancePanelPr
 
         <TabsContent value="operations" className="space-y-6">
           {/* Operation Statistics */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             {Object.entries(metrics.operations).map(([operation, stats]) => (
               <Card key={operation}>
                 <CardHeader>
@@ -517,11 +527,15 @@ export function PerformancePanel({ monitor, className = '' }: PerformancePanelPr
                     <div className="space-y-2">
                       <div className="flex justify-between">
                         <span>Success Rate:</span>
-                        <span className="font-bold text-green-600">{stats.successRate.toFixed(1)}%</span>
+                        <span className="font-bold text-green-600">
+                          {stats.successRate.toFixed(1)}%
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span>Error Rate:</span>
-                        <span className="font-bold text-red-600">{stats.errorRate.toFixed(1)}%</span>
+                        <span className="font-bold text-red-600">
+                          {stats.errorRate.toFixed(1)}%
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span>Throughput:</span>
@@ -538,11 +552,11 @@ export function PerformancePanel({ monitor, className = '' }: PerformancePanelPr
 
         <TabsContent value="health" className="space-y-6">
           {/* Health Checks */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             {healthStatus.checks.map(check => (
               <Card key={check.name}>
                 <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-3">
+                  <div className="mb-3 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       {getHealthIcon(check.status)}
                       <span className="font-medium">{check.name}</span>
@@ -551,14 +565,12 @@ export function PerformancePanel({ monitor, className = '' }: PerformancePanelPr
                       {check.status.toUpperCase()}
                     </Badge>
                   </div>
-                  <p className="text-sm text-gray-600 mb-2">{check.message}</p>
+                  <p className="mb-2 text-sm text-gray-600">{check.message}</p>
                   <p className="text-xs text-gray-500">
                     Last checked: {check.timestamp.toLocaleString()}
                   </p>
                   {check.responseTime && (
-                    <p className="text-xs text-gray-500">
-                      Response time: {check.responseTime}ms
-                    </p>
+                    <p className="text-xs text-gray-500">Response time: {check.responseTime}ms</p>
                   )}
                 </CardContent>
               </Card>
@@ -568,7 +580,7 @@ export function PerformancePanel({ monitor, className = '' }: PerformancePanelPr
 
         <TabsContent value="analysis" className="space-y-6">
           {/* Performance Analysis */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <Card>
               <CardHeader>
                 <CardTitle>Performance Bottlenecks</CardTitle>
@@ -577,15 +589,15 @@ export function PerformancePanel({ monitor, className = '' }: PerformancePanelPr
                 {analysis.bottlenecks.length > 0 ? (
                   <div className="space-y-2">
                     {analysis.bottlenecks.map((bottleneck, index) => (
-                      <div key={index} className="flex items-center gap-2 p-2 bg-red-50 rounded">
+                      <div key={index} className="flex items-center gap-2 rounded bg-red-50 p-2">
                         <AlertTriangle className="h-4 w-4 text-red-600" />
                         <span className="text-sm">{bottleneck}</span>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-4 text-gray-500">
-                    <CheckCircle className="h-8 w-8 mx-auto mb-2 text-green-600" />
+                  <div className="py-4 text-center text-gray-500">
+                    <CheckCircle className="mx-auto mb-2 h-8 w-8 text-green-600" />
                     <p>No performance bottlenecks detected</p>
                   </div>
                 )}
@@ -600,15 +612,15 @@ export function PerformancePanel({ monitor, className = '' }: PerformancePanelPr
                 {analysis.recommendations.length > 0 ? (
                   <div className="space-y-2">
                     {analysis.recommendations.map((recommendation, index) => (
-                      <div key={index} className="flex items-start gap-2 p-2 bg-blue-50 rounded">
-                        <Zap className="h-4 w-4 text-blue-600 mt-0.5" />
+                      <div key={index} className="flex items-start gap-2 rounded bg-blue-50 p-2">
+                        <Zap className="mt-0.5 h-4 w-4 text-blue-600" />
                         <span className="text-sm">{recommendation}</span>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-4 text-gray-500">
-                    <Shield className="h-8 w-8 mx-auto mb-2 text-green-600" />
+                  <div className="py-4 text-center text-gray-500">
+                    <Shield className="mx-auto mb-2 h-8 w-8 text-green-600" />
                     <p>System is performing optimally</p>
                   </div>
                 )}
@@ -623,24 +635,24 @@ export function PerformancePanel({ monitor, className = '' }: PerformancePanelPr
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-3 gap-4">
-                <div className="text-center p-4 bg-gray-50 rounded-lg">
-                  <div className="flex items-center justify-center gap-2 mb-2">
+                <div className="rounded-lg bg-gray-50 p-4 text-center">
+                  <div className="mb-2 flex items-center justify-center gap-2">
                     {getTrendIcon(analysis.trends.performance)}
                     <span className="font-medium">Performance</span>
                   </div>
                   <p className="text-sm capitalize">{analysis.trends.performance}</p>
                 </div>
-                
-                <div className="text-center p-4 bg-gray-50 rounded-lg">
-                  <div className="flex items-center justify-center gap-2 mb-2">
+
+                <div className="rounded-lg bg-gray-50 p-4 text-center">
+                  <div className="mb-2 flex items-center justify-center gap-2">
                     {getTrendIcon(analysis.trends.errors)}
                     <span className="font-medium">Errors</span>
                   </div>
                   <p className="text-sm capitalize">{analysis.trends.errors}</p>
                 </div>
-                
-                <div className="text-center p-4 bg-gray-50 rounded-lg">
-                  <div className="flex items-center justify-center gap-2 mb-2">
+
+                <div className="rounded-lg bg-gray-50 p-4 text-center">
+                  <div className="mb-2 flex items-center justify-center gap-2">
                     <Database className="h-4 w-4" />
                     <span className="font-medium">Capacity</span>
                   </div>
@@ -652,5 +664,5 @@ export function PerformancePanel({ monitor, className = '' }: PerformancePanelPr
         </TabsContent>
       </Tabs>
     </div>
-  );
+  )
 }

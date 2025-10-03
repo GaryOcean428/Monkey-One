@@ -36,7 +36,7 @@ export function SignIn({ onSwitch }: AuthSwitchProps) {
   }
 
   return (
-    <div className="w-full max-w-md space-y-4 rounded-lg bg-card p-6 shadow-lg">
+    <div className="bg-card w-full max-w-md space-y-4 rounded-lg p-6 shadow-lg">
       <h2 className="text-center text-2xl font-bold">Sign In</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>

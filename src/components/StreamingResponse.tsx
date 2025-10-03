@@ -1,14 +1,14 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { generateStreamingResponse } from '../lib/models';
-import { useMonitoring } from '../hooks/useMonitoring';
-import { models, ModelName } from '../lib/models';
+import React, { useEffect, useRef, useState } from 'react'
+import { generateStreamingResponse } from '../lib/models'
+import { useMonitoring } from '../hooks/useMonitoring'
+import { models, ModelName } from '../lib/models'
 
 interface StreamingResponseProps {
-  prompt: string;
-  modelName?: ModelName;
-  options?: Record<string, any>;
-  onComplete?: (fullResponse: string) => void;
-  className?: string;
+  prompt: string
+  modelName?: ModelName
+  options?: Record<string, any>
+  onComplete?: (fullResponse: string) => void
+  className?: string
 }
 
 export const StreamingResponse: React.FC<StreamingResponseProps> = ({
@@ -16,58 +16,58 @@ export const StreamingResponse: React.FC<StreamingResponseProps> = ({
   modelName,
   options,
   onComplete,
-  className
+  className,
 }) => {
-  const [response, setResponse] = useState<string>('');
-  const [isStreaming, setIsStreaming] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const responseRef = useRef<string>('');
-  const { logEvent } = useMonitoring();
+  const [response, setResponse] = useState<string>('')
+  const [isStreaming, setIsStreaming] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const responseRef = useRef<string>('')
+  const { logEvent } = useMonitoring()
 
   useEffect(() => {
     const streamResponse = async () => {
-      setIsStreaming(true);
-      setError(null);
-      responseRef.current = '';
+      setIsStreaming(true)
+      setError(null)
+      responseRef.current = ''
 
-      const startTime = performance.now();
-      
+      const startTime = performance.now()
+
       try {
-        const selectedModel = modelName || 'granite3.1-dense:2b';
-        const generator = generateStreamingResponse(prompt, selectedModel, options);
-        
+        const selectedModel = modelName || 'granite3.1-dense:2b'
+        const generator = generateStreamingResponse(prompt, selectedModel, options)
+
         for await (const chunk of generator) {
           if (chunk.done) {
-            break;
+            break
           }
-          
-          responseRef.current += chunk.text;
-          setResponse(responseRef.current);
+
+          responseRef.current += chunk.text
+          setResponse(responseRef.current)
         }
 
-        const endTime = performance.now();
+        const endTime = performance.now()
         logEvent('streamingResponse', {
           modelName: selectedModel,
           promptLength: prompt.length,
           responseLength: responseRef.current.length,
-          duration: endTime - startTime
-        });
+          duration: endTime - startTime,
+        })
 
-        onComplete?.(responseRef.current);
+        onComplete?.(responseRef.current)
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
-        setError(errorMessage);
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred'
+        setError(errorMessage)
         logEvent('streamingError', {
           modelName,
-          error: errorMessage
-        });
+          error: errorMessage,
+        })
       } finally {
-        setIsStreaming(false);
+        setIsStreaming(false)
       }
-    };
+    }
 
-    streamResponse();
-  }, [prompt, modelName, options, onComplete]);
+    streamResponse()
+  }, [prompt, modelName, options, onComplete])
 
   return (
     <div className={className}>
@@ -77,18 +77,14 @@ export const StreamingResponse: React.FC<StreamingResponseProps> = ({
           <span>AI is thinking...</span>
         </div>
       )}
-      
+
       <div className="response-content">
         {response.split('\n').map((line, index) => (
           <p key={index}>{line || '\u00A0'}</p>
         ))}
       </div>
 
-      {error && (
-        <div className="error-message">
-          Error: {error}
-        </div>
-      )}
+      {error && <div className="error-message">Error: {error}</div>}
 
       <style jsx>{`
         .streaming-indicator {
@@ -121,11 +117,17 @@ export const StreamingResponse: React.FC<StreamingResponseProps> = ({
         }
 
         @keyframes pulse {
-          0% { opacity: 1; }
-          50% { opacity: 0.4; }
-          100% { opacity: 1; }
+          0% {
+            opacity: 1;
+          }
+          50% {
+            opacity: 0.4;
+          }
+          100% {
+            opacity: 1;
+          }
         }
       `}</style>
     </div>
-  );
-};
+  )
+}

@@ -15,8 +15,8 @@ export function AuthCallback() {
           console.error('Error during auth callback:', error)
           navigate('/login', {
             state: {
-              error: 'Authentication failed. Please try again.'
-            }
+              error: 'Authentication failed. Please try again.',
+            },
           })
           return
         }
@@ -27,8 +27,8 @@ export function AuthCallback() {
         console.error('Unexpected error during auth callback:', err)
         navigate('/login', {
           state: {
-            error: 'An unexpected error occurred. Please try again.'
-          }
+            error: 'An unexpected error occurred. Please try again.',
+          },
         })
       }
     }

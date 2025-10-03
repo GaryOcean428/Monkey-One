@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod'
 
 const configSchema = z.object({
   xai: z.object({
@@ -16,9 +16,9 @@ const configSchema = z.object({
     maxMemoryItems: z.number(),
     defaultRole: z.string(),
   }),
-});
+})
 
-type Config = z.infer<typeof configSchema>;
+type Config = z.infer<typeof configSchema>
 
 const config: Config = {
   xai: {
@@ -36,6 +36,6 @@ const config: Config = {
     maxMemoryItems: 100,
     defaultRole: 'assistant',
   },
-} as const;
+} as const
 
-export { config, type Config, configSchema };
+export { config, type Config, configSchema }

@@ -30,31 +30,37 @@ export const ChatInterface = React.memo(function ChatInterface() {
     textareaRef.current?.focus()
   }, [])
 
-  const handleSubmit = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!input.trim() || isProcessing || !hasActiveAgent) return
-
-    try {
-      setStreamingContent('')
-      await sendMessage(input, (chunk: string) => {
-        setStreamingContent(prev => prev + chunk)
-      })
-      setInput('')
-      setSelectedCommand('')
-      if (textareaRef.current) {
-        textareaRef.current.style.height = 'auto'
-      }
-    } catch (err) {
-      console.error('Failed to send message:', err)
-    }
-  }, [input, isProcessing, hasActiveAgent, sendMessage])
-
-  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
       e.preventDefault()
-      void handleSubmit(e as unknown as React.FormEvent)
-    }
-  }, [handleSubmit])
+      if (!input.trim() || isProcessing || !hasActiveAgent) return
+
+      try {
+        setStreamingContent('')
+        await sendMessage(input, (chunk: string) => {
+          setStreamingContent(prev => prev + chunk)
+        })
+        setInput('')
+        setSelectedCommand('')
+        if (textareaRef.current) {
+          textareaRef.current.style.height = 'auto'
+        }
+      } catch (err) {
+        console.error('Failed to send message:', err)
+      }
+    },
+    [input, isProcessing, hasActiveAgent, sendMessage]
+  )
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault()
+        void handleSubmit(e as unknown as React.FormEvent)
+      }
+    },
+    [handleSubmit]
+  )
 
   const handleTextareaChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value)
@@ -72,9 +78,7 @@ export const ChatInterface = React.memo(function ChatInterface() {
   }, [])
 
   const filteredMessages = useMemo(() => {
-    return filterUser
-      ? messages.filter(message => message.user === filterUser)
-      : messages
+    return filterUser ? messages.filter(message => message.user === filterUser) : messages
   }, [messages, filterUser])
 
   const sortedMessages = useMemo(() => {
@@ -91,15 +95,27 @@ export const ChatInterface = React.memo(function ChatInterface() {
     <div className="flex h-full flex-col" role="main">
       <div className="mb-4 flex justify-between p-4">
         <Button variant="outline" size="sm" onClick={scrollToBottom}>
-          <RefreshCw className="w-4 h-4 mr-2" />
+          <RefreshCw className="mr-2 h-4 w-4" />
           Refresh Chat
         </Button>
-        <Button variant="outline" size="sm" onClick={() => setFilterUser(filterUser ? null : 'user')}>
-          <Filter className="w-4 h-4 mr-2" />
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setFilterUser(filterUser ? null : 'user')}
+        >
+          <Filter className="mr-2 h-4 w-4" />
           {filterUser ? 'Clear Filter' : 'Filter by User'}
         </Button>
-        <Button variant="outline" size="sm" onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}>
-          {sortOrder === 'asc' ? <SortAsc className="w-4 h-4 mr-2" /> : <SortDesc className="w-4 h-4 mr-2" />}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+        >
+          {sortOrder === 'asc' ? (
+            <SortAsc className="mr-2 h-4 w-4" />
+          ) : (
+            <SortDesc className="mr-2 h-4 w-4" />
+          )}
           Sort by Time
         </Button>
       </div>
@@ -110,7 +126,7 @@ export const ChatInterface = React.memo(function ChatInterface() {
         aria-label="Chat Messages"
       >
         {sortedMessages.length === 0 ? (
-          <div className="mt-8 text-center text-muted-foreground">
+          <div className="text-muted-foreground mt-8 text-center">
             <p className="text-lg font-semibold">Welcome to Monkey One!</p>
             <p className="mt-2">
               {hasActiveAgent
@@ -145,7 +161,7 @@ export const ChatInterface = React.memo(function ChatInterface() {
               <ChatMessage key={message.id} message={message} />
             ))}
             {streamingContent && (
-              <div className="animate-pulse rounded-lg bg-secondary/20 p-4">
+              <div className="bg-secondary/20 animate-pulse rounded-lg p-4">
                 <p className="whitespace-pre-wrap">{streamingContent}</p>
               </div>
             )}
@@ -156,7 +172,7 @@ export const ChatInterface = React.memo(function ChatInterface() {
 
       {error && (
         <div
-          className="mx-4 mb-4 border-l-4 border-destructive bg-destructive/10 p-4"
+          className="border-destructive bg-destructive/10 mx-4 mb-4 border-l-4 p-4"
           role="alert"
           aria-live="assertive"
         >
@@ -166,7 +182,7 @@ export const ChatInterface = React.memo(function ChatInterface() {
 
       <form
         onSubmit={handleSubmit}
-        className="border-t bg-background p-4"
+        className="bg-background border-t p-4"
         aria-label="Message Input Form"
       >
         <div className="flex gap-2">
@@ -195,7 +211,7 @@ export const ChatInterface = React.memo(function ChatInterface() {
             rows={1}
             className={cn(
               'max-h-[200px] min-h-[44px] flex-1 resize-none',
-              'focus:outline-none focus:ring-2 focus:ring-primary',
+              'focus:ring-primary focus:ring-2 focus:outline-none',
               !hasActiveAgent && 'cursor-not-allowed opacity-50'
             )}
             aria-label="Message Input"

@@ -1,5 +1,5 @@
-import { XAI_CONFIG } from './config';
-import type { XAIMessage, XAIResponse, XAIEmbeddingResponse } from './types';
+import { XAI_CONFIG } from './config'
+import type { XAIMessage, XAIResponse, XAIEmbeddingResponse } from './types'
 
 export class APIError extends Error {
   constructor(
@@ -7,8 +7,8 @@ export class APIError extends Error {
     public status?: number,
     public response?: string
   ) {
-    super(message);
-    this.name = 'APIError';
+    super(message)
+    this.name = 'APIError'
   }
 }
 
@@ -22,25 +22,19 @@ export async function makeAPIRequest<T>(
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify(body),
-    });
+    })
 
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new APIError(
-        'API request failed',
-        response.status,
-        errorText
-      );
+      const errorText = await response.text()
+      throw new APIError('API request failed', response.status, errorText)
     }
 
-    return response.json();
+    return response.json()
   } catch (error) {
-    if (error instanceof APIError) throw error;
-    throw new APIError(
-      error instanceof Error ? error.message : 'Unknown error'
-    );
+    if (error instanceof APIError) throw error
+    throw new APIError(error instanceof Error ? error.message : 'Unknown error')
   }
 }

@@ -1,12 +1,12 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { cn } from '../../lib/utils';
-import styles from './NeonMonkey.module.css';
+import React from 'react'
+import { motion } from 'framer-motion'
+import { cn } from '../../lib/utils'
+import styles from './NeonMonkey.module.css'
 
 interface NeonMonkeyProps {
-  className?: string;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
-  animated?: boolean;
+  className?: string
+  size?: 'sm' | 'md' | 'lg' | 'xl'
+  animated?: boolean
 }
 
 const sizeMap = {
@@ -14,30 +14,23 @@ const sizeMap = {
   md: 'w-12 h-12',
   lg: 'w-24 h-24',
   xl: 'w-48 h-48',
-};
+}
 
 export const NeonMonkey: React.FC<NeonMonkeyProps> = ({
   className,
   size = 'md',
   animated = true,
 }) => {
-  const Component = animated ? motion.div : 'div';
+  const Component = animated ? motion.div : 'div'
 
   return (
     <Component
-      className={cn(
-        'relative flex items-center justify-center',
-        sizeMap[size],
-        className
-      )}
+      className={cn('relative flex items-center justify-center', sizeMap[size], className)}
       initial={animated ? { opacity: 0, scale: 0.5 } : undefined}
       animate={animated ? { opacity: 1, scale: 1 } : undefined}
       transition={animated ? { duration: 0.5, ease: 'easeOut' } : undefined}
     >
-      <svg
-        viewBox="0 0 100 100"
-        className={cn("w-full h-full", styles.neonGlow)}
-      >
+      <svg viewBox="0 0 100 100" className={cn('h-full w-full', styles.neonGlow)}>
         {/* Outer Circle */}
         <motion.path
           d="M50 10 A40 40 0 1 1 50 90 A40 40 0 1 1 50 10"
@@ -46,9 +39,9 @@ export const NeonMonkey: React.FC<NeonMonkeyProps> = ({
           strokeWidth="2"
           initial={animated ? { pathLength: 0 } : undefined}
           animate={animated ? { pathLength: 1 } : undefined}
-          transition={animated ? { duration: 1.5, ease: "easeInOut" } : undefined}
+          transition={animated ? { duration: 1.5, ease: 'easeInOut' } : undefined}
         />
-        
+
         {/* Eyes */}
         <motion.circle
           cx="35"
@@ -68,7 +61,7 @@ export const NeonMonkey: React.FC<NeonMonkeyProps> = ({
           animate={animated ? { scale: 1 } : undefined}
           transition={animated ? { delay: 0.5, duration: 0.3 } : undefined}
         />
-        
+
         {/* Smile */}
         <motion.path
           d="M35 60 Q50 70 65 60"
@@ -80,7 +73,7 @@ export const NeonMonkey: React.FC<NeonMonkeyProps> = ({
           animate={animated ? { pathLength: 1 } : undefined}
           transition={animated ? { delay: 0.8, duration: 0.5 } : undefined}
         />
-        
+
         {/* Gradients */}
         <defs>
           <linearGradient id="gradientStroke" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -95,7 +88,7 @@ export const NeonMonkey: React.FC<NeonMonkeyProps> = ({
         </defs>
       </svg>
     </Component>
-  );
-};
+  )
+}
 
-export default NeonMonkey;
+export default NeonMonkey

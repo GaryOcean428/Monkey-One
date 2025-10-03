@@ -1,17 +1,17 @@
 export interface ModelConfig {
-  name: string;
-  apiName: string;
-  provider: 'openai' | 'anthropic' | 'groq' | 'qwen' | 'local';
-  parameters?: number;
-  contextWindow: number;
-  maxOutput: number;
-  releaseDate: string;
-  keyStrengths: string[];
-  modelCardLink?: string;
+  name: string
+  apiName: string
+  provider: 'openai' | 'anthropic' | 'groq' | 'qwen' | 'local'
+  parameters?: number
+  contextWindow: number
+  maxOutput: number
+  releaseDate: string
+  keyStrengths: string[]
+  modelCardLink?: string
   quantization?: {
-    bits: number;
-    scheme: string;
-  };
+    bits: number
+    scheme: string
+  }
 }
 
 export type ModelProvider =
@@ -65,12 +65,12 @@ export interface ModelResponse {
 }
 
 export interface StreamChunk {
-  text: string;
-  isComplete: boolean;
+  text: string
+  isComplete: boolean
   metadata?: {
-    model: string;
-    latency?: number;
-  };
+    model: string
+    latency?: number
+  }
 }
 
 export interface ModelOptions {
@@ -85,16 +85,16 @@ export interface ModelOptions {
 }
 
 export interface ModelMetrics {
-  totalRequests: number;
-  errorRate: number;
-  cacheHitRate: number;
-  averageLatency: number;
+  totalRequests: number
+  errorRate: number
+  cacheHitRate: number
+  averageLatency: number
   tokenUsage: {
-    prompt: number;
-    completion: number;
-    total: number;
-  };
-  lastUpdated: Date;
+    prompt: number
+    completion: number
+    total: number
+  }
+  lastUpdated: Date
 }
 
 export interface PerformanceMetrics {
@@ -118,10 +118,10 @@ export interface ModelCapabilities {
 }
 
 export interface ModelStats {
-  totalRequests: number;
-  successfulRequests: number;
-  failedRequests: number;
-  totalTokens: number;
-  totalCost: number;
-  lastUpdated: number;
+  totalRequests: number
+  successfulRequests: number
+  failedRequests: number
+  totalTokens: number
+  totalCost: number
+  lastUpdated: number
 }

@@ -11,8 +11,8 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   // Don't render children until theme is loaded to prevent flash
   if (!isLoaded) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="border-primary h-8 w-8 animate-spin rounded-full border-b-2"></div>
       </div>
     )
   }
@@ -28,7 +28,7 @@ export const ThemeContext = React.createContext<{
 }>({
   isDark: false,
   isHighContrast: false,
-  accentColor: 'blue'
+  accentColor: 'blue',
 })
 
 export function ThemeContextProvider({ children }: { children: React.ReactNode }) {
@@ -41,7 +41,7 @@ export function ThemeContextProvider({ children }: { children: React.ReactNode }
       const root = document.documentElement
       setIsDark(root.classList.contains('dark'))
       setIsHighContrast(root.classList.contains('high-contrast'))
-      
+
       // Get current accent color from CSS variable
       const primaryColor = window.getComputedStyle(root).getPropertyValue('--primary').trim()
       // Map back to color name (simplified)
@@ -62,7 +62,7 @@ export function ThemeContextProvider({ children }: { children: React.ReactNode }
     const observer = new MutationObserver(checkTheme)
     observer.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ['class']
+      attributeFilter: ['class'],
     })
 
     return () => observer.disconnect()

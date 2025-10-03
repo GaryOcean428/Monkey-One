@@ -21,7 +21,7 @@ export function useAuthenticatedFetch() {
     if (!gcpCredentials) {
       return null
     }
-    
+
     return createAuthenticatedFetch()
   }, [gcpCredentials])
 

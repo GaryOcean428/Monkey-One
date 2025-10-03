@@ -71,11 +71,11 @@ export const LoginPage: React.FC = () => {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
+    <div className="bg-background flex min-h-screen items-center justify-center">
       <Card className="w-full max-w-md p-8">
         <div className="mb-8 text-center">
           <h1 className="text-2xl font-bold">Welcome to Monkey One</h1>
-          <p className="mt-2 text-muted-foreground">Sign in to continue</p>
+          <p className="text-muted-foreground mt-2">Sign in to continue</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">

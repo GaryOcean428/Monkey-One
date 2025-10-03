@@ -63,7 +63,7 @@ export function SearchPanel({ loading = false, error }: SearchPanelProps) {
               value={query}
               onChange={e => setQuery(e.target.value)}
               placeholder="Enter your search query..."
-              className="w-full rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-md border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
               onKeyDown={e => e.key === 'Enter' && handleSearch()}
             />
           </div>
@@ -95,7 +95,7 @@ export function SearchPanel({ loading = false, error }: SearchPanelProps) {
                     }}
                     className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
-                  <span className="ml-2 text-sm capitalize text-gray-600">{type}</span>
+                  <span className="ml-2 text-sm text-gray-600 capitalize">{type}</span>
                 </label>
               ))}
             </div>
@@ -108,7 +108,7 @@ export function SearchPanel({ loading = false, error }: SearchPanelProps) {
               id="sort-by"
               value={filters.sortBy}
               onChange={e => handleFilterChange('sortBy', e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
+              className="mt-1 block w-full rounded-md border-gray-300 py-2 pr-10 pl-3 text-base focus:border-blue-500 focus:ring-blue-500 focus:outline-none sm:text-sm"
               aria-label="Sort results by"
             >
               <option value="relevance">Relevance</option>
@@ -147,7 +147,7 @@ export function SearchPanel({ loading = false, error }: SearchPanelProps) {
                   </p>
                 </div>
                 <div className="text-right">
-                  <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium capitalize text-blue-800">
+                  <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 capitalize">
                     {result.type}
                   </span>
                   <p className="mt-1 text-sm text-gray-500">Score: {formatScore(result.score)}</p>

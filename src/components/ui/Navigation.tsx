@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router';
-import { Icons } from './icons';
-import { Button } from './button';
+import React, { useState } from 'react'
+import { Link } from 'react-router'
+import { Icons } from './icons'
+import { Button } from './button'
 
 const Navigation: React.FC = () => {
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false)
 
   const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
-    document.body.classList.toggle('dark-mode', !isDarkMode);
-  };
+    setIsDarkMode(!isDarkMode)
+    document.body.classList.toggle('dark-mode', !isDarkMode)
+  }
 
   return (
     <nav className="navigation" aria-label="Main Navigation">
@@ -37,7 +37,7 @@ const Navigation: React.FC = () => {
         {isDarkMode ? <Icons.sun aria-hidden="true" /> : <Icons.moon aria-hidden="true" />}
       </Button>
     </nav>
-  );
-};
+  )
+}
 
-export default Navigation;
+export default Navigation

@@ -8,5 +8,5 @@ export function json(data: any, init?: ResponseInit) {
       ...init?.headers,
     },
     ...init,
-  });
+  })
 }

@@ -1,11 +1,5 @@
 import { EventEmitter } from 'events'
-import {
-  ModelProvider,
-  ModelResponse,
-  ModelOptions,
-  TaskType,
-  StreamChunk,
-} from '../types/models'
+import { ModelProvider, ModelResponse, ModelOptions, TaskType, StreamChunk } from '../types/models'
 import { ModelPerformanceTracker } from '../llm/ModelPerformanceTracker'
 import { LocalProvider } from '../providers/LocalProvider'
 import { logger } from '../utils/logger'
@@ -100,7 +94,7 @@ export class ModelManagementService extends EventEmitter {
       health.lastCheck = Date.now()
       health.isHealthy = true
       health.consecutiveFailures = 0
-      health.averageLatency = (health.averageLatency * 0.9 + latency * 0.1)
+      health.averageLatency = health.averageLatency * 0.9 + latency * 0.1
 
       return true
     } catch (error) {
@@ -161,7 +155,7 @@ export class ModelManagementService extends EventEmitter {
 
       try {
         const response = await providerInstance.generate(prompt, options)
-        
+
         // Record success metrics
         const latency = Date.now() - startTime
         this.performanceTracker.recordLatency(provider, latency)

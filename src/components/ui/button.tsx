@@ -8,14 +8,21 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary: 'bg-primary text-primary-foreground shadow-md hover-lift hover:shadow-lg hover:shadow-primary/25',
-        secondary: 'bg-secondary text-secondary-foreground hover-lift hover:bg-secondary/80 hover:shadow-md',
+        primary:
+          'bg-primary text-primary-foreground shadow-md hover-lift hover:shadow-lg hover:shadow-primary/25',
+        secondary:
+          'bg-secondary text-secondary-foreground hover-lift hover:bg-secondary/80 hover:shadow-md',
         ghost: 'hover:bg-accent hover:text-accent-foreground transition-colors hover:scale-[1.02]',
-        outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground shadow-sm hover-lift hover:border-accent',
-        destructive: 'bg-destructive text-destructive-foreground shadow-md hover:bg-destructive/90 hover-lift hover:shadow-destructive/25',
-        glass: 'bg-white/5 backdrop-blur-lg border border-white/10 text-foreground hover-scale hover:bg-white/10 hover:border-white/20',
-        gradient: 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-lg hover-lift hover:shadow-xl hover:shadow-primary/30',
-        accent: 'bg-accent-500 text-white shadow-md hover-lift hover:bg-accent-600 hover:shadow-lg hover:shadow-accent-500/25',
+        outline:
+          'border border-input bg-background hover:bg-accent hover:text-accent-foreground shadow-sm hover-lift hover:border-accent',
+        destructive:
+          'bg-destructive text-destructive-foreground shadow-md hover:bg-destructive/90 hover-lift hover:shadow-destructive/25',
+        glass:
+          'bg-white/5 backdrop-blur-lg border border-white/10 text-foreground hover-scale hover:bg-white/10 hover:border-white/20',
+        gradient:
+          'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-lg hover-lift hover:shadow-xl hover:shadow-primary/30',
+        accent:
+          'bg-accent-500 text-white shadow-md hover-lift hover:bg-accent-600 hover:shadow-lg hover:shadow-accent-500/25',
         glow: 'bg-gradient-to-r from-accent-500 to-accent-600 text-white shadow-lg hover-lift hover:shadow-xl hover:shadow-accent-500/40 relative',
       },
       size: {
@@ -30,13 +37,13 @@ const buttonVariants = cva(
         subtle: 'hover:scale-[1.01] active:scale-[0.99]',
         bounce: 'hover:scale-[1.02] active:scale-[0.98] hover:animate-pulse',
         float: 'hover:translate-y-[-1px] hover:shadow-lg active:translate-y-0',
-        glow: 'hover:shadow-[0_0_20px_rgba(var(--accent-500),0.4)]'
-      }
+        glow: 'hover:shadow-[0_0_20px_rgba(var(--accent-500),0.4)]',
+      },
     },
     defaultVariants: {
       variant: 'primary',
       size: 'default',
-      animation: 'subtle'
+      animation: 'subtle',
     },
   }
 )
@@ -51,9 +58,24 @@ export interface ButtonProps
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, animation, children, isLoading, loadingText, disabled, shimmer = false, pulseOnLoad = false, ...props }, ref) => {
+  (
+    {
+      className,
+      variant,
+      size,
+      animation,
+      children,
+      isLoading,
+      loadingText,
+      disabled,
+      shimmer = false,
+      pulseOnLoad = false,
+      ...props
+    },
+    ref
+  ) => {
     const [isPressed, setIsPressed] = React.useState(false)
-    
+
     return (
       <button
         className={cn(
@@ -75,25 +97,25 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           </>
         )}
         {!isLoading && children}
-        
+
         {/* Enhanced shine effect for gradient and glow variants */}
         {(variant === 'gradient' || variant === 'glow') && (
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-out" />
+          <div className="absolute inset-0 translate-x-[-100%] bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-[100%]" />
         )}
-        
+
         {/* Shimmer effect */}
         {shimmer && (
-          <div className="absolute inset-0 -skew-x-12 bg-gradient-to-r from-transparent via-white/30 to-transparent translate-x-[-200%] animate-shimmer" />
+          <div className="animate-shimmer absolute inset-0 translate-x-[-200%] -skew-x-12 bg-gradient-to-r from-transparent via-white/30 to-transparent" />
         )}
-        
+
         {/* Glow effect for accent and glow variants */}
         {(variant === 'glow' || variant === 'accent') && (
-          <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-accent-400/20 to-accent-600/20 opacity-0 hover:opacity-100 transition-opacity duration-300 blur-sm" />
+          <div className="from-accent-400/20 to-accent-600/20 absolute inset-0 rounded-lg bg-gradient-to-r opacity-0 blur-sm transition-opacity duration-300 hover:opacity-100" />
         )}
-        
+
         {/* Ripple effect container */}
-        <div className="absolute inset-0 rounded-lg overflow-hidden">
-          <div className="absolute inset-0 bg-white/0 hover:bg-white/5 transition-colors duration-200" />
+        <div className="absolute inset-0 overflow-hidden rounded-lg">
+          <div className="absolute inset-0 bg-white/0 transition-colors duration-200 hover:bg-white/5" />
         </div>
       </button>
     )

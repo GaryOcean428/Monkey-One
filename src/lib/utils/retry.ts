@@ -9,74 +9,74 @@ const DEFAULT_RETRY_OPTIONS = {
     'ECONNREFUSED',
     'EPIPE',
     'ERR_NETWORK',
-    'ERR_CONNECTION_RESET'
-  ]
-};
+    'ERR_CONNECTION_RESET',
+  ],
+}
 
-export type RetryOptions = Partial<typeof DEFAULT_RETRY_OPTIONS>;
+export type RetryOptions = Partial<typeof DEFAULT_RETRY_OPTIONS>
 
 export async function retry<T>(
   operation: () => Promise<T>,
   maxAttempts: number = DEFAULT_RETRY_OPTIONS.maxAttempts,
   options: RetryOptions = {}
 ): Promise<T> {
-  const opts = { ...DEFAULT_RETRY_OPTIONS, ...options, maxAttempts };
-  let lastError: Error;
-  let delay = opts.initialDelay;
+  const opts = { ...DEFAULT_RETRY_OPTIONS, ...options, maxAttempts }
+  let lastError: Error
+  let delay = opts.initialDelay
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      return await operation();
+      return await operation()
     } catch (error) {
-      lastError = error as Error;
-      
+      lastError = error as Error
+
       // Check if error is retryable
       if (!isRetryableError(error, opts.retryableErrors)) {
-        throw error;
+        throw error
       }
 
       // If this was our last attempt, throw the error
       if (attempt === maxAttempts) {
-        throw new Error(`Operation failed after ${maxAttempts} attempts: ${lastError.message}`);
+        throw new Error(`Operation failed after ${maxAttempts} attempts: ${lastError.message}`)
       }
 
       // Wait before retrying
-      await sleep(delay);
-      
+      await sleep(delay)
+
       // Increase delay for next attempt, but don't exceed maxDelay
-      delay = Math.min(delay * opts.backoffFactor, opts.maxDelay);
+      delay = Math.min(delay * opts.backoffFactor, opts.maxDelay)
     }
   }
 
-  throw lastError!;
+  throw lastError!
 }
 
 function isRetryableError(error: any, retryableErrors: string[]): boolean {
-  if (!error) return false;
+  if (!error) return false
 
   // Check error code
   if (error.code && retryableErrors.includes(error.code)) {
-    return true;
+    return true
   }
 
   // Check error name
   if (error.name && retryableErrors.includes(error.name)) {
-    return true;
+    return true
   }
 
   // Check if it's a network error
   if (error.message && error.message.toLowerCase().includes('network')) {
-    return true;
+    return true
   }
 
   // Check if it's a timeout error
   if (error.message && error.message.toLowerCase().includes('timeout')) {
-    return true;
+    return true
   }
 
-  return false;
+  return false
 }
 
 function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise(resolve => setTimeout(resolve, ms))
 }

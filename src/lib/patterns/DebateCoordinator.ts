@@ -1,9 +1,9 @@
-import { BaseAgent } from '../agents/base';
+import { BaseAgent } from '../agents/base'
 
 interface DebateMessage {
-  content: string;
-  round: number;
-  from: string;
+  content: string
+  round: number
+  from: string
 }
 
 export class DebateCoordinator {
@@ -14,14 +14,14 @@ export class DebateCoordinator {
   ) {}
 
   async facilitateDebate(question: string): Promise<string> {
-    let round = 1;
-    let debateResult = '';
+    let round = 1
+    let debateResult = ''
 
     while (round <= this.maxRounds) {
       // ...existing debate logic...
-      round++;
+      round++
     }
 
-    return debateResult;
+    return debateResult
   }
 }

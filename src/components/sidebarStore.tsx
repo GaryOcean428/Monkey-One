@@ -50,7 +50,7 @@ export function Sidebar() {
     <>
       <motion.aside
         className={cn(
-          'fixed left-0 top-14 z-30 h-[calc(100vh-3.5rem)] w-64 border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60',
+          'bg-background/95 supports-[backdrop-filter]:bg-background/60 fixed top-14 left-0 z-30 h-[calc(100vh-3.5rem)] w-64 border-r backdrop-blur',
           'transition-all duration-300 ease-in-out',
           isOpen ? 'translate-x-0' : '-translate-x-full'
         )}
@@ -68,7 +68,7 @@ export function Sidebar() {
                   className={cn(
                     'w-full justify-start transition-all duration-200',
                     'hover:bg-accent hover:text-accent-foreground',
-                    'focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
+                    'focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2'
                   )}
                 >
                   <item.icon className="mr-2 h-4 w-4" />
@@ -91,10 +91,10 @@ export function Sidebar() {
         variant="secondary"
         size="sm"
         className={cn(
-          'fixed left-64 top-[3.5rem] z-40 h-8 w-8 rounded-full p-0',
+          'fixed top-[3.5rem] left-64 z-40 h-8 w-8 rounded-full p-0',
           'transition-all duration-300 ease-in-out',
           'hover:bg-accent hover:text-accent-foreground',
-          'focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+          'focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2',
           isOpen ? 'translate-x-0' : '-translate-x-64'
         )}
         onClick={toggle}

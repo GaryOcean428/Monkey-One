@@ -119,9 +119,9 @@ export function PerformanceMetrics() {
                     <Icon className="h-4 w-4" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">{stat.label}</p>
+                    <p className="text-muted-foreground text-sm font-medium">{stat.label}</p>
                     <h4 className="text-2xl font-semibold">{stat.value}</h4>
-                    <p className="mt-1 text-sm text-muted-foreground">{stat.description}</p>
+                    <p className="text-muted-foreground mt-1 text-sm">{stat.description}</p>
                   </div>
                 </div>
               </div>

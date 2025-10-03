@@ -1,11 +1,6 @@
 import { useTheme as useNextTheme } from 'next-themes'
 import { useEffect, useState, useCallback } from 'react'
-import { 
-  AccentConfig, 
-  accentPresets, 
-  applyAccentToCSSVars, 
-  getTimeBasedAccent 
-} from './tokens'
+import { AccentConfig, accentPresets, applyAccentToCSSVars, getTimeBasedAccent } from './tokens'
 
 const ACCENT_STORAGE_KEY = 'monkey-one-accent'
 const TIME_BASED_THEME_KEY = 'monkey-one-time-based'
@@ -81,12 +76,10 @@ export function useTheme(): UseThemeReturn {
   }, [accent, isDark, timeBasedTheme, mounted])
 
   const setAccent = useCallback((newAccent: AccentConfig | keyof typeof accentPresets) => {
-    const accentConfig = typeof newAccent === 'string' 
-      ? accentPresets[newAccent] 
-      : newAccent
+    const accentConfig = typeof newAccent === 'string' ? accentPresets[newAccent] : newAccent
 
     setAccentState(accentConfig)
-    
+
     try {
       localStorage.setItem(ACCENT_STORAGE_KEY, JSON.stringify(accentConfig))
     } catch (error) {
@@ -96,7 +89,7 @@ export function useTheme(): UseThemeReturn {
 
   const setTimeBasedTheme = useCallback((enabled: boolean) => {
     setTimeBasedThemeState(enabled)
-    
+
     try {
       localStorage.setItem(TIME_BASED_THEME_KEY, JSON.stringify(enabled))
     } catch (error) {
@@ -113,6 +106,6 @@ export function useTheme(): UseThemeReturn {
     timeBasedTheme,
     setTimeBasedTheme,
     isDark,
-    accentPresets
+    accentPresets,
   }
 }

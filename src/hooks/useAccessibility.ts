@@ -20,25 +20,21 @@ function getFocusableElements(container: HTMLElement): HTMLElement[] {
     'select:not([disabled])',
     'textarea:not([disabled])',
     '[tabindex]:not([tabindex="-1"])',
-    '[contenteditable="true"]'
+    '[contenteditable="true"]',
   ].join(', ')
 
-  return Array.from(container.querySelectorAll(focusableSelectors))
-    .filter((element) => {
-      const htmlElement = element as HTMLElement
-      return htmlElement.offsetParent !== null && // Not hidden
-             !htmlElement.hasAttribute('aria-hidden') &&
-             htmlElement.tabIndex !== -1
-    }) as HTMLElement[]
+  return Array.from(container.querySelectorAll(focusableSelectors)).filter(element => {
+    const htmlElement = element as HTMLElement
+    return (
+      htmlElement.offsetParent !== null && // Not hidden
+      !htmlElement.hasAttribute('aria-hidden') &&
+      htmlElement.tabIndex !== -1
+    )
+  }) as HTMLElement[]
 }
 
 export function useFocusManagement(options: FocusManagementOptions = {}) {
-  const {
-    trapFocus = false,
-    restoreFocus = true,
-    initialFocus,
-    excludeSelectors = []
-  } = options
+  const { trapFocus = false, restoreFocus = true, initialFocus, excludeSelectors = [] } = options
 
   const containerRef = React.useRef<HTMLElement>(null)
   const previouslyFocusedElement = React.useRef<HTMLElement | null>(null)
@@ -89,12 +85,9 @@ export function useFocusManagement(options: FocusManagementOptions = {}) {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key !== 'Tab') return
 
-      const focusableElements = getFocusableElements(container)
-        .filter(element => {
-          return !excludeSelectors.some(selector => 
-            element.matches(selector)
-          )
-        })
+      const focusableElements = getFocusableElements(container).filter(element => {
+        return !excludeSelectors.some(selector => element.matches(selector))
+      })
 
       const firstElement = focusableElements[0]
       const lastElement = focusableElements[focusableElements.length - 1]
@@ -146,17 +139,19 @@ export function useFocusManagement(options: FocusManagementOptions = {}) {
       }
 
       focusableElements[targetIndex]?.focus()
-    }
+    },
   }
 }
 
 // Hook for managing keyboard navigation
-export function useKeyboardNavigation(options: {
-  onEscape?: () => void
-  onEnter?: () => void
-  onArrowKeys?: (direction: 'up' | 'down' | 'left' | 'right') => void
-  enabled?: boolean
-} = {}) {
+export function useKeyboardNavigation(
+  options: {
+    onEscape?: () => void
+    onEnter?: () => void
+    onArrowKeys?: (direction: 'up' | 'down' | 'left' | 'right') => void
+    enabled?: boolean
+  } = {}
+) {
   const { onEscape, onEnter, onArrowKeys, enabled = true } = options
 
   React.useEffect(() => {
@@ -200,35 +195,44 @@ export function useScreenReaderAnnouncement() {
   const [announcement, setAnnouncement] = React.useState('')
   const timeoutRef = React.useRef<NodeJS.Timeout>()
 
-  const announce = React.useCallback((message: string, priority: 'polite' | 'assertive' = 'polite') => {
-    // Clear previous timeout
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current)
-    }
+  const announce = React.useCallback(
+    (message: string, priority: 'polite' | 'assertive' = 'polite') => {
+      // Clear previous timeout
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
 
-    // Set the announcement
-    setAnnouncement('')
-    
-    // Use a short delay to ensure screen readers pick up the change
-    timeoutRef.current = setTimeout(() => {
-      setAnnouncement(message)
-      
-      // Clear the announcement after a delay to allow for re-announcements
+      // Set the announcement
+      setAnnouncement('')
+
+      // Use a short delay to ensure screen readers pick up the change
       timeoutRef.current = setTimeout(() => {
-        setAnnouncement('')
-      }, 1000)
-    }, 100)
-  }, [])
+        setAnnouncement(message)
+
+        // Clear the announcement after a delay to allow for re-announcements
+        timeoutRef.current = setTimeout(() => {
+          setAnnouncement('')
+        }, 1000)
+      }, 100)
+    },
+    []
+  )
 
   // Live region component
-  const LiveRegion = React.useCallback(({ ariaLive = 'polite' }: { ariaLive?: 'polite' | 'assertive' }) => 
-    React.createElement('div', {
-      'aria-live': ariaLive,
-      'aria-atomic': 'true',
-      className: 'sr-only',
-      role: 'status'
-    }, announcement)
-  , [announcement])
+  const LiveRegion = React.useCallback(
+    ({ ariaLive = 'polite' }: { ariaLive?: 'polite' | 'assertive' }) =>
+      React.createElement(
+        'div',
+        {
+          'aria-live': ariaLive,
+          'aria-atomic': 'true',
+          className: 'sr-only',
+          role: 'status',
+        },
+        announcement
+      ),
+    [announcement]
+  )
 
   React.useEffect(() => {
     return () => {
@@ -240,7 +244,7 @@ export function useScreenReaderAnnouncement() {
 
   return {
     announce,
-    LiveRegion
+    LiveRegion,
   }
 }
 
@@ -257,7 +261,7 @@ export function useAccessibleValidation() {
 
     setErrors(prev => ({
       ...prev,
-      [fieldName]: error
+      [fieldName]: error,
     }))
   }, [])
 
@@ -269,23 +273,26 @@ export function useAccessibleValidation() {
     })
   }, [])
 
-  const getFieldProps = React.useCallback((fieldName: string) => {
-    const hasError = !!errors[fieldName]
-    const errorId = errorIds.current[fieldName]
+  const getFieldProps = React.useCallback(
+    (fieldName: string) => {
+      const hasError = !!errors[fieldName]
+      const errorId = errorIds.current[fieldName]
 
-    return {
-      'aria-invalid': hasError,
-      'aria-describedby': hasError ? errorId : undefined
-    }
-  }, [errors])
+      return {
+        'aria-invalid': hasError,
+        'aria-describedby': hasError ? errorId : undefined,
+      }
+    },
+    [errors]
+  )
 
   const getErrorProps = React.useCallback((fieldName: string) => {
     const errorId = errorIds.current[fieldName]
-    
+
     return {
       id: errorId,
       role: 'alert',
-      'aria-live': 'polite' as const
+      'aria-live': 'polite' as const,
     }
   }, [])
 
@@ -294,6 +301,6 @@ export function useAccessibleValidation() {
     setFieldError,
     clearFieldError,
     getFieldProps,
-    getErrorProps
+    getErrorProps,
   }
 }

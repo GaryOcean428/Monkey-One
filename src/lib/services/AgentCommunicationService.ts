@@ -40,7 +40,7 @@ export class AgentCommunicationService {
 
   async sendMessage(message: Message): Promise<void> {
     const targetAgent = this.agents.get(message.metadata?.recipient || '')
-    
+
     if (!targetAgent) {
       throw new Error(`Target agent not found: ${message.metadata?.recipient}`)
     }

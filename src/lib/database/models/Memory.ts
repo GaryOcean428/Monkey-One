@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod'
 
 export const MemorySchema = z.object({
   id: z.string().uuid(),
@@ -12,14 +12,14 @@ export const MemorySchema = z.object({
   last_accessed: z.string().datetime(),
   created_at: z.string().datetime(),
   updated_at: z.string().datetime(),
-});
+})
 
-export type Memory = z.infer<typeof MemorySchema>;
+export type Memory = z.infer<typeof MemorySchema>
 
 export const CreateMemorySchema = MemorySchema.omit({
   id: true,
   created_at: true,
   updated_at: true,
-});
+})
 
-export type CreateMemory = z.infer<typeof CreateMemorySchema>;
+export type CreateMemory = z.infer<typeof CreateMemorySchema>

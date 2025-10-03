@@ -7,17 +7,17 @@ import { Separator } from './separator'
 import { useTheme } from '../../lib/theme/use-theme'
 import { accentPresets } from '../../lib/theme/tokens'
 import { cn } from '../../lib/utils'
-import { 
-  Palette, 
-  Sun, 
-  Moon, 
-  Monitor, 
-  Clock, 
-  Eye, 
+import {
+  Palette,
+  Sun,
+  Moon,
+  Monitor,
+  Clock,
+  Eye,
   Accessibility,
   RotateCcw,
   Check,
-  Sparkles
+  Sparkles,
 } from 'lucide-react'
 
 const accentColors = [
@@ -28,7 +28,7 @@ const accentColors = [
   { key: 'pink', label: 'Pink', color: 'hsl(320, 70%, 60%)' },
   { key: 'teal', label: 'Teal', color: 'hsl(180, 70%, 45%)' },
   { key: 'indigo', label: 'Indigo', color: 'hsl(240, 75%, 55%)' },
-  { key: 'rose', label: 'Rose', color: 'hsl(350, 75%, 60%)' }
+  { key: 'rose', label: 'Rose', color: 'hsl(350, 75%, 60%)' },
 ] as const
 
 export interface ThemeCustomizerProps {
@@ -45,7 +45,7 @@ export function ThemeCustomizer({ className, compact = false }: ThemeCustomizerP
     timeBasedTheme,
     setTimeBasedTheme,
     isDark,
-    accentPresets: presets
+    accentPresets: presets,
   } = useTheme()
 
   const [mounted, setMounted] = React.useState(false)
@@ -70,21 +70,21 @@ export function ThemeCustomizer({ className, compact = false }: ThemeCustomizerP
 
   if (compact) {
     return (
-      <div className={cn('p-4 space-y-3', className)}>
+      <div className={cn('space-y-3 p-4', className)}>
         {/* Accent Colors */}
         <div className="space-y-2">
-          <Label className="text-xs font-medium flex items-center gap-1">
+          <Label className="flex items-center gap-1 text-xs font-medium">
             <Sparkles className="h-3 w-3" />
             Accent
           </Label>
           <div className="grid grid-cols-4 gap-1">
-            {accentColors.slice(0, 4).map((color) => (
+            {accentColors.slice(0, 4).map(color => (
               <button
                 key={color.key}
                 onClick={() => setAccent(color.key as keyof typeof presets)}
                 className={cn(
                   'h-6 w-6 rounded-full border transition-all hover:scale-105',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
                   accent.hue === presets[color.key as keyof typeof presets].hue
                     ? 'border-foreground scale-110 shadow-md'
                     : 'border-border/50'
@@ -93,7 +93,7 @@ export function ThemeCustomizer({ className, compact = false }: ThemeCustomizerP
                 title={color.label}
               >
                 {accent.hue === presets[color.key as keyof typeof presets].hue && (
-                  <Check className="h-3 w-3 text-white drop-shadow-lg mx-auto" />
+                  <Check className="mx-auto h-3 w-3 text-white drop-shadow-lg" />
                 )}
               </button>
             ))}
@@ -151,18 +151,18 @@ export function ThemeCustomizer({ className, compact = false }: ThemeCustomizerP
       <CardContent className="space-y-6">
         {/* Accent Color Selection */}
         <div className="space-y-3">
-          <Label className="text-sm font-medium flex items-center gap-1">
+          <Label className="flex items-center gap-1 text-sm font-medium">
             <Sparkles className="h-4 w-4" />
             Accent Color
           </Label>
           <div className="grid grid-cols-4 gap-2">
-            {accentColors.map((color) => (
+            {accentColors.map(color => (
               <button
                 key={color.key}
                 onClick={() => setAccent(color.key as keyof typeof presets)}
                 className={cn(
                   'relative h-12 w-full rounded-lg border-2 transition-all hover:scale-105 active:scale-95',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
                   accent.hue === presets[color.key as keyof typeof presets].hue
                     ? 'border-foreground shadow-lg'
                     : 'border-border hover:border-muted-foreground'
@@ -219,44 +219,42 @@ export function ThemeCustomizer({ className, compact = false }: ThemeCustomizerP
         {/* Advanced Options */}
         <div className="space-y-4">
           <Label className="text-sm font-medium">Advanced Options</Label>
-          
+
           {/* Time-based Theme */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-muted-foreground" />
+              <Clock className="text-muted-foreground h-4 w-4" />
               <div>
-                <Label htmlFor="time-based" className="text-sm">Time-based Accent</Label>
-                <p className="text-xs text-muted-foreground">
+                <Label htmlFor="time-based" className="text-sm">
+                  Time-based Accent
+                </Label>
+                <p className="text-muted-foreground text-xs">
                   Warmer colors in morning, cooler at night
                 </p>
               </div>
             </div>
-            <Switch
-              id="time-based"
-              checked={timeBasedTheme}
-              onCheckedChange={setTimeBasedTheme}
-            />
+            <Switch id="time-based" checked={timeBasedTheme} onCheckedChange={setTimeBasedTheme} />
           </div>
         </div>
 
         <Separator />
 
         {/* Current Accent Info */}
-        <div className="p-3 bg-muted/50 rounded-lg space-y-2">
-          <div className="text-xs font-medium text-muted-foreground">Current Accent</div>
+        <div className="bg-muted/50 space-y-2 rounded-lg p-3">
+          <div className="text-muted-foreground text-xs font-medium">Current Accent</div>
           <div className="flex items-center gap-2">
-            <div 
-              className="h-4 w-4 rounded-full border border-border"
-              style={{ backgroundColor: `hsl(${accent.hue}, ${accent.saturation}%, ${accent.lightness}%)` }}
+            <div
+              className="border-border h-4 w-4 rounded-full border"
+              style={{
+                backgroundColor: `hsl(${accent.hue}, ${accent.saturation}%, ${accent.lightness}%)`,
+              }}
             />
             <div className="text-sm">
               HSL({accent.hue}, {accent.saturation}%, {accent.lightness}%)
             </div>
           </div>
           {timeBasedTheme && (
-            <div className="text-xs text-muted-foreground">
-              Time-based adjustments are active
-            </div>
+            <div className="text-muted-foreground text-xs">Time-based adjustments are active</div>
           )}
         </div>
       </CardContent>

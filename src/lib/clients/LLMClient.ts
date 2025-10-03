@@ -1,4 +1,4 @@
-import type { Message } from '../../types';
+import type { Message } from '../../types'
 
 export class LLMClient {
   constructor(private apiKey: string) {}
@@ -9,25 +9,25 @@ export class LLMClient {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.apiKey}`
+          Authorization: `Bearer ${this.apiKey}`,
         },
-        body: JSON.stringify({ messages })
-      });
+        body: JSON.stringify({ messages }),
+      })
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
 
-      const data = await response.json();
+      const data = await response.json()
       return {
         id: crypto.randomUUID(),
         role: 'assistant',
         content: data.content,
-        timestamp: Date.now()
-      };
+        timestamp: Date.now(),
+      }
     } catch (error) {
-      console.error('Error in chat:', error);
-      throw error;
+      console.error('Error in chat:', error)
+      throw error
     }
   }
 
@@ -37,20 +37,20 @@ export class LLMClient {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.apiKey}`
+          Authorization: `Bearer ${this.apiKey}`,
         },
-        body: JSON.stringify({ prompt })
-      });
+        body: JSON.stringify({ prompt }),
+      })
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
 
-      const data = await response.json();
-      return data.completion;
+      const data = await response.json()
+      return data.completion
     } catch (error) {
-      console.error('Error in complete:', error);
-      throw error;
+      console.error('Error in complete:', error)
+      throw error
     }
   }
 }

@@ -57,13 +57,13 @@ export function WorkflowVisualizer({ workflow }: WorkflowVisualizerProps) {
       <div className="mb-4">
         <h3 className="text-lg font-semibold">{workflow.name}</h3>
         {workflow.description && (
-          <p className="mt-1 text-sm text-muted-foreground">{workflow.description}</p>
+          <p className="text-muted-foreground mt-1 text-sm">{workflow.description}</p>
         )}
         <div className="mt-2 flex items-center gap-2">
           <Badge variant="outline" className={getStatusColor(workflow.status)}>
             {workflow.status.charAt(0).toUpperCase() + workflow.status.slice(1)}
           </Badge>
-          <span className="text-sm text-muted-foreground">
+          <span className="text-muted-foreground text-sm">
             Created {new Date(workflow.createdAt).toLocaleDateString()}
           </span>
         </div>
@@ -82,22 +82,22 @@ export function WorkflowVisualizer({ workflow }: WorkflowVisualizerProps) {
                   </Badge>
                 </div>
                 {step.agent && (
-                  <p className="mt-1 text-sm text-muted-foreground">Agent: {step.agent}</p>
+                  <p className="text-muted-foreground mt-1 text-sm">Agent: {step.agent}</p>
                 )}
                 {step.startTime && (
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     Started: {new Date(step.startTime).toLocaleString()}
                   </p>
                 )}
                 {step.endTime && (
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     Completed: {new Date(step.endTime).toLocaleString()}
                   </p>
                 )}
               </div>
             </div>
             {index < workflow.steps.length - 1 && (
-              <div className="absolute bottom-0 left-2.5 top-8 w-px bg-gray-200 dark:bg-gray-800" />
+              <div className="absolute top-8 bottom-0 left-2.5 w-px bg-gray-200 dark:bg-gray-800" />
             )}
           </div>
         ))}

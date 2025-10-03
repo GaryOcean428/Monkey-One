@@ -1,4 +1,4 @@
-import { TechStack } from '../types';
+import { TechStack } from '../types'
 
 const TECH_PATTERNS: Record<TechStack, RegExp> = {
   typescript: /\b(typescript|ts|type[\s-]safe)\b/i,
@@ -8,7 +8,7 @@ const TECH_PATTERNS: Record<TechStack, RegExp> = {
   testing: /\b(test|jest|vitest|cypress)\b/i,
   deployment: /\b(docker|kubernetes|ci|cd|deploy)\b/i,
   security: /\b(auth|oauth|jwt|security)\b/i,
-};
+}
 
 export class TechStackAnalyzer {
   /**
@@ -19,7 +19,7 @@ export class TechStackAnalyzer {
   public static analyze(query: string): TechStack[] {
     return Object.entries(TECH_PATTERNS)
       .filter(([_, pattern]) => pattern.test(query))
-      .map(([tech]) => tech as TechStack);
+      .map(([tech]) => tech as TechStack)
   }
 
   /**
@@ -29,7 +29,7 @@ export class TechStackAnalyzer {
    * @returns True if tech stack is present
    */
   public static hasTechStack(query: string, stack: TechStack): boolean {
-    return TECH_PATTERNS[stack].test(query);
+    return TECH_PATTERNS[stack].test(query)
   }
 
   /**
@@ -38,7 +38,7 @@ export class TechStackAnalyzer {
    * @returns Complexity multiplier
    */
   public static getComplexityMultiplier(stacks: TechStack[]): number {
-    const baseMultiplier = 1.0;
+    const baseMultiplier = 1.0
     const stackMultipliers: Record<TechStack, number> = {
       typescript: 1.2,
       react: 1.15,
@@ -47,11 +47,11 @@ export class TechStackAnalyzer {
       testing: 1.1,
       deployment: 1.2,
       security: 1.3,
-    };
+    }
 
     return stacks.reduce(
       (multiplier, stack) => multiplier * stackMultipliers[stack],
       baseMultiplier
-    );
+    )
   }
 }

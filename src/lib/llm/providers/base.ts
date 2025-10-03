@@ -1,28 +1,28 @@
 export interface LLMResponse {
-  text: string;
+  text: string
   usage?: {
-    promptTokens: number;
-    completionTokens: number;
-    totalTokens: number;
-  };
+    promptTokens: number
+    completionTokens: number
+    totalTokens: number
+  }
 }
 
 export abstract class LLMProvider {
-  protected apiKey?: string;
+  protected apiKey?: string
 
   constructor(apiKey?: string) {
-    this.apiKey = apiKey;
+    this.apiKey = apiKey
   }
 
-  abstract getName(): string;
-  
-  abstract getModelName(): string;
-  
-  abstract getCostPerToken(): number;
-  
-  abstract generateResponse(prompt: string): Promise<LLMResponse>;
-  
-  abstract generateStreamingResponse(prompt: string): Promise<ReadableStream>;
-  
-  abstract isAvailable(): boolean;
+  abstract getName(): string
+
+  abstract getModelName(): string
+
+  abstract getCostPerToken(): number
+
+  abstract generateResponse(prompt: string): Promise<LLMResponse>
+
+  abstract generateStreamingResponse(prompt: string): Promise<ReadableStream>
+
+  abstract isAvailable(): boolean
 }

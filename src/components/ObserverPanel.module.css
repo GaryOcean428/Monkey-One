@@ -6,13 +6,33 @@
 }
 
 /* Generate confidence width classes */
-.confidence10 { width: 10%; }
-.confidence20 { width: 20%; }
-.confidence30 { width: 30%; }
-.confidence40 { width: 40%; }
-.confidence50 { width: 50%; }
-.confidence60 { width: 60%; }
-.confidence70 { width: 70%; }
-.confidence80 { width: 80%; }
-.confidence90 { width: 90%; }
-.confidence100 { width: 100%; }
+.confidence10 {
+  width: 10%;
+}
+.confidence20 {
+  width: 20%;
+}
+.confidence30 {
+  width: 30%;
+}
+.confidence40 {
+  width: 40%;
+}
+.confidence50 {
+  width: 50%;
+}
+.confidence60 {
+  width: 60%;
+}
+.confidence70 {
+  width: 70%;
+}
+.confidence80 {
+  width: 80%;
+}
+.confidence90 {
+  width: 90%;
+}
+.confidence100 {
+  width: 100%;
+}

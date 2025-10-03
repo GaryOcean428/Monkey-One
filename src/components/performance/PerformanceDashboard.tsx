@@ -6,17 +6,17 @@ import { Badge } from '../ui/badge'
 import { Separator } from '../ui/separator'
 import { usePerformanceMonitoring, usePerformanceMark } from '../../hooks/usePerformanceMonitoring'
 import { cn } from '../../lib/utils'
-import { 
-  Activity, 
-  Gauge, 
-  Timer, 
-  Zap, 
+import {
+  Activity,
+  Gauge,
+  Timer,
+  Zap,
   Eye,
   RefreshCw,
   TrendingUp,
   AlertTriangle,
   CheckCircle,
-  XCircle
+  XCircle,
 } from 'lucide-react'
 
 export interface PerformanceDashboardProps {
@@ -25,10 +25,10 @@ export interface PerformanceDashboardProps {
   showRealtime?: boolean
 }
 
-export function PerformanceDashboard({ 
-  className, 
-  compact = false, 
-  showRealtime = true 
+export function PerformanceDashboard({
+  className,
+  compact = false,
+  showRealtime = true,
 }: PerformanceDashboardProps) {
   const { metrics, isSupported, getCoreWebVitals, getPerformanceScore } = usePerformanceMonitoring()
   const [lastUpdated, setLastUpdated] = React.useState(new Date())
@@ -47,9 +47,7 @@ export function PerformanceDashboard({
             <Activity className="h-5 w-5" />
             Performance Monitoring
           </CardTitle>
-          <CardDescription>
-            Performance monitoring is not supported in this browser
-          </CardDescription>
+          <CardDescription>Performance monitoring is not supported in this browser</CardDescription>
         </CardHeader>
       </Card>
     )
@@ -69,16 +67,14 @@ export function PerformanceDashboard({
             </div>
             <div className="flex items-center gap-2">
               {performanceScore !== null && (
-                <Badge variant={getScoreBadgeVariant(performanceScore)}>
-                  {performanceScore}
-                </Badge>
+                <Badge variant={getScoreBadgeVariant(performanceScore)}>{performanceScore}</Badge>
               )}
               <Button variant="ghost" size="sm" onClick={refresh}>
                 <RefreshCw className="h-3 w-3" />
               </Button>
             </div>
           </div>
-          
+
           {performanceScore !== null && (
             <div className="mt-2">
               <Progress value={performanceScore} className="h-2" />
@@ -98,19 +94,17 @@ export function PerformanceDashboard({
               <Activity className="h-5 w-5" />
               Performance Monitoring
             </CardTitle>
-            <CardDescription>
-              Core Web Vitals and performance metrics
-            </CardDescription>
+            <CardDescription>Core Web Vitals and performance metrics</CardDescription>
           </div>
           <div className="flex items-center gap-2">
             {performanceScore !== null && (
               <div className="text-center">
                 <div className="text-2xl font-bold">{performanceScore}</div>
-                <div className="text-xs text-muted-foreground">Score</div>
+                <div className="text-muted-foreground text-xs">Score</div>
               </div>
             )}
             <Button variant="outline" size="sm" onClick={refresh}>
-              <RefreshCw className="h-4 w-4 mr-2" />
+              <RefreshCw className="mr-2 h-4 w-4" />
               Refresh
             </Button>
           </div>
@@ -120,11 +114,11 @@ export function PerformanceDashboard({
       <CardContent className="space-y-6">
         {/* Core Web Vitals */}
         <div>
-          <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
+          <h4 className="mb-3 flex items-center gap-2 text-sm font-medium">
             <TrendingUp className="h-4 w-4" />
             Core Web Vitals
           </h4>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <MetricCard
               title="LCP"
               description="Largest Contentful Paint"
@@ -158,33 +152,31 @@ export function PerformanceDashboard({
 
         {/* Additional Metrics */}
         <div>
-          <h4 className="text-sm font-medium mb-3">Additional Metrics</h4>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <h4 className="mb-3 text-sm font-medium">Additional Metrics</h4>
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             {metrics.fcp && (
-              <div className="text-center p-3 bg-muted/50 rounded-lg">
+              <div className="bg-muted/50 rounded-lg p-3 text-center">
                 <div className="text-lg font-semibold">{Math.round(metrics.fcp)}ms</div>
-                <div className="text-xs text-muted-foreground">FCP</div>
+                <div className="text-muted-foreground text-xs">FCP</div>
               </div>
             )}
             {metrics.ttfb && (
-              <div className="text-center p-3 bg-muted/50 rounded-lg">
+              <div className="bg-muted/50 rounded-lg p-3 text-center">
                 <div className="text-lg font-semibold">{Math.round(metrics.ttfb)}ms</div>
-                <div className="text-xs text-muted-foreground">TTFB</div>
+                <div className="text-muted-foreground text-xs">TTFB</div>
               </div>
             )}
             {metrics.memory && (
-              <div className="text-center p-3 bg-muted/50 rounded-lg">
+              <div className="bg-muted/50 rounded-lg p-3 text-center">
                 <div className="text-lg font-semibold">
                   {Math.round(metrics.memory.usedJSHeapSize / 1024 / 1024)}MB
                 </div>
-                <div className="text-xs text-muted-foreground">Memory</div>
+                <div className="text-muted-foreground text-xs">Memory</div>
               </div>
             )}
-            <div className="text-center p-3 bg-muted/50 rounded-lg">
-              <div className="text-lg font-semibold">
-                {lastUpdated.toLocaleTimeString()}
-              </div>
-              <div className="text-xs text-muted-foreground">Updated</div>
+            <div className="bg-muted/50 rounded-lg p-3 text-center">
+              <div className="text-lg font-semibold">{lastUpdated.toLocaleTimeString()}</div>
+              <div className="text-muted-foreground text-xs">Updated</div>
             </div>
           </div>
         </div>
@@ -202,7 +194,7 @@ function MetricCard({
   rating,
   threshold,
   unit = '',
-  icon
+  icon,
 }: {
   title: string
   description: string
@@ -214,43 +206,51 @@ function MetricCard({
 }) {
   const getRatingIcon = () => {
     switch (rating) {
-      case 'good': return <CheckCircle className="h-4 w-4 text-green-500" />
-      case 'needs-improvement': return <AlertTriangle className="h-4 w-4 text-yellow-500" />
-      case 'poor': return <XCircle className="h-4 w-4 text-red-500" />
-      default: return null
+      case 'good':
+        return <CheckCircle className="h-4 w-4 text-green-500" />
+      case 'needs-improvement':
+        return <AlertTriangle className="h-4 w-4 text-yellow-500" />
+      case 'poor':
+        return <XCircle className="h-4 w-4 text-red-500" />
+      default:
+        return null
     }
   }
 
   const getRatingColor = () => {
     switch (rating) {
-      case 'good': return 'border-green-200 bg-green-50'
-      case 'needs-improvement': return 'border-yellow-200 bg-yellow-50'
-      case 'poor': return 'border-red-200 bg-red-50'
-      default: return 'border-muted'
+      case 'good':
+        return 'border-green-200 bg-green-50'
+      case 'needs-improvement':
+        return 'border-yellow-200 bg-yellow-50'
+      case 'poor':
+        return 'border-red-200 bg-red-50'
+      default:
+        return 'border-muted'
     }
   }
 
   return (
-    <div className={cn('border rounded-lg p-3', getRatingColor())}>
-      <div className="flex items-center justify-between mb-2">
+    <div className={cn('rounded-lg border p-3', getRatingColor())}>
+      <div className="mb-2 flex items-center justify-between">
         <div className="flex items-center gap-2">
           {icon}
-          <span className="font-medium text-sm">{title}</span>
+          <span className="text-sm font-medium">{title}</span>
         </div>
         {getRatingIcon()}
       </div>
-      
+
       <div className="text-2xl font-bold">
         {value !== undefined ? `${Math.round(value)}${unit}` : '—'}
       </div>
-      
-      <div className="text-xs text-muted-foreground mt-1">
-        {description}
-      </div>
-      
+
+      <div className="text-muted-foreground mt-1 text-xs">{description}</div>
+
       {threshold && rating && (
-        <div className="text-xs text-muted-foreground mt-2">
-          Good: ≤{threshold.good}{unit} | Poor: &gt;{threshold.needsImprovement}{unit}
+        <div className="text-muted-foreground mt-2 text-xs">
+          Good: ≤{threshold.good}
+          {unit} | Poor: &gt;{threshold.needsImprovement}
+          {unit}
         </div>
       )}
     </div>
@@ -263,7 +263,7 @@ function RealtimeMetrics() {
 
   React.useEffect(() => {
     mark('start')
-    
+
     return () => {
       mark('end')
       const duration = measure('start', 'end')
@@ -275,10 +275,10 @@ function RealtimeMetrics() {
 
   return (
     <div>
-      <h4 className="text-sm font-medium mb-3">Real-time Metrics</h4>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="p-3 bg-muted/50 rounded-lg">
-          <div className="flex items-center gap-2 mb-1">
+      <h4 className="mb-3 text-sm font-medium">Real-time Metrics</h4>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="bg-muted/50 rounded-lg p-3">
+          <div className="mb-1 flex items-center gap-2">
             <Timer className="h-4 w-4" />
             <span className="text-sm font-medium">Component Render</span>
           </div>
@@ -286,9 +286,9 @@ function RealtimeMetrics() {
             {renderTime !== null ? `${renderTime.toFixed(2)}ms` : 'Measuring...'}
           </div>
         </div>
-        
-        <div className="p-3 bg-muted/50 rounded-lg">
-          <div className="flex items-center gap-2 mb-1">
+
+        <div className="bg-muted/50 rounded-lg p-3">
+          <div className="mb-1 flex items-center gap-2">
             <Activity className="h-4 w-4" />
             <span className="text-sm font-medium">Frame Rate</span>
           </div>

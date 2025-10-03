@@ -1,21 +1,21 @@
-import { create } from 'zustand';
+import { create } from 'zustand'
 
 interface Thought {
-  type: string;
-  content: string;
-  timestamp: Date;
+  type: string
+  content: string
+  timestamp: Date
 }
 
 interface ThoughtStore {
-  thoughts: Thought[];
-  addThought: (thought: Omit<Thought, 'timestamp'>) => void;
-  clearThoughts: () => void;
+  thoughts: Thought[]
+  addThought: (thought: Omit<Thought, 'timestamp'>) => void
+  clearThoughts: () => void
 }
 
-export const useThoughtStore = create<ThoughtStore>((set) => ({
+export const useThoughtStore = create<ThoughtStore>(set => ({
   thoughts: [],
-  addThought: (thought) =>
-    set((state) => ({
+  addThought: thought =>
+    set(state => ({
       thoughts: [
         ...state.thoughts,
         {
@@ -25,4 +25,4 @@ export const useThoughtStore = create<ThoughtStore>((set) => ({
       ],
     })),
   clearThoughts: () => set({ thoughts: [] }),
-}));
+}))

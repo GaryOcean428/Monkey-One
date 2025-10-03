@@ -1,102 +1,99 @@
-import { logger } from '../../utils/logger';
+import { logger } from '../../utils/logger'
 
 export interface PerformanceMetrics {
-  requestLatency: number[];
-  tokenProcessingSpeed: number[];
-  memoryUsage: number[];
-  timestamp: number[];
+  requestLatency: number[]
+  tokenProcessingSpeed: number[]
+  memoryUsage: number[]
+  timestamp: number[]
 }
 
 export interface DetailedModelMetrics {
-  p50Latency: number;
-  p90Latency: number;
-  p99Latency: number;
-  avgTokensPerSecond: number;
-  peakMemoryUsage: number;
-  totalRequests: number;
-  successfulRequests: number;
-  failedRequests: number;
-  timeoutRequests: number;
+  p50Latency: number
+  p90Latency: number
+  p99Latency: number
+  avgTokensPerSecond: number
+  peakMemoryUsage: number
+  totalRequests: number
+  successfulRequests: number
+  failedRequests: number
+  timeoutRequests: number
 }
 
 class PerformanceMonitor {
-  private static instance: PerformanceMonitor;
-  private metrics: Map<string, PerformanceMetrics> = new Map();
-  private readonly maxDataPoints = 1000;
-  private latencyMetrics: Map<string, {
-    totalLatency: number;
-    requestCount: number;
-    averageLatency: number;
-    lastUpdated: Date;
-  }> = new Map();
+  private static instance: PerformanceMonitor
+  private metrics: Map<string, PerformanceMetrics> = new Map()
+  private readonly maxDataPoints = 1000
+  private latencyMetrics: Map<
+    string,
+    {
+      totalLatency: number
+      requestCount: number
+      averageLatency: number
+      lastUpdated: Date
+    }
+  > = new Map()
 
   private constructor() {
-    this.startPeriodicCleanup();
+    this.startPeriodicCleanup()
   }
 
   static getInstance(): PerformanceMonitor {
     if (!PerformanceMonitor.instance) {
-      PerformanceMonitor.instance = new PerformanceMonitor();
+      PerformanceMonitor.instance = new PerformanceMonitor()
     }
-    return PerformanceMonitor.instance;
+    return PerformanceMonitor.instance
   }
 
   private startPeriodicCleanup() {
     setInterval(() => {
-      this.cleanup();
-    }, 3600000); // Cleanup every hour
+      this.cleanup()
+    }, 3600000) // Cleanup every hour
   }
 
   private cleanup() {
-    const now = Date.now();
-    const maxAge = 24 * 60 * 60 * 1000; // 24 hours
+    const now = Date.now()
+    const maxAge = 24 * 60 * 60 * 1000 // 24 hours
 
     for (const [modelName, modelMetrics] of this.metrics.entries()) {
-      const oldestAllowedIndex = modelMetrics.timestamp.findIndex(
-        time => now - time < maxAge
-      );
+      const oldestAllowedIndex = modelMetrics.timestamp.findIndex(time => now - time < maxAge)
 
       if (oldestAllowedIndex > 0) {
-        modelMetrics.requestLatency = modelMetrics.requestLatency.slice(oldestAllowedIndex);
-        modelMetrics.tokenProcessingSpeed = modelMetrics.tokenProcessingSpeed.slice(oldestAllowedIndex);
-        modelMetrics.memoryUsage = modelMetrics.memoryUsage.slice(oldestAllowedIndex);
-        modelMetrics.timestamp = modelMetrics.timestamp.slice(oldestAllowedIndex);
+        modelMetrics.requestLatency = modelMetrics.requestLatency.slice(oldestAllowedIndex)
+        modelMetrics.tokenProcessingSpeed =
+          modelMetrics.tokenProcessingSpeed.slice(oldestAllowedIndex)
+        modelMetrics.memoryUsage = modelMetrics.memoryUsage.slice(oldestAllowedIndex)
+        modelMetrics.timestamp = modelMetrics.timestamp.slice(oldestAllowedIndex)
       }
 
       if (modelMetrics.timestamp.length === 0) {
-        this.metrics.delete(modelName);
+        this.metrics.delete(modelName)
       }
     }
   }
 
-  recordMetrics(
-    modelName: string,
-    latency: number,
-    tokensPerSecond: number,
-    memoryUsage: number
-  ) {
+  recordMetrics(modelName: string, latency: number, tokensPerSecond: number, memoryUsage: number) {
     const modelMetrics = this.metrics.get(modelName) || {
       requestLatency: [],
       tokenProcessingSpeed: [],
       memoryUsage: [],
-      timestamp: []
-    };
+      timestamp: [],
+    }
 
-    modelMetrics.requestLatency.push(latency);
-    modelMetrics.tokenProcessingSpeed.push(tokensPerSecond);
-    modelMetrics.memoryUsage.push(memoryUsage);
-    modelMetrics.timestamp.push(Date.now());
+    modelMetrics.requestLatency.push(latency)
+    modelMetrics.tokenProcessingSpeed.push(tokensPerSecond)
+    modelMetrics.memoryUsage.push(memoryUsage)
+    modelMetrics.timestamp.push(Date.now())
 
     // Trim arrays if they exceed maxDataPoints
     if (modelMetrics.timestamp.length > this.maxDataPoints) {
-      const excess = modelMetrics.timestamp.length - this.maxDataPoints;
-      modelMetrics.requestLatency = modelMetrics.requestLatency.slice(excess);
-      modelMetrics.tokenProcessingSpeed = modelMetrics.tokenProcessingSpeed.slice(excess);
-      modelMetrics.memoryUsage = modelMetrics.memoryUsage.slice(excess);
-      modelMetrics.timestamp = modelMetrics.timestamp.slice(excess);
+      const excess = modelMetrics.timestamp.length - this.maxDataPoints
+      modelMetrics.requestLatency = modelMetrics.requestLatency.slice(excess)
+      modelMetrics.tokenProcessingSpeed = modelMetrics.tokenProcessingSpeed.slice(excess)
+      modelMetrics.memoryUsage = modelMetrics.memoryUsage.slice(excess)
+      modelMetrics.timestamp = modelMetrics.timestamp.slice(excess)
     }
 
-    this.metrics.set(modelName, modelMetrics);
+    this.metrics.set(modelName, modelMetrics)
   }
 
   recordLatency(modelName: string, latency: number) {
@@ -105,22 +102,22 @@ class PerformanceMonitor {
         totalLatency: 0,
         requestCount: 0,
         averageLatency: 0,
-        lastUpdated: new Date()
-      };
+        lastUpdated: new Date(),
+      }
 
-      currentMetrics.totalLatency += latency;
-      currentMetrics.requestCount++;
-      currentMetrics.averageLatency = currentMetrics.totalLatency / currentMetrics.requestCount;
-      currentMetrics.lastUpdated = new Date();
+      currentMetrics.totalLatency += latency
+      currentMetrics.requestCount++
+      currentMetrics.averageLatency = currentMetrics.totalLatency / currentMetrics.requestCount
+      currentMetrics.lastUpdated = new Date()
 
-      this.latencyMetrics.set(modelName, currentMetrics);
+      this.latencyMetrics.set(modelName, currentMetrics)
     } catch (error) {
-      logger.error('Error recording latency:', error);
+      logger.error('Error recording latency:', error)
     }
   }
 
   getDetailedMetrics(modelName: string): DetailedModelMetrics {
-    const metrics = this.metrics.get(modelName);
+    const metrics = this.metrics.get(modelName)
     if (!metrics || metrics.requestLatency.length === 0) {
       return {
         p50Latency: 0,
@@ -131,63 +128,67 @@ class PerformanceMonitor {
         totalRequests: 0,
         successfulRequests: 0,
         failedRequests: 0,
-        timeoutRequests: 0
-      };
+        timeoutRequests: 0,
+      }
     }
 
-    const sortedLatencies = [...metrics.requestLatency].sort((a, b) => a - b);
-    const p50Index = Math.floor(sortedLatencies.length * 0.5);
-    const p90Index = Math.floor(sortedLatencies.length * 0.9);
-    const p99Index = Math.floor(sortedLatencies.length * 0.99);
+    const sortedLatencies = [...metrics.requestLatency].sort((a, b) => a - b)
+    const p50Index = Math.floor(sortedLatencies.length * 0.5)
+    const p90Index = Math.floor(sortedLatencies.length * 0.9)
+    const p99Index = Math.floor(sortedLatencies.length * 0.99)
 
     return {
       p50Latency: sortedLatencies[p50Index],
       p90Latency: sortedLatencies[p90Index],
       p99Latency: sortedLatencies[p99Index],
-      avgTokensPerSecond: metrics.tokenProcessingSpeed.reduce((a, b) => a + b, 0) / metrics.tokenProcessingSpeed.length,
+      avgTokensPerSecond:
+        metrics.tokenProcessingSpeed.reduce((a, b) => a + b, 0) /
+        metrics.tokenProcessingSpeed.length,
       peakMemoryUsage: Math.max(...metrics.memoryUsage),
       totalRequests: metrics.requestLatency.length,
       successfulRequests: metrics.requestLatency.filter(l => l < 10000).length, // Assuming >10s is a failure
       failedRequests: metrics.requestLatency.filter(l => l >= 10000).length,
-      timeoutRequests: metrics.requestLatency.filter(l => l >= 30000).length
-    };
+      timeoutRequests: metrics.requestLatency.filter(l => l >= 30000).length,
+    }
   }
 
   getMetricsTimeSeries(modelName: string, timeRange: number = 3600000): PerformanceMetrics {
-    const metrics = this.metrics.get(modelName);
+    const metrics = this.metrics.get(modelName)
     if (!metrics) {
       return {
         requestLatency: [],
         tokenProcessingSpeed: [],
         memoryUsage: [],
-        timestamp: []
-      };
+        timestamp: [],
+      }
     }
 
-    const now = Date.now();
-    const startIndex = metrics.timestamp.findIndex(time => now - time <= timeRange);
-    
-    if (startIndex === -1) return metrics;
+    const now = Date.now()
+    const startIndex = metrics.timestamp.findIndex(time => now - time <= timeRange)
+
+    if (startIndex === -1) return metrics
 
     return {
       requestLatency: metrics.requestLatency.slice(startIndex),
       tokenProcessingSpeed: metrics.tokenProcessingSpeed.slice(startIndex),
       memoryUsage: metrics.memoryUsage.slice(startIndex),
-      timestamp: metrics.timestamp.slice(startIndex)
-    };
+      timestamp: metrics.timestamp.slice(startIndex),
+    }
   }
 
   getLatencyMetrics(modelName?: string) {
     if (modelName) {
-      return this.latencyMetrics.get(modelName) || {
-        totalLatency: 0,
-        requestCount: 0,
-        averageLatency: 0,
-        lastUpdated: new Date()
-      };
+      return (
+        this.latencyMetrics.get(modelName) || {
+          totalLatency: 0,
+          requestCount: 0,
+          averageLatency: 0,
+          lastUpdated: new Date(),
+        }
+      )
     }
-    return this.latencyMetrics;
+    return this.latencyMetrics
   }
 }
 
-export const performanceMonitor = PerformanceMonitor.getInstance();
+export const performanceMonitor = PerformanceMonitor.getInstance()

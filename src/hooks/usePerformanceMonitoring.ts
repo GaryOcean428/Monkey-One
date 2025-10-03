@@ -61,10 +61,13 @@ const DEFAULT_THRESHOLDS: PerformanceThresholds = {
   fid: { good: 100, needsImprovement: 300 },
   cls: { good: 0.1, needsImprovement: 0.25 },
   fcp: { good: 1800, needsImprovement: 3000 },
-  ttfb: { good: 800, needsImprovement: 1800 }
+  ttfb: { good: 800, needsImprovement: 1800 },
 }
 
-function getPerformanceRating(value: number, threshold: { good: number; needsImprovement: number }): 'good' | 'needs-improvement' | 'poor' {
+function getPerformanceRating(
+  value: number,
+  threshold: { good: number; needsImprovement: number }
+): 'good' | 'needs-improvement' | 'poor' {
   if (value <= threshold.good) return 'good'
   if (value <= threshold.needsImprovement) return 'needs-improvement'
   return 'poor'
@@ -83,7 +86,7 @@ export function usePerformanceMonitoring(thresholds: PerformanceThresholds = DEF
   const [metrics, setMetrics] = React.useState<PerformanceMetrics>({
     interactionLatency: [],
     scrollPerformance: [],
-    resourceCounts: { scripts: 0, stylesheets: 0, images: 0, total: 0 }
+    resourceCounts: { scripts: 0, stylesheets: 0, images: 0, total: 0 },
   })
   const [analysis, setAnalysis] = React.useState<PerformanceAnalysis>({
     score: 0,
@@ -94,11 +97,11 @@ export function usePerformanceMonitoring(thresholds: PerformanceThresholds = DEF
     resourceAnalysis: {
       largeResources: [],
       slowResources: [],
-      blockingResources: []
-    }
+      blockingResources: [],
+    },
   })
   const [isSupported, setIsSupported] = React.useState(false)
-  
+
   const routeStartTime = React.useRef<number>(0)
   const componentStartTime = React.useRef<number>(0)
 
@@ -107,7 +110,7 @@ export function usePerformanceMonitoring(thresholds: PerformanceThresholds = DEF
     if (typeof window === 'undefined' || !('performance' in window)) return
 
     const resources = performance.getEntriesByType('resource') as PerformanceResourceTiming[]
-    
+
     // Analyze resource types and sizes
     const resourceCounts = { scripts: 0, stylesheets: 0, images: 0, total: resources.length }
     const largeResources: Array<{ name: string; size: number; type: string }> = []
@@ -119,7 +122,7 @@ export function usePerformanceMonitoring(thresholds: PerformanceThresholds = DEF
       const duration = resource.responseEnd - resource.requestStart
       const url = new URL(resource.name)
       const extension = url.pathname.split('.').pop()?.toLowerCase()
-      
+
       // Categorize by type
       if (extension === 'js' || resource.initiatorType === 'script') {
         resourceCounts.scripts++
@@ -134,7 +137,7 @@ export function usePerformanceMonitoring(thresholds: PerformanceThresholds = DEF
         largeResources.push({
           name: url.pathname.split('/').pop() || resource.name,
           size: Math.round(size / 1024), // KB
-          type: extension || 'unknown'
+          type: extension || 'unknown',
         })
       }
 
@@ -143,7 +146,7 @@ export function usePerformanceMonitoring(thresholds: PerformanceThresholds = DEF
         slowResources.push({
           name: url.pathname.split('/').pop() || resource.name,
           duration: Math.round(duration),
-          type: extension || 'unknown'
+          type: extension || 'unknown',
         })
       }
 
@@ -151,7 +154,7 @@ export function usePerformanceMonitoring(thresholds: PerformanceThresholds = DEF
       if (resource.renderBlockingStatus === 'blocking') {
         blockingResources.push({
           name: url.pathname.split('/').pop() || resource.name,
-          reason: 'Render blocking'
+          reason: 'Render blocking',
         })
       }
     })
@@ -162,15 +165,26 @@ export function usePerformanceMonitoring(thresholds: PerformanceThresholds = DEF
       resourceAnalysis: {
         largeResources: largeResources.sort((a, b) => b.size - a.size).slice(0, 10),
         slowResources: slowResources.sort((a, b) => b.duration - a.duration).slice(0, 10),
-        blockingResources
-      }
+        blockingResources,
+      },
     }))
   }, [])
 
   // Enhanced performance analysis
   const analyzePerformance = React.useCallback(() => {
-    const { lcp, fid, cls, fcp, ttfb, memory, routeLoadTime, bundleLoadTime, interactionLatency, scrollPerformance } = metrics
-    
+    const {
+      lcp,
+      fid,
+      cls,
+      fcp,
+      ttfb,
+      memory,
+      routeLoadTime,
+      bundleLoadTime,
+      interactionLatency,
+      scrollPerformance,
+    } = metrics
+
     let score = 100
     const recommendations: string[] = []
     const criticalIssues: string[] = []
@@ -206,7 +220,9 @@ export function usePerformanceMonitoring(thresholds: PerformanceThresholds = DEF
       if (clsRating === 'poor') {
         score -= 20
         criticalIssues.push(`CLS causes layout instability (${cls.toFixed(3)} > 0.25)`)
-        recommendations.push('Set dimensions for images/videos, avoid inserting content above existing content')
+        recommendations.push(
+          'Set dimensions for images/videos, avoid inserting content above existing content'
+        )
       } else if (clsRating === 'needs-improvement') {
         score -= 10
         optimizationOpportunities.push('CLS could be improved - ensure stable layouts')
@@ -219,7 +235,8 @@ export function usePerformanceMonitoring(thresholds: PerformanceThresholds = DEF
       optimizationOpportunities.push(`Route transitions are slow (${Math.round(routeLoadTime)}ms)`)
     }
 
-    if (memory && memory.usedJSHeapSize > 50 * 1024 * 1024) { // 50MB
+    if (memory && memory.usedJSHeapSize > 50 * 1024 * 1024) {
+      // 50MB
       const memoryMB = Math.round(memory.usedJSHeapSize / 1024 / 1024)
       if (memoryMB > 100) {
         score -= 15
@@ -237,18 +254,22 @@ export function usePerformanceMonitoring(thresholds: PerformanceThresholds = DEF
     }
 
     // Interaction and scroll performance
-    const avgInteractionLatency = interactionLatency.length > 0 
-      ? interactionLatency.reduce((a, b) => a + b, 0) / interactionLatency.length 
-      : 0
-    
+    const avgInteractionLatency =
+      interactionLatency.length > 0
+        ? interactionLatency.reduce((a, b) => a + b, 0) / interactionLatency.length
+        : 0
+
     if (avgInteractionLatency > 100) {
       score -= 10
-      optimizationOpportunities.push(`Interaction latency is high (${Math.round(avgInteractionLatency)}ms)`)
+      optimizationOpportunities.push(
+        `Interaction latency is high (${Math.round(avgInteractionLatency)}ms)`
+      )
     }
 
-    const avgScrollFPS = scrollPerformance.length > 0
-      ? scrollPerformance.reduce((a, b) => a + b, 0) / scrollPerformance.length
-      : 60
+    const avgScrollFPS =
+      scrollPerformance.length > 0
+        ? scrollPerformance.reduce((a, b) => a + b, 0) / scrollPerformance.length
+        : 60
 
     if (avgScrollFPS < 45) {
       score -= 10
@@ -257,10 +278,12 @@ export function usePerformanceMonitoring(thresholds: PerformanceThresholds = DEF
 
     // Resource analysis recommendations
     const { largeResources, slowResources, blockingResources } = analysis.resourceAnalysis
-    
+
     if (largeResources.length > 3) {
       score -= 10
-      recommendations.push(`${largeResources.length} large resources detected - optimize or lazy load`)
+      recommendations.push(
+        `${largeResources.length} large resources detected - optimize or lazy load`
+      )
     }
 
     if (slowResources.length > 2) {
@@ -270,7 +293,9 @@ export function usePerformanceMonitoring(thresholds: PerformanceThresholds = DEF
 
     if (blockingResources.length > 0) {
       score -= 15
-      recommendations.push(`${blockingResources.length} render-blocking resources - defer or async load`)
+      recommendations.push(
+        `${blockingResources.length} render-blocking resources - defer or async load`
+      )
     }
 
     score = Math.max(0, score)
@@ -282,14 +307,14 @@ export function usePerformanceMonitoring(thresholds: PerformanceThresholds = DEF
       grade,
       recommendations: [...new Set(recommendations)],
       criticalIssues: [...new Set(criticalIssues)],
-      optimizationOpportunities: [...new Set(optimizationOpportunities)]
+      optimizationOpportunities: [...new Set(optimizationOpportunities)],
     }))
   }, [metrics, thresholds, analysis.resourceAnalysis])
 
   // Route performance tracking
   const trackRoutePerformance = React.useCallback(() => {
     routeStartTime.current = performance.now()
-    
+
     requestAnimationFrame(() => {
       const loadTime = performance.now() - routeStartTime.current
       setMetrics(prev => ({ ...prev, routeLoadTime: loadTime }))
@@ -298,12 +323,11 @@ export function usePerformanceMonitoring(thresholds: PerformanceThresholds = DEF
 
   React.useEffect(() => {
     // Check for Performance Observer support
-    const supported = typeof window !== 'undefined' && 
-                     'PerformanceObserver' in window &&
-                     'performance' in window
+    const supported =
+      typeof window !== 'undefined' && 'PerformanceObserver' in window && 'performance' in window
 
     setIsSupported(supported)
-    
+
     if (!supported) return
 
     let lcpObserver: PerformanceObserver | null = null
@@ -312,23 +336,23 @@ export function usePerformanceMonitoring(thresholds: PerformanceThresholds = DEF
 
     try {
       // Enhanced LCP observation
-      lcpObserver = new PerformanceObserver((list) => {
+      lcpObserver = new PerformanceObserver(list => {
         const entries = list.getEntries()
         const lastEntry = entries[entries.length - 1] as PerformanceEntry & { startTime: number }
-        
+
         setMetrics(prev => ({ ...prev, lcp: lastEntry.startTime }))
       })
       lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] })
 
       // Enhanced FID observation
-      fidObserver = new PerformanceObserver((list) => {
+      fidObserver = new PerformanceObserver(list => {
         const entries = list.getEntries()
         entries.forEach((entry: any) => {
           const delay = entry.processingStart - entry.startTime
           setMetrics(prev => ({
             ...prev,
             fid: delay,
-            interactionLatency: [...prev.interactionLatency.slice(-9), delay]
+            interactionLatency: [...prev.interactionLatency.slice(-9), delay],
           }))
         })
       })
@@ -338,12 +362,15 @@ export function usePerformanceMonitoring(thresholds: PerformanceThresholds = DEF
       let clsValue = 0
       let sessionValue = 0
       let sessionEntries: any[] = []
-      
-      clsObserver = new PerformanceObserver((list) => {
+
+      clsObserver = new PerformanceObserver(list => {
         for (const entry of list.getEntries()) {
           const layoutShift = entry as any
           if (!layoutShift.hadRecentInput) {
-            if (sessionEntries.length === 0 || entry.startTime - sessionEntries[sessionEntries.length - 1].startTime < 1000) {
+            if (
+              sessionEntries.length === 0 ||
+              entry.startTime - sessionEntries[sessionEntries.length - 1].startTime < 1000
+            ) {
               sessionValue += layoutShift.value
               sessionEntries.push(layoutShift)
             } else {
@@ -354,7 +381,7 @@ export function usePerformanceMonitoring(thresholds: PerformanceThresholds = DEF
             clsValue = Math.max(clsValue, sessionValue)
           }
         }
-        
+
         setMetrics(prev => ({ ...prev, cls: clsValue }))
       })
       clsObserver.observe({ entryTypes: ['layout-shift'] })
@@ -365,20 +392,28 @@ export function usePerformanceMonitoring(thresholds: PerformanceThresholds = DEF
       const fcpEntry = paintEntries.find(entry => entry.name === 'first-contentful-paint')
 
       // Calculate bundle load time from JavaScript resources
-      const jsResources = performance.getEntriesByType('resource')
-        .filter((resource: any) => resource.name.includes('.js') && !resource.name.includes('node_modules'))
-      
-      const bundleLoadTime = jsResources.length > 0 
-        ? jsResources.reduce((total: number, resource: any) => 
-            total + (resource.responseEnd - resource.requestStart), 0)
-        : undefined
+      const jsResources = performance
+        .getEntriesByType('resource')
+        .filter(
+          (resource: any) =>
+            resource.name.includes('.js') && !resource.name.includes('node_modules')
+        )
+
+      const bundleLoadTime =
+        jsResources.length > 0
+          ? jsResources.reduce(
+              (total: number, resource: any) =>
+                total + (resource.responseEnd - resource.requestStart),
+              0
+            )
+          : undefined
 
       setMetrics(prev => ({
         ...prev,
         fcp: fcpEntry?.startTime,
         ttfb: navTiming.responseStart - navTiming.requestStart,
         navigationTiming: navTiming,
-        bundleLoadTime
+        bundleLoadTime,
       }))
 
       // Enhanced memory monitoring
@@ -390,14 +425,14 @@ export function usePerformanceMonitoring(thresholds: PerformanceThresholds = DEF
             memory: {
               usedJSHeapSize: memory.usedJSHeapSize,
               totalJSHeapSize: memory.totalJSHeapSize,
-              jsHeapSizeLimit: memory.jsHeapSizeLimit
-            }
+              jsHeapSizeLimit: memory.jsHeapSizeLimit,
+            },
           }))
         }
-        
+
         updateMemory()
         const memoryInterval = setInterval(updateMemory, 5000)
-        
+
         return () => {
           clearInterval(memoryInterval)
           lcpObserver?.disconnect()
@@ -408,7 +443,6 @@ export function usePerformanceMonitoring(thresholds: PerformanceThresholds = DEF
 
       // Analyze resources
       analyzeResources()
-
     } catch (error) {
       console.warn('Performance monitoring setup failed:', error)
     }
@@ -430,33 +464,36 @@ export function usePerformanceMonitoring(thresholds: PerformanceThresholds = DEF
     analyzePerformance()
   }, [analyzePerformance])
 
-  const getMetricRating = React.useCallback((metric: keyof PerformanceMetrics) => {
-    const value = metrics[metric] as number
-    if (value === undefined) return null
-    
-    const threshold = thresholds[metric as keyof PerformanceThresholds]
-    if (!threshold) return null
-    
-    return getPerformanceRating(value, threshold)
-  }, [metrics, thresholds])
+  const getMetricRating = React.useCallback(
+    (metric: keyof PerformanceMetrics) => {
+      const value = metrics[metric] as number
+      if (value === undefined) return null
+
+      const threshold = thresholds[metric as keyof PerformanceThresholds]
+      if (!threshold) return null
+
+      return getPerformanceRating(value, threshold)
+    },
+    [metrics, thresholds]
+  )
 
   const getCoreWebVitals = React.useCallback(() => {
     return {
       lcp: {
         value: metrics.lcp,
         rating: getMetricRating('lcp'),
-        threshold: thresholds.lcp
+        threshold: thresholds.lcp,
       },
       fid: {
         value: metrics.fid,
         rating: getMetricRating('fid'),
-        threshold: thresholds.fid
+        threshold: thresholds.fid,
       },
       cls: {
         value: metrics.cls,
         rating: getMetricRating('cls'),
-        threshold: thresholds.cls
-      }
+        threshold: thresholds.cls,
+      },
     }
   }, [metrics, getMetricRating, thresholds])
 
@@ -487,37 +524,43 @@ export function usePerformanceMonitoring(thresholds: PerformanceThresholds = DEF
     refreshMetrics: React.useCallback(() => {
       analyzeResources()
       analyzePerformance()
-    }, [analyzeResources, analyzePerformance])
+    }, [analyzeResources, analyzePerformance]),
   }
 }
 
 // Hook for measuring custom performance marks
 export function usePerformanceMark(name: string) {
-  const mark = React.useCallback((label?: string) => {
-    if (typeof window === 'undefined' || !('performance' in window)) return
-    
-    const markName = label ? `${name}-${label}` : name
-    performance.mark(markName)
-  }, [name])
+  const mark = React.useCallback(
+    (label?: string) => {
+      if (typeof window === 'undefined' || !('performance' in window)) return
 
-  const measure = React.useCallback((startMark?: string, endMark?: string) => {
-    if (typeof window === 'undefined' || !('performance' in window)) return null
-    
-    try {
-      const measureName = `${name}-measure`
-      performance.measure(measureName, startMark, endMark)
-      
-      const measures = performance.getEntriesByName(measureName, 'measure')
-      return measures[measures.length - 1]?.duration || null
-    } catch (error) {
-      console.warn('Performance measure failed:', error)
-      return null
-    }
-  }, [name])
+      const markName = label ? `${name}-${label}` : name
+      performance.mark(markName)
+    },
+    [name]
+  )
+
+  const measure = React.useCallback(
+    (startMark?: string, endMark?: string) => {
+      if (typeof window === 'undefined' || !('performance' in window)) return null
+
+      try {
+        const measureName = `${name}-measure`
+        performance.measure(measureName, startMark, endMark)
+
+        const measures = performance.getEntriesByName(measureName, 'measure')
+        return measures[measures.length - 1]?.duration || null
+      } catch (error) {
+        console.warn('Performance measure failed:', error)
+        return null
+      }
+    },
+    [name]
+  )
 
   const clear = React.useCallback(() => {
     if (typeof window === 'undefined' || !('performance' in window)) return
-    
+
     performance.clearMarks(name)
     performance.clearMeasures(`${name}-measure`)
   }, [name])

@@ -1,6 +1,6 @@
-import { useCallback, useEffect } from 'react';
-import { useAgentStore } from '../store/agentStore';
-import type { Agent } from '../types';
+import { useCallback, useEffect } from 'react'
+import { useAgentStore } from '../store/agentStore'
+import type { Agent } from '../types'
 
 export function useAgents() {
   const {
@@ -12,16 +12,19 @@ export function useAgents() {
     initializeAgents,
     setActiveAgent,
     updateAgentStatus,
-    updateMetrics
-  } = useAgentStore();
+    updateMetrics,
+  } = useAgentStore()
 
   useEffect(() => {
-    initializeAgents();
-  }, [initializeAgents]);
+    initializeAgents()
+  }, [initializeAgents])
 
-  const handleAgentSelect = useCallback((agent: Agent | null) => {
-    setActiveAgent(agent);
-  }, [setActiveAgent]);
+  const handleAgentSelect = useCallback(
+    (agent: Agent | null) => {
+      setActiveAgent(agent)
+    },
+    [setActiveAgent]
+  )
 
   return {
     agents,
@@ -31,6 +34,6 @@ export function useAgents() {
     error,
     setActiveAgent: handleAgentSelect,
     updateAgentStatus,
-    updateMetrics
-  };
+    updateMetrics,
+  }
 }

@@ -3,9 +3,18 @@ import { motion, MotionProps, useAnimation, Variants } from 'framer-motion'
 import { useAnimateOnIntersect } from '../../hooks/useIntersectionObserver'
 import { cn } from '../../lib/utils'
 
-export interface AnimatedElementProps extends Omit<MotionProps, 'variants' | 'initial' | 'animate'> {
+export interface AnimatedElementProps
+  extends Omit<MotionProps, 'variants' | 'initial' | 'animate'> {
   children: React.ReactNode
-  animation?: 'fadeIn' | 'slideUp' | 'slideDown' | 'slideLeft' | 'slideRight' | 'scale' | 'bounce' | 'custom'
+  animation?:
+    | 'fadeIn'
+    | 'slideUp'
+    | 'slideDown'
+    | 'slideLeft'
+    | 'slideRight'
+    | 'scale'
+    | 'bounce'
+    | 'custom'
   duration?: number
   delay?: number
   staggerChildren?: number
@@ -22,40 +31,40 @@ export interface AnimatedElementProps extends Omit<MotionProps, 'variants' | 'in
 const animations: Record<string, Variants> = {
   fadeIn: {
     hidden: { opacity: 0 },
-    visible: { opacity: 1 }
+    visible: { opacity: 1 },
   },
   slideUp: {
     hidden: { opacity: 0, y: 50 },
-    visible: { opacity: 1, y: 0 }
+    visible: { opacity: 1, y: 0 },
   },
   slideDown: {
     hidden: { opacity: 0, y: -50 },
-    visible: { opacity: 1, y: 0 }
+    visible: { opacity: 1, y: 0 },
   },
   slideLeft: {
     hidden: { opacity: 0, x: 50 },
-    visible: { opacity: 1, x: 0 }
+    visible: { opacity: 1, x: 0 },
   },
   slideRight: {
     hidden: { opacity: 0, x: -50 },
-    visible: { opacity: 1, x: 0 }
+    visible: { opacity: 1, x: 0 },
   },
   scale: {
     hidden: { opacity: 0, scale: 0.8 },
-    visible: { opacity: 1, scale: 1 }
+    visible: { opacity: 1, scale: 1 },
   },
   bounce: {
     hidden: { opacity: 0, scale: 0.3 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       scale: 1,
       transition: {
-        type: "spring",
+        type: 'spring',
         stiffness: 260,
-        damping: 20
-      }
-    }
-  }
+        damping: 20,
+      },
+    },
+  },
 }
 
 /**
@@ -77,7 +86,7 @@ export function AnimatedElement({
   const { ref, shouldAnimate } = useAnimateOnIntersect({
     threshold: 0.1,
     triggerOnce: true,
-    ...observerOptions
+    ...observerOptions,
   })
 
   const prefersReducedMotion = React.useMemo(() => {
@@ -107,8 +116,8 @@ export function AnimatedElement({
     delay,
     ...(staggerChildren && {
       staggerChildren,
-      delayChildren: delay
-    })
+      delayChildren: delay,
+    }),
   }
 
   return (
@@ -140,27 +149,27 @@ export function StaggerContainer({
   children,
   staggerDelay = 0.1,
   className,
-  observerOptions = {}
+  observerOptions = {},
 }: StaggerContainerProps) {
   const controls = useAnimation()
   const { ref, shouldAnimate } = useAnimateOnIntersect({
     threshold: 0.1,
     triggerOnce: true,
-    ...observerOptions
+    ...observerOptions,
   })
 
   const containerVariants: Variants = {
     hidden: {},
     visible: {
       transition: {
-        staggerChildren: staggerDelay
-      }
-    }
+        staggerChildren: staggerDelay,
+      },
+    },
   }
 
   const itemVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 }
+    visible: { opacity: 1, y: 0 },
   }
 
   React.useEffect(() => {
@@ -196,18 +205,13 @@ export interface ParallaxProps {
   disabled?: boolean
 }
 
-export function Parallax({
-  children,
-  speed = 0.5,
-  className,
-  disabled = false
-}: ParallaxProps) {
+export function Parallax({ children, speed = 0.5, className, disabled = false }: ParallaxProps) {
   const [offset, setOffset] = React.useState(0)
   const elementRef = React.useRef<HTMLDivElement>(null)
-  
+
   const { isIntersecting } = useAnimateOnIntersect({
     threshold: 0,
-    rootMargin: '100px'
+    rootMargin: '100px',
   })
 
   React.useEffect(() => {
@@ -215,7 +219,7 @@ export function Parallax({
 
     const handleScroll = () => {
       if (!elementRef.current) return
-      
+
       const rect = elementRef.current.getBoundingClientRect()
       const scrolled = window.pageYOffset
       const parallax = (rect.top + scrolled) * speed
@@ -237,9 +241,9 @@ export function Parallax({
     <div ref={elementRef} className={className}>
       <motion.div
         style={{
-          y: offset
+          y: offset,
         }}
-        transition={{ type: "tween", ease: "linear" }}
+        transition={{ type: 'tween', ease: 'linear' }}
       >
         {children}
       </motion.div>
@@ -267,15 +271,20 @@ export function ScrollReveal({
   duration = 0.6,
   delay = 0,
   className,
-  once = true
+  once = true,
 }: ScrollRevealProps) {
   const getInitialTransform = () => {
     switch (direction) {
-      case 'up': return { y: distance, opacity: 0 }
-      case 'down': return { y: -distance, opacity: 0 }
-      case 'left': return { x: distance, opacity: 0 }
-      case 'right': return { x: -distance, opacity: 0 }
-      default: return { y: distance, opacity: 0 }
+      case 'up':
+        return { y: distance, opacity: 0 }
+      case 'down':
+        return { y: -distance, opacity: 0 }
+      case 'left':
+        return { x: distance, opacity: 0 }
+      case 'right':
+        return { x: -distance, opacity: 0 }
+      default:
+        return { y: distance, opacity: 0 }
     }
   }
 
@@ -288,9 +297,9 @@ export function ScrollReveal({
       transition: {
         duration,
         delay,
-        ease: [0.25, 0.46, 0.45, 0.94]
-      }
-    }
+        ease: [0.25, 0.46, 0.45, 0.94],
+      },
+    },
   }
 
   return (
@@ -327,12 +336,12 @@ export function CountUp({
   prefix = '',
   suffix = '',
   className,
-  onComplete
+  onComplete,
 }: CountUpProps) {
   const [count, setCount] = React.useState(start)
   const { ref, shouldAnimate } = useAnimateOnIntersect({
     threshold: 0.1,
-    triggerOnce: true
+    triggerOnce: true,
   })
 
   React.useEffect(() => {
@@ -340,7 +349,7 @@ export function CountUp({
 
     const increment = (end - start) / (duration * 60) // 60fps
     let current = start
-    
+
     const timer = setInterval(() => {
       current += increment
       if (current >= end) {

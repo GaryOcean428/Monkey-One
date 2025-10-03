@@ -1,54 +1,54 @@
-import type { Message } from '../../types';
+import type { Message } from '../../types'
 
 export class MessageQueue {
-  private queue: Message[] = [];
-  private listeners: ((message: Message) => void)[] = [];
-  private processing: boolean = false;
+  private queue: Message[] = []
+  private listeners: ((message: Message) => void)[] = []
+  private processing: boolean = false
 
   enqueue(message: Message): void {
-    this.queue.push(message);
-    this.notifyListeners(message);
+    this.queue.push(message)
+    this.notifyListeners(message)
   }
 
   dequeue(): Message | undefined {
-    return this.queue.shift();
+    return this.queue.shift()
   }
 
   peek(): Message | undefined {
-    return this.queue[0];
+    return this.queue[0]
   }
 
   clear(): void {
-    this.queue = [];
+    this.queue = []
   }
 
   size(): number {
-    return this.queue.length;
+    return this.queue.length
   }
 
   isEmpty(): boolean {
-    return this.queue.length === 0;
+    return this.queue.length === 0
   }
 
   on(listener: (message: Message) => void): void {
-    this.listeners.push(listener);
+    this.listeners.push(listener)
   }
 
   private notifyListeners(message: Message): void {
     this.listeners.forEach(listener => {
       try {
-        listener(message);
+        listener(message)
       } catch (error) {
-        console.error('Error in message listener:', error);
+        console.error('Error in message listener:', error)
       }
-    });
+    })
   }
 
   toArray(): Message[] {
-    return [...this.queue];
+    return [...this.queue]
   }
 
   isProcessing(): boolean {
-    return this.processing;
+    return this.processing
   }
 }

@@ -1,118 +1,118 @@
 /**
  * Graph-Based Recommendations Engine
- * 
+ *
  * Advanced recommendation system that uses graph structure, patterns,
  * and machine learning to provide intelligent suggestions for
  * infrastructure management, optimization, and problem resolution.
  */
 
-import type { Node, Edge, NodeType, EdgeType } from './types';
-import type { MemoryGraph } from './memory-graph';
-import type { GraphAnalyticsEngine } from './analytics';
+import type { Node, Edge, NodeType, EdgeType } from './types'
+import type { MemoryGraph } from './memory-graph'
+import type { GraphAnalyticsEngine } from './analytics'
 
 export interface Recommendation {
-  id: string;
-  type: RecommendationType;
-  priority: 'low' | 'medium' | 'high' | 'critical';
-  category: RecommendationCategory;
-  title: string;
-  description: string;
-  reasoning: string;
-  confidence: number;
+  id: string
+  type: RecommendationType
+  priority: 'low' | 'medium' | 'high' | 'critical'
+  category: RecommendationCategory
+  title: string
+  description: string
+  reasoning: string
+  confidence: number
   impact: {
-    score: number;
-    description: string;
-    affectedEntities: string[];
-  };
+    score: number
+    description: string
+    affectedEntities: string[]
+  }
   effort: {
-    level: 'low' | 'medium' | 'high';
-    estimatedTime: string;
-    complexity: string;
-  };
-  actions: RecommendationAction[];
-  prerequisites?: string[];
-  risks?: string[];
-  benefits: string[];
-  relatedRecommendations?: string[];
+    level: 'low' | 'medium' | 'high'
+    estimatedTime: string
+    complexity: string
+  }
+  actions: RecommendationAction[]
+  prerequisites?: string[]
+  risks?: string[]
+  benefits: string[]
+  relatedRecommendations?: string[]
   metadata: {
-    createdAt: Date;
-    source: string;
-    algorithm: string;
-    version: string;
-  };
+    createdAt: Date
+    source: string
+    algorithm: string
+    version: string
+  }
 }
 
-export type RecommendationType = 
-  | 'optimization' 
-  | 'security' 
-  | 'reliability' 
-  | 'performance' 
-  | 'maintenance' 
-  | 'architecture' 
-  | 'monitoring' 
-  | 'compliance';
+export type RecommendationType =
+  | 'optimization'
+  | 'security'
+  | 'reliability'
+  | 'performance'
+  | 'maintenance'
+  | 'architecture'
+  | 'monitoring'
+  | 'compliance'
 
-export type RecommendationCategory = 
-  | 'infrastructure' 
-  | 'configuration' 
-  | 'connections' 
-  | 'security' 
-  | 'monitoring' 
-  | 'documentation' 
-  | 'automation' 
-  | 'best_practices';
+export type RecommendationCategory =
+  | 'infrastructure'
+  | 'configuration'
+  | 'connections'
+  | 'security'
+  | 'monitoring'
+  | 'documentation'
+  | 'automation'
+  | 'best_practices'
 
 export interface RecommendationAction {
-  type: 'create' | 'update' | 'delete' | 'configure' | 'monitor' | 'document';
-  target: string;
-  description: string;
-  parameters?: Record<string, any>;
-  validation?: string;
+  type: 'create' | 'update' | 'delete' | 'configure' | 'monitor' | 'document'
+  target: string
+  description: string
+  parameters?: Record<string, any>
+  validation?: string
 }
 
 export interface RecommendationContext {
-  domain?: string;
-  environment?: 'development' | 'staging' | 'production';
-  constraints?: string[];
-  priorities?: RecommendationType[];
-  excludeTypes?: RecommendationType[];
-  maxRecommendations?: number;
+  domain?: string
+  environment?: 'development' | 'staging' | 'production'
+  constraints?: string[]
+  priorities?: RecommendationType[]
+  excludeTypes?: RecommendationType[]
+  maxRecommendations?: number
 }
 
 export interface RecommendationFeedback {
-  recommendationId: string;
-  userId: string;
-  rating: 1 | 2 | 3 | 4 | 5;
-  implemented: boolean;
-  helpful: boolean;
-  comments?: string;
-  timestamp: Date;
+  recommendationId: string
+  userId: string
+  rating: 1 | 2 | 3 | 4 | 5
+  implemented: boolean
+  helpful: boolean
+  comments?: string
+  timestamp: Date
 }
 
 export class RecommendationsEngine {
-  private graph: MemoryGraph;
-  private analytics?: GraphAnalyticsEngine;
-  private feedback: RecommendationFeedback[] = [];
-  private rules: RecommendationRule[] = [];
-  private patterns: RecommendationPattern[] = [];
+  private graph: MemoryGraph
+  private analytics?: GraphAnalyticsEngine
+  private feedback: RecommendationFeedback[] = []
+  private rules: RecommendationRule[] = []
+  private patterns: RecommendationPattern[] = []
 
   constructor(graph: MemoryGraph, analytics?: GraphAnalyticsEngine) {
-    this.graph = graph;
-    this.analytics = analytics;
-    this.initializeRules();
-    this.initializePatterns();
+    this.graph = graph
+    this.analytics = analytics
+    this.initializeRules()
+    this.initializePatterns()
   }
 
   // Generate comprehensive recommendations
   async generateRecommendations(context: RecommendationContext = {}): Promise<Recommendation[]> {
-    const recommendations: Recommendation[] = [];
+    const recommendations: Recommendation[] = []
 
     // Get graph data
-    const nodes = this.graph.query({}).nodes;
-    const edges = this.graph.query({}).edges;
+    const nodes = this.graph.query({}).nodes
+    const edges = this.graph.query({}).edges
 
     if (nodes.length === 0) {
-      return recommendations;
+      return recommendations
     }
 
     // Apply different recommendation strategies
@@ -124,49 +124,49 @@ export class RecommendationsEngine {
       () => this.generateMaintenanceRecommendations(nodes, edges, context),
       () => this.generateArchitectureRecommendations(nodes, edges, context),
       () => this.generateMonitoringRecommendations(nodes, edges, context),
-      () => this.generateComplianceRecommendations(nodes, edges, context)
-    ];
+      () => this.generateComplianceRecommendations(nodes, edges, context),
+    ]
 
     // Execute strategies
     for (const strategy of strategies) {
       try {
-        const strategyRecs = await strategy();
-        recommendations.push(...strategyRecs);
+        const strategyRecs = await strategy()
+        recommendations.push(...strategyRecs)
       } catch (error) {
-        console.warn('Recommendation strategy failed:', error);
+        console.warn('Recommendation strategy failed:', error)
       }
     }
 
     // Apply filters and ranking
-    let filteredRecs = this.filterRecommendations(recommendations, context);
-    filteredRecs = this.rankRecommendations(filteredRecs, context);
-    filteredRecs = this.deduplicateRecommendations(filteredRecs);
+    let filteredRecs = this.filterRecommendations(recommendations, context)
+    filteredRecs = this.rankRecommendations(filteredRecs, context)
+    filteredRecs = this.deduplicateRecommendations(filteredRecs)
 
     // Apply limit
     if (context.maxRecommendations) {
-      filteredRecs = filteredRecs.slice(0, context.maxRecommendations);
+      filteredRecs = filteredRecs.slice(0, context.maxRecommendations)
     }
 
-    return filteredRecs;
+    return filteredRecs
   }
 
   // Structural recommendations (missing connections, isolated nodes, etc.)
   private async generateStructuralRecommendations(
-    nodes: Node[], 
-    edges: Edge[], 
+    nodes: Node[],
+    edges: Edge[],
     context: RecommendationContext
   ): Promise<Recommendation[]> {
-    const recommendations: Recommendation[] = [];
+    const recommendations: Recommendation[] = []
 
     // Find isolated nodes
-    const connectedNodes = new Set<string>();
+    const connectedNodes = new Set<string>()
     edges.forEach(edge => {
-      connectedNodes.add(edge.from);
-      connectedNodes.add(edge.to);
-    });
+      connectedNodes.add(edge.from)
+      connectedNodes.add(edge.to)
+    })
 
-    const isolatedNodes = nodes.filter(node => !connectedNodes.has(node.id));
-    
+    const isolatedNodes = nodes.filter(node => !connectedNodes.has(node.id))
+
     for (const node of isolatedNodes) {
       if (node.type === 'Service' || node.type === 'Database' || node.type === 'API') {
         recommendations.push({
@@ -181,53 +181,57 @@ export class RecommendationsEngine {
           impact: {
             score: 60,
             description: 'Improves system visibility and dependency tracking',
-            affectedEntities: [node.id]
+            affectedEntities: [node.id],
           },
           effort: {
             level: 'low',
             estimatedTime: '15-30 minutes',
-            complexity: 'Simple connection establishment'
+            complexity: 'Simple connection establishment',
           },
-          actions: [{
-            type: 'create',
-            target: 'connection',
-            description: `Establish appropriate connections for ${node.type}`,
-            parameters: { nodeId: node.id, nodeType: node.type }
-          }],
+          actions: [
+            {
+              type: 'create',
+              target: 'connection',
+              description: `Establish appropriate connections for ${node.type}`,
+              parameters: { nodeId: node.id, nodeType: node.type },
+            },
+          ],
           benefits: [
             'Better system understanding',
             'Improved dependency tracking',
-            'Enhanced monitoring capabilities'
+            'Enhanced monitoring capabilities',
           ],
           metadata: {
             createdAt: new Date(),
             source: 'structural_analysis',
             algorithm: 'isolated_node_detection',
-            version: '1.0'
-          }
-        });
+            version: '1.0',
+          },
+        })
       }
     }
 
     // Find services without database connections
-    const services = nodes.filter(n => n.type === 'Service');
-    const databases = nodes.filter(n => n.type === 'Database');
-    
-    if (services.length > 0 && databases.length > 0) {
-      const servicesWithDbConnections = new Set<string>();
-      
-      edges.forEach(edge => {
-        const fromNode = nodes.find(n => n.id === edge.from);
-        const toNode = nodes.find(n => n.id === edge.to);
-        
-        if (fromNode?.type === 'Service' && 
-            (toNode?.type === 'Database' || edge.type === 'DEPENDS_ON' || edge.type === 'CONNECTS_TO')) {
-          servicesWithDbConnections.add(fromNode.id);
-        }
-      });
+    const services = nodes.filter(n => n.type === 'Service')
+    const databases = nodes.filter(n => n.type === 'Database')
 
-      const servicesWithoutDb = services.filter(s => !servicesWithDbConnections.has(s.id));
-      
+    if (services.length > 0 && databases.length > 0) {
+      const servicesWithDbConnections = new Set<string>()
+
+      edges.forEach(edge => {
+        const fromNode = nodes.find(n => n.id === edge.from)
+        const toNode = nodes.find(n => n.id === edge.to)
+
+        if (
+          fromNode?.type === 'Service' &&
+          (toNode?.type === 'Database' || edge.type === 'DEPENDS_ON' || edge.type === 'CONNECTS_TO')
+        ) {
+          servicesWithDbConnections.add(fromNode.id)
+        }
+      })
+
+      const servicesWithoutDb = services.filter(s => !servicesWithDbConnections.has(s.id))
+
       for (const service of servicesWithoutDb) {
         recommendations.push({
           id: `service_db_${service.id}`,
@@ -241,67 +245,71 @@ export class RecommendationsEngine {
           impact: {
             score: 75,
             description: 'Ensures proper data management and persistence',
-            affectedEntities: [service.id]
+            affectedEntities: [service.id],
           },
           effort: {
             level: 'medium',
             estimatedTime: '1-2 hours',
-            complexity: 'Database integration and configuration'
+            complexity: 'Database integration and configuration',
           },
-          actions: [{
-            type: 'create',
-            target: 'database_connection',
-            description: 'Establish database connection for service',
-            parameters: { serviceId: service.id, suggestedDatabases: databases.map(d => d.id) }
-          }],
+          actions: [
+            {
+              type: 'create',
+              target: 'database_connection',
+              description: 'Establish database connection for service',
+              parameters: { serviceId: service.id, suggestedDatabases: databases.map(d => d.id) },
+            },
+          ],
           benefits: [
             'Proper data persistence',
             'Improved service reliability',
-            'Better data consistency'
+            'Better data consistency',
           ],
           metadata: {
             createdAt: new Date(),
             source: 'structural_analysis',
             algorithm: 'service_database_analysis',
-            version: '1.0'
-          }
-        });
+            version: '1.0',
+          },
+        })
       }
     }
 
-    return recommendations;
+    return recommendations
   }
 
   // Security recommendations
   private async generateSecurityRecommendations(
-    nodes: Node[], 
-    edges: Edge[], 
+    nodes: Node[],
+    edges: Edge[],
     context: RecommendationContext
   ): Promise<Recommendation[]> {
-    const recommendations: Recommendation[] = [];
+    const recommendations: Recommendation[] = []
 
     // Find services without proper configuration
-    const services = nodes.filter(n => n.type === 'Service');
-    const secrets = nodes.filter(n => n.type === 'Secret');
-    const configs = nodes.filter(n => n.type === 'Configuration');
+    const services = nodes.filter(n => n.type === 'Service')
+    const secrets = nodes.filter(n => n.type === 'Secret')
+    const configs = nodes.filter(n => n.type === 'Configuration')
 
     // Check for hardcoded secrets
-    const servicesWithSecrets = new Set<string>();
+    const servicesWithSecrets = new Set<string>()
     edges.forEach(edge => {
       if (edge.type === 'REQUIRES' || edge.type === 'DEPENDS_ON') {
-        const toNode = nodes.find(n => n.id === edge.to);
-        if (toNode?.type === 'Secret' || 
-            (toNode?.type === 'Configuration' && 
-             (toNode.properties.key?.includes('PASSWORD') || 
-              toNode.properties.key?.includes('SECRET') || 
-              toNode.properties.key?.includes('KEY')))) {
-          servicesWithSecrets.add(edge.from);
+        const toNode = nodes.find(n => n.id === edge.to)
+        if (
+          toNode?.type === 'Secret' ||
+          (toNode?.type === 'Configuration' &&
+            (toNode.properties.key?.includes('PASSWORD') ||
+              toNode.properties.key?.includes('SECRET') ||
+              toNode.properties.key?.includes('KEY')))
+        ) {
+          servicesWithSecrets.add(edge.from)
         }
       }
-    });
+    })
 
-    const servicesWithoutSecrets = services.filter(s => !servicesWithSecrets.has(s.id));
-    
+    const servicesWithoutSecrets = services.filter(s => !servicesWithSecrets.has(s.id))
+
     for (const service of servicesWithoutSecrets) {
       recommendations.push({
         id: `security_config_${service.id}`,
@@ -315,61 +323,64 @@ export class RecommendationsEngine {
         impact: {
           score: 85,
           description: 'Improves security posture and prevents credential exposure',
-          affectedEntities: [service.id]
+          affectedEntities: [service.id],
         },
         effort: {
           level: 'medium',
           estimatedTime: '30-60 minutes',
-          complexity: 'Security configuration and credential management'
+          complexity: 'Security configuration and credential management',
         },
-        actions: [{
-          type: 'create',
-          target: 'security_config',
-          description: 'Add appropriate security configurations',
-          parameters: { serviceId: service.id }
-        }],
+        actions: [
+          {
+            type: 'create',
+            target: 'security_config',
+            description: 'Add appropriate security configurations',
+            parameters: { serviceId: service.id },
+          },
+        ],
         benefits: [
           'Enhanced security posture',
           'Proper credential management',
-          'Reduced security risks'
+          'Reduced security risks',
         ],
         risks: [
           'Potential service disruption during configuration',
-          'Need for proper secret management'
+          'Need for proper secret management',
         ],
         metadata: {
           createdAt: new Date(),
           source: 'security_analysis',
           algorithm: 'security_config_detection',
-          version: '1.0'
-        }
-      });
+          version: '1.0',
+        },
+      })
     }
 
-    return recommendations;
+    return recommendations
   }
 
   // Performance recommendations
   private async generatePerformanceRecommendations(
-    nodes: Node[], 
-    edges: Edge[], 
+    nodes: Node[],
+    edges: Edge[],
     context: RecommendationContext
   ): Promise<Recommendation[]> {
-    const recommendations: Recommendation[] = [];
+    const recommendations: Recommendation[] = []
 
     // Find over-connected nodes that might be bottlenecks
-    const nodeConnections = new Map<string, number>();
+    const nodeConnections = new Map<string, number>()
     edges.forEach(edge => {
-      nodeConnections.set(edge.from, (nodeConnections.get(edge.from) || 0) + 1);
-      nodeConnections.set(edge.to, (nodeConnections.get(edge.to) || 0) + 1);
-    });
+      nodeConnections.set(edge.from, (nodeConnections.get(edge.from) || 0) + 1)
+      nodeConnections.set(edge.to, (nodeConnections.get(edge.to) || 0) + 1)
+    })
 
-    const avgConnections = Array.from(nodeConnections.values()).reduce((a, b) => a + b, 0) / nodeConnections.size;
-    const threshold = avgConnections * 2.5;
+    const avgConnections =
+      Array.from(nodeConnections.values()).reduce((a, b) => a + b, 0) / nodeConnections.size
+    const threshold = avgConnections * 2.5
 
     for (const [nodeId, connections] of nodeConnections) {
       if (connections > threshold) {
-        const node = nodes.find(n => n.id === nodeId);
+        const node = nodes.find(n => n.id === nodeId)
         if (node && (node.type === 'Service' || node.type === 'Database')) {
           recommendations.push({
             id: `performance_bottleneck_${nodeId}`,
@@ -378,56 +389,59 @@ export class RecommendationsEngine {
             category: 'infrastructure',
             title: 'Potential performance bottleneck',
             description: `${node.type} "${node.properties.name || nodeId}" has many connections (${connections})`,
-            reasoning: 'High connectivity may indicate performance bottlenecks or single points of failure',
+            reasoning:
+              'High connectivity may indicate performance bottlenecks or single points of failure',
             confidence: 0.7,
             impact: {
               score: 70,
               description: 'Reduces bottlenecks and improves system performance',
-              affectedEntities: [nodeId]
+              affectedEntities: [nodeId],
             },
             effort: {
               level: 'high',
               estimatedTime: '4-8 hours',
-              complexity: 'Architecture redesign and load distribution'
+              complexity: 'Architecture redesign and load distribution',
             },
-            actions: [{
-              type: 'configure',
-              target: 'load_balancing',
-              description: 'Consider load balancing or connection pooling',
-              parameters: { nodeId, connectionCount: connections }
-            }],
+            actions: [
+              {
+                type: 'configure',
+                target: 'load_balancing',
+                description: 'Consider load balancing or connection pooling',
+                parameters: { nodeId, connectionCount: connections },
+              },
+            ],
             benefits: [
               'Improved performance',
               'Better scalability',
-              'Reduced single points of failure'
+              'Reduced single points of failure',
             ],
             metadata: {
               createdAt: new Date(),
               source: 'performance_analysis',
               algorithm: 'bottleneck_detection',
-              version: '1.0'
-            }
-          });
+              version: '1.0',
+            },
+          })
         }
       }
     }
 
-    return recommendations;
+    return recommendations
   }
 
   // Reliability recommendations
   private async generateReliabilityRecommendations(
-    nodes: Node[], 
-    edges: Edge[], 
+    nodes: Node[],
+    edges: Edge[],
     context: RecommendationContext
   ): Promise<Recommendation[]> {
-    const recommendations: Recommendation[] = [];
+    const recommendations: Recommendation[] = []
 
     // Find single points of failure
-    const criticalNodes = this.findCriticalNodes(nodes, edges);
-    
+    const criticalNodes = this.findCriticalNodes(nodes, edges)
+
     for (const nodeId of criticalNodes) {
-      const node = nodes.find(n => n.id === nodeId);
+      const node = nodes.find(n => n.id === nodeId)
       if (node) {
         recommendations.push({
           id: `reliability_spof_${nodeId}`,
@@ -441,53 +455,56 @@ export class RecommendationsEngine {
           impact: {
             score: 90,
             description: 'Prevents system-wide failures and improves resilience',
-            affectedEntities: [nodeId]
+            affectedEntities: [nodeId],
           },
           effort: {
             level: 'high',
             estimatedTime: '1-2 days',
-            complexity: 'Redundancy implementation and failover configuration'
+            complexity: 'Redundancy implementation and failover configuration',
           },
-          actions: [{
-            type: 'create',
-            target: 'redundancy',
-            description: 'Implement redundancy and failover mechanisms',
-            parameters: { nodeId, nodeType: node.type }
-          }],
+          actions: [
+            {
+              type: 'create',
+              target: 'redundancy',
+              description: 'Implement redundancy and failover mechanisms',
+              parameters: { nodeId, nodeType: node.type },
+            },
+          ],
           benefits: [
             'Improved system reliability',
             'Reduced downtime risk',
-            'Better disaster recovery'
+            'Better disaster recovery',
           ],
           metadata: {
             createdAt: new Date(),
             source: 'reliability_analysis',
             algorithm: 'spof_detection',
-            version: '1.0'
-          }
-        });
+            version: '1.0',
+          },
+        })
       }
     }
 
-    return recommendations;
+    return recommendations
   }
 
   // Maintenance recommendations
   private async generateMaintenanceRecommendations(
-    nodes: Node[], 
-    edges: Edge[], 
+    nodes: Node[],
+    edges: Edge[],
     context: RecommendationContext
   ): Promise<Recommendation[]> {
-    const recommendations: Recommendation[] = [];
+    const recommendations: Recommendation[] = []
 
     // Find old or outdated components
-    const now = new Date();
-    const sixMonthsAgo = new Date(now.getTime() - 6 * 30 * 24 * 60 * 60 * 1000);
+    const now = new Date()
+    const sixMonthsAgo = new Date(now.getTime() - 6 * 30 * 24 * 60 * 60 * 1000)
 
-    const oldNodes = nodes.filter(node => 
-      new Date(node.metadata.createdAt) < sixMonthsAgo &&
-      !new Date(node.metadata.updatedAt || node.metadata.createdAt).getTime()
-    );
+    const oldNodes = nodes.filter(
+      node =>
+        new Date(node.metadata.createdAt) < sixMonthsAgo &&
+        !new Date(node.metadata.updatedAt || node.metadata.createdAt).getTime()
+    )
 
     for (const node of oldNodes) {
       if (node.type === 'Service' || node.type === 'Configuration') {
@@ -503,48 +520,46 @@ export class RecommendationsEngine {
           impact: {
             score: 40,
             description: 'Ensures components are up-to-date and secure',
-            affectedEntities: [node.id]
+            affectedEntities: [node.id],
           },
           effort: {
             level: 'low',
             estimatedTime: '30 minutes',
-            complexity: 'Review and update component configuration'
+            complexity: 'Review and update component configuration',
           },
-          actions: [{
-            type: 'update',
-            target: 'component',
-            description: 'Review and update component configuration',
-            parameters: { nodeId: node.id }
-          }],
-          benefits: [
-            'Improved security',
-            'Better performance',
-            'Up-to-date documentation'
+          actions: [
+            {
+              type: 'update',
+              target: 'component',
+              description: 'Review and update component configuration',
+              parameters: { nodeId: node.id },
+            },
           ],
+          benefits: ['Improved security', 'Better performance', 'Up-to-date documentation'],
           metadata: {
             createdAt: new Date(),
             source: 'maintenance_analysis',
             algorithm: 'staleness_detection',
-            version: '1.0'
-          }
-        });
+            version: '1.0',
+          },
+        })
       }
     }
 
-    return recommendations;
+    return recommendations
   }
 
   // Architecture recommendations
   private async generateArchitectureRecommendations(
-    nodes: Node[], 
-    edges: Edge[], 
+    nodes: Node[],
+    edges: Edge[],
     context: RecommendationContext
   ): Promise<Recommendation[]> {
-    const recommendations: Recommendation[] = [];
+    const recommendations: Recommendation[] = []
 
     // Analyze service patterns
-    const services = nodes.filter(n => n.type === 'Service');
-    const apis = nodes.filter(n => n.type === 'API');
+    const services = nodes.filter(n => n.type === 'Service')
+    const apis = nodes.filter(n => n.type === 'API')
 
     // Suggest API Gateway if many services exist without one
     if (services.length > 3 && apis.length === 0) {
@@ -560,55 +575,57 @@ export class RecommendationsEngine {
         impact: {
           score: 75,
           description: 'Improves API management and system architecture',
-          affectedEntities: services.map(s => s.id)
+          affectedEntities: services.map(s => s.id),
         },
         effort: {
           level: 'high',
           estimatedTime: '1-2 weeks',
-          complexity: 'API Gateway implementation and service integration'
+          complexity: 'API Gateway implementation and service integration',
         },
-        actions: [{
-          type: 'create',
-          target: 'api_gateway',
-          description: 'Implement API Gateway for service management',
-          parameters: { services: services.map(s => s.id) }
-        }],
+        actions: [
+          {
+            type: 'create',
+            target: 'api_gateway',
+            description: 'Implement API Gateway for service management',
+            parameters: { services: services.map(s => s.id) },
+          },
+        ],
         benefits: [
           'Centralized API management',
           'Better security and monitoring',
-          'Improved scalability'
+          'Improved scalability',
         ],
         metadata: {
           createdAt: new Date(),
           source: 'architecture_analysis',
           algorithm: 'api_gateway_suggestion',
-          version: '1.0'
-        }
-      });
+          version: '1.0',
+        },
+      })
     }
 
-    return recommendations;
+    return recommendations
   }
 
   // Monitoring recommendations
   private async generateMonitoringRecommendations(
-    nodes: Node[], 
-    edges: Edge[], 
+    nodes: Node[],
+    edges: Edge[],
     context: RecommendationContext
   ): Promise<Recommendation[]> {
-    const recommendations: Recommendation[] = [];
+    const recommendations: Recommendation[] = []
 
     // Find services without monitoring
-    const services = nodes.filter(n => n.type === 'Service');
-    const monitoringConnections = new Set<string>();
+    const services = nodes.filter(n => n.type === 'Service')
+    const monitoringConnections = new Set<string>()
 
     edges.forEach(edge => {
       if (edge.type === 'MONITORS' || edge.type === 'OBSERVES') {
-        monitoringConnections.add(edge.to);
+        monitoringConnections.add(edge.to)
       }
-    });
+    })
 
-    const unmonitoredServices = services.filter(s => !monitoringConnections.has(s.id));
+    const unmonitoredServices = services.filter(s => !monitoringConnections.has(s.id))
 
     for (const service of unmonitoredServices) {
       recommendations.push({
@@ -623,47 +640,45 @@ export class RecommendationsEngine {
         impact: {
           score: 70,
           description: 'Improves observability and incident detection',
-          affectedEntities: [service.id]
+          affectedEntities: [service.id],
         },
         effort: {
           level: 'medium',
           estimatedTime: '2-4 hours',
-          complexity: 'Monitoring setup and configuration'
+          complexity: 'Monitoring setup and configuration',
         },
-        actions: [{
-          type: 'create',
-          target: 'monitoring',
-          description: 'Set up monitoring for service',
-          parameters: { serviceId: service.id }
-        }],
-        benefits: [
-          'Better observability',
-          'Faster incident detection',
-          'Performance insights'
+        actions: [
+          {
+            type: 'create',
+            target: 'monitoring',
+            description: 'Set up monitoring for service',
+            parameters: { serviceId: service.id },
+          },
         ],
+        benefits: ['Better observability', 'Faster incident detection', 'Performance insights'],
         metadata: {
           createdAt: new Date(),
           source: 'monitoring_analysis',
           algorithm: 'monitoring_gap_detection',
-          version: '1.0'
-        }
-      });
+          version: '1.0',
+        },
+      })
     }
 
-    return recommendations;
+    return recommendations
   }
 
   // Compliance recommendations
   private async generateComplianceRecommendations(
-    nodes: Node[], 
-    edges: Edge[], 
+    nodes: Node[],
+    edges: Edge[],
     context: RecommendationContext
   ): Promise<Recommendation[]> {
-    const recommendations: Recommendation[] = [];
+    const recommendations: Recommendation[] = []
 
     // Check for documentation gaps
-    const documents = nodes.filter(n => n.type === 'Document');
-    const services = nodes.filter(n => n.type === 'Service');
+    const documents = nodes.filter(n => n.type === 'Document')
+    const services = nodes.filter(n => n.type === 'Service')
 
     if (services.length > documents.length * 2) {
       recommendations.push({
@@ -678,69 +693,68 @@ export class RecommendationsEngine {
         impact: {
           score: 50,
           description: 'Improves compliance and knowledge sharing',
-          affectedEntities: services.map(s => s.id)
+          affectedEntities: services.map(s => s.id),
         },
         effort: {
           level: 'medium',
           estimatedTime: '4-8 hours',
-          complexity: 'Documentation creation and maintenance'
+          complexity: 'Documentation creation and maintenance',
         },
-        actions: [{
-          type: 'create',
-          target: 'documentation',
-          description: 'Create comprehensive service documentation',
-          parameters: { services: services.map(s => s.id) }
-        }],
-        benefits: [
-          'Better compliance',
-          'Improved knowledge sharing',
-          'Easier onboarding'
+        actions: [
+          {
+            type: 'create',
+            target: 'documentation',
+            description: 'Create comprehensive service documentation',
+            parameters: { services: services.map(s => s.id) },
+          },
         ],
+        benefits: ['Better compliance', 'Improved knowledge sharing', 'Easier onboarding'],
         metadata: {
           createdAt: new Date(),
           source: 'compliance_analysis',
           algorithm: 'documentation_gap_detection',
-          version: '1.0'
-        }
-      });
+          version: '1.0',
+        },
+      })
     }
 
-    return recommendations;
+    return recommendations
   }
 
   // Helper methods
   private findCriticalNodes(nodes: Node[], edges: Edge[]): string[] {
-    const criticalNodes: string[] = [];
-    
+    const criticalNodes: string[] = []
+
     // Simple approach: nodes with high centrality that are bridges
     for (const node of nodes) {
-      const centrality = this.graph.getCentralityScore(node.id);
-      if (centrality > 5) { // Arbitrary threshold
+      const centrality = this.graph.getCentralityScore(node.id)
+      if (centrality > 5) {
+        // Arbitrary threshold
         // Check if removing this node would disconnect the graph
-        const neighbors = this.graph.getNeighbors(node.id);
+        const neighbors = this.graph.getNeighbors(node.id)
         if (neighbors.length > 2) {
-          criticalNodes.push(node.id);
+          criticalNodes.push(node.id)
         }
       }
     }
-    
-    return criticalNodes;
+
+    return criticalNodes
   }
 
   private filterRecommendations(
-    recommendations: Recommendation[], 
+    recommendations: Recommendation[],
     context: RecommendationContext
   ): Recommendation[] {
-    let filtered = recommendations;
+    let filtered = recommendations
 
     // Filter by type exclusions
     if (context.excludeTypes?.length) {
-      filtered = filtered.filter(rec => !context.excludeTypes!.includes(rec.type));
+      filtered = filtered.filter(rec => !context.excludeTypes!.includes(rec.type))
     }
 
     // Filter by priorities
     if (context.priorities?.length) {
-      filtered = filtered.filter(rec => context.priorities!.includes(rec.type));
+      filtered = filtered.filter(rec => context.priorities!.includes(rec.type))
     }
 
     // Filter by environment
@@ -748,53 +762,53 @@ export class RecommendationsEngine {
       // Could filter based on environment-specific rules
     }
 
-    return filtered;
+    return filtered
   }
 
   private rankRecommendations(
-    recommendations: Recommendation[], 
+    recommendations: Recommendation[],
     context: RecommendationContext
   ): Recommendation[] {
     return recommendations.sort((a, b) => {
       // Priority ranking
-      const priorityOrder = { critical: 4, high: 3, medium: 2, low: 1 };
-      const priorityDiff = priorityOrder[b.priority] - priorityOrder[a.priority];
-      if (priorityDiff !== 0) return priorityDiff;
+      const priorityOrder = { critical: 4, high: 3, medium: 2, low: 1 }
+      const priorityDiff = priorityOrder[b.priority] - priorityOrder[a.priority]
+      if (priorityDiff !== 0) return priorityDiff
 
       // Impact score
-      const impactDiff = b.impact.score - a.impact.score;
-      if (impactDiff !== 0) return impactDiff;
+      const impactDiff = b.impact.score - a.impact.score
+      if (impactDiff !== 0) return impactDiff
 
       // Confidence
-      const confidenceDiff = b.confidence - a.confidence;
-      if (confidenceDiff !== 0) return confidenceDiff;
+      const confidenceDiff = b.confidence - a.confidence
+      if (confidenceDiff !== 0) return confidenceDiff
 
       // Effort (prefer lower effort)
-      const effortOrder = { low: 3, medium: 2, high: 1 };
-      return effortOrder[b.effort.level] - effortOrder[a.effort.level];
-    });
+      const effortOrder = { low: 3, medium: 2, high: 1 }
+      return effortOrder[b.effort.level] - effortOrder[a.effort.level]
+    })
   }
 
   private deduplicateRecommendations(recommendations: Recommendation[]): Recommendation[] {
-    const seen = new Set<string>();
+    const seen = new Set<string>()
     return recommendations.filter(rec => {
-      const key = `${rec.type}-${rec.category}-${rec.title}`;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
+      const key = `${rec.type}-${rec.category}-${rec.title}`
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
   }
 
   // Feedback and learning
   addFeedback(feedback: RecommendationFeedback): void {
-    this.feedback.push(feedback);
-    this.updateRecommendationWeights(feedback);
+    this.feedback.push(feedback)
+    this.updateRecommendationWeights(feedback)
   }
 
   private updateRecommendationWeights(feedback: RecommendationFeedback): void {
     // Simple learning: adjust confidence based on feedback
     // In a real implementation, this would use more sophisticated ML
-    const recommendation = this.feedback.find(f => f.recommendationId === feedback.recommendationId);
+    const recommendation = this.feedback.find(f => f.recommendationId === feedback.recommendationId)
     if (recommendation && feedback.rating < 3) {
       // Lower confidence for poorly rated recommendations
       // This would be persisted and used in future recommendations
@@ -808,20 +822,19 @@ export class RecommendationsEngine {
       {
         id: 'service_database_rule',
         condition: (nodes, edges) => {
-          const services = nodes.filter(n => n.type === 'Service');
-          const hasDbConnections = services.some(s => 
-            edges.some(e => e.from === s.id && 
-              nodes.find(n => n.id === e.to)?.type === 'Database')
-          );
-          return services.length > 0 && !hasDbConnections;
+          const services = nodes.filter(n => n.type === 'Service')
+          const hasDbConnections = services.some(s =>
+            edges.some(e => e.from === s.id && nodes.find(n => n.id === e.to)?.type === 'Database')
+          )
+          return services.length > 0 && !hasDbConnections
         },
         recommendation: {
           type: 'architecture',
           priority: 'high',
-          category: 'connections'
-        }
-      }
-    ];
+          category: 'connections',
+        },
+      },
+    ]
   }
 
   private initializePatterns(): void {
@@ -831,26 +844,26 @@ export class RecommendationsEngine {
         id: 'microservices_pattern',
         description: 'Multiple services with API Gateway',
         detect: (nodes, edges) => {
-          const services = nodes.filter(n => n.type === 'Service');
-          const apis = nodes.filter(n => n.type === 'API');
-          return services.length > 3 && apis.length === 0;
+          const services = nodes.filter(n => n.type === 'Service')
+          const apis = nodes.filter(n => n.type === 'API')
+          return services.length > 3 && apis.length === 0
         },
-        recommend: 'api_gateway'
-      }
-    ];
+        recommend: 'api_gateway',
+      },
+    ]
   }
 }
 
 // Supporting interfaces
 interface RecommendationRule {
-  id: string;
-  condition: (nodes: Node[], edges: Edge[]) => boolean;
-  recommendation: Partial<Recommendation>;
+  id: string
+  condition: (nodes: Node[], edges: Edge[]) => boolean
+  recommendation: Partial<Recommendation>
 }
 
 interface RecommendationPattern {
-  id: string;
-  description: string;
-  detect: (nodes: Node[], edges: Edge[]) => boolean;
-  recommend: string;
+  id: string
+  description: string
+  detect: (nodes: Node[], edges: Edge[]) => boolean
+  recommend: string
 }

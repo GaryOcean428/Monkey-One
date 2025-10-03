@@ -1,12 +1,12 @@
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { useAgentStore } from '../../store/agentStore';
-import { Badge } from '../ui/badge';
-import { Button } from '../ui/button';
-import { PlusCircle } from 'lucide-react';
+import React from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
+import { useAgentStore } from '../../store/agentStore'
+import { Badge } from '../ui/badge'
+import { Button } from '../ui/button'
+import { PlusCircle } from 'lucide-react'
 
 export const AgentPanel: React.FC = () => {
-  const { agents, activeAgent } = useAgentStore();
+  const { agents, activeAgent } = useAgentStore()
 
   return (
     <Card className="h-full">
@@ -18,18 +18,16 @@ export const AgentPanel: React.FC = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {agents.map((agent) => (
+          {agents.map(agent => (
             <div
               key={agent.id}
-              className={`flex items-center justify-between p-2 rounded-lg ${
+              className={`flex items-center justify-between rounded-lg p-2 ${
                 activeAgent?.id === agent.id ? 'bg-primary/10' : ''
               }`}
             >
               <div className="flex flex-col">
                 <span className="font-medium">{agent.name}</span>
-                <span className="text-sm text-muted-foreground">
-                  {agent.description}
-                </span>
+                <span className="text-muted-foreground text-sm">{agent.description}</span>
               </div>
               <Badge variant={agent.provider === 'local' ? 'secondary' : 'default'}>
                 {agent.provider}
@@ -39,5 +37,5 @@ export const AgentPanel: React.FC = () => {
         </div>
       </CardContent>
     </Card>
-  );
-};
+  )
+}

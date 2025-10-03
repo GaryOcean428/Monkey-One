@@ -1,32 +1,29 @@
-import type { Tool } from '../../types';
+import type { Tool } from '../../types'
 
 export class DataProcessingTool implements Tool {
-  name = 'data-processing';
-  description = 'Processes and transforms data in various formats';
+  name = 'data-processing'
+  description = 'Processes and transforms data in various formats'
 
   async execute(args: {
-    action: 'transform' | 'validate' | 'filter';
-    data: unknown;
-    config: Record<string, unknown>;
+    action: 'transform' | 'validate' | 'filter'
+    data: unknown
+    config: Record<string, unknown>
   }): Promise<unknown> {
     switch (args.action) {
       case 'transform':
-        return this.transformData(args.data, args.config);
+        return this.transformData(args.data, args.config)
       case 'validate':
-        return this.validateData(args.data, args.config);
+        return this.validateData(args.data, args.config)
       case 'filter':
-        return this.filterData(args.data, args.config);
+        return this.filterData(args.data, args.config)
       default:
-        throw new Error(`Unknown action: ${args.action}`);
+        throw new Error(`Unknown action: ${args.action}`)
     }
   }
 
-  private async transformData(
-    data: unknown,
-    config: Record<string, unknown>
-  ): Promise<unknown> {
+  private async transformData(data: unknown, config: Record<string, unknown>): Promise<unknown> {
     // Implement data transformation logic
-    return data;
+    return data
   }
 
   private async validateData(
@@ -34,14 +31,11 @@ export class DataProcessingTool implements Tool {
     config: Record<string, unknown>
   ): Promise<{ valid: boolean; errors?: string[] }> {
     // Implement data validation logic
-    return { valid: true };
+    return { valid: true }
   }
 
-  private async filterData(
-    data: unknown,
-    config: Record<string, unknown>
-  ): Promise<unknown> {
+  private async filterData(data: unknown, config: Record<string, unknown>): Promise<unknown> {
     // Implement data filtering logic
-    return data;
+    return data
   }
 }

@@ -7,7 +7,11 @@ export function manualChunks(id: string) {
       return 'react-vendor'
     }
     // UI libraries
-    if (id.includes('@radix-ui') || id.includes('lucide-react') || id.includes('class-variance-authority')) {
+    if (
+      id.includes('@radix-ui') ||
+      id.includes('lucide-react') ||
+      id.includes('class-variance-authority')
+    ) {
       return 'ui-vendor'
     }
     // State management

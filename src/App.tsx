@@ -19,8 +19,8 @@ export function App() {
   if (isLoading) {
     return (
       <div className="bg-background flex h-screen items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+        <div className="space-y-4 text-center">
+          <div className="border-primary mx-auto h-8 w-8 animate-spin rounded-full border-b-2"></div>
           <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
@@ -31,13 +31,11 @@ export function App() {
   if (!isAuthenticated) {
     return (
       <div className="bg-background flex h-screen items-center justify-center">
-        <div className="max-w-md w-full mx-4">
-          <div className="text-center space-y-6">
+        <div className="mx-4 w-full max-w-md">
+          <div className="space-y-6 text-center">
             <div className="space-y-2">
               <h1 className="text-3xl font-bold">Welcome to Monkey-One</h1>
-              <p className="text-muted-foreground">
-                Sign in to access your AI agent dashboard
-              </p>
+              <p className="text-muted-foreground">Sign in to access your AI agent dashboard</p>
             </div>
             <LoginButton className="w-full" />
           </div>
@@ -54,12 +52,12 @@ export function App() {
       <main className="flex-1 overflow-y-auto">
         <div className="min-h-full">
           {/* Header with user profile */}
-          <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <header className="bg-background/95 supports-[backdrop-filter]:bg-background/60 border-b backdrop-blur">
             <div className="flex h-14 items-center justify-end px-4 md:px-6 lg:px-8">
               <UserProfile />
             </div>
           </header>
-          
+
           {/* Main content */}
           <div className="p-4 md:p-6 lg:p-8">
             <ErrorBoundaryWrapper context="main content">

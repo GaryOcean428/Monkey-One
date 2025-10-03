@@ -1,4 +1,4 @@
-import { CodeIndicator } from '../types';
+import { CodeIndicator } from '../types'
 
 const CODE_INDICATORS: Record<CodeIndicator, RegExp> = {
   dataStructures: /\b(tree|graph|heap|stack|queue)\b/i,
@@ -8,7 +8,7 @@ const CODE_INDICATORS: Record<CodeIndicator, RegExp> = {
   async: /\b(async|await|promise|callback|observable)\b/i,
   performance: /\b(performance|optimize|memory|cpu|complexity)\b/i,
   security: /\b(security|auth|encryption|token|vulnerable)\b/i,
-};
+}
 
 export class CodeAnalyzer {
   /**
@@ -17,11 +17,9 @@ export class CodeAnalyzer {
    * @returns Complexity score between 0 and 1
    */
   public static analyzeComplexity(query: string): number {
-    const matches = Object.values(CODE_INDICATORS)
-      .filter(pattern => pattern.test(query))
-      .length;
+    const matches = Object.values(CODE_INDICATORS).filter(pattern => pattern.test(query)).length
 
-    return Math.min(matches / Object.keys(CODE_INDICATORS).length, 1);
+    return Math.min(matches / Object.keys(CODE_INDICATORS).length, 1)
   }
 
   /**
@@ -32,7 +30,7 @@ export class CodeAnalyzer {
   public static getIndicators(query: string): CodeIndicator[] {
     return Object.entries(CODE_INDICATORS)
       .filter(([_, pattern]) => pattern.test(query))
-      .map(([indicator]) => indicator as CodeIndicator);
+      .map(([indicator]) => indicator as CodeIndicator)
   }
 
   /**
@@ -42,7 +40,7 @@ export class CodeAnalyzer {
    * @returns True if indicator is present
    */
   public static hasIndicator(query: string, indicator: CodeIndicator): boolean {
-    return CODE_INDICATORS[indicator].test(query);
+    return CODE_INDICATORS[indicator].test(query)
   }
 
   /**
@@ -59,8 +57,8 @@ export class CodeAnalyzer {
       async: 0.6,
       performance: 0.8,
       security: 0.9,
-    };
+    }
 
-    return weights[indicator];
+    return weights[indicator]
   }
 }

@@ -12,23 +12,23 @@ export interface PanelState {
 
 export const usePanelStore = create<PanelState>()(
   devtools(
-    (set) => ({
+    set => ({
       loading: {},
       error: {},
       setLoading: (panelId, isLoading) =>
-        set((state) => ({
+        set(state => ({
           loading: { ...state.loading, [panelId]: isLoading },
         })),
       setError: (panelId, error) =>
-        set((state) => ({
+        set(state => ({
           error: { ...state.error, [panelId]: error },
         })),
-      clearError: (panelId) =>
-        set((state) => ({
+      clearError: panelId =>
+        set(state => ({
           error: { ...state.error, [panelId]: null },
         })),
-      clearPanel: (panelId) =>
-        set((state) => {
+      clearPanel: panelId =>
+        set(state => {
           const { [panelId]: _, ...loading } = state.loading
           const { [panelId]: __, ...error } = state.error
           return { loading, error }

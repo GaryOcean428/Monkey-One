@@ -1,24 +1,24 @@
-import { create } from 'zustand';
+import { create } from 'zustand'
 
 export interface Workflow {
-  id: string;
-  name: string;
-  description: string;
-  status: 'active' | 'paused' | 'completed' | 'failed';
-  type: string;
-  lastRun: string;
-  nextRun?: string;
+  id: string
+  name: string
+  description: string
+  status: 'active' | 'paused' | 'completed' | 'failed'
+  type: string
+  lastRun: string
+  nextRun?: string
 }
 
 interface WorkflowState {
-  workflows: Workflow[];
-  isLoading: boolean;
-  error: Error | null;
-  createWorkflow: (workflow: Omit<Workflow, 'id' | 'status' | 'lastRun'>) => Promise<void>;
-  updateWorkflow: (id: string, updates: Partial<Workflow>) => Promise<void>;
-  deleteWorkflow: (id: string) => Promise<void>;
-  toggleWorkflowStatus: (id: string) => Promise<void>;
-  fetchWorkflows: () => Promise<void>;
+  workflows: Workflow[]
+  isLoading: boolean
+  error: Error | null
+  createWorkflow: (workflow: Omit<Workflow, 'id' | 'status' | 'lastRun'>) => Promise<void>
+  updateWorkflow: (id: string, updates: Partial<Workflow>) => Promise<void>
+  deleteWorkflow: (id: string) => Promise<void>
+  toggleWorkflowStatus: (id: string) => Promise<void>
+  fetchWorkflows: () => Promise<void>
 }
 
 export const useWorkflowStore = create<WorkflowState>((set, get) => ({
@@ -26,8 +26,8 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
   isLoading: false,
   error: null,
 
-  createWorkflow: async (workflow) => {
-    set({ isLoading: true, error: null });
+  createWorkflow: async workflow => {
+    set({ isLoading: true, error: null })
     try {
       // TODO: Replace with actual API call
       const newWorkflow: Workflow = {
@@ -35,62 +35,62 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         status: 'paused',
         lastRun: new Date().toISOString(),
         ...workflow,
-      };
-      set((state) => ({ workflows: [...state.workflows, newWorkflow] }));
+      }
+      set(state => ({ workflows: [...state.workflows, newWorkflow] }))
     } catch (error) {
-      set({ error: error as Error });
+      set({ error: error as Error })
     } finally {
-      set({ isLoading: false });
+      set({ isLoading: false })
     }
   },
 
   updateWorkflow: async (id, updates) => {
-    set({ isLoading: true, error: null });
+    set({ isLoading: true, error: null })
     try {
       // TODO: Replace with actual API call
-      set((state) => ({
-        workflows: state.workflows.map((workflow) =>
+      set(state => ({
+        workflows: state.workflows.map(workflow =>
           workflow.id === id ? { ...workflow, ...updates } : workflow
         ),
-      }));
+      }))
     } catch (error) {
-      set({ error: error as Error });
+      set({ error: error as Error })
     } finally {
-      set({ isLoading: false });
+      set({ isLoading: false })
     }
   },
 
-  deleteWorkflow: async (id) => {
-    set({ isLoading: true, error: null });
+  deleteWorkflow: async id => {
+    set({ isLoading: true, error: null })
     try {
       // TODO: Replace with actual API call
-      set((state) => ({
-        workflows: state.workflows.filter((workflow) => workflow.id !== id),
-      }));
+      set(state => ({
+        workflows: state.workflows.filter(workflow => workflow.id !== id),
+      }))
     } catch (error) {
-      set({ error: error as Error });
+      set({ error: error as Error })
     } finally {
-      set({ isLoading: false });
+      set({ isLoading: false })
     }
   },
 
-  toggleWorkflowStatus: async (id) => {
-    set({ isLoading: true, error: null });
+  toggleWorkflowStatus: async id => {
+    set({ isLoading: true, error: null })
     try {
-      const workflow = get().workflows.find((w) => w.id === id);
-      if (!workflow) throw new Error('Workflow not found');
+      const workflow = get().workflows.find(w => w.id === id)
+      if (!workflow) throw new Error('Workflow not found')
 
-      const newStatus = workflow.status === 'active' ? 'paused' : 'active';
-      await get().updateWorkflow(id, { status: newStatus });
+      const newStatus = workflow.status === 'active' ? 'paused' : 'active'
+      await get().updateWorkflow(id, { status: newStatus })
     } catch (error) {
-      set({ error: error as Error });
+      set({ error: error as Error })
     } finally {
-      set({ isLoading: false });
+      set({ isLoading: false })
     }
   },
 
   fetchWorkflows: async () => {
-    set({ isLoading: true, error: null });
+    set({ isLoading: true, error: null })
     try {
       // TODO: Replace with actual API call
       const workflows: Workflow[] = [
@@ -111,12 +111,12 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
           type: 'content',
           lastRun: '2024-12-29T02:00:00Z',
         },
-      ];
-      set({ workflows });
+      ]
+      set({ workflows })
     } catch (error) {
-      set({ error: error as Error });
+      set({ error: error as Error })
     } finally {
-      set({ isLoading: false });
+      set({ isLoading: false })
     }
   },
-}));
+}))

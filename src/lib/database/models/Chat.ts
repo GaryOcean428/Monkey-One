@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod'
 
 export const MessageSchema = z.object({
   id: z.string().uuid(),
@@ -9,9 +9,9 @@ export const MessageSchema = z.object({
   content: z.string(),
   metadata: z.record(z.unknown()),
   created_at: z.string().datetime(),
-});
+})
 
-export type Message = z.infer<typeof MessageSchema>;
+export type Message = z.infer<typeof MessageSchema>
 
 export const ChatSchema = z.object({
   id: z.string().uuid(),
@@ -24,22 +24,22 @@ export const ChatSchema = z.object({
   created_at: z.string().datetime(),
   updated_at: z.string().datetime(),
   messages: z.array(MessageSchema).optional(),
-});
+})
 
-export type Chat = z.infer<typeof ChatSchema>;
+export type Chat = z.infer<typeof ChatSchema>
 
 export const CreateChatSchema = ChatSchema.omit({
   id: true,
   created_at: true,
   updated_at: true,
   messages: true,
-});
+})
 
-export type CreateChat = z.infer<typeof CreateChatSchema>;
+export type CreateChat = z.infer<typeof CreateChatSchema>
 
 export const CreateMessageSchema = MessageSchema.omit({
   id: true,
   created_at: true,
-});
+})
 
-export type CreateMessage = z.infer<typeof CreateMessageSchema>;
+export type CreateMessage = z.infer<typeof CreateMessageSchema>

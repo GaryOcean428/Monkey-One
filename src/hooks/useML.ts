@@ -1,84 +1,90 @@
-import { useState, useCallback } from 'react';
-import { MLService } from '../lib/ml/MLService';
-import * as tf from '@tensorflow/tfjs';
+import { useState, useCallback } from 'react'
+import { MLService } from '../lib/ml/MLService'
+import * as tf from '@tensorflow/tfjs'
 
-const mlService = new MLService();
+const mlService = new MLService()
 
 export function useML() {
-  const [isInitialized, setIsInitialized] = useState(false);
-  const [isTraining, setIsTraining] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false)
+  const [isTraining, setIsTraining] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const initialize = useCallback(async () => {
     try {
-      await mlService.initialize();
-      setIsInitialized(true);
+      await mlService.initialize()
+      setIsInitialized(true)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to initialize ML service');
-      throw err;
+      setError(err instanceof Error ? err.message : 'Failed to initialize ML service')
+      throw err
     }
-  }, []);
+  }, [])
 
-  const train = useCallback(async (data: number[][], labels: number[][], epochs?: number) => {
-    if (!isInitialized) {
-      throw new Error('ML service not initialized');
-    }
+  const train = useCallback(
+    async (data: number[][], labels: number[][], epochs?: number) => {
+      if (!isInitialized) {
+        throw new Error('ML service not initialized')
+      }
 
-    setIsTraining(true);
-    setError(null);
+      setIsTraining(true)
+      setError(null)
 
-    try {
-      const tensorData = tf.tensor2d(data);
-      const tensorLabels = tf.tensor2d(labels);
+      try {
+        const tensorData = tf.tensor2d(data)
+        const tensorLabels = tf.tensor2d(labels)
 
-      const history = await mlService.train(tensorData, tensorLabels, epochs);
-      
-      // Cleanup tensors
-      tensorData.dispose();
-      tensorLabels.dispose();
+        const history = await mlService.train(tensorData, tensorLabels, epochs)
 
-      return history;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to train model');
-      throw err;
-    } finally {
-      setIsTraining(false);
-    }
-  }, [isInitialized]);
+        // Cleanup tensors
+        tensorData.dispose()
+        tensorLabels.dispose()
 
-  const predict = useCallback(async (input: number[][]) => {
-    if (!isInitialized) {
-      throw new Error('ML service not initialized');
-    }
+        return history
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to train model')
+        throw err
+      } finally {
+        setIsTraining(false)
+      }
+    },
+    [isInitialized]
+  )
 
-    try {
-      const tensorInput = tf.tensor2d(input);
-      const prediction = await mlService.predict(tensorInput);
-      const result = await prediction.array();
-      
-      // Cleanup tensors
-      tensorInput.dispose();
-      prediction.dispose();
+  const predict = useCallback(
+    async (input: number[][]) => {
+      if (!isInitialized) {
+        throw new Error('ML service not initialized')
+      }
 
-      return result;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to make prediction');
-      throw err;
-    }
-  }, [isInitialized]);
+      try {
+        const tensorInput = tf.tensor2d(input)
+        const prediction = await mlService.predict(tensorInput)
+        const result = await prediction.array()
+
+        // Cleanup tensors
+        tensorInput.dispose()
+        prediction.dispose()
+
+        return result
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to make prediction')
+        throw err
+      }
+    },
+    [isInitialized]
+  )
 
   const getHistory = useCallback(async () => {
     if (!isInitialized) {
-      throw new Error('ML service not initialized');
+      throw new Error('ML service not initialized')
     }
 
     try {
-      return await mlService.getTrainingHistory();
+      return await mlService.getTrainingHistory()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to get training history');
-      throw err;
+      setError(err instanceof Error ? err.message : 'Failed to get training history')
+      throw err
     }
-  }, [isInitialized]);
+  }, [isInitialized])
 
   return {
     initialize,
@@ -88,6 +94,6 @@ export function useML() {
     isInitialized,
     isTraining,
     error,
-    clearError: () => setError(null)
-  };
+    clearError: () => setError(null),
+  }
 }

@@ -10,10 +10,9 @@ export function useProfile(): UseProfileReturn {
     try {
       setIsLoading(true)
       setError(null)
-      
+
       // TODO: Implement API call to update profile
-      setProfile(prev => prev ? { ...prev, ...updates } : null)
-      
+      setProfile(prev => (prev ? { ...prev, ...updates } : null))
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Failed to update profile'))
     } finally {
@@ -25,6 +24,6 @@ export function useProfile(): UseProfileReturn {
     profile,
     isLoading,
     error,
-    updateProfile
+    updateProfile,
   }
 }

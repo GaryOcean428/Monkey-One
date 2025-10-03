@@ -36,7 +36,7 @@ export class ModelPerformanceTracker {
         averageLatency: 0,
         tokenUsage: 0,
         costPerToken: 0,
-        qualityScores: {}
+        qualityScores: {},
       })
       this.latencyHistory.set(provider, [])
       this.successHistory.set(provider, [])
@@ -53,11 +53,11 @@ export class ModelPerformanceTracker {
     if (history.length > METRICS_WINDOW) {
       history.shift()
     }
-    
+
     const metrics = this.metrics.get(provider)!
     metrics.averageLatency = history.reduce((a, b) => a + b, 0) / history.length
     this.metrics.set(provider, metrics)
-    
+
     logger.debug(`Recorded latency for ${provider}: ${latency}ms`)
   }
 
@@ -142,7 +142,7 @@ export class ModelPerformanceTracker {
     this.costHistory.delete(provider)
     this.qualityHistory.delete(provider)
     this.initializeMetrics(provider)
-    
+
     logger.info(`Reset metrics for ${provider}`)
   }
 
@@ -150,32 +150,32 @@ export class ModelPerformanceTracker {
     // Estimate performance impact of changes to given files
     // Returns a value between -1 (very negative) and 1 (very positive)
     // 0 means neutral impact
-    
-    let impactScore = 0;
-    let fileCount = 0;
-    
+
+    let impactScore = 0
+    let fileCount = 0
+
     for (const file of affectedFiles) {
-      fileCount++;
-      
+      fileCount++
+
       // Check file type and estimate impact
       if (file.includes('performance') || file.includes('optimization')) {
-        impactScore += 0.3; // Likely positive impact
+        impactScore += 0.3 // Likely positive impact
       } else if (file.includes('cache') || file.includes('memory')) {
-        impactScore += 0.2; // Potentially positive impact
+        impactScore += 0.2 // Potentially positive impact
       } else if (file.includes('test')) {
-        impactScore += 0.05; // Test changes have minimal impact
+        impactScore += 0.05 // Test changes have minimal impact
       } else if (file.includes('config') || file.includes('constant')) {
-        impactScore += 0.1; // Configuration changes may help
+        impactScore += 0.1 // Configuration changes may help
       } else {
         // Neutral or unknown impact
-        impactScore += 0;
+        impactScore += 0
       }
     }
-    
+
     // Average the impact across all files
-    const averageImpact = fileCount > 0 ? impactScore / fileCount : 0;
-    
+    const averageImpact = fileCount > 0 ? impactScore / fileCount : 0
+
     // Normalize to -1 to 1 range (currently 0 to 1, so we're conservative)
-    return Math.max(-1, Math.min(1, averageImpact));
+    return Math.max(-1, Math.min(1, averageImpact))
   }
 }

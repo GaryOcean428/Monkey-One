@@ -11,7 +11,7 @@ export interface MemoryStats {
 
 export enum MessageType {
   SYSTEM = 'SYSTEM',
-  USER = 'USER', 
+  USER = 'USER',
   ASSISTANT = 'ASSISTANT',
   ERROR = 'ERROR',
   WARNING = 'WARNING',
@@ -19,7 +19,7 @@ export enum MessageType {
   DEBUG = 'DEBUG',
   TASK = 'TASK',
   RESPONSE = 'RESPONSE',
-  BROADCAST = 'BROADCAST'
+  BROADCAST = 'BROADCAST',
 }
 
 export interface Message {
@@ -38,7 +38,11 @@ export interface SystemConfig {
 }
 
 export { AgentType, AgentStatus } from './agent'
-export type { AgentCapabilityType, AgentMetrics, AgentCapabilityType as AgentCapability } from './agent'
+export type {
+  AgentCapabilityType,
+  AgentMetrics,
+  AgentCapabilityType as AgentCapability,
+} from './agent'
 
 export interface LogLevel {
   ERROR: 0

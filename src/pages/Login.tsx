@@ -1,12 +1,12 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { NeonMonkey } from '../components/Logo/NeonMonkey';
-import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
+import React from 'react'
+import { motion } from 'framer-motion'
+import { NeonMonkey } from '../components/Logo/NeonMonkey'
+import { Button } from '../components/ui/button'
+import { Input } from '../components/ui/input'
 
 export const Login: React.FC = () => {
   return (
-    <div className="min-h-screen bg-bg-darker flex items-center justify-center p-4">
+    <div className="bg-bg-darker flex min-h-screen items-center justify-center p-4">
       <motion.div
         className="w-full max-w-md space-y-8"
         initial={{ opacity: 0, y: 20 }}
@@ -16,7 +16,7 @@ export const Login: React.FC = () => {
         <div className="flex flex-col items-center justify-center space-y-4">
           <NeonMonkey size="xl" />
           <motion.h2
-            className="mt-6 text-center text-3xl font-bold tracking-tight text-text-primary"
+            className="text-text-primary mt-6 text-center text-3xl font-bold tracking-tight"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
@@ -44,22 +44,20 @@ export const Login: React.FC = () => {
               <Input
                 type="email"
                 placeholder="Email address"
-                className="bg-bg-light text-text-primary border-none focus:ring-2 focus:ring-neon-pink/50"
+                className="bg-bg-light text-text-primary focus:ring-neon-pink/50 border-none focus:ring-2"
               />
             </div>
             <div>
               <Input
                 type="password"
                 placeholder="Password"
-                className="bg-bg-light text-text-primary border-none focus:ring-2 focus:ring-neon-blue/50"
+                className="bg-bg-light text-text-primary focus:ring-neon-blue/50 border-none focus:ring-2"
               />
             </div>
           </div>
 
           <div>
-            <Button
-              className="w-full bg-gradient-to-r from-neon-pink to-neon-blue hover:opacity-90 transition-opacity"
-            >
+            <Button className="from-neon-pink to-neon-blue w-full bg-gradient-to-r transition-opacity hover:opacity-90">
               Sign in
             </Button>
           </div>
@@ -79,7 +77,7 @@ export const Login: React.FC = () => {
         </motion.div>
       </motion.div>
     </div>
-  );
-};
+  )
+}
 
-export default Login;
+export default Login

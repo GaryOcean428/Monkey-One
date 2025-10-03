@@ -53,7 +53,7 @@ export interface AccentConfig {
  */
 export function generateAccentVariants(accent: AccentConfig) {
   const { hue, saturation, lightness } = accent
-  
+
   return {
     50: `hsl(${hue}, ${Math.max(saturation - 40, 10)}%, ${Math.min(lightness + 45, 95)}%)`,
     100: `hsl(${hue}, ${Math.max(saturation - 30, 15)}%, ${Math.min(lightness + 40, 90)}%)`,
@@ -65,7 +65,7 @@ export function generateAccentVariants(accent: AccentConfig) {
     700: `hsl(${hue}, ${saturation}%, ${Math.max(lightness - 20, 20)}%)`,
     800: `hsl(${hue}, ${saturation}%, ${Math.max(lightness - 30, 15)}%)`,
     900: `hsl(${hue}, ${saturation}%, ${Math.max(lightness - 40, 10)}%)`,
-    950: `hsl(${hue}, ${saturation}%, ${Math.max(lightness - 50, 5)}%)`
+    950: `hsl(${hue}, ${saturation}%, ${Math.max(lightness - 50, 5)}%)`,
   }
 }
 
@@ -76,7 +76,7 @@ export function generateGradients(accent: AccentConfig, isDark = false) {
   const variants = generateAccentVariants(accent)
   const opacity = isDark ? '0.15' : '0.08'
   const heavyOpacity = isDark ? '0.25' : '0.12'
-  
+
   return {
     primary: `linear-gradient(135deg, ${variants[500]}${opacity} 0%, ${variants[600]}${opacity} 100%)`,
     secondary: `linear-gradient(135deg, ${variants[400]}${opacity} 0%, ${variants[700]}${opacity} 100%)`,
@@ -90,7 +90,7 @@ export function generateGradients(accent: AccentConfig, isDark = false) {
       radial-gradient(at 80% 50%, ${variants[700]}${opacity} 0px, transparent 50%),
       radial-gradient(at 0% 100%, ${variants[300]}${opacity} 0px, transparent 50%),
       radial-gradient(at 80% 100%, ${variants[800]}${opacity} 0px, transparent 50%)
-    `
+    `,
   }
 }
 
@@ -107,7 +107,7 @@ export const accentPresets = {
   indigo: { hue: 240, saturation: 75, lightness: 55 },
   rose: { hue: 350, saturation: 75, lightness: 60 },
   amber: { hue: 45, saturation: 85, lightness: 55 },
-  cyan: { hue: 190, saturation: 75, lightness: 50 }
+  cyan: { hue: 190, saturation: 75, lightness: 50 },
 } as const
 
 /**
@@ -115,35 +115,35 @@ export const accentPresets = {
  */
 export function getTimeBasedAccent(baseAccent: AccentConfig): AccentConfig {
   const hour = new Date().getHours()
-  
+
   // Morning (6-11): Warmer, lighter
   if (hour >= 6 && hour < 12) {
     return {
       ...baseAccent,
       hue: Math.max(baseAccent.hue - 15, 0),
-      lightness: Math.min(baseAccent.lightness + 10, 70)
+      lightness: Math.min(baseAccent.lightness + 10, 70),
     }
   }
-  
-  // Evening (18-23): Cooler, slightly darker  
+
+  // Evening (18-23): Cooler, slightly darker
   if (hour >= 18 && hour < 24) {
     return {
       ...baseAccent,
       hue: Math.min(baseAccent.hue + 15, 360),
-      lightness: Math.max(baseAccent.lightness - 5, 40)
+      lightness: Math.max(baseAccent.lightness - 5, 40),
     }
   }
-  
+
   // Night (0-5): Much cooler, darker
   if (hour >= 0 && hour < 6) {
     return {
       ...baseAccent,
       hue: Math.min(baseAccent.hue + 30, 360),
       lightness: Math.max(baseAccent.lightness - 15, 35),
-      saturation: Math.max(baseAccent.saturation - 10, 50)
+      saturation: Math.max(baseAccent.saturation - 10, 50),
     }
   }
-  
+
   // Default for midday
   return baseAccent
 }
@@ -154,19 +154,19 @@ export function getTimeBasedAccent(baseAccent: AccentConfig): AccentConfig {
 export function applyAccentToCSSVars(accent: AccentConfig, isDark = false) {
   const variants = generateAccentVariants(accent)
   const gradients = generateGradients(accent, isDark)
-  
+
   const root = document.documentElement
-  
+
   // Apply color variants
   Object.entries(variants).forEach(([key, value]) => {
     root.style.setProperty(`--accent-${key}`, value)
   })
-  
+
   // Apply gradients
   Object.entries(gradients).forEach(([key, value]) => {
     root.style.setProperty(`--gradient-${key}`, value)
   })
-  
+
   // Update primary accent
   root.style.setProperty('--accent', variants[500])
   root.style.setProperty('--accent-foreground', isDark ? variants[100] : variants[900])
@@ -175,13 +175,17 @@ export function applyAccentToCSSVars(accent: AccentConfig, isDark = false) {
 /**
  * Get contrast-safe text color for a given background
  */
-export function getContrastColor(backgroundColor: string, lightColor = '#ffffff', darkColor = '#000000'): string {
+export function getContrastColor(
+  backgroundColor: string,
+  lightColor = '#ffffff',
+  darkColor = '#000000'
+): string {
   // Simple contrast calculation - could be enhanced with WCAG AA compliance
   const color = backgroundColor.replace('#', '')
   const r = parseInt(color.substr(0, 2), 16)
   const g = parseInt(color.substr(2, 2), 16)
   const b = parseInt(color.substr(4, 2), 16)
   const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
-  
+
   return luminance > 0.5 ? darkColor : lightColor
 }

@@ -1,21 +1,19 @@
-import { LucideIcon } from 'lucide-react';
-import { create } from 'zustand';
-import { Icons } from '../components/ui/icons';
+import { LucideIcon } from 'lucide-react'
+import { create } from 'zustand'
+import { Icons } from '../components/ui/icons'
 
-interface Integration
-{
-  name: string;
-  status: 'connected' | 'disconnected';
-  icon: LucideIcon;
+interface Integration {
+  name: string
+  status: 'connected' | 'disconnected'
+  icon: LucideIcon
 }
 
-interface IntegrationsStore
-{
-  integrations: Integration[];
-  updateIntegration: ( name: string, status: 'connected' | 'disconnected' ) => void;
+interface IntegrationsStore {
+  integrations: Integration[]
+  updateIntegration: (name: string, status: 'connected' | 'disconnected') => void
 }
 
-export const useIntegrationsStore = create<IntegrationsStore>( ( set ) => ( {
+export const useIntegrationsStore = create<IntegrationsStore>(set => ({
   integrations: [
     {
       name: 'GitHub',
@@ -28,10 +26,10 @@ export const useIntegrationsStore = create<IntegrationsStore>( ( set ) => ( {
       icon: Icons.fileText as LucideIcon,
     },
   ],
-  updateIntegration: ( name, status ) =>
-    set( ( state ) => ( {
-      integrations: state.integrations.map( ( integration ) =>
+  updateIntegration: (name, status) =>
+    set(state => ({
+      integrations: state.integrations.map(integration =>
         integration.name === name ? { ...integration, status } : integration
       ),
-    } ) ),
-} ) );
+    })),
+}))

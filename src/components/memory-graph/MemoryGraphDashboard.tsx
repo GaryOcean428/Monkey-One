@@ -1,6 +1,6 @@
 /**
  * Memory Graph Dashboard
- * 
+ *
  * Comprehensive dashboard that integrates all memory graph features:
  * - Graph visualization
  * - Metrics and analytics
@@ -9,18 +9,24 @@
  * - Real-time updates
  */
 
-import React, { useState, useCallback, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
-import { 
+import React, { useState, useCallback, useEffect } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Badge } from '@/components/ui/badge'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Separator } from '@/components/ui/separator'
+import {
   Brain,
   Plus,
   Upload,
@@ -38,26 +44,26 @@ import {
   BarChart3,
   Network,
   FileText,
-  Lightbulb
-} from 'lucide-react';
+  Lightbulb,
+} from 'lucide-react'
 
-import { GraphVisualization } from './GraphVisualization';
-import { GraphMetrics } from './GraphMetrics';
-import { CollaborationPanel } from './CollaborationPanel';
-import { useMemoryGraph } from '../../lib/memory-graph/integrations';
-import { useCollaboration } from '../../lib/memory-graph/collaboration';
-import type { Node, Edge, NodeType } from '../../lib/memory-graph/types';
-import type { ActionRecommendation } from '../../lib/memory-graph/planner-agent';
+import { GraphVisualization } from './GraphVisualization'
+import { GraphMetrics } from './GraphMetrics'
+import { CollaborationPanel } from './CollaborationPanel'
+import { useMemoryGraph } from '../../lib/memory-graph/integrations'
+import { useCollaboration } from '../../lib/memory-graph/collaboration'
+import type { Node, Edge, NodeType } from '../../lib/memory-graph/types'
+import type { ActionRecommendation } from '../../lib/memory-graph/planner-agent'
 
 interface MemoryGraphDashboardProps {
-  sessionId?: string;
+  sessionId?: string
   currentUser?: {
-    id: string;
-    name: string;
-    avatar?: string;
-    color: string;
-  };
-  className?: string;
+    id: string
+    name: string
+    avatar?: string
+    color: string
+  }
+  className?: string
 }
 
 export function MemoryGraphDashboard({
@@ -65,9 +71,9 @@ export function MemoryGraphDashboard({
   currentUser = {
     id: 'user-1',
     name: 'Current User',
-    color: '#3b82f6'
+    color: '#3b82f6',
   },
-  className = ''
+  className = '',
 }: MemoryGraphDashboardProps) {
   // Memory graph hooks
   const {
@@ -77,8 +83,8 @@ export function MemoryGraphDashboard({
     getRecommendations,
     analyzeDependencies,
     analyzeImpact,
-    stats
-  } = useMemoryGraph();
+    stats,
+  } = useMemoryGraph()
 
   // Collaboration setup
   const collaborationUser = {
@@ -90,134 +96,142 @@ export function MemoryGraphDashboard({
       canWrite: true,
       canDelete: true,
       canManageUsers: false,
-      canExport: true
-    }
-  };
+      canExport: true,
+    },
+  }
 
-  const {
-    collaboration,
-    users,
-    presence,
-    isConnected
-  } = useCollaboration(graph, sessionId, collaborationUser);
+  const { collaboration, users, presence, isConnected } = useCollaboration(
+    graph,
+    sessionId,
+    collaborationUser
+  )
 
   // Component state
-  const [selectedNode, setSelectedNode] = useState<Node | null>(null);
-  const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null);
-  const [recommendations, setRecommendations] = useState<ActionRecommendation[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('overview');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterType, setFilterType] = useState<NodeType | 'all'>('all');
+  const [selectedNode, setSelectedNode] = useState<Node | null>(null)
+  const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null)
+  const [recommendations, setRecommendations] = useState<ActionRecommendation[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [activeTab, setActiveTab] = useState('overview')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [filterType, setFilterType] = useState<NodeType | 'all'>('all')
 
   // Text ingestion state
-  const [ingestionText, setIngestionText] = useState('');
-  const [ingestionSource, setIngestionSource] = useState('dashboard');
+  const [ingestionText, setIngestionText] = useState('')
+  const [ingestionSource, setIngestionSource] = useState('dashboard')
 
   // Get current graph data
-  const allNodes = graph.query({}).nodes;
-  const allEdges = graph.query({}).edges;
+  const allNodes = graph.query({}).nodes
+  const allEdges = graph.query({}).edges
 
   // Filter data based on search and filter
   const filteredData = React.useMemo(() => {
-    let nodes = allNodes;
-    let edges = allEdges;
+    let nodes = allNodes
+    let edges = allEdges
 
     if (searchQuery) {
-      nodes = nodes.filter(node =>
-        node.properties.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        node.properties.key?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        node.id.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+      nodes = nodes.filter(
+        node =>
+          node.properties.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          node.properties.key?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          node.id.toLowerCase().includes(searchQuery.toLowerCase())
+      )
     }
 
     if (filterType !== 'all') {
-      nodes = nodes.filter(node => node.type === filterType);
+      nodes = nodes.filter(node => node.type === filterType)
     }
 
-    const nodeIds = new Set(nodes.map(n => n.id));
-    edges = edges.filter(edge => nodeIds.has(edge.from) && nodeIds.has(edge.to));
+    const nodeIds = new Set(nodes.map(n => n.id))
+    edges = edges.filter(edge => nodeIds.has(edge.from) && nodeIds.has(edge.to))
 
-    return { nodes, edges };
-  }, [allNodes, allEdges, searchQuery, filterType]);
+    return { nodes, edges }
+  }, [allNodes, allEdges, searchQuery, filterType])
 
   // Load recommendations on mount and when graph changes
   useEffect(() => {
     const loadRecommendations = async () => {
       try {
-        const recs = await getRecommendations('dashboard-context');
-        setRecommendations(recs);
+        const recs = await getRecommendations('dashboard-context')
+        setRecommendations(recs)
       } catch (error) {
-        console.error('Failed to load recommendations:', error);
+        console.error('Failed to load recommendations:', error)
       }
-    };
+    }
 
     if (stats.nodeCount > 0) {
-      loadRecommendations();
+      loadRecommendations()
     }
-  }, [stats.nodeCount, getRecommendations]);
+  }, [stats.nodeCount, getRecommendations])
 
   // Handle text ingestion
   const handleIngestText = useCallback(async () => {
-    if (!ingestionText.trim()) return;
+    if (!ingestionText.trim()) return
 
-    setIsLoading(true);
+    setIsLoading(true)
     try {
-      await ingestText(ingestionText, ingestionSource);
-      setIngestionText('');
-      
+      await ingestText(ingestionText, ingestionSource)
+      setIngestionText('')
+
       // Refresh recommendations
-      const recs = await getRecommendations('post-ingestion');
-      setRecommendations(recs);
+      const recs = await getRecommendations('post-ingestion')
+      setRecommendations(recs)
     } catch (error) {
-      console.error('Ingestion failed:', error);
+      console.error('Ingestion failed:', error)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  }, [ingestionText, ingestionSource, ingestText, getRecommendations]);
+  }, [ingestionText, ingestionSource, ingestText, getRecommendations])
 
   // Handle node selection
-  const handleNodeClick = useCallback((node: Node) => {
-    setSelectedNode(node);
-    collaboration.updatePresence({ selectedNodeId: node.id });
-  }, [collaboration]);
+  const handleNodeClick = useCallback(
+    (node: Node) => {
+      setSelectedNode(node)
+      collaboration.updatePresence({ selectedNodeId: node.id })
+    },
+    [collaboration]
+  )
 
   // Handle edge selection
   const handleEdgeClick = useCallback((edge: Edge) => {
-    setSelectedEdge(edge);
-  }, []);
+    setSelectedEdge(edge)
+  }, [])
 
   // Export graph data
   const handleExport = useCallback(() => {
-    const data = graph.toJSON();
-    const blob = new Blob([data], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `memory-graph-${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }, [graph]);
+    const data = graph.toJSON()
+    const blob = new Blob([data], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `memory-graph-${new Date().toISOString().split('T')[0]}.json`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }, [graph])
 
   // Get priority color for recommendations
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'critical': return 'text-red-600 bg-red-50 border-red-200';
-      case 'high': return 'text-orange-600 bg-orange-50 border-orange-200';
-      case 'medium': return 'text-yellow-600 bg-yellow-50 border-yellow-200';
-      case 'low': return 'text-blue-600 bg-blue-50 border-blue-200';
-      default: return 'text-gray-600 bg-gray-50 border-gray-200';
+      case 'critical':
+        return 'text-red-600 bg-red-50 border-red-200'
+      case 'high':
+        return 'text-orange-600 bg-orange-50 border-orange-200'
+      case 'medium':
+        return 'text-yellow-600 bg-yellow-50 border-yellow-200'
+      case 'low':
+        return 'text-blue-600 bg-blue-50 border-blue-200'
+      default:
+        return 'text-gray-600 bg-gray-50 border-gray-200'
     }
-  };
+  }
 
   return (
-    <div className={`w-full h-full flex flex-col ${className}`}>
+    <div className={`flex h-full w-full flex-col ${className}`}>
       {/* Header */}
-      <div className="flex items-center justify-between p-6 border-b bg-white">
+      <div className="flex items-center justify-between border-b bg-white p-6">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-blue-100 rounded-lg">
+          <div className="rounded-lg bg-blue-100 p-2">
             <Brain className="h-6 w-6 text-blue-600" />
           </div>
           <div>
@@ -229,14 +243,14 @@ export function MemoryGraphDashboard({
         </div>
 
         <div className="flex items-center gap-2">
-          <Badge variant={isConnected ? "default" : "destructive"}>
+          <Badge variant={isConnected ? 'default' : 'destructive'}>
             {isConnected ? 'Connected' : 'Offline'}
           </Badge>
-          
+
           <Dialog>
             <DialogTrigger asChild>
               <Button variant="outline" size="sm">
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus className="mr-2 h-4 w-4" />
                 Add Data
               </Button>
             </DialogTrigger>
@@ -249,7 +263,7 @@ export function MemoryGraphDashboard({
                   <label className="text-sm font-medium">Source</label>
                   <Input
                     value={ingestionSource}
-                    onChange={(e) => setIngestionSource(e.target.value)}
+                    onChange={e => setIngestionSource(e.target.value)}
                     placeholder="e.g., deployment-docs, incident-report"
                   />
                 </div>
@@ -257,24 +271,24 @@ export function MemoryGraphDashboard({
                   <label className="text-sm font-medium">Text Content</label>
                   <Textarea
                     value={ingestionText}
-                    onChange={(e) => setIngestionText(e.target.value)}
+                    onChange={e => setIngestionText(e.target.value)}
                     placeholder="Enter deployment information, incident reports, or any relevant text..."
                     rows={8}
                   />
                 </div>
-                <Button 
-                  onClick={handleIngestText} 
+                <Button
+                  onClick={handleIngestText}
                   disabled={isLoading || !ingestionText.trim()}
                   className="w-full"
                 >
                   {isLoading ? (
                     <>
-                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
                       Processing...
                     </>
                   ) : (
                     <>
-                      <Zap className="h-4 w-4 mr-2" />
+                      <Zap className="mr-2 h-4 w-4" />
                       Ingest & Analyze
                     </>
                   )}
@@ -284,14 +298,14 @@ export function MemoryGraphDashboard({
           </Dialog>
 
           <Button variant="outline" size="sm" onClick={handleExport}>
-            <Download className="h-4 w-4 mr-2" />
+            <Download className="mr-2 h-4 w-4" />
             Export
           </Button>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex flex-1 overflow-hidden">
         {/* Left Sidebar - Collaboration */}
         <div className="w-80 border-r bg-gray-50 p-4">
           <CollaborationPanel
@@ -304,8 +318,8 @@ export function MemoryGraphDashboard({
         </div>
 
         {/* Main Content Area */}
-        <div className="flex-1 flex flex-col">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
+        <div className="flex flex-1 flex-col">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-1 flex-col">
             <div className="border-b px-6 py-2">
               <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="overview" className="flex items-center gap-2">
@@ -328,7 +342,7 @@ export function MemoryGraphDashboard({
             </div>
 
             <div className="flex-1 overflow-auto">
-              <TabsContent value="overview" className="p-6 space-y-6">
+              <TabsContent value="overview" className="space-y-6 p-6">
                 <GraphMetrics nodes={allNodes} edges={allEdges} />
               </TabsContent>
 
@@ -336,24 +350,28 @@ export function MemoryGraphDashboard({
                 <div className="space-y-4">
                   {/* Search and Filter */}
                   <div className="flex items-center gap-4">
-                    <div className="flex-1 relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <div className="relative flex-1">
+                      <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
                       <Input
                         placeholder="Search entities..."
                         value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onChange={e => setSearchQuery(e.target.value)}
                         className="pl-10"
                       />
                     </div>
                     <select
                       value={filterType}
-                      onChange={(e) => setFilterType(e.target.value as NodeType | 'all')}
-                      className="px-3 py-2 border rounded-md"
+                      onChange={e => setFilterType(e.target.value as NodeType | 'all')}
+                      className="rounded-md border px-3 py-2"
                     >
                       <option value="all">All Types</option>
-                      {Array.from(new Set(allNodes.map(n => n.type))).sort().map(type => (
-                        <option key={type} value={type}>{type}</option>
-                      ))}
+                      {Array.from(new Set(allNodes.map(n => n.type)))
+                        .sort()
+                        .map(type => (
+                          <option key={type} value={type}>
+                            {type}
+                          </option>
+                        ))}
                     </select>
                   </div>
 
@@ -367,7 +385,7 @@ export function MemoryGraphDashboard({
                 </div>
               </TabsContent>
 
-              <TabsContent value="insights" className="p-6 space-y-6">
+              <TabsContent value="insights" className="space-y-6 p-6">
                 {/* Recommendations */}
                 <Card>
                   <CardHeader>
@@ -383,11 +401,11 @@ export function MemoryGraphDashboard({
                         {recommendations.slice(0, 5).map((rec, index) => (
                           <div
                             key={index}
-                            className={`p-4 rounded-lg border ${getPriorityColor(rec.priority)}`}
+                            className={`rounded-lg border p-4 ${getPriorityColor(rec.priority)}`}
                           >
                             <div className="flex items-start justify-between">
                               <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-2">
+                                <div className="mb-2 flex items-center gap-2">
                                   <Badge variant="outline" className="text-xs">
                                     {rec.priority.toUpperCase()}
                                   </Badge>
@@ -398,7 +416,7 @@ export function MemoryGraphDashboard({
                                     Effort: {rec.estimatedEffort}
                                   </span>
                                 </div>
-                                <h4 className="font-medium mb-1">{rec.action}</h4>
+                                <h4 className="mb-1 font-medium">{rec.action}</h4>
                                 <p className="text-sm opacity-80">{rec.reasoning}</p>
                                 {rec.relatedEntities.length > 0 && (
                                   <div className="mt-2">
@@ -413,8 +431,8 @@ export function MemoryGraphDashboard({
                         ))}
                       </div>
                     ) : (
-                      <div className="text-center py-8 text-gray-500">
-                        <Lightbulb className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <div className="py-8 text-center text-gray-500">
+                        <Lightbulb className="mx-auto mb-4 h-12 w-12 opacity-50" />
                         <p>No recommendations available</p>
                         <p className="text-sm">Add more data to get AI-powered insights</p>
                       </div>
@@ -426,44 +444,49 @@ export function MemoryGraphDashboard({
                 {selectedNode && (
                   <Card>
                     <CardHeader>
-                      <CardTitle>Entity Analysis: {selectedNode.properties.name || selectedNode.id}</CardTitle>
+                      <CardTitle>
+                        Entity Analysis: {selectedNode.properties.name || selectedNode.id}
+                      </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div>
-                          <h4 className="font-semibold mb-2">Dependencies</h4>
+                          <h4 className="mb-2 font-semibold">Dependencies</h4>
                           <div className="text-sm text-gray-600">
                             {(() => {
                               try {
-                                const deps = analyzeDependencies(selectedNode.id);
+                                const deps = analyzeDependencies(selectedNode.id)
                                 return (
                                   <div className="space-y-1">
                                     <p>Direct: {deps.directDependencies.length}</p>
                                     <p>Transitive: {deps.transitiveDependencies.length}</p>
                                     <p>Dependents: {deps.dependents.length}</p>
                                   </div>
-                                );
+                                )
                               } catch {
-                                return <p>No dependency data available</p>;
+                                return <p>No dependency data available</p>
                               }
                             })()}
                           </div>
                         </div>
                         <div>
-                          <h4 className="font-semibold mb-2">Impact Analysis</h4>
+                          <h4 className="mb-2 font-semibold">Impact Analysis</h4>
                           <div className="text-sm text-gray-600">
                             {(() => {
                               try {
-                                const impact = analyzeImpact(selectedNode.id);
+                                const impact = analyzeImpact(selectedNode.id)
                                 return (
                                   <div className="space-y-1">
-                                    <p>Risk Level: <Badge variant="outline">{impact.riskLevel}</Badge></p>
+                                    <p>
+                                      Risk Level:{' '}
+                                      <Badge variant="outline">{impact.riskLevel}</Badge>
+                                    </p>
                                     <p>Direct Impact: {impact.directImpact.length}</p>
                                     <p>Cascading: {impact.cascadingImpact.length}</p>
                                   </div>
-                                );
+                                )
                               } catch {
-                                return <p>No impact data available</p>;
+                                return <p>No impact data available</p>
                               }
                             })()}
                           </div>
@@ -485,8 +508,10 @@ export function MemoryGraphDashboard({
                         {filteredData.nodes.map(node => (
                           <div
                             key={node.id}
-                            className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-                              selectedNode?.id === node.id ? 'bg-blue-50 border-blue-200' : 'hover:bg-gray-50'
+                            className={`cursor-pointer rounded-lg border p-3 transition-colors ${
+                              selectedNode?.id === node.id
+                                ? 'border-blue-200 bg-blue-50'
+                                : 'hover:bg-gray-50'
                             }`}
                             onClick={() => handleNodeClick(node)}
                           >
@@ -498,15 +523,13 @@ export function MemoryGraphDashboard({
                                     {node.properties.name || node.properties.key || node.id}
                                   </span>
                                 </div>
-                                <p className="text-sm text-gray-500 mt-1">
+                                <p className="mt-1 text-sm text-gray-500">
                                   Created: {new Date(node.metadata.createdAt).toLocaleDateString()}
                                 </p>
                               </div>
                               <div className="text-right text-sm text-gray-500">
                                 <p>ID: {node.id}</p>
-                                {node.metadata.source && (
-                                  <p>Source: {node.metadata.source}</p>
-                                )}
+                                {node.metadata.source && <p>Source: {node.metadata.source}</p>}
                               </div>
                             </div>
                           </div>
@@ -521,5 +544,5 @@ export function MemoryGraphDashboard({
         </div>
       </div>
     </div>
-  );
+  )
 }

@@ -1,126 +1,138 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { HTTPTool } from '../../../lib/tools/web/HTTPTool';
-import { ToolExecutionError } from '../../../lib/errors/AgentErrors';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { HTTPTool } from '../../../lib/tools/web/HTTPTool'
+import { ToolExecutionError } from '../../../lib/errors/AgentErrors'
 
 interface HTTPResponse {
-  status: number;
-  statusText: string;
-  headers: Record<string, string>;
-  data: unknown;
+  status: number
+  statusText: string
+  headers: Record<string, string>
+  data: unknown
   timing: {
-    started: string;
-    ended: string;
-    duration: number;
-  };
+    started: string
+    ended: string
+    duration: number
+  }
   request: {
-    method: string;
-    url: string;
-    headers: Record<string, string>;
-  };
+    method: string
+    url: string
+    headers: Record<string, string>
+  }
 }
 
-type HTTPMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD' | 'OPTIONS';
-type AuthType = 'basic' | 'bearer' | 'invalid';
+type HTTPMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD' | 'OPTIONS'
+type AuthType = 'basic' | 'bearer' | 'invalid'
 
 describe('HTTPTool', () => {
-  const http = HTTPTool.create();
-  let originalFetch: typeof global.fetch;
+  const http = HTTPTool.create()
+  let originalFetch: typeof global.fetch
 
   beforeAll(() => {
-    originalFetch = global.fetch;
-  });
+    originalFetch = global.fetch
+  })
 
   afterAll(() => {
-    global.fetch = originalFetch;
-  });
+    global.fetch = originalFetch
+  })
 
   beforeEach(() => {
-    vi.useFakeTimers();
+    vi.useFakeTimers()
     const mockResponse = {
       status: 200,
       statusText: 'OK',
       headers: new Headers({
-        'content-type': 'application/json'
+        'content-type': 'application/json',
       }),
       json: () => Promise.resolve({ data: 'test' }),
-      text: () => Promise.resolve('test')
-    };
-    global.fetch = vi.fn().mockResolvedValue(mockResponse);
-  });
+      text: () => Promise.resolve('test'),
+    }
+    global.fetch = vi.fn().mockResolvedValue(mockResponse)
+  })
 
   afterEach(() => {
-    vi.useRealTimers();
-  });
+    vi.useRealTimers()
+  })
 
   describe('request validation', () => {
     it('should require method and URL', async () => {
-      await expect(http.execute({
-        request: {}
-      })).rejects.toThrow('Request must include method and URL');
-    });
+      await expect(
+        http.execute({
+          request: {},
+        })
+      ).rejects.toThrow('Request must include method and URL')
+    })
 
     it('should validate HTTP method', async () => {
-      const invalidMethod = 'INVALID' as string;
-      await expect(http.execute({
-        request: {
-          method: invalidMethod as HTTPMethod,
-          url: 'https://api.example.com'
-        }
-      })).rejects.toThrow('Invalid HTTP method');
-    });
+      const invalidMethod = 'INVALID' as string
+      await expect(
+        http.execute({
+          request: {
+            method: invalidMethod as HTTPMethod,
+            url: 'https://api.example.com',
+          },
+        })
+      ).rejects.toThrow('Invalid HTTP method')
+    })
 
     it('should validate URL format', async () => {
-      await expect(http.execute({
-        request: {
-          method: 'GET',
-          url: 'invalid-url'
-        }
-      })).rejects.toThrow('URL must start with http');
-    });
+      await expect(
+        http.execute({
+          request: {
+            method: 'GET',
+            url: 'invalid-url',
+          },
+        })
+      ).rejects.toThrow('URL must start with http')
+    })
 
     it('should validate timeout value', async () => {
-      await expect(http.execute({
-        request: {
-          method: 'GET',
-          url: 'https://api.example.com',
-          timeout: -1
-        }
-      })).rejects.toThrow('Timeout must be a positive number');
-    });
+      await expect(
+        http.execute({
+          request: {
+            method: 'GET',
+            url: 'https://api.example.com',
+            timeout: -1,
+          },
+        })
+      ).rejects.toThrow('Timeout must be a positive number')
+    })
 
     it('should validate retries value', async () => {
-      await expect(http.execute({
-        request: {
-          method: 'GET',
-          url: 'https://api.example.com',
-          retries: -1
-        }
-      })).rejects.toThrow('Retries must be a non-negative number');
-    });
+      await expect(
+        http.execute({
+          request: {
+            method: 'GET',
+            url: 'https://api.example.com',
+            retries: -1,
+          },
+        })
+      ).rejects.toThrow('Retries must be a non-negative number')
+    })
 
     it('should validate auth configuration', async () => {
-      const invalidAuthType = 'invalid' as AuthType;
-      await expect(http.execute({
-        request: {
-          method: 'GET',
-          url: 'https://api.example.com',
-          auth: {
-            type: invalidAuthType,
-            credentials: 'token'
-          }
-        }
-      })).rejects.toThrow('Invalid auth type');
-    });
-  });
+      const invalidAuthType = 'invalid' as AuthType
+      await expect(
+        http.execute({
+          request: {
+            method: 'GET',
+            url: 'https://api.example.com',
+            auth: {
+              type: invalidAuthType,
+              credentials: 'token',
+            },
+          },
+        })
+      ).rejects.toThrow('Invalid auth type')
+    })
+  })
 
   describe('request execution', () => {
     it('should make successful GET request', async () => {
-      const result = await http.execute({
+      const result = (await http.execute({
         request: {
           method: 'GET',
-          url: 'https://api.example.com'
-        }
-      }) as HTTPResponse;
+          url: 'https://api.example.com',
+        },
+      })) as HTTPResponse
 
       expect(result).toMatchObject({
         status: 200,
@@ -128,32 +140,32 @@ describe('HTTPTool', () => {
         data: { data: 'test' },
         request: {
           method: 'GET',
-          url: 'https://api.example.com'
-        }
-      });
-      expect(result.timing).toBeDefined();
-    });
+          url: 'https://api.example.com',
+        },
+      })
+      expect(result.timing).toBeDefined()
+    })
 
     it('should handle POST request with JSON body', async () => {
-      const body = { test: true };
+      const body = { test: true }
       await http.execute({
         request: {
           method: 'POST',
           url: 'https://api.example.com',
           body,
-          contentType: 'application/json'
-        }
-      });
+          contentType: 'application/json',
+        },
+      })
 
       expect(fetch).toHaveBeenCalledWith(
         'https://api.example.com',
         expect.objectContaining({
           method: 'POST',
           headers: expect.any(Headers),
-          body: JSON.stringify(body)
+          body: JSON.stringify(body),
         })
-      );
-    });
+      )
+    })
 
     it('should handle basic auth', async () => {
       await http.execute({
@@ -162,15 +174,15 @@ describe('HTTPTool', () => {
           url: 'https://api.example.com',
           auth: {
             type: 'basic',
-            credentials: 'dXNlcjpwYXNz'
-          }
-        }
-      });
+            credentials: 'dXNlcjpwYXNz',
+          },
+        },
+      })
 
-      const fetchCall = (fetch as vi.Mock).mock.calls[0];
-      const headers = fetchCall[1].headers as Headers;
-      expect(headers.get('Authorization')).toBe('Basic dXNlcjpwYXNz');
-    });
+      const fetchCall = (fetch as vi.Mock).mock.calls[0]
+      const headers = fetchCall[1].headers as Headers
+      expect(headers.get('Authorization')).toBe('Basic dXNlcjpwYXNz')
+    })
 
     it('should handle bearer auth', async () => {
       await http.execute({
@@ -179,67 +191,68 @@ describe('HTTPTool', () => {
           url: 'https://api.example.com',
           auth: {
             type: 'bearer',
-            credentials: 'token123'
-          }
-        }
-      });
+            credentials: 'token123',
+          },
+        },
+      })
 
-      const fetchCall = (fetch as vi.Mock).mock.calls[0];
-      const headers = fetchCall[1].headers as Headers;
-      expect(headers.get('Authorization')).toBe('Bearer token123');
-    });
-  });
+      const fetchCall = (fetch as vi.Mock).mock.calls[0]
+      const headers = fetchCall[1].headers as Headers
+      expect(headers.get('Authorization')).toBe('Bearer token123')
+    })
+  })
 
   describe('response handling', () => {
     it('should parse JSON response', async () => {
-      const mockJsonResponse = { data: 'test' };
+      const mockJsonResponse = { data: 'test' }
       global.fetch = vi.fn().mockResolvedValue({
         status: 200,
         statusText: 'OK',
         headers: new Headers({
-          'content-type': 'application/json'
+          'content-type': 'application/json',
         }),
         json: () => Promise.resolve(mockJsonResponse),
-        text: () => Promise.resolve(JSON.stringify(mockJsonResponse))
-      });
+        text: () => Promise.resolve(JSON.stringify(mockJsonResponse)),
+      })
 
-      const result = await http.execute({
+      const result = (await http.execute({
         request: {
           method: 'GET',
-          url: 'https://api.example.com'
-        }
-      }) as HTTPResponse;
+          url: 'https://api.example.com',
+        },
+      })) as HTTPResponse
 
-      expect(result.data).toEqual(mockJsonResponse);
-    });
+      expect(result.data).toEqual(mockJsonResponse)
+    })
 
     it('should handle text response', async () => {
-      const textResponse = 'Plain text response';
+      const textResponse = 'Plain text response'
       global.fetch = vi.fn().mockResolvedValue({
         status: 200,
         statusText: 'OK',
         headers: new Headers({
-          'content-type': 'text/plain'
+          'content-type': 'text/plain',
         }),
         json: () => Promise.reject(new Error('Invalid JSON')),
-        text: () => Promise.resolve(textResponse)
-      });
+        text: () => Promise.resolve(textResponse),
+      })
 
-      const result = await http.execute({
+      const result = (await http.execute({
         request: {
           method: 'GET',
-          url: 'https://api.example.com'
-        }
-      }) as HTTPResponse;
+          url: 'https://api.example.com',
+        },
+      })) as HTTPResponse
 
-      expect(result.data).toBe(textResponse);
-    });
-  });
+      expect(result.data).toBe(textResponse)
+    })
+  })
 
   describe('error handling and retries', () => {
     it('should retry on network errors', async () => {
-      const networkError = new TypeError('Failed to fetch');
-      global.fetch = vi.fn()
+      const networkError = new TypeError('Failed to fetch')
+      global.fetch = vi
+        .fn()
         .mockRejectedValueOnce(networkError)
         .mockRejectedValueOnce(networkError)
         .mockResolvedValueOnce({
@@ -247,61 +260,63 @@ describe('HTTPTool', () => {
           statusText: 'OK',
           headers: new Headers(),
           json: () => Promise.resolve({ success: true }),
-          text: () => Promise.resolve('success')
-        });
+          text: () => Promise.resolve('success'),
+        })
 
-      const result = await http.execute({
+      const result = (await http.execute({
         request: {
           method: 'GET',
           url: 'https://api.example.com',
-          retries: 2
-        }
-      }) as HTTPResponse;
+          retries: 2,
+        },
+      })) as HTTPResponse
 
-      expect(fetch).toHaveBeenCalledTimes(3);
-      expect(result.status).toBe(200);
-    });
+      expect(fetch).toHaveBeenCalledTimes(3)
+      expect(result.status).toBe(200)
+    })
 
     it('should handle timeout', async () => {
       global.fetch = vi.fn().mockImplementation(() => {
         return new Promise((_, reject) => {
           setTimeout(() => {
-            reject(new Error('Timeout'));
-          }, 1000);
-        });
-      });
+            reject(new Error('Timeout'))
+          }, 1000)
+        })
+      })
 
-      await expect(http.execute({
-        request: {
-          method: 'GET',
-          url: 'https://api.example.com',
-          timeout: 500
-        }
-      })).rejects.toThrow(ToolExecutionError);
+      await expect(
+        http.execute({
+          request: {
+            method: 'GET',
+            url: 'https://api.example.com',
+            timeout: 500,
+          },
+        })
+      ).rejects.toThrow(ToolExecutionError)
 
-      vi.runAllTimers();
-    });
+      vi.runAllTimers()
+    })
 
     it('should include error details in ToolExecutionError', async () => {
-      global.fetch = vi.fn().mockRejectedValue(new Error('Network error'));
+      global.fetch = vi.fn().mockRejectedValue(new Error('Network error'))
 
       try {
         await http.execute({
           request: {
             method: 'GET',
-            url: 'https://api.example.com'
-          }
-        });
+            url: 'https://api.example.com',
+          },
+        })
       } catch (error) {
         if (error instanceof ToolExecutionError) {
           expect(error.details).toMatchObject({
             toolName: 'http',
             method: 'GET',
             url: 'https://api.example.com',
-            errorType: 'Error'
-          });
+            errorType: 'Error',
+          })
         }
       }
-    });
-  });
-});
+    })
+  })
+})

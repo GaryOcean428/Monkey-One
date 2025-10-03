@@ -1,23 +1,23 @@
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Progress } from '../ui/progress';
-import { useAgentStore } from '../../store/agentStore';
+import React from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
+import { Progress } from '../ui/progress'
+import { useAgentStore } from '../../store/agentStore'
 
 export const DashboardPanel: React.FC = () => {
-  const { agents } = useAgentStore();
+  const { agents } = useAgentStore()
 
   const metrics = {
     activeAgents: agents.length,
     completedTasks: 0,
     memoryUsage: 45,
     apiCalls: 0,
-  };
+  }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6 p-6">
       <h1 className="text-2xl font-bold">Dashboard</h1>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Active Agents</CardTitle>
@@ -56,14 +56,14 @@ export const DashboardPanel: React.FC = () => {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>Recent Activity</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">No recent activity</p>
+              <p className="text-muted-foreground text-sm">No recent activity</p>
             </div>
           </CardContent>
         </Card>
@@ -74,22 +74,22 @@ export const DashboardPanel: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex justify-between items-center">
+              <div className="flex items-center justify-between">
                 <span className="text-sm">System Health</span>
                 <span className="text-sm font-medium text-green-500">Healthy</span>
               </div>
-              <div className="flex justify-between items-center">
+              <div className="flex items-center justify-between">
                 <span className="text-sm">Last Backup</span>
-                <span className="text-sm text-muted-foreground">Never</span>
+                <span className="text-muted-foreground text-sm">Never</span>
               </div>
-              <div className="flex justify-between items-center">
+              <div className="flex items-center justify-between">
                 <span className="text-sm">Active Model</span>
-                <span className="text-sm text-muted-foreground">Granite 3.1 Dense 2B</span>
+                <span className="text-muted-foreground text-sm">Granite 3.1 Dense 2B</span>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
     </div>
-  );
-};
+  )
+}

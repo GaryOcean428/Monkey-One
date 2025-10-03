@@ -1,33 +1,41 @@
-import React from 'react';
-import { X, Bot, Brain, Shield } from 'lucide-react';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from './ui/tabs';
-import { Slider } from './ui/slider';
-import { Switch } from './ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Button } from './ui/button';
-import { useLocation, useNavigate } from 'react-router';
+import React from 'react'
+import { X, Bot, Brain, Shield } from 'lucide-react'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from './ui/tabs'
+import { Slider } from './ui/slider'
+import { Switch } from './ui/switch'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
+import { Button } from './ui/button'
+import { useLocation, useNavigate } from 'react-router'
 
 interface SettingsPanelProps {
-  onClose?: () => void;
-  isModal?: boolean;
+  onClose?: () => void
+  isModal?: boolean
 }
 
 export function SettingsPanel({ onClose, isModal = false }: SettingsPanelProps) {
-  const navigate = useNavigate();
-  const location = useLocation();
+  const navigate = useNavigate()
+  const location = useLocation()
 
   const handleClose = () => {
     if (isModal && onClose) {
-      onClose();
+      onClose()
     } else {
-      navigate(-1);
+      navigate(-1)
     }
-  };
+  }
 
   return (
-    <div className={isModal ? "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" : "h-full"}>
-      <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-xl overflow-hidden ${isModal ? 'w-full max-w-4xl max-h-[90vh]' : 'w-full h-full'}`}>
-        <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
+    <div
+      className={
+        isModal
+          ? 'bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black'
+          : 'h-full'
+      }
+    >
+      <div
+        className={`overflow-hidden rounded-lg bg-white shadow-xl dark:bg-gray-800 ${isModal ? 'max-h-[90vh] w-full max-w-4xl' : 'h-full w-full'}`}
+      >
+        <div className="flex items-center justify-between border-b p-4 dark:border-gray-700">
           <h2 className="text-xl font-semibold dark:text-white">Settings</h2>
           <button
             onClick={handleClose}
@@ -38,8 +46,8 @@ export function SettingsPanel({ onClose, isModal = false }: SettingsPanelProps) 
         </div>
 
         <Tabs defaultValue="llm" className="flex h-[calc(90vh-4rem)]">
-          <div className="w-48 border-r dark:border-gray-700 p-4 space-y-4">
-            <TabsList className="flex flex-col w-full space-y-2">
+          <div className="w-48 space-y-4 border-r p-4 dark:border-gray-700">
+            <TabsList className="flex w-full flex-col space-y-2">
               <TabsTrigger value="llm" className="w-full justify-start gap-2">
                 <Bot size={16} />
                 LLM Settings
@@ -55,14 +63,18 @@ export function SettingsPanel({ onClose, isModal = false }: SettingsPanelProps) 
             </TabsList>
           </div>
 
-          <div className="flex-1 p-6 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto p-6">
             <TabsContent value="llm">
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-medium dark:text-white mb-4">Language Model Settings</h3>
+                  <h3 className="mb-4 text-lg font-medium dark:text-white">
+                    Language Model Settings
+                  </h3>
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium mb-2 dark:text-white">Provider & Model</label>
+                      <label className="mb-2 block text-sm font-medium dark:text-white">
+                        Provider & Model
+                      </label>
                       <Select defaultValue="gpt-4">
                         <SelectTrigger>
                           <SelectValue placeholder="Select a model" />
@@ -95,7 +107,9 @@ export function SettingsPanel({ onClose, isModal = false }: SettingsPanelProps) 
             <TabsContent value="brain">
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-medium dark:text-white mb-4">Neural Network Settings</h3>
+                  <h3 className="mb-4 text-lg font-medium dark:text-white">
+                    Neural Network Settings
+                  </h3>
                   {/* Neural settings content */}
                 </div>
               </div>
@@ -104,7 +118,7 @@ export function SettingsPanel({ onClose, isModal = false }: SettingsPanelProps) 
             <TabsContent value="security">
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-medium dark:text-white mb-4">Security Settings</h3>
+                  <h3 className="mb-4 text-lg font-medium dark:text-white">Security Settings</h3>
                   {/* Security settings content */}
                 </div>
               </div>
@@ -112,11 +126,11 @@ export function SettingsPanel({ onClose, isModal = false }: SettingsPanelProps) 
           </div>
         </Tabs>
 
-        <div className="border-t dark:border-gray-700 p-4 flex justify-end gap-2">
+        <div className="flex justify-end gap-2 border-t p-4 dark:border-gray-700">
           <Button variant="outline">Reset to Defaults</Button>
           <Button onClick={handleClose}>Save Changes</Button>
         </div>
       </div>
     </div>
-  );
+  )
 }

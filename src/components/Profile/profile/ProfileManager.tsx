@@ -15,7 +15,7 @@ const ProfileManager: React.FC<ProfileManagerProps> = ({ className = '' }) => {
     name: '',
     email: '',
     bio: '',
-    avatar: ''
+    avatar: '',
   })
 
   React.useEffect(() => {
@@ -24,7 +24,7 @@ const ProfileManager: React.FC<ProfileManagerProps> = ({ className = '' }) => {
         name: profile.name,
         email: profile.email,
         bio: profile.bio || '',
-        avatar: profile.avatar || ''
+        avatar: profile.avatar || '',
       })
     }
   }, [profile])
@@ -44,51 +44,36 @@ const ProfileManager: React.FC<ProfileManagerProps> = ({ className = '' }) => {
   }
 
   return (
-    <div className={`p-6 space-y-6 ${className}`}>
+    <div className={`space-y-6 p-6 ${className}`}>
       <h1 className="text-2xl font-bold">Profile</h1>
 
       <Card className="p-4">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="flex items-center space-x-4">
-            <Avatar
-              src={formData.avatar}
-              alt={formData.name}
-              className="w-20 h-20"
-            />
+            <Avatar src={formData.avatar} alt={formData.name} className="h-20 w-20" />
             <div>
               <Input
                 type="file"
                 accept="image/*"
-                onChange={(e) => {
+                onChange={e => {
                   const file = e.target.files?.[0]
                   if (file) {
                     // Handle file upload
                   }
                 }}
               />
-              <p className="text-sm text-gray-500 mt-1">
-                JPG, GIF or PNG. Max size 2MB.
-              </p>
+              <p className="mt-1 text-sm text-gray-500">JPG, GIF or PNG. Max size 2MB.</p>
             </div>
           </div>
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1">
-                Name
-              </label>
-              <Input
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                required
-              />
+              <label className="mb-1 block text-sm font-medium">Name</label>
+              <Input name="name" value={formData.name} onChange={handleChange} required />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">
-                Email
-              </label>
+              <label className="mb-1 block text-sm font-medium">Email</label>
               <Input
                 type="email"
                 name="email"
@@ -99,15 +84,13 @@ const ProfileManager: React.FC<ProfileManagerProps> = ({ className = '' }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">
-                Bio
-              </label>
+              <label className="mb-1 block text-sm font-medium">Bio</label>
               <textarea
                 name="bio"
                 value={formData.bio}
                 onChange={handleChange}
                 rows={4}
-                className="w-full px-3 py-2 border rounded-md"
+                className="w-full rounded-md border px-3 py-2"
               />
             </div>
           </div>

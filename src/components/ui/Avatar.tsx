@@ -21,12 +21,7 @@ export const Avatar: React.FC<AvatarProps> = ({
 
   return error || !src ? (
     <div
-      className={`
-        inline-flex items-center justify-center
-        bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300
-        rounded-full font-medium
-        ${className}
-      `}
+      className={`inline-flex items-center justify-center rounded-full bg-gray-200 font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300 ${className} `}
       {...props}
     >
       {getFallback()}

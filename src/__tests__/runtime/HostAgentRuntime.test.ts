@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { HostAgentRuntime, HostRuntimeConfig } from '../../lib/runtime/HostAgentRuntime'
 import { Agent, AgentStatus, AgentType, Message, MessageType } from '../../types'
 import { LogLevel } from '../../constants/enums'
@@ -28,13 +28,13 @@ class MockAgent implements Agent {
       sender: this.id,
       recipient: message.sender,
       content: 'mock response',
-      timestamp: Date.now()
+      timestamp: Date.now(),
     }
   }
 }
 
 vi.mock('../agents/base', () => ({
-  default: MockAgent
+  default: MockAgent,
 }))
 
 describe('HostAgentRuntime', () => {
@@ -45,12 +45,12 @@ describe('HostAgentRuntime', () => {
     defaultConfig = {
       maxAgents: 5,
       monitoring: {
-        logLevel: LogLevel.DEBUG
+        logLevel: LogLevel.DEBUG,
       },
       enablePersistence: false,
       persistencePath: './test-state',
       autoRecover: false,
-      shutdownTimeout: 1000
+      shutdownTimeout: 1000,
     }
 
     runtime = new HostAgentRuntime(defaultConfig)
@@ -103,7 +103,7 @@ describe('HostAgentRuntime', () => {
       agents = await Promise.all([
         runtime.createAgent(AgentType.BASE, ['test1']),
         runtime.createAgent(AgentType.BASE, ['test2']),
-        runtime.createAgent(AgentType.BASE, ['test3'])
+        runtime.createAgent(AgentType.BASE, ['test3']),
       ])
     })
 
@@ -113,7 +113,7 @@ describe('HostAgentRuntime', () => {
         type: MessageType.COMMAND,
         sender: 'test-sender',
         content: 'broadcast content',
-        timestamp: Date.now()
+        timestamp: Date.now(),
       }
 
       await runtime.broadcast(message)
@@ -126,7 +126,7 @@ describe('HostAgentRuntime', () => {
         type: MessageType.COMMAND,
         sender: 'test-sender',
         content: 'filtered broadcast',
-        timestamp: Date.now()
+        timestamp: Date.now(),
       }
 
       const filter = (agent: Agent) => agent.capabilities.includes('test1')
@@ -143,7 +143,7 @@ describe('HostAgentRuntime', () => {
         type: MessageType.COMMAND,
         sender: 'test-sender',
         content: 'error broadcast',
-        timestamp: Date.now()
+        timestamp: Date.now(),
       }
 
       const responses = await runtime.broadcast(message)
@@ -156,17 +156,14 @@ describe('HostAgentRuntime', () => {
       runtime = new HostAgentRuntime({
         ...defaultConfig,
         enablePersistence: true,
-        autoRecover: true
+        autoRecover: true,
       })
     })
 
     it('should persist state when creating agent', async () => {
       const persistSpy = vi.spyOn(console, 'log')
       await runtime.createAgent(AgentType.BASE, ['test'])
-      expect(persistSpy).toHaveBeenCalledWith(
-        'Persisting state:',
-        expect.any(Object)
-      )
+      expect(persistSpy).toHaveBeenCalledWith('Persisting state:', expect.any(Object))
     })
 
     it('should attempt to recover state on startup', () => {
@@ -174,7 +171,7 @@ describe('HostAgentRuntime', () => {
       runtime = new HostAgentRuntime({
         ...defaultConfig,
         enablePersistence: true,
-        autoRecover: true
+        autoRecover: true,
       })
       expect(recoverSpy).toHaveBeenCalledWith('Recovering state...')
     })
@@ -184,7 +181,7 @@ describe('HostAgentRuntime', () => {
     beforeEach(() => {
       runtime = new HostAgentRuntime({
         ...defaultConfig,
-        shutdownTimeout: 100
+        shutdownTimeout: 100,
       })
     })
 
@@ -195,8 +192,8 @@ describe('HostAgentRuntime', () => {
 
     it('should force shutdown after timeout', async () => {
       const agent = await runtime.createAgent(AgentType.BASE, ['test'])
-      vi.spyOn(agent, 'handleMessage').mockImplementation(() => 
-        new Promise(resolve => setTimeout(resolve, 200))
+      vi.spyOn(agent, 'handleMessage').mockImplementation(
+        () => new Promise(resolve => setTimeout(resolve, 200))
       )
 
       await expect(runtime.shutdown()).resolves.not.toThrow()
