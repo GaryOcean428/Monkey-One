@@ -9,6 +9,8 @@ interface CodeSolution {
     model: string;
     generationTime: number;
     iterations: number;
+    mergedFrom?: string[];
+    suggestionsApplied?: number;
   };
 }
 
@@ -108,24 +110,41 @@ export class CodeProcessor {
       .sort((a, b) => b.validation.score - a.validation.score);
 
     const bestSolution = rankedSolutions[0].solution;
-    const improvements = validationResults
+    
+    // Collect all unique suggestions across all validations
+    const allSuggestions = validationResults
       .flatMap(v => v.suggestions)
       .filter(Boolean);
+    
+    // Deduplicate suggestions based on similarity
+    const uniqueSuggestions = this.deduplicateSuggestions(allSuggestions);
 
-    if (improvements.length === 0) {
+    if (uniqueSuggestions.length === 0) {
       return bestSolution;
     }
 
-    // Generate improved version incorporating suggestions
-    const improvementPrompt = `Improve the following code based on these suggestions:
+    // Extract insights from top-performing solutions (not just the best)
+    const topSolutions = rankedSolutions
+      .slice(0, Math.min(3, rankedSolutions.length))
+      .filter(rs => rs.validation.score >= 0.5); // Only include reasonably good solutions
+
+    const alternativeApproaches = topSolutions
+      .slice(1) // Skip the best solution
+      .map(rs => `Alternative approach from ${rs.solution.metadata.model}:\n${rs.solution.code}`)
+      .join('\n\n');
+
+    // Generate improved version incorporating suggestions and alternative insights
+    const improvementPrompt = `Improve the following code based on these suggestions and alternative approaches:
     
-    Original code:
+    Best solution code:
     ${bestSolution.code}
     
     Suggested improvements:
-    ${improvements.join('\n')}
+    ${uniqueSuggestions.join('\n')}
     
-    Provide the improved code with explanations for changes.`;
+    ${alternativeApproaches ? `Alternative approaches to consider:\n${alternativeApproaches}\n` : ''}
+    
+    Provide the improved code that incorporates the best aspects from all sources, with explanations for changes.`;
 
     const improvedResponse = await llmManager.sendMessage(improvementPrompt);
 
@@ -135,9 +154,44 @@ export class CodeProcessor {
       explanation: this.extractExplanation(improvedResponse),
       metadata: {
         ...bestSolution.metadata,
-        iterations: bestSolution.metadata.iterations + 1
+        iterations: bestSolution.metadata.iterations + 1,
+        mergedFrom: topSolutions.map(rs => rs.solution.metadata.model),
+        suggestionsApplied: uniqueSuggestions.length
       }
     };
+  }
+
+  private deduplicateSuggestions(suggestions: string[]): string[] {
+    // Remove duplicate or very similar suggestions
+    const unique: string[] = [];
+    const seen = new Set<string>();
+    
+    for (const suggestion of suggestions) {
+      const normalized = suggestion.toLowerCase().trim();
+      // Check for exact duplicates or very similar suggestions (>80% overlap)
+      const isDuplicate = Array.from(seen).some(seenSuggestion => {
+        const similarity = this.calculateStringSimilarity(normalized, seenSuggestion);
+        return similarity > 0.8;
+      });
+      
+      if (!isDuplicate) {
+        unique.push(suggestion);
+        seen.add(normalized);
+      }
+    }
+    
+    return unique;
+  }
+
+  private calculateStringSimilarity(str1: string, str2: string): number {
+    // Simple Jaccard similarity based on word sets
+    const words1 = new Set(str1.split(/\s+/));
+    const words2 = new Set(str2.split(/\s+/));
+    
+    const intersection = new Set([...words1].filter(w => words2.has(w)));
+    const union = new Set([...words1, ...words2]);
+    
+    return union.size > 0 ? intersection.size / union.size : 0;
   }
 
   private extractCode(response: string): string {

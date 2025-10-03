@@ -145,4 +145,37 @@ export class ModelPerformanceTracker {
     
     logger.info(`Reset metrics for ${provider}`)
   }
+
+  public async estimateImpact(affectedFiles: string[]): Promise<number> {
+    // Estimate performance impact of changes to given files
+    // Returns a value between -1 (very negative) and 1 (very positive)
+    // 0 means neutral impact
+    
+    let impactScore = 0;
+    let fileCount = 0;
+    
+    for (const file of affectedFiles) {
+      fileCount++;
+      
+      // Check file type and estimate impact
+      if (file.includes('performance') || file.includes('optimization')) {
+        impactScore += 0.3; // Likely positive impact
+      } else if (file.includes('cache') || file.includes('memory')) {
+        impactScore += 0.2; // Potentially positive impact
+      } else if (file.includes('test')) {
+        impactScore += 0.05; // Test changes have minimal impact
+      } else if (file.includes('config') || file.includes('constant')) {
+        impactScore += 0.1; // Configuration changes may help
+      } else {
+        // Neutral or unknown impact
+        impactScore += 0;
+      }
+    }
+    
+    // Average the impact across all files
+    const averageImpact = fileCount > 0 ? impactScore / fileCount : 0;
+    
+    // Normalize to -1 to 1 range (currently 0 to 1, so we're conservative)
+    return Math.max(-1, Math.min(1, averageImpact));
+  }
 }

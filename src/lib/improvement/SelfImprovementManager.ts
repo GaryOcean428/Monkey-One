@@ -1,7 +1,5 @@
-import { ModelClient } from '../clients/ModelClient';
 import { GitClient } from '../clients/GitClient';
 import { logger } from '../../utils/logger';
-import { ProviderRegistry } from '../providers';
 import { LocalProvider } from '../providers';
 import { ModelPerformanceTracker } from '../llm/ModelPerformanceTracker';
 
@@ -121,12 +119,12 @@ export class SelfImprovementManager {
     return result;
   }
 
-  private calculateMetric(type: string): number {
+  private calculateMetric(_type: string): number {
     // Calculate metric based on performance data and analysis results
     return Math.random() * 10; // Placeholder
   }
 
-  private async processAnalyses(analyses: any[]): Promise<ImprovementSuggestion[]> {
+  private async processAnalyses(analyses: unknown[]): Promise<ImprovementSuggestion[]> {
     const suggestions: ImprovementSuggestion[] = [];
     
     for (const analysis of analyses) {
@@ -190,6 +188,111 @@ export class SelfImprovementManager {
 
     this.suggestions.set(suggestionId, suggestion);
     logger.info(`Created improvement branch: ${suggestion.branchName}`);
+  }
+
+  async assessMergeQuality(suggestionId: string): Promise<{
+    canMerge: boolean;
+    quality: number;
+    conflicts: string[];
+    recommendations: string[];
+  }> {
+    const suggestion = this.suggestions.get(suggestionId);
+    if (!suggestion) {
+      throw new Error(`Suggestion ${suggestionId} not found`);
+    }
+
+    if (!suggestion.branchName) {
+      throw new Error(`Suggestion ${suggestionId} has no branch`);
+    }
+
+    // Check for merge conflicts
+    const conflicts = await this.gitClient.checkMergeConflicts(suggestion.branchName);
+    
+    // Assess code quality metrics
+    const metrics = suggestion.metrics || {
+      estimatedImpact: 0,
+      complexity: 0,
+      riskLevel: 0
+    };
+
+    // Calculate merge quality score (0-1)
+    const qualityFactors = {
+      hasNoConflicts: conflicts.length === 0 ? 0.3 : 0,
+      lowRisk: (1 - metrics.riskLevel) * 0.25,
+      highImpact: metrics.estimatedImpact * 0.25,
+      lowComplexity: (1 - metrics.complexity) * 0.2
+    };
+
+    const quality = Object.values(qualityFactors).reduce((sum, val) => sum + val, 0);
+
+    // Generate recommendations
+    const recommendations: string[] = [];
+    
+    if (conflicts.length > 0) {
+      recommendations.push(`Resolve ${conflicts.length} merge conflict(s) before merging`);
+    }
+    
+    if (metrics.riskLevel > 0.7) {
+      recommendations.push('High risk level - consider additional testing or review');
+    }
+    
+    if (metrics.complexity > 0.8) {
+      recommendations.push('High complexity - consider breaking into smaller changes');
+    }
+    
+    if (metrics.estimatedImpact < 0.3) {
+      recommendations.push('Low estimated impact - verify the benefit justifies the change');
+    }
+
+    // Additional performance and security checks
+    const performanceImpact = await this.performanceTracker.estimateImpact(
+      suggestion.affectedFiles
+    );
+    
+    if (performanceImpact < -0.1) {
+      recommendations.push('Potential negative performance impact detected');
+    }
+
+    return {
+      canMerge: conflicts.length === 0 && quality >= 0.6,
+      quality,
+      conflicts,
+      recommendations
+    };
+  }
+
+  async mergeImprovement(
+    suggestionId: string,
+    options: { force?: boolean; squash?: boolean } = {}
+  ): Promise<void> {
+    const assessment = await this.assessMergeQuality(suggestionId);
+    
+    if (!assessment.canMerge && !options.force) {
+      throw new Error(
+        `Cannot merge suggestion ${suggestionId}. Quality: ${assessment.quality.toFixed(2)}. ` +
+        `Recommendations: ${assessment.recommendations.join('; ')}`
+      );
+    }
+
+    const suggestion = this.suggestions.get(suggestionId);
+    if (!suggestion?.branchName) {
+      throw new Error(`Suggestion ${suggestionId} not ready for merge`);
+    }
+
+    // Perform the merge
+    await this.gitClient.mergeBranch(suggestion.branchName, {
+      squash: options.squash ?? true,
+      message: `Merge improvement: ${suggestion.title}\n\nQuality score: ${assessment.quality.toFixed(2)}`
+    });
+
+    // Update suggestion status
+    suggestion.status = 'completed';
+    suggestion.updatedAt = new Date();
+    this.suggestions.set(suggestionId, suggestion);
+
+    logger.info(
+      `Successfully merged improvement ${suggestionId} with quality score ${assessment.quality.toFixed(2)}`
+    );
   }
 
   async reviewSuggestion(suggestionId: string, approve: boolean): Promise<void> {
