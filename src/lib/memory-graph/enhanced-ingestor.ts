@@ -45,8 +45,7 @@ export class EnhancedIngestorAgent extends IngestorAgent {
     const {
       useML = true,
       confidence = 0.7,
-      domain,
-      enableLearning = this.learningEnabled
+      domain
     } = options;
 
     let entities: EntityExtraction[] = [];
@@ -140,32 +139,119 @@ export class EnhancedIngestorAgent extends IngestorAgent {
     confidenceThreshold: number
   ): EntityExtraction[] {
     const merged = new Map<string, EntityExtraction>();
+    const conflicts = new Map<string, EntityExtraction[]>();
     
     // Add ML entities first (higher priority)
     mlEntities.forEach(entity => {
       if ((entity.properties.confidence || 0) >= confidenceThreshold) {
-        merged.set(entity.id, entity);
-      }
-    });
-    
-    // Add traditional entities if not already present or if they have higher confidence
-    traditionalEntities.forEach(entity => {
-      const existing = merged.get(entity.id);
-      const entityConfidence = entity.properties.confidence || 0.8; // Default confidence for traditional
-      
-      if (!existing || entityConfidence > (existing.properties.confidence || 0)) {
         merged.set(entity.id, {
           ...entity,
           properties: {
             ...entity.properties,
-            confidence: entityConfidence,
-            extractedBy: existing ? 'hybrid' : 'traditional'
+            extractedBy: 'ml',
+            sources: ['ml']
           }
         });
       }
     });
     
+    // Process traditional entities with conflict detection
+    traditionalEntities.forEach(entity => {
+      const existing = merged.get(entity.id);
+      const entityConfidence = entity.properties.confidence || 0.8; // Default confidence for traditional
+      
+      if (!existing) {
+        // No conflict, add directly
+        if (entityConfidence >= confidenceThreshold) {
+          merged.set(entity.id, {
+            ...entity,
+            properties: {
+              ...entity.properties,
+              confidence: entityConfidence,
+              extractedBy: 'traditional',
+              sources: ['traditional']
+            }
+          });
+        }
+      } else {
+        // Conflict detected - use confidence-based resolution with property merging
+        const confidenceDiff = Math.abs(entityConfidence - (existing.properties.confidence || 0));
+        
+        if (confidenceDiff < 0.1) {
+          // Very close confidence - merge properties from both sources
+          merged.set(entity.id, {
+            ...existing,
+            properties: {
+              ...existing.properties,
+              ...this.mergeProperties(existing.properties, entity.properties),
+              confidence: (entityConfidence + (existing.properties.confidence || 0)) / 2,
+              extractedBy: 'hybrid',
+              sources: [...(existing.properties.sources || ['ml']), 'traditional']
+            }
+          });
+        } else if (entityConfidence > (existing.properties.confidence || 0)) {
+          // Traditional has higher confidence - replace but keep source info
+          merged.set(entity.id, {
+            ...entity,
+            properties: {
+              ...entity.properties,
+              confidence: entityConfidence,
+              extractedBy: 'hybrid',
+              sources: [...(existing.properties.sources || ['ml']), 'traditional'],
+              previousConfidence: existing.properties.confidence
+            }
+          });
+        }
+        // If ML has higher confidence, keep it (already in merged)
+        
+        // Track conflict for analysis
+        if (!conflicts.has(entity.id)) {
+          conflicts.set(entity.id, []);
+        }
+        conflicts.get(entity.id)!.push(entity);
+      }
+    });
+    
+    // Log conflicts for improvement learning
+    if (conflicts.size > 0) {
+      this.logMergeConflicts('entities', conflicts);
+    }
+    
     return Array.from(merged.values());
+  }
+
+  private mergeProperties(props1: Record<string, unknown>, props2: Record<string, unknown>): Record<string, unknown> {
+    // Merge properties intelligently, keeping non-conflicting values from both
+    const merged = { ...props1 };
+    
+    for (const [key, value] of Object.entries(props2)) {
+      if (key === 'confidence' || key === 'extractedBy' || key === 'sources') {
+        continue; // Skip these as they're handled separately
+      }
+      
+      if (!(key in merged)) {
+        // Property only exists in props2
+        merged[key] = value;
+      } else if (merged[key] !== value) {
+        // Conflict - keep both with suffix
+        merged[`${key}_alt`] = value;
+      }
+    }
+    
+    return merged;
+  }
+
+  private logMergeConflicts(type: string, conflicts: Map<string, unknown[]>): void {
+    // Store conflict information for learning and improvement
+    const conflictInfo = {
+      type,
+      count: conflicts.size,
+      timestamp: new Date(),
+      examples: Array.from(conflicts.entries()).slice(0, 5) // Keep first 5 examples
+    };
+    
+    // In a real implementation, this would be persisted for analysis
+    console.debug(`Merge conflicts detected for ${type}:`, conflictInfo);
   }
 
   private mergeRelationships(
@@ -175,36 +261,87 @@ export class EnhancedIngestorAgent extends IngestorAgent {
   ): RelationshipExtraction[] {
     const merged = new Map<string, RelationshipExtraction>();
     const entityIds = new Set(entities.map(e => e.id));
+    const conflicts = new Map<string, RelationshipExtraction[]>();
     
     // Helper to create relationship key
     const getRelKey = (rel: RelationshipExtraction) => `${rel.from}-${rel.type}-${rel.to}`;
     
-    // Add ML relationships
+    // Add ML relationships with validation
     mlRelationships.forEach(rel => {
       if (entityIds.has(rel.from) && entityIds.has(rel.to)) {
-        merged.set(getRelKey(rel), rel);
+        merged.set(getRelKey(rel), {
+          ...rel,
+          properties: {
+            ...rel.properties,
+            extractedBy: 'ml',
+            sources: ['ml']
+          }
+        });
       }
     });
     
-    // Add traditional relationships
+    // Process traditional relationships with conflict resolution
     traditionalRelationships.forEach(rel => {
       if (entityIds.has(rel.from) && entityIds.has(rel.to)) {
         const key = getRelKey(rel);
         const existing = merged.get(key);
         const relConfidence = rel.properties?.confidence || 0.8;
         
-        if (!existing || relConfidence > (existing.properties?.confidence || 0)) {
+        if (!existing) {
+          // No conflict
           merged.set(key, {
             ...rel,
             properties: {
               ...rel.properties,
               confidence: relConfidence,
-              extractedBy: existing ? 'hybrid' : 'traditional'
+              extractedBy: 'traditional',
+              sources: ['traditional']
             }
           });
+        } else {
+          // Conflict - resolve intelligently
+          const existingConfidence = existing.properties?.confidence || 0;
+          const confidenceDiff = Math.abs(relConfidence - existingConfidence);
+          
+          if (confidenceDiff < 0.15) {
+            // Similar confidence - merge and boost confidence
+            merged.set(key, {
+              ...existing,
+              properties: {
+                ...existing.properties,
+                confidence: Math.min(1.0, (relConfidence + existingConfidence) / 2 + 0.1),
+                extractedBy: 'hybrid',
+                sources: [...(existing.properties?.sources || ['ml']), 'traditional'],
+                verified: true // Both methods agree, so mark as verified
+              }
+            });
+          } else if (relConfidence > existingConfidence) {
+            // Traditional has higher confidence
+            merged.set(key, {
+              ...rel,
+              properties: {
+                ...rel.properties,
+                confidence: relConfidence,
+                extractedBy: 'hybrid',
+                sources: [...(existing.properties?.sources || ['ml']), 'traditional']
+              }
+            });
+          }
+          // If ML has higher confidence, keep it
+          
+          // Track conflict
+          if (!conflicts.has(key)) {
+            conflicts.set(key, []);
+          }
+          conflicts.get(key)!.push(rel);
         }
       }
     });
+    
+    // Log conflicts for analysis
+    if (conflicts.size > 0) {
+      this.logMergeConflicts('relationships', conflicts);
+    }
     
     return Array.from(merged.values());
   }

@@ -103,4 +103,57 @@ export class GitClient {
   getReviewers(): string[] {
     return [...this.reviewers];
   }
+
+  async checkMergeConflicts(_branchName: string): Promise<string[]> {
+    try {
+      // Check if there are any conflicts with the base branch
+      await this.execute(`git fetch ${this.remote} ${this.baseBranch}`);
+      
+      // Try to merge without committing
+      try {
+        await this.execute(
+          `git merge --no-commit --no-ff ${this.remote}/${this.baseBranch}`
+        );
+        // No conflicts
+        await this.execute('git merge --abort');
+        return [];
+      } catch {
+        // Conflicts detected
+        const conflictFiles = await this.execute('git diff --name-only --diff-filter=U');
+        await this.execute('git merge --abort');
+        return conflictFiles.split('\n').filter(f => f.trim());
+      }
+    } catch (err) {
+      logger.error('Error checking merge conflicts:', err);
+      // If we can't check, assume no conflicts to allow manual review
+      return [];
+    }
+  }
+
+  async mergeBranch(
+    branchName: string,
+    options: { squash?: boolean; message?: string } = {}
+  ): Promise<void> {
+    // Ensure we're on the base branch
+    await this.execute(`git checkout ${this.baseBranch}`);
+    await this.execute(`git pull ${this.remote} ${this.baseBranch}`);
+    
+    // Perform the merge
+    const mergeCommand = options.squash
+      ? `git merge --squash ${branchName}`
+      : `git merge ${branchName}`;
+    
+    await this.execute(mergeCommand);
+    
+    // If squash merge, we need to commit
+    if (options.squash) {
+      const message = options.message || `Merge branch ${branchName}`;
+      await this.execute(`git commit -m "${message}"`);
+    }
+    
+    // Push to remote
+    await this.execute(`git push ${this.remote} ${this.baseBranch}`);
+    
+    logger.info(`Successfully merged ${branchName} into ${this.baseBranch}`);
+  }
 }
