@@ -1,14 +1,14 @@
 import * as React from 'react'
 import { themeAnalytics } from '../lib/theme-analytics'
 
-export type AccentColor = 
-  | 'blue' 
-  | 'emerald' 
-  | 'violet' 
-  | 'rose' 
-  | 'amber' 
-  | 'cyan' 
-  | 'pink' 
+export type AccentColor =
+  | 'blue'
+  | 'emerald'
+  | 'violet'
+  | 'rose'
+  | 'amber'
+  | 'cyan'
+  | 'pink'
   | 'indigo'
 
 export type ThemeMode = 'light' | 'dark' | 'system'
@@ -27,7 +27,7 @@ const defaultPreferences: ThemePreferences = {
   accentColor: 'blue',
   contrast: 'normal',
   timeBasedTheme: false,
-  reducedMotion: false
+  reducedMotion: false,
 }
 
 const STORAGE_KEY = 'monkey-one-theme-preferences'
@@ -35,36 +35,36 @@ const STORAGE_KEY = 'monkey-one-theme-preferences'
 const accentColorMap: Record<AccentColor, { primary: string; primaryForeground: string }> = {
   blue: {
     primary: '214 95% 53%',
-    primaryForeground: '210 20% 98%'
+    primaryForeground: '210 20% 98%',
   },
   emerald: {
     primary: '142 76% 36%',
-    primaryForeground: '210 20% 98%'
+    primaryForeground: '210 20% 98%',
   },
   violet: {
     primary: '262 83% 58%',
-    primaryForeground: '210 20% 98%'
+    primaryForeground: '210 20% 98%',
   },
   rose: {
     primary: '330 81% 60%',
-    primaryForeground: '210 20% 98%'
+    primaryForeground: '210 20% 98%',
   },
   amber: {
     primary: '38 92% 50%',
-    primaryForeground: '224 71.4% 4.1%'
+    primaryForeground: '224 71.4% 4.1%',
   },
   cyan: {
     primary: '199 89% 48%',
-    primaryForeground: '210 20% 98%'
+    primaryForeground: '210 20% 98%',
   },
   pink: {
     primary: '324 71% 54%',
-    primaryForeground: '210 20% 98%'
+    primaryForeground: '210 20% 98%',
   },
   indigo: {
     primary: '231 48% 48%',
-    primaryForeground: '210 20% 98%'
-  }
+    primaryForeground: '210 20% 98%',
+  },
 }
 
 function getSystemTheme(): 'light' | 'dark' {
@@ -85,7 +85,7 @@ function getReducedMotionPreference(): boolean {
 
 function applyTheme(preferences: ThemePreferences) {
   const root = document.documentElement
-  
+
   // Determine effective theme mode
   let effectiveMode: 'light' | 'dark'
   if (preferences.mode === 'system') {
@@ -95,32 +95,41 @@ function applyTheme(preferences: ThemePreferences) {
   } else {
     effectiveMode = preferences.mode as 'light' | 'dark'
   }
-  
+
   // Apply theme mode
   root.classList.remove('light', 'dark')
   root.classList.add(effectiveMode)
-  
+
   // Apply accent color
   const accentColors = accentColorMap[preferences.accentColor]
   root.style.setProperty('--primary', accentColors.primary)
   root.style.setProperty('--primary-foreground', accentColors.primaryForeground)
-  
+
   // Apply contrast mode
   root.classList.remove('high-contrast')
   if (preferences.contrast === 'high') {
     root.classList.add('high-contrast')
   }
-  
+
   // Apply reduced motion
   const reducedMotion = preferences.reducedMotion || getReducedMotionPreference()
-  root.style.setProperty('--animation-duration', reducedMotion ? '0ms' : 'var(--transition-duration)')
-  root.style.setProperty('--animation-duration-fast', reducedMotion ? '0ms' : 'var(--transition-duration-fast)')
-  root.style.setProperty('--animation-duration-slow', reducedMotion ? '0ms' : 'var(--transition-duration-slow)')
+  root.style.setProperty(
+    '--animation-duration',
+    reducedMotion ? '0ms' : 'var(--transition-duration)'
+  )
+  root.style.setProperty(
+    '--animation-duration-fast',
+    reducedMotion ? '0ms' : 'var(--transition-duration-fast)'
+  )
+  root.style.setProperty(
+    '--animation-duration-slow',
+    reducedMotion ? '0ms' : 'var(--transition-duration-slow)'
+  )
 }
 
 function loadPreferences(): ThemePreferences {
   if (typeof window === 'undefined') return defaultPreferences
-  
+
   try {
     const stored = window.localStorage.getItem(STORAGE_KEY)
     if (stored) {
@@ -135,7 +144,7 @@ function loadPreferences(): ThemePreferences {
 
 function savePreferences(preferences: ThemePreferences) {
   if (typeof window === 'undefined') return
-  
+
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences))
   } catch (error) {
@@ -206,23 +215,32 @@ export function useTheme() {
     setPreferences(prev => ({ ...prev, ...updates }))
   }, [])
 
-  const setAccentColor = React.useCallback((accentColor: AccentColor) => {
-    const oldColor = preferences.accentColor
-    updatePreferences({ accentColor })
-    themeAnalytics.trackAccentColorChange(oldColor, accentColor)
-  }, [preferences.accentColor, updatePreferences])
+  const setAccentColor = React.useCallback(
+    (accentColor: AccentColor) => {
+      const oldColor = preferences.accentColor
+      updatePreferences({ accentColor })
+      themeAnalytics.trackAccentColorChange(oldColor, accentColor)
+    },
+    [preferences.accentColor, updatePreferences]
+  )
 
-  const setThemeMode = React.useCallback((mode: ThemeMode) => {
-    const oldMode = preferences.mode
-    updatePreferences({ mode })
-    themeAnalytics.trackThemeSwitch(oldMode, mode)
-  }, [preferences.mode, updatePreferences])
+  const setThemeMode = React.useCallback(
+    (mode: ThemeMode) => {
+      const oldMode = preferences.mode
+      updatePreferences({ mode })
+      themeAnalytics.trackThemeSwitch(oldMode, mode)
+    },
+    [preferences.mode, updatePreferences]
+  )
 
-  const setContrastMode = React.useCallback((contrast: ContrastMode) => {
-    const oldContrast = preferences.contrast
-    updatePreferences({ contrast })
-    themeAnalytics.trackContrastModeChange(oldContrast, contrast)
-  }, [preferences.contrast, updatePreferences])
+  const setContrastMode = React.useCallback(
+    (contrast: ContrastMode) => {
+      const oldContrast = preferences.contrast
+      updatePreferences({ contrast })
+      themeAnalytics.trackContrastModeChange(oldContrast, contrast)
+    },
+    [preferences.contrast, updatePreferences]
+  )
 
   const toggleTimeBasedTheme = React.useCallback(() => {
     updatePreferences({ timeBasedTheme: !preferences.timeBasedTheme })
@@ -246,6 +264,6 @@ export function useTheme() {
     setContrastMode,
     toggleTimeBasedTheme,
     toggleReducedMotion,
-    resetToDefaults
+    resetToDefaults,
   }
 }

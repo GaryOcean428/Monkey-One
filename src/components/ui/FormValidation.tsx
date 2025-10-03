@@ -1,45 +1,45 @@
-import React, { useState } from 'react';
-import { Input } from './Input';
-import { Label } from './label';
-import { Button } from './button';
+import React, { useState } from 'react'
+import { Input } from './Input'
+import { Label } from './label'
+import { Button } from './button'
 
 interface FormValidationProps {
-  onSubmit: (data: { email: string; password: string }) => void;
+  onSubmit: (data: { email: string; password: string }) => void
 }
 
 const FormValidation: React.FC<FormValidationProps> = ({ onSubmit }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
 
   const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(email)
+  }
 
   const validatePassword = (password: string) => {
-    return password.length >= 6;
-  };
+    return password.length >= 6
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const newErrors: { email?: string; password?: string } = {};
+    e.preventDefault()
+    const newErrors: { email?: string; password?: string } = {}
 
     if (!validateEmail(email)) {
-      newErrors.email = 'Please enter a valid email address.';
+      newErrors.email = 'Please enter a valid email address.'
     }
 
     if (!validatePassword(password)) {
-      newErrors.password = 'Password must be at least 6 characters long.';
+      newErrors.password = 'Password must be at least 6 characters long.'
     }
 
     if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
+      setErrors(newErrors)
     } else {
-      setErrors({});
-      onSubmit({ email, password });
+      setErrors({})
+      onSubmit({ email, password })
     }
-  };
+  }
 
   return (
     <form onSubmit={handleSubmit} aria-label="form">
@@ -49,7 +49,7 @@ const FormValidation: React.FC<FormValidationProps> = ({ onSubmit }) => {
           id="email"
           type="email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={e => setEmail(e.target.value)}
           aria-invalid={!!errors.email}
           aria-describedby="email-error"
         />
@@ -65,7 +65,7 @@ const FormValidation: React.FC<FormValidationProps> = ({ onSubmit }) => {
           id="password"
           type="password"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={e => setPassword(e.target.value)}
           aria-invalid={!!errors.password}
           aria-describedby="password-error"
         />
@@ -77,7 +77,7 @@ const FormValidation: React.FC<FormValidationProps> = ({ onSubmit }) => {
       </div>
       <Button type="submit">Submit</Button>
     </form>
-  );
-};
+  )
+}
 
-export default FormValidation;
+export default FormValidation

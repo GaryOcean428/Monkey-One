@@ -10,7 +10,7 @@ import { Search, Sparkles, Palette, Zap, Settings, Home, FileText, Users } from 
 
 export function UIShowcase() {
   const commandPalette = useCommandPalette()
-  
+
   const commandItems: CommandItem[] = [
     {
       id: 'home',
@@ -19,7 +19,7 @@ export function UIShowcase() {
       icon: <Home className="h-4 w-4" />,
       shortcut: ['⌘', 'H'],
       action: () => console.log('Navigate to dashboard'),
-      group: 'Navigation'
+      group: 'Navigation',
     },
     {
       id: 'docs',
@@ -28,7 +28,7 @@ export function UIShowcase() {
       icon: <FileText className="h-4 w-4" />,
       shortcut: ['⌘', 'D'],
       action: () => console.log('Open docs'),
-      group: 'Navigation'
+      group: 'Navigation',
     },
     {
       id: 'settings',
@@ -37,7 +37,7 @@ export function UIShowcase() {
       icon: <Settings className="h-4 w-4" />,
       shortcut: ['⌘', ','],
       action: () => console.log('Open settings'),
-      group: 'Actions'
+      group: 'Actions',
     },
     {
       id: 'users',
@@ -45,17 +45,15 @@ export function UIShowcase() {
       description: 'Add or remove team members',
       icon: <Users className="h-4 w-4" />,
       action: () => console.log('Manage users'),
-      group: 'Actions'
-    }
+      group: 'Actions',
+    },
   ]
 
   return (
-    <div className="container mx-auto p-8 space-y-12">
-      <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold gradient-text">
-          UI Enhancement Showcase
-        </h1>
-        <p className="text-lg text-muted-foreground">
+    <div className="container mx-auto space-y-12 p-8">
+      <div className="space-y-4 text-center">
+        <h1 className="gradient-text text-4xl font-bold">UI Enhancement Showcase</h1>
+        <p className="text-muted-foreground text-lg">
           Demonstrating the new design system, glassmorphism effects, and micro-interactions
         </p>
       </div>
@@ -90,7 +88,7 @@ export function UIShowcase() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             <Button>Primary</Button>
             <Button variant="secondary">Secondary</Button>
             <Button variant="outline">Outline</Button>
@@ -98,9 +96,11 @@ export function UIShowcase() {
             <Button variant="glass">Glass</Button>
             <Button variant="gradient">Gradient</Button>
             <Button variant="destructive">Destructive</Button>
-            <Button isLoading loadingText="Loading...">Loading</Button>
+            <Button isLoading loadingText="Loading...">
+              Loading
+            </Button>
           </div>
-          
+
           <div className="mt-6 space-y-3">
             <p className="text-sm font-medium">Different Sizes:</p>
             <div className="flex items-center gap-4">
@@ -114,14 +114,14 @@ export function UIShowcase() {
       </Card>
 
       {/* Card Variants */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader>
             <CardTitle>Default Card</CardTitle>
             <CardDescription>Standard card with subtle shadows</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               This is the default card variant with clean borders and shadows.
             </p>
           </CardContent>
@@ -133,7 +133,7 @@ export function UIShowcase() {
             <CardDescription>Glassmorphism effect with backdrop blur</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               Features translucent background and sophisticated blur effects.
             </p>
           </CardContent>
@@ -145,7 +145,7 @@ export function UIShowcase() {
             <CardDescription>Enhanced shadows for depth</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               Stronger shadow effects create a floating appearance.
             </p>
           </CardContent>
@@ -159,38 +159,28 @@ export function UIShowcase() {
             <Palette className="h-5 w-5" />
             Enhanced Inputs
           </CardTitle>
-          <CardDescription>
-            Floating labels, validation states, and glass effects
-          </CardDescription>
+          <CardDescription>Floating labels, validation states, and glass effects</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="space-y-4">
               <Input label="Standard Input" placeholder="Enter some text..." />
-              <Input 
-                label="Input with Error" 
-                error="This field is required" 
+              <Input
+                label="Input with Error"
+                error="This field is required"
                 placeholder="Invalid input"
               />
-              <Input 
-                label="Success State" 
+              <Input
+                label="Success State"
                 state="success"
                 helperText="Looks good!"
                 placeholder="Valid input"
               />
             </div>
-            
+
             <div className="space-y-4">
-              <Input 
-                variant="floating" 
-                label="Floating Label"
-                placeholder="Floating Label"
-              />
-              <Input 
-                variant="glass" 
-                label="Glass Input"
-                placeholder="Glassmorphism effect"
-              />
+              <Input variant="floating" label="Floating Label" placeholder="Floating Label" />
+              <Input variant="glass" label="Glass Input" placeholder="Glassmorphism effect" />
             </div>
           </div>
         </CardContent>
@@ -203,27 +193,25 @@ export function UIShowcase() {
             <Sparkles className="h-5 w-5" />
             Loading Skeletons
           </CardTitle>
-          <CardDescription>
-            Animated loading states with shimmer effects
-          </CardDescription>
+          <CardDescription>Animated loading states with shimmer effects</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="space-y-4">
               <h4 className="font-medium">Basic Skeletons</h4>
               <Skeleton className="h-4 w-3/4" />
               <Skeleton variant="text" lines={3} />
               <div className="flex items-center gap-3">
                 <Skeleton variant="avatar" />
-                <div className="space-y-2 flex-1">
+                <div className="flex-1 space-y-2">
                   <Skeleton className="h-4 w-1/2" />
                   <Skeleton className="h-3 w-3/4" />
                 </div>
               </div>
             </div>
-            
+
             <div>
-              <h4 className="font-medium mb-4">Complex Layouts</h4>
+              <h4 className="mb-4 font-medium">Complex Layouts</h4>
               <SkeletonCard />
             </div>
           </div>
@@ -234,38 +222,29 @@ export function UIShowcase() {
       <Card>
         <CardHeader>
           <CardTitle>Design Token System</CardTitle>
-          <CardDescription>
-            Comprehensive token system for consistent styling
-          </CardDescription>
+          <CardDescription>Comprehensive token system for consistent styling</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
-            <h4 className="font-medium mb-3">Spacing Scale (8pt Grid)</h4>
+            <h4 className="mb-3 font-medium">Spacing Scale (8pt Grid)</h4>
             <div className="space-y-2">
               {[1, 2, 3, 4, 6, 8, 12, 16].map(space => (
                 <div key={space} className="flex items-center gap-4">
-                  <div className="w-16 text-sm text-muted-foreground">
-                    space-{space}
-                  </div>
-                  <div 
-                    className="bg-primary h-4 rounded"
-                    style={{ width: `${space * 4}px` }}
-                  />
-                  <span className="text-xs text-muted-foreground">
-                    {space * 4}px
-                  </span>
+                  <div className="text-muted-foreground w-16 text-sm">space-{space}</div>
+                  <div className="bg-primary h-4 rounded" style={{ width: `${space * 4}px` }} />
+                  <span className="text-muted-foreground text-xs">{space * 4}px</span>
                 </div>
               ))}
             </div>
           </div>
-          
+
           <div>
-            <h4 className="font-medium mb-3">Shadow Scale</h4>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <h4 className="mb-3 font-medium">Shadow Scale</h4>
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
               {['sm', 'md', 'lg', 'xl'].map(shadow => (
                 <div
                   key={shadow}
-                  className={`p-4 rounded-lg bg-card border text-center shadow-${shadow}`}
+                  className={`bg-card rounded-lg border p-4 text-center shadow-${shadow}`}
                 >
                   <span className="text-sm font-medium">shadow-{shadow}</span>
                 </div>
@@ -276,23 +255,21 @@ export function UIShowcase() {
       </Card>
 
       {/* Theme Customizer */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <ThemeCustomizer />
-        
+
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Palette className="h-5 w-5" />
               Dynamic Theming
             </CardTitle>
-            <CardDescription>
-              Advanced theming features introduced in Phase 6
-            </CardDescription>
+            <CardDescription>Advanced theming features introduced in Phase 6</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <h4 className="font-medium">Features:</h4>
-              <ul className="space-y-1 text-sm text-muted-foreground">
+              <ul className="text-muted-foreground space-y-1 text-sm">
                 <li>• 8 Dynamic accent colors with localStorage persistence</li>
                 <li>• Light, dark, and system theme modes</li>
                 <li>• High-contrast theme for accessibility</li>
@@ -301,10 +278,10 @@ export function UIShowcase() {
                 <li>• Real-time theme updates without reload</li>
               </ul>
             </div>
-            
-            <div className="p-4 rounded-lg border bg-muted/50">
+
+            <div className="bg-muted/50 rounded-lg border p-4">
               <p className="text-sm">
-                <strong>Try it:</strong> Change the accent color or theme mode using the customizer. 
+                <strong>Try it:</strong> Change the accent color or theme mode using the customizer.
                 Your preferences are automatically saved and will persist across sessions.
               </p>
             </div>

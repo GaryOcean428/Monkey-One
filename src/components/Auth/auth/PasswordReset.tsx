@@ -30,29 +30,20 @@ export const PasswordReset: React.FC = () => {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Card className="p-8 max-w-md w-full">
-          <h2 className="text-2xl font-bold text-center mb-6">Check Your Email</h2>
-          <p className="text-center text-gray-600 mb-6">
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <Card className="w-full max-w-md p-8">
+          <h2 className="mb-6 text-center text-2xl font-bold">Check Your Email</h2>
+          <p className="mb-6 text-center text-gray-600">
             If an account exists for {email}, you will receive password reset instructions.
           </p>
           <div className="space-y-4">
-            <Button
-              onClick={() => navigate('/login')}
-              className="w-full"
-            >
+            <Button onClick={() => navigate('/login')} className="w-full">
               Return to Login
             </Button>
-            <Button
-              onClick={() => navigate('/support')}
-              className="w-full"
-            >
+            <Button onClick={() => navigate('/support')} className="w-full">
               Contact Support
             </Button>
-            <Button
-              onClick={handleSubmit}
-              className="w-full"
-            >
+            <Button onClick={handleSubmit} className="w-full">
               Retry Password Reset
             </Button>
           </div>
@@ -62,9 +53,9 @@ export const PasswordReset: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <Card className="p-8 max-w-md w-full">
-        <h2 className="text-2xl font-bold text-center mb-6">Reset Password</h2>
+    <div className="flex min-h-screen items-center justify-center bg-gray-50">
+      <Card className="w-full max-w-md p-8">
+        <h2 className="mb-6 text-center text-2xl font-bold">Reset Password</h2>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <Input
@@ -77,11 +68,7 @@ export const PasswordReset: React.FC = () => {
               error={error}
             />
           </div>
-          <Button
-            type="submit"
-            className="w-full"
-            isLoading={isLoading}
-          >
+          <Button type="submit" className="w-full" isLoading={isLoading}>
             Reset Password
           </Button>
           <Button

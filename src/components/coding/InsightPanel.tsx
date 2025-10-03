@@ -1,49 +1,62 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { AlertTriangle, CheckCircle, Code, GitCommit, RefreshCw, Filter, SortAsc, SortDesc } from 'lucide-react';
-import { Button } from '../ui/button';
+import React from 'react'
+import { motion } from 'framer-motion'
+import {
+  AlertTriangle,
+  CheckCircle,
+  Code,
+  GitCommit,
+  RefreshCw,
+  Filter,
+  SortAsc,
+  SortDesc,
+} from 'lucide-react'
+import { Button } from '../ui/button'
 
 export function InsightPanel() {
-  const [filterType, setFilterType] = useState<string | null>(null);
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [filterType, setFilterType] = useState<string | null>(null)
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
 
   const handleRefresh = () => {
     // Logic to refresh the insights
-  };
+  }
 
   const handleFilter = () => {
     // Logic to filter insights by type
-  };
+  }
 
   const handleSort = () => {
     // Logic to sort insights by name
-  };
+  }
 
   return (
-    <div className="flex-1 p-4 overflow-y-auto">
-      <div className="flex justify-between mb-4">
+    <div className="flex-1 overflow-y-auto p-4">
+      <div className="mb-4 flex justify-between">
         <Button variant="outline" size="sm" onClick={handleRefresh}>
-          <RefreshCw className="w-4 h-4 mr-2" />
+          <RefreshCw className="mr-2 h-4 w-4" />
           Refresh Insights
         </Button>
         <Button variant="outline" size="sm" onClick={handleFilter}>
-          <Filter className="w-4 h-4 mr-2" />
+          <Filter className="mr-2 h-4 w-4" />
           Filter by Type
         </Button>
         <Button variant="outline" size="sm" onClick={handleSort}>
-          {sortOrder === 'asc' ? <SortAsc className="w-4 h-4 mr-2" /> : <SortDesc className="w-4 h-4 mr-2" />}
+          {sortOrder === 'asc' ? (
+            <SortAsc className="mr-2 h-4 w-4" />
+          ) : (
+            <SortDesc className="mr-2 h-4 w-4" />
+          )}
           Sort by Name
         </Button>
       </div>
-      <h3 className="text-lg font-semibold mb-4 dark:text-white">Code Insights</h3>
-      
+      <h3 className="mb-4 text-lg font-semibold dark:text-white">Code Insights</h3>
+
       <div className="space-y-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white dark:bg-gray-700 rounded-lg p-4 shadow-sm"
+          className="rounded-lg bg-white p-4 shadow-sm dark:bg-gray-700"
         >
-          <div className="flex items-center gap-2 mb-2">
+          <div className="mb-2 flex items-center gap-2">
             <Code className="text-blue-500" size={20} />
             <h4 className="font-medium dark:text-white">Code Quality</h4>
           </div>
@@ -52,8 +65,8 @@ export function InsightPanel() {
               <span className="text-sm text-gray-600 dark:text-gray-300">Complexity</span>
               <span className="text-sm font-medium dark:text-white">Low</span>
             </div>
-            <div className="h-2 bg-gray-100 dark:bg-gray-600 rounded-full">
-              <div className="h-2 bg-green-500 rounded-full" style={{ width: '30%' }} />
+            <div className="h-2 rounded-full bg-gray-100 dark:bg-gray-600">
+              <div className="h-2 rounded-full bg-green-500" style={{ width: '30%' }} />
             </div>
           </div>
         </motion.div>
@@ -62,9 +75,9 @@ export function InsightPanel() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-white dark:bg-gray-700 rounded-lg p-4 shadow-sm"
+          className="rounded-lg bg-white p-4 shadow-sm dark:bg-gray-700"
         >
-          <div className="flex items-center gap-2 mb-2">
+          <div className="mb-2 flex items-center gap-2">
             <GitCommit className="text-purple-500" size={20} />
             <h4 className="font-medium dark:text-white">Model Consensus</h4>
           </div>
@@ -80,24 +93,24 @@ export function InsightPanel() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-white dark:bg-gray-700 rounded-lg p-4 shadow-sm"
+          className="rounded-lg bg-white p-4 shadow-sm dark:bg-gray-700"
         >
-          <div className="flex items-center gap-2 mb-2">
+          <div className="mb-2 flex items-center gap-2">
             <AlertTriangle className="text-yellow-500" size={20} />
             <h4 className="font-medium dark:text-white">Suggestions</h4>
           </div>
           <ul className="space-y-2 text-sm dark:text-gray-300">
             <li className="flex items-center gap-2">
-              <span className="w-2 h-2 bg-yellow-500 rounded-full" />
+              <span className="h-2 w-2 rounded-full bg-yellow-500" />
               Consider adding error handling
             </li>
             <li className="flex items-center gap-2">
-              <span className="w-2 h-2 bg-yellow-500 rounded-full" />
+              <span className="h-2 w-2 rounded-full bg-yellow-500" />
               Add input validation
             </li>
           </ul>
         </motion.div>
       </div>
     </div>
-  );
+  )
 }

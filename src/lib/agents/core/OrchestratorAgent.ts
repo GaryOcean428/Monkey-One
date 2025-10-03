@@ -113,7 +113,7 @@ export class OrchestratorAgent extends BaseAgent {
         metadata: {
           sender: this.getId(),
           recipient: agent.getId(),
-        }
+        },
       }
 
       await agent.handleMessage(message)
@@ -187,11 +187,11 @@ export class OrchestratorAgent extends BaseAgent {
   // Public methods for external access
   public async registerAgent(agent: BaseAgent): Promise<void> {
     const agentId = agent.getId()
-    
+
     if (this.activeAgents.has(agentId)) {
       throw new RuntimeError(`Agent ${agentId} is already registered`)
     }
-    
+
     this.activeAgents.set(agentId, agent)
     await this.processQueuedTasks()
     logger.info(`Agent ${agentId} registered successfully`)
@@ -201,7 +201,7 @@ export class OrchestratorAgent extends BaseAgent {
     if (!this.activeAgents.has(agentId)) {
       throw new RuntimeError(`Agent ${agentId} is not registered`)
     }
-    
+
     this.activeAgents.delete(agentId)
     logger.info(`Agent ${agentId} unregistered successfully`)
   }
@@ -211,7 +211,7 @@ export class OrchestratorAgent extends BaseAgent {
   }
 
   public async broadcast(message: Message): Promise<{ success: boolean }[]> {
-    const promises = Array.from(this.activeAgents.values()).map(async (agent) => {
+    const promises = Array.from(this.activeAgents.values()).map(async agent => {
       try {
         return await agent.handleMessage(message)
       } catch (error) {
@@ -219,7 +219,7 @@ export class OrchestratorAgent extends BaseAgent {
         return { success: false }
       }
     })
-    
+
     return Promise.all(promises)
   }
 }

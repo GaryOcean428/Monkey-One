@@ -3,21 +3,21 @@
   --neon-pink: rgb(255, 0, 128);
   --neon-blue: rgb(0, 191, 255);
   --neon-purple: rgb(187, 0, 255);
-  
+
   /* Gradient Variations */
   --gradient-primary: linear-gradient(135deg, var(--neon-pink) 0%, var(--neon-blue) 100%);
   --gradient-accent: linear-gradient(45deg, var(--neon-purple) 0%, var(--neon-blue) 100%);
-  
+
   /* Background Colors */
   --bg-dark: rgb(8, 8, 13);
   --bg-darker: rgb(4, 4, 8);
   --bg-light: rgb(24, 24, 36);
-  
+
   /* Text Colors */
   --text-primary: rgb(255, 255, 255);
   --text-secondary: rgb(180, 180, 195);
   --text-muted: rgb(130, 130, 145);
-  
+
   /* Glow Effects */
   --glow-pink: 0 0 20px rgba(255, 0, 128, 0.5);
   --glow-blue: 0 0 20px rgba(0, 191, 255, 0.5);

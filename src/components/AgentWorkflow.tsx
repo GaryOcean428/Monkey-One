@@ -7,7 +7,8 @@ import { WorkflowVisualizer } from './workflow/WorkflowVisualizer'
 import { WorkflowDialog } from './workflow/WorkflowDialog'
 
 export function AgentWorkflow() {
-  const { workflows, createWorkflow, runWorkflow, saveWorkflow, deleteWorkflow, editWorkflow } = useWorkflow()
+  const { workflows, createWorkflow, runWorkflow, saveWorkflow, deleteWorkflow, editWorkflow } =
+    useWorkflow()
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const activeWorkflow = workflows[0] // For now, just show the first workflow
 
@@ -76,7 +77,7 @@ export function AgentWorkflow() {
       <div className="mb-6 flex items-start justify-between">
         <div>
           <h2 className="text-2xl font-bold">Agent Workflow</h2>
-          <p className="mt-1 text-muted-foreground">Visualize and manage agent workflows</p>
+          <p className="text-muted-foreground mt-1">Visualize and manage agent workflows</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={() => setIsDialogOpen(true)}>
@@ -120,7 +121,7 @@ export function AgentWorkflow() {
         ) : (
           <Card className="p-8 text-center">
             <h3 className="mb-2 text-lg font-medium">No Active Workflow</h3>
-            <p className="mb-4 text-muted-foreground">
+            <p className="text-muted-foreground mb-4">
               Create a new workflow to get started with agent automation
             </p>
             <Button onClick={() => setIsDialogOpen(true)}>

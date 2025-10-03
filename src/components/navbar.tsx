@@ -21,14 +21,14 @@ export function NavBar() {
   ]
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full border-b backdrop-blur">
       <div className="container flex h-14 max-w-screen-2xl items-center">
         <div className="mr-4 hidden md:flex">
           <NavigationMenu>
             <NavigationMenuList>
               {routes.map(route => (
                 <NavigationMenuItem key={route.href}>
-                  <NavigationMenuTrigger className="transition-colors hover:text-foreground/80">
+                  <NavigationMenuTrigger className="hover:text-foreground/80 transition-colors">
                     {route.label}
                   </NavigationMenuTrigger>
                 </NavigationMenuItem>
@@ -44,8 +44,8 @@ export function NavBar() {
             aria-label="Toggle theme"
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
           >
-            <Sun className="h-5 w-5 rotate-0 scale-100 transition-transform dark:-rotate-90 dark:scale-0" />
-            <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-transform dark:rotate-0 dark:scale-100" />
+            <Sun className="h-5 w-5 scale-100 rotate-0 transition-transform dark:scale-0 dark:-rotate-90" />
+            <Moon className="absolute h-5 w-5 scale-0 rotate-90 transition-transform dark:scale-100 dark:rotate-0" />
           </Button>
 
           <Button

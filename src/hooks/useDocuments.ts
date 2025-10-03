@@ -1,12 +1,12 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react'
 
 interface Document {
-  id: string;
-  name: string;
-  type: 'file' | 'folder';
-  lastModified: number;
-  size?: number;
-  path: string;
+  id: string
+  name: string
+  type: 'file' | 'folder'
+  lastModified: number
+  size?: number
+  path: string
 }
 
 export function useDocuments() {
@@ -16,7 +16,7 @@ export function useDocuments() {
       name: 'Project Documentation',
       type: 'folder',
       lastModified: Date.now(),
-      path: '/docs'
+      path: '/docs',
     },
     {
       id: '2',
@@ -24,18 +24,18 @@ export function useDocuments() {
       type: 'file',
       lastModified: Date.now(),
       size: 1024,
-      path: '/docs/api'
-    }
-  ]);
+      path: '/docs/api',
+    },
+  ])
 
   const uploadDocument = useCallback(async () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.multiple = true;
-    
-    input.onchange = async (e) => {
-      const files = (e.target as HTMLInputElement).files;
-      if (!files) return;
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.multiple = true
+
+    input.onchange = async e => {
+      const files = (e.target as HTMLInputElement).files
+      if (!files) return
 
       const newDocs: Document[] = Array.from(files).map(file => ({
         id: crypto.randomUUID(),
@@ -43,17 +43,17 @@ export function useDocuments() {
         type: 'file',
         lastModified: file.lastModified,
         size: file.size,
-        path: `/uploads/${file.name}`
-      }));
+        path: `/uploads/${file.name}`,
+      }))
 
-      setDocuments(prev => [...prev, ...newDocs]);
-    };
+      setDocuments(prev => [...prev, ...newDocs])
+    }
 
-    input.click();
-  }, []);
+    input.click()
+  }, [])
 
   return {
     documents,
-    uploadDocument
-  };
+    uploadDocument,
+  }
 }

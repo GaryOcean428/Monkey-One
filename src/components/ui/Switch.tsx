@@ -13,10 +13,12 @@ export const Switch: React.FC<SwitchProps> = ({
   onCheckedChange,
   disabled = false,
   className = '',
-  label
+  label,
 }) => {
   return (
-    <label className={`inline-flex items-center cursor-pointer ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}>
+    <label
+      className={`inline-flex cursor-pointer items-center ${disabled ? 'cursor-not-allowed opacity-50' : ''} ${className}`}
+    >
       <div className="relative">
         <input
           type="checkbox"
@@ -26,22 +28,14 @@ export const Switch: React.FC<SwitchProps> = ({
           disabled={disabled}
         />
         <div
-          className={`
-            block w-14 h-8 rounded-full transition-colors
-            ${checked ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'}
-          `}
+          className={`block h-8 w-14 rounded-full transition-colors ${checked ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'} `}
         />
         <div
-          className={`
-            absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform
-            ${checked ? 'transform translate-x-6' : ''}
-          `}
+          className={`absolute top-1 left-1 h-6 w-6 rounded-full bg-white transition-transform ${checked ? 'translate-x-6 transform' : ''} `}
         />
       </div>
       {label && (
-        <span className="ml-3 text-sm font-medium text-gray-900 dark:text-gray-100">
-          {label}
-        </span>
+        <span className="ml-3 text-sm font-medium text-gray-900 dark:text-gray-100">{label}</span>
       )}
     </label>
   )

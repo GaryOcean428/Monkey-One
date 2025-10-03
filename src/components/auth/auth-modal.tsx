@@ -112,9 +112,19 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const calculatePasswordStrength = (password: string) => {
     let strength = ''
     if (password.length >= 8) {
-      if (/[A-Z]/.test(password) && /[a-z]/.test(password) && /\d/.test(password) && /[@$!%*?&]/.test(password)) {
+      if (
+        /[A-Z]/.test(password) &&
+        /[a-z]/.test(password) &&
+        /\d/.test(password) &&
+        /[@$!%*?&]/.test(password)
+      ) {
         strength = 'Strong'
-      } else if (/[A-Z]/.test(password) || /[a-z]/.test(password) || /\d/.test(password) || /[@$!%*?&]/.test(password)) {
+      } else if (
+        /[A-Z]/.test(password) ||
+        /[a-z]/.test(password) ||
+        /\d/.test(password) ||
+        /[@$!%*?&]/.test(password)
+      ) {
         strength = 'Medium'
       } else {
         strength = 'Weak'
@@ -158,7 +168,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
               />
               {errors.email && (
                 <motion.p
-                  className="text-sm text-destructive"
+                  className="text-destructive text-sm"
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                 >
@@ -179,7 +189,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   )}
                   {...register('password')}
                   disabled={isLoading}
-                  onChange={(e) => {
+                  onChange={e => {
                     register('password').onChange(e)
                     calculatePasswordStrength(e.target.value)
                   }}
@@ -195,14 +205,14 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
               </div>
               {errors.password && (
                 <motion.p
-                  className="text-sm text-destructive"
+                  className="text-destructive text-sm"
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                 >
                   {errors.password.message}
                 </motion.p>
               )}
-              <p className="text-sm text-muted-foreground">Password strength: {passwordStrength}</p>
+              <p className="text-muted-foreground text-sm">Password strength: {passwordStrength}</p>
             </div>
 
             {isSignUp && (
@@ -220,7 +230,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 />
                 {errors.confirmPassword && (
                   <motion.p
-                    className="text-sm text-destructive"
+                    className="text-destructive text-sm"
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                   >
@@ -233,7 +243,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
           {error && (
             <motion.div
-              className="rounded-md bg-destructive/15 p-3 text-sm text-destructive"
+              className="bg-destructive/15 text-destructive rounded-md p-3 text-sm"
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
             >
@@ -275,7 +285,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
               <span className="w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+              <span className="bg-background text-muted-foreground px-2">Or continue with</span>
             </div>
           </div>
 

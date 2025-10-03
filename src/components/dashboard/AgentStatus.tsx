@@ -29,9 +29,9 @@ export const AgentStatus: React.FC<AgentStatusProps> = ({ agents }) => {
   return (
     <div className="space-y-4">
       {agents.map(agent => (
-        <Card key={agent.id} className="p-4 flex items-center justify-between">
+        <Card key={agent.id} className="flex items-center justify-between p-4">
           <div className="flex items-center space-x-3">
-            <div className={`w-3 h-3 rounded-full ${getStatusColor(agent.status)}`} />
+            <div className={`h-3 w-3 rounded-full ${getStatusColor(agent.status)}`} />
             <div>
               <h3 className="font-medium">{agent.name}</h3>
               <p className="text-sm text-gray-500">

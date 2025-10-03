@@ -1,4 +1,4 @@
-import { QuestionType, ResponseStrategy, TaskType } from '../types';
+import { QuestionType, ResponseStrategy, TaskType } from '../types'
 
 export class ResponseStrategySelector {
   private static readonly STRATEGY_MAP: Record<QuestionType, ResponseStrategy> = {
@@ -8,7 +8,7 @@ export class ResponseStrategySelector {
     analysis: 'comparative_analysis',
     casual: 'casual_conversation',
     open_ended: 'open_discussion',
-  };
+  }
 
   private static readonly TOKEN_MULTIPLIERS: Record<ResponseStrategy, number> = {
     casual_conversation: 1.0,
@@ -19,7 +19,7 @@ export class ResponseStrategySelector {
     open_discussion: 1.8,
     code_generation: 3.0,
     debug_explanation: 2.5,
-  };
+  }
 
   /**
    * Select appropriate response strategy
@@ -27,21 +27,16 @@ export class ResponseStrategySelector {
    * @param taskType Type of task
    * @returns Selected response strategy
    */
-  public static selectStrategy(
-    questionType: QuestionType,
-    taskType: TaskType
-  ): ResponseStrategy {
+  public static selectStrategy(questionType: QuestionType, taskType: TaskType): ResponseStrategy {
     if (taskType === 'casual' || questionType === 'casual') {
-      return 'casual_conversation';
+      return 'casual_conversation'
     }
 
     if (taskType === 'coding') {
-      return questionType === 'problem_solving' 
-        ? 'code_generation' 
-        : 'debug_explanation';
+      return questionType === 'problem_solving' ? 'code_generation' : 'debug_explanation'
     }
 
-    return this.STRATEGY_MAP[questionType] || 'direct_answer';
+    return this.STRATEGY_MAP[questionType] || 'direct_answer'
   }
 
   /**
@@ -50,7 +45,7 @@ export class ResponseStrategySelector {
    * @returns Token multiplier
    */
   public static getTokenMultiplier(strategy: ResponseStrategy): number {
-    return this.TOKEN_MULTIPLIERS[strategy];
+    return this.TOKEN_MULTIPLIERS[strategy]
   }
 
   /**
@@ -66,13 +61,13 @@ export class ResponseStrategySelector {
     isRapidExchange: boolean
   ): ResponseStrategy {
     if (isRapidExchange && strategy !== 'casual_conversation') {
-      return 'direct_answer';
+      return 'direct_answer'
     }
 
     if (contextLength > 4000 && strategy === 'chain_of_thought') {
-      return 'direct_answer';
+      return 'direct_answer'
     }
 
-    return strategy;
+    return strategy
   }
 }

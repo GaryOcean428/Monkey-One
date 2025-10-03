@@ -1,91 +1,85 @@
 /**
  * Enhanced Ingestor Agent with ML Integration
- * 
+ *
  * Combines traditional regex-based extraction with machine learning
  * enhanced patterns for improved accuracy and context awareness.
  */
 
-import { IngestorAgent } from './ingestor-agent';
-import { MLEntityExtractor } from './ml-extractor';
-import type { MemoryGraph } from './memory-graph';
-import type { EntityExtraction, RelationshipExtraction } from './types';
+import { IngestorAgent } from './ingestor-agent'
+import { MLEntityExtractor } from './ml-extractor'
+import type { MemoryGraph } from './memory-graph'
+import type { EntityExtraction, RelationshipExtraction } from './types'
 
 interface EnhancedIngestionOptions {
-  useML?: boolean;
-  confidence?: number;
-  domain?: string;
-  batchSize?: number;
-  enableLearning?: boolean;
+  useML?: boolean
+  confidence?: number
+  domain?: string
+  batchSize?: number
+  enableLearning?: boolean
 }
 
 interface IngestionResult {
-  entitiesExtracted: number;
-  relationshipsExtracted: number;
-  confidence: number;
-  processingTime: number;
-  method: 'traditional' | 'ml' | 'hybrid';
+  entitiesExtracted: number
+  relationshipsExtracted: number
+  confidence: number
+  processingTime: number
+  method: 'traditional' | 'ml' | 'hybrid'
 }
 
 export class EnhancedIngestorAgent extends IngestorAgent {
-  private mlExtractor: MLEntityExtractor;
-  private learningEnabled: boolean = true;
-  private ingestionHistory: IngestionResult[] = [];
+  private mlExtractor: MLEntityExtractor
+  private learningEnabled: boolean = true
+  private ingestionHistory: IngestionResult[] = []
 
   constructor(graph: MemoryGraph) {
-    super(graph);
-    this.mlExtractor = new MLEntityExtractor();
+    super(graph)
+    this.mlExtractor = new MLEntityExtractor()
   }
 
   async ingestTextEnhanced(
-    text: string, 
-    source: string, 
+    text: string,
+    source: string,
     options: EnhancedIngestionOptions = {}
   ): Promise<IngestionResult> {
-    const startTime = Date.now();
-    const {
-      useML = true,
-      confidence = 0.7,
-      domain
-    } = options;
+    const startTime = Date.now()
+    const { useML = true, confidence = 0.7, domain } = options
 
-    let entities: EntityExtraction[] = [];
-    let relationships: RelationshipExtraction[] = [];
-    let method: 'traditional' | 'ml' | 'hybrid' = 'traditional';
+    let entities: EntityExtraction[] = []
+    let relationships: RelationshipExtraction[] = []
+    let method: 'traditional' | 'ml' | 'hybrid' = 'traditional'
 
     if (useML) {
       // Use ML-enhanced extraction
       const mlResult = this.mlExtractor.extractWithContext(text, {
         domain,
         confidence,
-        source
-      });
+        source,
+      })
 
       // Combine with traditional extraction for hybrid approach
-      const traditionalEntities = this.extractEntities(text);
-      const traditionalRelationships = this.extractRelationships(text, traditionalEntities);
+      const traditionalEntities = this.extractEntities(text)
+      const traditionalRelationships = this.extractRelationships(text, traditionalEntities)
 
       // Merge and deduplicate results
-      entities = this.mergeEntities(mlResult.entities, traditionalEntities, confidence);
+      entities = this.mergeEntities(mlResult.entities, traditionalEntities, confidence)
       relationships = this.mergeRelationships(
-        mlResult.relationships, 
-        traditionalRelationships, 
+        mlResult.relationships,
+        traditionalRelationships,
         entities
-      );
+      )
 
-      method = traditionalEntities.length > 0 ? 'hybrid' : 'ml';
+      method = traditionalEntities.length > 0 ? 'hybrid' : 'ml'
     } else {
       // Use traditional extraction only
-      entities = this.extractEntities(text);
-      relationships = this.extractRelationships(text, entities);
+      entities = this.extractEntities(text)
+      relationships = this.extractRelationships(text, entities)
     }
 
     // Filter by confidence threshold
-    const filteredEntities = entities.filter(e => 
-      (e.properties.confidence || 1.0) >= confidence
-    );
-    const filteredRelationships = relationships.filter(r => 
-      (r.properties?.confidence || 1.0) >= confidence
-    );
+    const filteredEntities = entities.filter(e => (e.properties.confidence || 1.0) >= confidence)
+    const filteredRelationships = relationships.filter(
+      r => (r.properties?.confidence || 1.0) >= confidence
+    )
 
     // Add to graph
     for (const entity of filteredEntities) {
@@ -95,14 +89,14 @@ export class EnhancedIngestorAgent extends IngestorAgent {
         properties: {
           ...entity.properties,
           extractionMethod: method,
-          source
-        },
-        metadata: { 
-          createdBy: 'EnhancedIngestorAgent', 
           source,
-          confidence: entity.properties.confidence
-        }
-      });
+        },
+        metadata: {
+          createdBy: 'EnhancedIngestorAgent',
+          source,
+          confidence: entity.properties.confidence,
+        },
+      })
     }
 
     for (const rel of filteredRelationships) {
@@ -113,34 +107,34 @@ export class EnhancedIngestorAgent extends IngestorAgent {
         properties: {
           ...rel.properties,
           extractionMethod: method,
-          source
-        }
-      });
+          source,
+        },
+      })
     }
 
-    const processingTime = Date.now() - startTime;
-    const avgConfidence = this.calculateAverageConfidence(filteredEntities, filteredRelationships);
+    const processingTime = Date.now() - startTime
+    const avgConfidence = this.calculateAverageConfidence(filteredEntities, filteredRelationships)
 
     const result: IngestionResult = {
       entitiesExtracted: filteredEntities.length,
       relationshipsExtracted: filteredRelationships.length,
       confidence: avgConfidence,
       processingTime,
-      method
-    };
+      method,
+    }
 
-    this.ingestionHistory.push(result);
-    return result;
+    this.ingestionHistory.push(result)
+    return result
   }
 
   private mergeEntities(
-    mlEntities: EntityExtraction[], 
+    mlEntities: EntityExtraction[],
     traditionalEntities: EntityExtraction[],
     confidenceThreshold: number
   ): EntityExtraction[] {
-    const merged = new Map<string, EntityExtraction>();
-    const conflicts = new Map<string, EntityExtraction[]>();
-    
+    const merged = new Map<string, EntityExtraction>()
+    const conflicts = new Map<string, EntityExtraction[]>()
+
     // Add ML entities first (higher priority)
     mlEntities.forEach(entity => {
       if ((entity.properties.confidence || 0) >= confidenceThreshold) {
@@ -149,17 +143,17 @@ export class EnhancedIngestorAgent extends IngestorAgent {
           properties: {
             ...entity.properties,
             extractedBy: 'ml',
-            sources: ['ml']
-          }
-        });
+            sources: ['ml'],
+          },
+        })
       }
-    });
-    
+    })
+
     // Process traditional entities with conflict detection
     traditionalEntities.forEach(entity => {
-      const existing = merged.get(entity.id);
-      const entityConfidence = entity.properties.confidence || 0.8; // Default confidence for traditional
-      
+      const existing = merged.get(entity.id)
+      const entityConfidence = entity.properties.confidence || 0.8 // Default confidence for traditional
+
       if (!existing) {
         // No conflict, add directly
         if (entityConfidence >= confidenceThreshold) {
@@ -169,14 +163,14 @@ export class EnhancedIngestorAgent extends IngestorAgent {
               ...entity.properties,
               confidence: entityConfidence,
               extractedBy: 'traditional',
-              sources: ['traditional']
-            }
-          });
+              sources: ['traditional'],
+            },
+          })
         }
       } else {
         // Conflict detected - use confidence-based resolution with property merging
-        const confidenceDiff = Math.abs(entityConfidence - (existing.properties.confidence || 0));
-        
+        const confidenceDiff = Math.abs(entityConfidence - (existing.properties.confidence || 0))
+
         if (confidenceDiff < 0.1) {
           // Very close confidence - merge properties from both sources
           merged.set(entity.id, {
@@ -186,9 +180,9 @@ export class EnhancedIngestorAgent extends IngestorAgent {
               ...this.mergeProperties(existing.properties, entity.properties),
               confidence: (entityConfidence + (existing.properties.confidence || 0)) / 2,
               extractedBy: 'hybrid',
-              sources: [...(existing.properties.sources || ['ml']), 'traditional']
-            }
-          });
+              sources: [...(existing.properties.sources || ['ml']), 'traditional'],
+            },
+          })
         } else if (entityConfidence > (existing.properties.confidence || 0)) {
           // Traditional has higher confidence - replace but keep source info
           merged.set(entity.id, {
@@ -198,47 +192,50 @@ export class EnhancedIngestorAgent extends IngestorAgent {
               confidence: entityConfidence,
               extractedBy: 'hybrid',
               sources: [...(existing.properties.sources || ['ml']), 'traditional'],
-              previousConfidence: existing.properties.confidence
-            }
-          });
+              previousConfidence: existing.properties.confidence,
+            },
+          })
         }
         // If ML has higher confidence, keep it (already in merged)
-        
+
         // Track conflict for analysis
         if (!conflicts.has(entity.id)) {
-          conflicts.set(entity.id, []);
+          conflicts.set(entity.id, [])
         }
-        conflicts.get(entity.id)!.push(entity);
+        conflicts.get(entity.id)!.push(entity)
       }
-    });
-    
+    })
+
     // Log conflicts for improvement learning
     if (conflicts.size > 0) {
-      this.logMergeConflicts('entities', conflicts);
+      this.logMergeConflicts('entities', conflicts)
     }
-    
-    return Array.from(merged.values());
+
+    return Array.from(merged.values())
   }
 
-  private mergeProperties(props1: Record<string, unknown>, props2: Record<string, unknown>): Record<string, unknown> {
+  private mergeProperties(
+    props1: Record<string, unknown>,
+    props2: Record<string, unknown>
+  ): Record<string, unknown> {
     // Merge properties intelligently, keeping non-conflicting values from both
-    const merged = { ...props1 };
-    
+    const merged = { ...props1 }
+
     for (const [key, value] of Object.entries(props2)) {
       if (key === 'confidence' || key === 'extractedBy' || key === 'sources') {
-        continue; // Skip these as they're handled separately
+        continue // Skip these as they're handled separately
       }
-      
+
       if (!(key in merged)) {
         // Property only exists in props2
-        merged[key] = value;
+        merged[key] = value
       } else if (merged[key] !== value) {
         // Conflict - keep both with suffix
-        merged[`${key}_alt`] = value;
+        merged[`${key}_alt`] = value
       }
     }
-    
-    return merged;
+
+    return merged
   }
 
   private logMergeConflicts(type: string, conflicts: Map<string, unknown[]>): void {
@@ -247,11 +244,11 @@ export class EnhancedIngestorAgent extends IngestorAgent {
       type,
       count: conflicts.size,
       timestamp: new Date(),
-      examples: Array.from(conflicts.entries()).slice(0, 5) // Keep first 5 examples
-    };
-    
+      examples: Array.from(conflicts.entries()).slice(0, 5), // Keep first 5 examples
+    }
+
     // In a real implementation, this would be persisted for analysis
-    console.debug(`Merge conflicts detected for ${type}:`, conflictInfo);
+    console.debug(`Merge conflicts detected for ${type}:`, conflictInfo)
   }
 
   private mergeRelationships(
@@ -259,13 +256,13 @@ export class EnhancedIngestorAgent extends IngestorAgent {
     traditionalRelationships: RelationshipExtraction[],
     entities: EntityExtraction[]
   ): RelationshipExtraction[] {
-    const merged = new Map<string, RelationshipExtraction>();
-    const entityIds = new Set(entities.map(e => e.id));
-    const conflicts = new Map<string, RelationshipExtraction[]>();
-    
+    const merged = new Map<string, RelationshipExtraction>()
+    const entityIds = new Set(entities.map(e => e.id))
+    const conflicts = new Map<string, RelationshipExtraction[]>()
+
     // Helper to create relationship key
-    const getRelKey = (rel: RelationshipExtraction) => `${rel.from}-${rel.type}-${rel.to}`;
-    
+    const getRelKey = (rel: RelationshipExtraction) => `${rel.from}-${rel.type}-${rel.to}`
+
     // Add ML relationships with validation
     mlRelationships.forEach(rel => {
       if (entityIds.has(rel.from) && entityIds.has(rel.to)) {
@@ -274,19 +271,19 @@ export class EnhancedIngestorAgent extends IngestorAgent {
           properties: {
             ...rel.properties,
             extractedBy: 'ml',
-            sources: ['ml']
-          }
-        });
+            sources: ['ml'],
+          },
+        })
       }
-    });
-    
+    })
+
     // Process traditional relationships with conflict resolution
     traditionalRelationships.forEach(rel => {
       if (entityIds.has(rel.from) && entityIds.has(rel.to)) {
-        const key = getRelKey(rel);
-        const existing = merged.get(key);
-        const relConfidence = rel.properties?.confidence || 0.8;
-        
+        const key = getRelKey(rel)
+        const existing = merged.get(key)
+        const relConfidence = rel.properties?.confidence || 0.8
+
         if (!existing) {
           // No conflict
           merged.set(key, {
@@ -295,14 +292,14 @@ export class EnhancedIngestorAgent extends IngestorAgent {
               ...rel.properties,
               confidence: relConfidence,
               extractedBy: 'traditional',
-              sources: ['traditional']
-            }
-          });
+              sources: ['traditional'],
+            },
+          })
         } else {
           // Conflict - resolve intelligently
-          const existingConfidence = existing.properties?.confidence || 0;
-          const confidenceDiff = Math.abs(relConfidence - existingConfidence);
-          
+          const existingConfidence = existing.properties?.confidence || 0
+          const confidenceDiff = Math.abs(relConfidence - existingConfidence)
+
           if (confidenceDiff < 0.15) {
             // Similar confidence - merge and boost confidence
             merged.set(key, {
@@ -312,9 +309,9 @@ export class EnhancedIngestorAgent extends IngestorAgent {
                 confidence: Math.min(1.0, (relConfidence + existingConfidence) / 2 + 0.1),
                 extractedBy: 'hybrid',
                 sources: [...(existing.properties?.sources || ['ml']), 'traditional'],
-                verified: true // Both methods agree, so mark as verified
-              }
-            });
+                verified: true, // Both methods agree, so mark as verified
+              },
+            })
           } else if (relConfidence > existingConfidence) {
             // Traditional has higher confidence
             merged.set(key, {
@@ -323,41 +320,41 @@ export class EnhancedIngestorAgent extends IngestorAgent {
                 ...rel.properties,
                 confidence: relConfidence,
                 extractedBy: 'hybrid',
-                sources: [...(existing.properties?.sources || ['ml']), 'traditional']
-              }
-            });
+                sources: [...(existing.properties?.sources || ['ml']), 'traditional'],
+              },
+            })
           }
           // If ML has higher confidence, keep it
-          
+
           // Track conflict
           if (!conflicts.has(key)) {
-            conflicts.set(key, []);
+            conflicts.set(key, [])
           }
-          conflicts.get(key)!.push(rel);
+          conflicts.get(key)!.push(rel)
         }
       }
-    });
-    
+    })
+
     // Log conflicts for analysis
     if (conflicts.size > 0) {
-      this.logMergeConflicts('relationships', conflicts);
+      this.logMergeConflicts('relationships', conflicts)
     }
-    
-    return Array.from(merged.values());
+
+    return Array.from(merged.values())
   }
 
   private calculateAverageConfidence(
-    entities: EntityExtraction[], 
+    entities: EntityExtraction[],
     relationships: RelationshipExtraction[]
   ): number {
     const allConfidences = [
       ...entities.map(e => e.properties.confidence || 0.8),
-      ...relationships.map(r => r.properties?.confidence || 0.8)
-    ];
-    
-    return allConfidences.length > 0 
+      ...relationships.map(r => r.properties?.confidence || 0.8),
+    ]
+
+    return allConfidences.length > 0
       ? allConfidences.reduce((sum, conf) => sum + conf, 0) / allConfidences.length
-      : 0;
+      : 0
   }
 
   // Batch processing with ML enhancement
@@ -365,22 +362,22 @@ export class EnhancedIngestorAgent extends IngestorAgent {
     texts: Array<{ content: string; source: string; domain?: string }>,
     options: EnhancedIngestionOptions = {}
   ): Promise<IngestionResult[]> {
-    const { batchSize = 10 } = options;
-    const results: IngestionResult[] = [];
-    
+    const { batchSize = 10 } = options
+    const results: IngestionResult[] = []
+
     for (let i = 0; i < texts.length; i += batchSize) {
-      const batch = texts.slice(i, i + batchSize);
-      
+      const batch = texts.slice(i, i + batchSize)
+
       const batchResults = await Promise.all(
         batch.map(({ content, source, domain }) =>
           this.ingestTextEnhanced(content, source, { ...options, domain })
         )
-      );
-      
-      results.push(...batchResults);
+      )
+
+      results.push(...batchResults)
     }
-    
-    return results;
+
+    return results
   }
 
   // Learning from feedback
@@ -389,29 +386,29 @@ export class EnhancedIngestorAgent extends IngestorAgent {
     correctEntities: EntityExtraction[],
     correctRelationships: RelationshipExtraction[]
   ): Promise<void> {
-    if (!this.learningEnabled) return;
-    
+    if (!this.learningEnabled) return
+
     // Update ML extractor with feedback
-    this.mlExtractor.updateFromFeedback(text, correctEntities, correctRelationships);
-    
+    this.mlExtractor.updateFromFeedback(text, correctEntities, correctRelationships)
+
     // Store feedback for future analysis
     // In a real implementation, this could be persisted to a database
   }
 
   // Performance analysis
   getPerformanceMetrics(): {
-    totalIngestions: number;
-    averageProcessingTime: number;
-    averageConfidence: number;
-    methodDistribution: Record<string, number>;
+    totalIngestions: number
+    averageProcessingTime: number
+    averageConfidence: number
+    methodDistribution: Record<string, number>
     recentTrends: {
-      entitiesPerIngestion: number;
-      relationshipsPerIngestion: number;
-      confidenceTrend: number;
-    };
+      entitiesPerIngestion: number
+      relationshipsPerIngestion: number
+      confidenceTrend: number
+    }
   } {
-    const history = this.ingestionHistory;
-    
+    const history = this.ingestionHistory
+
     if (history.length === 0) {
       return {
         totalIngestions: 0,
@@ -421,25 +418,28 @@ export class EnhancedIngestorAgent extends IngestorAgent {
         recentTrends: {
           entitiesPerIngestion: 0,
           relationshipsPerIngestion: 0,
-          confidenceTrend: 0
-        }
-      };
+          confidenceTrend: 0,
+        },
+      }
     }
-    
-    const totalProcessingTime = history.reduce((sum, r) => sum + r.processingTime, 0);
-    const totalConfidence = history.reduce((sum, r) => sum + r.confidence, 0);
-    
-    const methodDistribution = history.reduce((acc, r) => {
-      acc[r.method] = (acc[r.method] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-    
+
+    const totalProcessingTime = history.reduce((sum, r) => sum + r.processingTime, 0)
+    const totalConfidence = history.reduce((sum, r) => sum + r.confidence, 0)
+
+    const methodDistribution = history.reduce(
+      (acc, r) => {
+        acc[r.method] = (acc[r.method] || 0) + 1
+        return acc
+      },
+      {} as Record<string, number>
+    )
+
     // Recent trends (last 10 ingestions)
-    const recent = history.slice(-10);
-    const recentEntities = recent.reduce((sum, r) => sum + r.entitiesExtracted, 0);
-    const recentRelationships = recent.reduce((sum, r) => sum + r.relationshipsExtracted, 0);
-    const recentConfidence = recent.reduce((sum, r) => sum + r.confidence, 0);
-    
+    const recent = history.slice(-10)
+    const recentEntities = recent.reduce((sum, r) => sum + r.entitiesExtracted, 0)
+    const recentRelationships = recent.reduce((sum, r) => sum + r.relationshipsExtracted, 0)
+    const recentConfidence = recent.reduce((sum, r) => sum + r.confidence, 0)
+
     return {
       totalIngestions: history.length,
       averageProcessingTime: totalProcessingTime / history.length,
@@ -448,36 +448,36 @@ export class EnhancedIngestorAgent extends IngestorAgent {
       recentTrends: {
         entitiesPerIngestion: recent.length > 0 ? recentEntities / recent.length : 0,
         relationshipsPerIngestion: recent.length > 0 ? recentRelationships / recent.length : 0,
-        confidenceTrend: recent.length > 0 ? recentConfidence / recent.length : 0
-      }
-    };
+        confidenceTrend: recent.length > 0 ? recentConfidence / recent.length : 0,
+      },
+    }
   }
 
   // Get ML extractor statistics
   getMLStats() {
-    return this.mlExtractor.getExtractionStats();
+    return this.mlExtractor.getExtractionStats()
   }
 
   // Enable/disable learning
   setLearningEnabled(enabled: boolean): void {
-    this.learningEnabled = enabled;
+    this.learningEnabled = enabled
   }
 
   // Clear ingestion history
   clearHistory(): void {
-    this.ingestionHistory = [];
+    this.ingestionHistory = []
   }
 
   // Export configuration for model persistence
   exportConfiguration(): {
-    learningEnabled: boolean;
-    ingestionHistory: IngestionResult[];
-    mlStats: ReturnType<MLEntityExtractor['getExtractionStats']>;
+    learningEnabled: boolean
+    ingestionHistory: IngestionResult[]
+    mlStats: ReturnType<MLEntityExtractor['getExtractionStats']>
   } {
     return {
       learningEnabled: this.learningEnabled,
       ingestionHistory: this.ingestionHistory,
-      mlStats: this.getMLStats()
-    };
+      mlStats: this.getMLStats(),
+    }
   }
 }

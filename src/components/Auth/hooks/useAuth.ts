@@ -82,6 +82,6 @@ export function useAuth() {
     signUp,
     signOut,
     resetPassword,
-    handleAuthCallback
+    handleAuthCallback,
   }
 }

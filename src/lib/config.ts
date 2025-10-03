@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod'
 
 const configSchema = z.object({
   xai: z.object({
@@ -22,9 +22,9 @@ const configSchema = z.object({
     searchEngineId: z.string(),
     resultsPerPage: z.number(),
   }),
-});
+})
 
-type Config = z.infer<typeof configSchema>;
+type Config = z.infer<typeof configSchema>
 
 const config: Config = {
   xai: {
@@ -48,6 +48,6 @@ const config: Config = {
     searchEngineId: import.meta.env.VITE_GOOGLE_SEARCH_ENGINE_ID || '',
     resultsPerPage: 5,
   },
-} as const;
+} as const
 
-export { config, type Config, configSchema };
+export { config, type Config, configSchema }

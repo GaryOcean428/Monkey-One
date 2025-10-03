@@ -46,9 +46,9 @@ export async function exchangeOIDCForGCPToken(
   try {
     // Step 1: Exchange OIDC token for GCP access token
     const stsEndpoint = 'https://sts.googleapis.com/v1/token'
-    
+
     const audience = `//iam.googleapis.com/projects/${projectNumber}/locations/global/workloadIdentityPools/${poolId}/providers/${providerId}`
-    
+
     const stsResponse = await globalThis.fetch(stsEndpoint, {
       method: 'POST',
       headers: {
@@ -79,7 +79,7 @@ export async function exchangeOIDCForGCPToken(
 
     // Return the federated token directly
     const expiresAt = new Date(Date.now() + stsData.expires_in * 1000)
-    
+
     return {
       accessToken: stsData.access_token,
       tokenType: stsData.token_type || 'Bearer',
@@ -106,7 +106,7 @@ async function impersonateServiceAccount(
     const response = await globalThis.fetch(impersonateEndpoint, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${federatedToken}`,
+        Authorization: `Bearer ${federatedToken}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -143,9 +143,13 @@ async function impersonateServiceAccount(
 export function createGCPConfigFromEnv(): GCPWorkloadIdentityConfig | null {
   const projectId = import.meta.env.VITE_GCP_PROJECT_ID || process.env.GCP_PROJECT_ID
   const projectNumber = import.meta.env.VITE_GCP_PROJECT_NUMBER || process.env.GCP_PROJECT_NUMBER
-  const poolId = import.meta.env.VITE_GCP_WORKLOAD_IDENTITY_POOL_ID || process.env.GCP_WORKLOAD_IDENTITY_POOL_ID
-  const providerId = import.meta.env.VITE_GCP_WORKLOAD_IDENTITY_POOL_PROVIDER_ID || process.env.GCP_WORKLOAD_IDENTITY_POOL_PROVIDER_ID
-  const serviceAccountEmail = import.meta.env.VITE_GCP_SERVICE_ACCOUNT_EMAIL || process.env.GCP_SERVICE_ACCOUNT_EMAIL
+  const poolId =
+    import.meta.env.VITE_GCP_WORKLOAD_IDENTITY_POOL_ID || process.env.GCP_WORKLOAD_IDENTITY_POOL_ID
+  const providerId =
+    import.meta.env.VITE_GCP_WORKLOAD_IDENTITY_POOL_PROVIDER_ID ||
+    process.env.GCP_WORKLOAD_IDENTITY_POOL_PROVIDER_ID
+  const serviceAccountEmail =
+    import.meta.env.VITE_GCP_SERVICE_ACCOUNT_EMAIL || process.env.GCP_SERVICE_ACCOUNT_EMAIL
 
   if (!projectId || !projectNumber || !poolId || !providerId || !serviceAccountEmail) {
     console.warn('Missing GCP configuration environment variables')
@@ -166,7 +170,7 @@ export function createGCPConfigFromEnv(): GCPWorkloadIdentityConfig | null {
  */
 export async function getGCPCredentials(): Promise<GCPCredentials | null> {
   const config = createGCPConfigFromEnv()
-  
+
   if (!config) {
     return null
   }
@@ -203,7 +207,7 @@ export function useGCPCredentials(config?: GCPWorkloadIdentityConfig): GCPCreden
 
   React.useEffect(() => {
     const configToUse = config || createGCPConfigFromEnv()
-    
+
     if (configToUse) {
       exchangeOIDCForGCPToken(configToUse).then(setCredentials)
     }
@@ -219,13 +223,13 @@ export async function createAuthenticatedFetch(
   config?: GCPWorkloadIdentityConfig
 ): Promise<typeof fetch | null> {
   const configToUse = config || createGCPConfigFromEnv()
-  
+
   if (!configToUse) {
     return null
   }
 
   const credentials = await exchangeOIDCForGCPToken(configToUse)
-  
+
   if (!credentials) {
     return null
   }

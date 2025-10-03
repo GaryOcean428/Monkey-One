@@ -11,11 +11,15 @@ import {
   getAuthStatus,
   signOut as googleSignOut,
   handleOAuthCallback,
-  signInWithGoogle
+  signInWithGoogle,
 } from '../lib/auth/google-auth'
 import { OIDCToken, getValidOIDCToken } from '../lib/auth/oidc'
 import { GCPCredentials, getGCPCredentials } from '../lib/auth/oidc-gcp'
-import { SupabaseProfile, getSupabaseProfile, syncGoogleUserToSupabase } from '../lib/auth/user-sync'
+import {
+  SupabaseProfile,
+  getSupabaseProfile,
+  syncGoogleUserToSupabase,
+} from '../lib/auth/user-sync'
 
 interface AuthContextType extends AuthState {
   oidcToken: OIDCToken | null
@@ -30,8 +34,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function useAuth(): AuthContextType {
   const context = useContext(AuthContext)
-  if (context === undefined)
-  {
+  if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider')
   }
   return context
@@ -54,15 +57,13 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
   const [supabaseProfile, setSupabaseProfile] = useState<SupabaseProfile | null>(null)
 
   const refreshCredentials = useCallback(async () => {
-    try
-    {
+    try {
       // Refresh OIDC token
       const oidc = getValidOIDCToken()
 
       // Refresh GCP credentials
       let gcp: GCPCredentials | null = null
-      if (oidc)
-      {
+      if (oidc) {
         gcp = await getGCPCredentials()
       }
 
@@ -75,8 +76,7 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
         ...prev,
         isAuthenticated: !!(status.user && oidc),
       }))
-    } catch (error)
-    {
+    } catch (error) {
       console.error('Failed to refresh credentials:', error)
     }
   }, [])
@@ -84,25 +84,21 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
   // Initialize authentication state
   useEffect(() => {
     const initializeAuth = async () => {
-      try
-      {
+      try {
         // Check if this is an OAuth callback
         const urlParams = new URLSearchParams(window.location.search)
         const hasCode = urlParams.has('code')
 
-        if (hasCode)
-        {
+        if (hasCode) {
           console.log('OAuth callback detected, processing...')
 
           // Clean up URL IMMEDIATELY to prevent hydration issues
           window.history.replaceState({}, document.title, window.location.pathname)
 
           const config = createGoogleAuthConfig()
-          if (config)
-          {
+          if (config) {
             const user = await handleOAuthCallback(config)
-            if (user)
-            {
+            if (user) {
               console.log('OAuth callback processed successfully:', user)
               // Sync user to Supabase
               const profile = await syncGoogleUserToSupabase(user)
@@ -112,8 +108,7 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
 
               // Get GCP credentials
               let gcp: GCPCredentials | null = null
-              if (oidc)
-              {
+              if (oidc) {
                 gcp = await getGCPCredentials()
               }
 
@@ -140,15 +135,13 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
 
         // Get GCP credentials if OIDC is available
         let gcp: GCPCredentials | null = null
-        if (oidc)
-        {
+        if (oidc) {
           gcp = await getGCPCredentials()
         }
 
         // Get Supabase profile if user exists
         let profile: SupabaseProfile | null = null
-        if (status.user)
-        {
+        if (status.user) {
           profile = await getSupabaseProfile(status.user)
         }
 
@@ -159,8 +152,7 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
         setOidcToken(oidc)
         setGcpCredentials(gcp)
         setSupabaseProfile(profile)
-      } catch (error)
-      {
+      } catch (error) {
         console.error('Failed to initialize auth:', error)
         setAuthState({
           user: null,
@@ -176,24 +168,24 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
 
   // Refresh credentials periodically
   useEffect(() => {
-    const refreshInterval = setInterval(async () => {
-      if (authState.isAuthenticated)
-      {
-        await refreshCredentials()
-      }
-    }, 5 * 60 * 1000) // Refresh every 5 minutes
+    const refreshInterval = setInterval(
+      async () => {
+        if (authState.isAuthenticated) {
+          await refreshCredentials()
+        }
+      },
+      5 * 60 * 1000
+    ) // Refresh every 5 minutes
 
     return () => clearInterval(refreshInterval)
   }, [authState.isAuthenticated, refreshCredentials])
 
   const signIn = useCallback(async () => {
-    try
-    {
+    try {
       setAuthState(prev => ({ ...prev, isLoading: true, error: null }))
 
       const config = createGoogleAuthConfig()
-      if (!config)
-      {
+      if (!config) {
         throw new Error('Google authentication not configured')
       }
 
@@ -201,8 +193,7 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
       // The callback will be handled when user returns from Google
       await signInWithGoogle(config)
       // Note: Code after this line won't execute because of redirect
-    } catch (error)
-    {
+    } catch (error) {
       console.error('Sign-in failed:', error)
       setAuthState({
         user: null,
@@ -214,8 +205,7 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
   }, [])
 
   const signOut = useCallback(async () => {
-    try
-    {
+    try {
       setAuthState(prev => ({ ...prev, isLoading: true, error: null }))
 
       await googleSignOut()
@@ -229,8 +219,7 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
       setOidcToken(null)
       setGcpCredentials(null)
       setSupabaseProfile(null)
-    } catch (error)
-    {
+    } catch (error) {
       console.error('Sign-out failed:', error)
       setAuthState(prev => ({
         ...prev,
@@ -250,9 +239,5 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
     refreshCredentials,
   }
 
-  return (
-    <AuthContext.Provider value={contextValue}>
-      {children}
-    </AuthContext.Provider>
-  )
+  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
 }

@@ -2,7 +2,7 @@
 export * from './performance/ContentVisibility'
 export * from './performance/PerformanceDashboard'
 
-// Animation Components  
+// Animation Components
 export * from './animation/AnimatedElements'
 
 // Accessibility Components

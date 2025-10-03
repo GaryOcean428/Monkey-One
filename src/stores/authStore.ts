@@ -9,7 +9,7 @@ interface AuthModalState {
 
 export const useAuthModalStore = create<AuthModalState>()(
   devtools(
-    (set) => ({
+    set => ({
       isOpen: true,
       openModal: () => set({ isOpen: true }),
       closeModal: () => set({ isOpen: false }),

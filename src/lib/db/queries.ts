@@ -1,4 +1,4 @@
-import { cachedQuery } from '../cache/redis';
+import { cachedQuery } from '../cache/redis'
 
 // User queries
 export const userQueries = {
@@ -8,16 +8,11 @@ export const userQueries = {
       'SELECT * FROM users WHERE id = $1',
       [id],
       3600 // 1 hour cache
-    );
+    )
   },
 
   async getByEmail(email: string) {
-    return cachedQuery(
-      `user:email:${email}`,
-      'SELECT * FROM users WHERE email = $1',
-      [email],
-      3600
-    );
+    return cachedQuery(`user:email:${email}`, 'SELECT * FROM users WHERE email = $1', [email], 3600)
   },
 
   async getRecentActivity(userId: string) {
@@ -29,9 +24,9 @@ export const userQueries = {
        LIMIT 10`,
       [userId],
       300 // 5 minutes cache
-    );
-  }
-};
+    )
+  },
+}
 
 // Memory queries
 export const memoryQueries = {
@@ -43,7 +38,7 @@ export const memoryQueries = {
        LIMIT $1`,
       [limit],
       60 // 1 minute cache
-    );
+    )
   },
 
   async getByType(type: string) {
@@ -52,7 +47,7 @@ export const memoryQueries = {
       'SELECT * FROM memories WHERE type = $1',
       [type],
       300
-    );
+    )
   },
 
   async searchByTags(tags: string[]) {
@@ -61,9 +56,9 @@ export const memoryQueries = {
       'SELECT * FROM memories WHERE tags @> $1',
       [tags],
       300
-    );
-  }
-};
+    )
+  },
+}
 
 // Workflow queries
 export const workflowQueries = {
@@ -73,7 +68,7 @@ export const workflowQueries = {
       "SELECT * FROM workflows WHERE status = 'active'",
       [],
       60
-    );
+    )
   },
 
   async getByUser(userId: string) {
@@ -82,7 +77,7 @@ export const workflowQueries = {
       'SELECT * FROM workflows WHERE user_id = $1',
       [userId],
       300
-    );
+    )
   },
 
   async getMetrics(workflowId: string) {
@@ -96,19 +91,14 @@ export const workflowQueries = {
        WHERE workflow_id = $1`,
       [workflowId],
       300
-    );
-  }
-};
+    )
+  },
+}
 
 // Agent queries
 export const agentQueries = {
   async getActive() {
-    return cachedQuery(
-      'agents:active',
-      "SELECT * FROM agents WHERE status = 'active'",
-      [],
-      60
-    );
+    return cachedQuery('agents:active', "SELECT * FROM agents WHERE status = 'active'", [], 60)
   },
 
   async getByCapability(capability: string) {
@@ -117,7 +107,7 @@ export const agentQueries = {
       'SELECT * FROM agents WHERE capabilities @> $1',
       [[capability]],
       300
-    );
+    )
   },
 
   async getPerformanceMetrics(agentId: string) {
@@ -131,6 +121,6 @@ export const agentQueries = {
        WHERE agent_id = $1`,
       [agentId],
       300
-    );
-  }
-};
+    )
+  },
+}

@@ -42,11 +42,11 @@ describe('BaseAgent', () => {
           param1: {
             type: 'string',
             description: 'Test parameter',
-            required: true
-          }
-        }
+            required: true,
+          },
+        },
       }
-      
+
       agent.addCapability(capability)
       expect(agent.hasCapability(capability)).toBe(true)
       expect(agent.getInternalCapabilities()).toContainEqual(capability)
@@ -61,11 +61,11 @@ describe('BaseAgent', () => {
           param1: {
             type: 'string',
             description: 'Test parameter',
-            required: true
-          }
-        }
+            required: true,
+          },
+        },
       }
-      
+
       agent.addCapability(capability)
       agent.removeCapability(capability)
       expect(agent.hasCapability(capability)).toBe(false)
@@ -81,11 +81,11 @@ describe('BaseAgent', () => {
           param1: {
             type: 'string',
             description: 'Test parameter',
-            required: true
-          }
-        }
+            required: true,
+          },
+        },
       }
-      
+
       agent.addCapability(capability)
       expect(agent.getCapabilities()).toContainEqual(capability)
     })
@@ -96,7 +96,7 @@ describe('BaseAgent', () => {
       const startTime = Date.now()
       await agent.handleMessage()
       const endTime = Date.now()
-      
+
       const metrics = agent.getInternalMetrics()
       expect(metrics.lastExecutionTime).toBeGreaterThanOrEqual(0)
       expect(metrics.lastExecutionTime).toBeLessThanOrEqual(endTime - startTime)

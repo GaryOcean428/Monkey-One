@@ -1,78 +1,72 @@
-import { Tool, ToolArgs } from './types';
-import { AgentExecutionError } from '../errors/AgentErrors';
+import { Tool, ToolArgs } from './types'
+import { AgentExecutionError } from '../errors/AgentErrors'
 
-type ToolFunction = (args: ToolArgs) => Promise<unknown>;
+type ToolFunction = (args: ToolArgs) => Promise<unknown>
 
 interface FunctionToolOptions {
-  name: string;
-  description: string;
-  validate?: (args: ToolArgs) => void | Promise<void>;
-  transform?: (result: unknown) => unknown;
+  name: string
+  description: string
+  validate?: (args: ToolArgs) => void | Promise<void>
+  transform?: (result: unknown) => unknown
 }
 
 export class FunctionTool implements Tool {
-  readonly name: string;
-  readonly description: string;
-  private fn: ToolFunction;
-  private validate?: (args: ToolArgs) => void | Promise<void>;
-  private transform?: (result: unknown) => unknown;
+  readonly name: string
+  readonly description: string
+  private fn: ToolFunction
+  private validate?: (args: ToolArgs) => void | Promise<void>
+  private transform?: (result: unknown) => unknown
 
   constructor(fn: ToolFunction, options: FunctionToolOptions) {
-    this.name = options.name;
-    this.description = options.description;
-    this.fn = fn;
-    this.validate = options.validate;
-    this.transform = options.transform;
+    this.name = options.name
+    this.description = options.description
+    this.fn = fn
+    this.validate = options.validate
+    this.transform = options.transform
   }
 
   async execute(args: ToolArgs): Promise<unknown> {
     try {
       // Validate arguments if validator provided
       if (this.validate) {
-        await this.validate(args);
+        await this.validate(args)
       }
 
       // Execute function
-      const result = await this.fn(args);
-      
+      const result = await this.fn(args)
+
       // Return transformed result if transformer provided
       if (this.transform) {
-        return this.transform(result);
+        return this.transform(result)
       }
-      return result;
+      return result
     } catch (error) {
       throw new AgentExecutionError(
         `Error executing tool ${this.name}: ${error instanceof Error ? error.message : String(error)}`,
         {
           toolName: this.name,
           errorType: error instanceof Error ? error.constructor.name : typeof error,
-          errorMessage: error instanceof Error ? error.message : String(error)
+          errorMessage: error instanceof Error ? error.message : String(error),
         }
-      );
+      )
     }
   }
 
   static create(fn: ToolFunction, options: FunctionToolOptions): Tool {
-    return new FunctionTool(fn, options);
+    return new FunctionTool(fn, options)
   }
 
   // Helper method to create a tool from a synchronous function
-  static fromSync(
-    fn: (args: ToolArgs) => unknown,
-    options: FunctionToolOptions
-  ): Tool {
-    return new FunctionTool(
-      async (args) => fn(args),
-      options
-    );
+  static fromSync(fn: (args: ToolArgs) => unknown, options: FunctionToolOptions): Tool {
+    return new FunctionTool(async args => fn(args), options)
   }
 
   // Helper method to create a tool with parameter validation
   static withValidation(
     fn: ToolFunction,
     options: FunctionToolOptions & {
-      required?: string[];
-      types?: Record<string, string>;
+      required?: string[]
+      types?: Record<string, string>
     }
   ): Tool {
     const validator = async (args: ToolArgs): Promise<void> => {
@@ -80,14 +74,11 @@ export class FunctionTool implements Tool {
       if (options.required) {
         for (const param of options.required) {
           if (!(param in args)) {
-            throw new AgentExecutionError(
-              `Missing required parameter: ${param}`,
-              { 
-                toolName: options.name,
-                parameterName: param,
-                errorType: 'ValidationError'
-              }
-            );
+            throw new AgentExecutionError(`Missing required parameter: ${param}`, {
+              toolName: options.name,
+              parameterName: param,
+              errorType: 'ValidationError',
+            })
           }
         }
       }
@@ -103,9 +94,9 @@ export class FunctionTool implements Tool {
                 parameterName: param,
                 expectedType: type,
                 actualType: typeof args[param],
-                errorType: 'TypeError'
+                errorType: 'TypeError',
               }
-            );
+            )
           }
         }
       }
@@ -113,23 +104,23 @@ export class FunctionTool implements Tool {
       // Run custom validation if provided
       if (options.validate) {
         try {
-          await options.validate(args);
+          await options.validate(args)
         } catch (error) {
           throw new AgentExecutionError(
             `Validation error: ${error instanceof Error ? error.message : String(error)}`,
             {
               toolName: options.name,
               errorType: 'ValidationError',
-              errorMessage: error instanceof Error ? error.message : String(error)
+              errorMessage: error instanceof Error ? error.message : String(error),
             }
-          );
+          )
         }
       }
-    };
+    }
 
     return new FunctionTool(fn, {
       ...options,
-      validate: validator
-    });
+      validate: validator,
+    })
   }
 } // Add missing closing brace

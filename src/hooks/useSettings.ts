@@ -10,10 +10,9 @@ export function useSettings(): UseSettingsReturn {
     try {
       setIsLoading(true)
       setError(null)
-      
+
       // TODO: Implement API call to update settings
       setSettings(prev => ({ ...prev, ...newSettings }))
-      
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Failed to update settings'))
     } finally {
@@ -25,10 +24,9 @@ export function useSettings(): UseSettingsReturn {
     try {
       setIsLoading(true)
       setError(null)
-      
+
       // TODO: Implement API call to reset settings
       setSettings(defaultSettings)
-      
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Failed to reset settings'))
     } finally {
@@ -41,6 +39,6 @@ export function useSettings(): UseSettingsReturn {
     isLoading,
     error,
     updateSettings,
-    resetSettings
+    resetSettings,
   }
 }

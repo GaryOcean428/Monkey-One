@@ -17,7 +17,13 @@ export interface BasePanelProps {
   onReset?: () => void
 }
 
-function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {
+function ErrorFallback({
+  error,
+  resetErrorBoundary,
+}: {
+  error: Error
+  resetErrorBoundary: () => void
+}) {
   return (
     <Alert variant="destructive">
       <AlertCircle className="h-4 w-4" />
@@ -27,7 +33,7 @@ function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetError
         {resetErrorBoundary && (
           <button
             onClick={resetErrorBoundary}
-            className="ml-2 text-sm underline hover:text-foreground/80"
+            className="hover:text-foreground/80 ml-2 text-sm underline"
           >
             Try again
           </button>
@@ -53,21 +59,18 @@ export function BasePanel({
   className,
   isLoading,
   error,
-  onReset
+  onReset,
 }: BasePanelProps) {
   return (
     <Card className={cn('p-6', className)}>
       <div className="mb-6 flex items-start justify-between">
         <div>
           <h2 className="text-2xl font-bold">{title}</h2>
-          {description && <p className="mt-1 text-muted-foreground">{description}</p>}
+          {description && <p className="text-muted-foreground mt-1">{description}</p>}
         </div>
         {actions && <div className="ml-4">{actions}</div>}
       </div>
-      <ErrorBoundary
-        FallbackComponent={ErrorFallback}
-        onReset={onReset}
-      >
+      <ErrorBoundary FallbackComponent={ErrorFallback} onReset={onReset}>
         <Suspense fallback={<LoadingFallback />}>
           {error ? (
             <ErrorFallback error={error} resetErrorBoundary={() => onReset?.()} />

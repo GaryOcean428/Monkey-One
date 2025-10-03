@@ -65,11 +65,13 @@ export class MLService {
 
       const encryptedData = await data.text()
       const modelJson = await decrypt(encryptedData)
-      
-      const weightsResponse = await supabase.storage.from('ml-models').download('latest/weights.bin')
+
+      const weightsResponse = await supabase.storage
+        .from('ml-models')
+        .download('latest/weights.bin')
       if (!weightsResponse.data) throw new Error('No weights data found')
       const weights = await weightsResponse.data.arrayBuffer()
-      
+
       return await loadLayersModel({
         modelTopology: JSON.parse(modelJson),
         weightData: weights,
@@ -187,7 +189,7 @@ export class MLService {
       const inputTensor = tensor(input)
 
       try {
-        const prediction = (this.model.predict(inputTensor)) as Tensor<Rank>
+        const prediction = this.model.predict(inputTensor) as Tensor<Rank>
         const result = Array.from(prediction.dataSync())
 
         // Cleanup tensors
@@ -200,7 +202,6 @@ export class MLService {
         timer({ success: false })
         throw error
       }
-
     } catch (error) {
       logger.error('Prediction failed:', error)
       captureException(error as Error)

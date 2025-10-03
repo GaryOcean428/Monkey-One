@@ -16,10 +16,10 @@ declare global {
 if (typeof window === 'undefined' && typeof global !== 'undefined') {
   try {
     // Use a require statement which Vite can properly handle during build
-    const nodeCrypto = require('crypto');
-    (global as any).crypto = nodeCrypto.webcrypto;
+    const nodeCrypto = require('crypto')
+    ;(global as any).crypto = nodeCrypto.webcrypto
   } catch (error) {
-    console.error('Failed to load crypto module:', error);
+    console.error('Failed to load crypto module:', error)
   }
 } else if (typeof window !== 'undefined' && !window.crypto) {
   // In browser environment without crypto, throw an error
@@ -30,16 +30,16 @@ if (typeof window === 'undefined' && typeof global !== 'undefined') {
 if (typeof window !== 'undefined') {
   // Ensure global objects are properly initialized
   window.ENV = window.ENV || {}
-  
+
   // Add error boundary for unhandled promise rejections
-  window.addEventListener('unhandledrejection', (event) => {
+  window.addEventListener('unhandledrejection', event => {
     console.error('Unhandled promise rejection:', event.reason)
     // Optionally prevent the error from appearing in console
     event.preventDefault()
   })
 
   // Add error boundary for uncaught errors
-  window.addEventListener('error', (event) => {
+  window.addEventListener('error', event => {
     console.error('Uncaught error:', event.error)
   })
 }

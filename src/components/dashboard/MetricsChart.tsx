@@ -17,26 +17,26 @@ export const MetricsChart: React.FC<MetricsChartProps> = ({ data }) => {
         data: data.values,
         fill: false,
         borderColor: 'rgb(75, 192, 192)',
-        tension: 0.1
-      }
-    ]
+        tension: 0.1,
+      },
+    ],
   }
 
   const options = {
     responsive: true,
     plugins: {
       legend: {
-        position: 'top' as const
+        position: 'top' as const,
       },
       title: {
         display: true,
-        text: 'System Performance'
-      }
-    }
+        text: 'System Performance',
+      },
+    },
   }
 
   return (
-    <div className="w-full h-64">
+    <div className="h-64 w-full">
       <Line data={chartData} options={options} />
     </div>
   )

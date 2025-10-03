@@ -1,46 +1,44 @@
-import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
-import { Button } from '../ui/button';
-import { Textarea } from '../ui/textarea';
-import { useFeedbackStore } from '../../store/feedbackStore';
-import type { Message } from '../../types';
+import React, { useState } from 'react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog'
+import { Button } from '../ui/button'
+import { Textarea } from '../ui/textarea'
+import { useFeedbackStore } from '../../store/feedbackStore'
+import type { Message } from '../../types'
 
 interface FeedbackDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  message: Message;
-  rating: number;
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  message: Message
+  rating: number
 }
 
 export function FeedbackDialog({ open, onOpenChange, message, rating }: FeedbackDialogProps) {
-  const [comment, setComment] = useState('');
-  const { submitFeedback, isSubmitting, clearPendingFeedback } = useFeedbackStore();
+  const [comment, setComment] = useState('')
+  const { submitFeedback, isSubmitting, clearPendingFeedback } = useFeedbackStore()
 
   const handleSubmit = async () => {
-    await submitFeedback(message.id, rating, comment);
-    onOpenChange(false);
-  };
+    await submitFeedback(message.id, rating, comment)
+    onOpenChange(false)
+  }
 
   const handleClear = () => {
-    setComment('');
-    clearPendingFeedback(message.id);
-  };
+    setComment('')
+    clearPendingFeedback(message.id)
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Provide Feedback</DialogTitle>
-          <DialogDescription>
-            Your feedback helps improve the AI's responses.
-          </DialogDescription>
+          <DialogDescription>Your feedback helps improve the AI's responses.</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <Textarea
             placeholder="Add any additional comments..."
             value={comment}
-            onChange={(e) => setComment(e.target.value)}
+            onChange={e => setComment(e.target.value)}
             rows={4}
           />
         </div>
@@ -58,5 +56,5 @@ export function FeedbackDialog({ open, onOpenChange, message, rating }: Feedback
         </div>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

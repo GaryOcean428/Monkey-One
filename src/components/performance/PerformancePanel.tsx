@@ -4,7 +4,7 @@ import { Card } from '../ui/Card'
 export const PerformancePanel: React.FC = () => {
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Performance</h1>
+      <h1 className="mb-6 text-2xl font-bold">Performance</h1>
       <Card className="p-4">
         <p>Performance panel content coming soon...</p>
       </Card>

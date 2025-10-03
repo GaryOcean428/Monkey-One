@@ -1,4 +1,4 @@
- // Centralized error handling utility
+// Centralized error handling utility
 
 interface ErrorLogOptions {
   level?: 'info' | 'warn' | 'error'

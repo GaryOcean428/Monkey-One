@@ -7,7 +7,7 @@ import {
   RuntimeError,
   SecurityError,
   isAgentError,
-  handleError
+  handleError,
 } from '../../lib/errors/AgentErrors'
 
 describe('AgentErrors', () => {

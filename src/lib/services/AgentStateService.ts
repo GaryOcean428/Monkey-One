@@ -61,7 +61,10 @@ export class AgentStateService {
     this.startStateUpdateInterval()
   }
 
-  public static getInstance(storage?: StateStorage, stateUpdateInterval?: number): AgentStateService {
+  public static getInstance(
+    storage?: StateStorage,
+    stateUpdateInterval?: number
+  ): AgentStateService {
     if (!AgentStateService.instance) {
       AgentStateService.instance = new AgentStateService(storage, stateUpdateInterval)
     }
@@ -103,7 +106,7 @@ export class AgentStateService {
           const update: AgentStateUpdate = {
             agentId,
             timestamp: Date.now(),
-            changes: state
+            changes: state,
           }
           handlers.forEach(handler => handler(update))
         }
@@ -124,9 +127,9 @@ export class AgentStateService {
         successfulRequests: 0,
         failedRequests: 0,
         averageResponseTime: 0,
-        lastExecutionTime: 0
+        lastExecutionTime: 0,
       },
-      lastUpdate: Date.now()
+      lastUpdate: Date.now(),
     }
 
     const newState = { ...currentState, ...update, lastUpdate: Date.now() }
@@ -138,7 +141,7 @@ export class AgentStateService {
       const stateUpdate: AgentStateUpdate = {
         agentId,
         timestamp: Date.now(),
-        changes: update
+        changes: update,
       }
       handlers.forEach(handler => handler(stateUpdate))
     }

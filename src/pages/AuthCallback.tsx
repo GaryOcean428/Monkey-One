@@ -38,7 +38,7 @@ export function AuthCallback(): JSX.Element {
           setMessage('Exchanging authorization code...')
           // The actual token exchange is handled by the Google Auth library
           // We just need to wait for the auth context to update
-          
+
           // Wait a bit for the auth context to process
           setTimeout(() => {
             if (isAuthenticated) {
@@ -94,12 +94,10 @@ export function AuthCallback(): JSX.Element {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="bg-background flex min-h-screen items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="flex justify-center mb-4">
-            {getIcon()}
-          </div>
+          <div className="mb-4 flex justify-center">{getIcon()}</div>
           <CardTitle>{getTitle()}</CardTitle>
           <CardDescription>
             {status === 'loading' && 'Please wait while we complete your sign-in...'}
@@ -108,21 +106,19 @@ export function AuthCallback(): JSX.Element {
           </CardDescription>
         </CardHeader>
         <CardContent className="text-center">
-          <p className="text-sm text-muted-foreground mb-4">
-            {message}
-          </p>
-          
+          <p className="text-muted-foreground mb-4 text-sm">{message}</p>
+
           {status === 'error' && (
             <div className="space-y-2">
               <button
                 onClick={() => navigate('/')}
-                className="w-full px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 w-full rounded-md px-4 py-2 transition-colors"
               >
                 Try Again
               </button>
               <button
                 onClick={() => navigate('/dashboard')}
-                className="w-full px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/90 transition-colors"
+                className="bg-secondary text-secondary-foreground hover:bg-secondary/90 w-full rounded-md px-4 py-2 transition-colors"
               >
                 Continue to Dashboard
               </button>

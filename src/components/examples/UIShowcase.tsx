@@ -2,14 +2,14 @@ import * as React from 'react'
 import { Button } from '../ui/button'
 import { Glass, GlassCard, GlassButton } from '../ui/glass'
 import { ThemeCustomizer } from '../ui/theme-customizer'
-import { 
-  Skeleton, 
-  SkeletonCard, 
-  SkeletonChatMessage, 
+import {
+  Skeleton,
+  SkeletonCard,
+  SkeletonChatMessage,
   SkeletonCodeBlock,
-  SkeletonChart 
+  SkeletonChart,
 } from '../ui/skeleton'
-import { 
+import {
   Toast,
   ToastTitle,
   ToastDescription,
@@ -17,7 +17,7 @@ import {
   ToastClose,
   ToastWithUndo,
   ToastLoading,
-  ToastProgress
+  ToastProgress,
 } from '../ui/toast'
 import { useToast } from '../ui/use-toast'
 import { cn } from '../../lib/utils'
@@ -33,7 +33,7 @@ import {
   Rocket,
   Rainbow,
   Flame,
-  Award
+  Award,
 } from 'lucide-react'
 
 interface UIShowcaseProps {
@@ -61,12 +61,14 @@ export function UIShowcase({ className }: UIShowcaseProps) {
     }
   }, [isLoading])
 
-  const showToastDemo = (variant: 'default' | 'success' | 'destructive' | 'warning' | 'info' | 'glass' | 'accent') => {
+  const showToastDemo = (
+    variant: 'default' | 'success' | 'destructive' | 'warning' | 'info' | 'glass' | 'accent'
+  ) => {
     toast({
       variant,
       title: `${variant.charAt(0).toUpperCase() + variant.slice(1)} Toast`,
       description: 'This is an enhanced toast with beautiful styling and animations.',
-      action: <ToastAction altText="Try again">Action</ToastAction>
+      action: <ToastAction altText="Try again">Action</ToastAction>,
     })
   }
 
@@ -75,10 +77,13 @@ export function UIShowcase({ className }: UIShowcaseProps) {
       title: 'Item deleted',
       description: 'Your item has been permanently removed.',
       action: (
-        <ToastAction altText="Undo" onClick={() => toast({ title: 'Restored!', variant: 'success' })}>
+        <ToastAction
+          altText="Undo"
+          onClick={() => toast({ title: 'Restored!', variant: 'success' })}
+        >
           Undo
         </ToastAction>
-      )
+      ),
     })
   }
 
@@ -88,30 +93,29 @@ export function UIShowcase({ className }: UIShowcaseProps) {
     toast({
       title: 'Processing...',
       description: 'Your request is being processed.',
-      duration: 4000
+      duration: 4000,
     })
   }
 
   return (
-    <div className={cn('min-h-screen bg-gradient-mesh p-6 space-y-8', className)}>
+    <div className={cn('bg-gradient-mesh min-h-screen space-y-8 p-6', className)}>
       {/* Hero Section */}
-      <div className="text-center space-y-4 mb-12">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-500/10 border border-accent-500/20 text-accent-600 text-sm font-medium">
+      <div className="mb-12 space-y-4 text-center">
+        <div className="bg-accent-500/10 border-accent-500/20 text-accent-600 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-sm font-medium">
           <Sparkles className="h-4 w-4" />
           Enhanced UI System
         </div>
-        <h1 className="text-4xl font-bold gradient-text">
-          Modern UI Components
-        </h1>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Experience the next generation of beautiful, accessible, and performant UI components with glassmorphism effects, micro-interactions, and dynamic theming.
+        <h1 className="gradient-text text-4xl font-bold">Modern UI Components</h1>
+        <p className="text-muted-foreground mx-auto max-w-2xl text-lg">
+          Experience the next generation of beautiful, accessible, and performant UI components with
+          glassmorphism effects, micro-interactions, and dynamic theming.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         {/* Theme Customization */}
         <div className="space-y-6">
-          <h2 className="text-2xl font-semibold flex items-center gap-2">
+          <h2 className="flex items-center gap-2 text-2xl font-semibold">
             <Palette className="h-6 w-6" />
             Dynamic Theming
           </h2>
@@ -120,11 +124,11 @@ export function UIShowcase({ className }: UIShowcaseProps) {
 
         {/* Button Showcase */}
         <div className="space-y-6">
-          <h2 className="text-2xl font-semibold flex items-center gap-2">
+          <h2 className="flex items-center gap-2 text-2xl font-semibold">
             <Wand2 className="h-6 w-6" />
             Enhanced Buttons
           </h2>
-          
+
           <GlassCard variant="light">
             <div className="space-y-4">
               <h3 className="font-medium">Button Variants</h3>
@@ -146,7 +150,7 @@ export function UIShowcase({ className }: UIShowcaseProps) {
                   Glass
                 </Button>
               </div>
-              
+
               <div className="space-y-2">
                 <h4 className="text-sm font-medium">Animation Styles</h4>
                 <div className="flex gap-2">
@@ -161,10 +165,10 @@ export function UIShowcase({ className }: UIShowcaseProps) {
                 </div>
               </div>
 
-              <Button 
-                variant="gradient" 
-                size="lg" 
-                className="w-full" 
+              <Button
+                variant="gradient"
+                size="lg"
+                className="w-full"
                 shimmer
                 onClick={showLoadingToast}
                 isLoading={isLoading}
@@ -179,27 +183,27 @@ export function UIShowcase({ className }: UIShowcaseProps) {
 
         {/* Glass Components */}
         <div className="space-y-6">
-          <h2 className="text-2xl font-semibold flex items-center gap-2">
+          <h2 className="flex items-center gap-2 text-2xl font-semibold">
             <Gem className="h-6 w-6" />
             Glassmorphism
           </h2>
-          
+
           <div className="space-y-4">
-            <Glass variant="light" className="p-4 rounded-xl">
+            <Glass variant="light" className="rounded-xl p-4">
               <div className="flex items-center gap-2">
-                <div className="h-3 w-3 rounded-full bg-green-500 animate-pulse" />
+                <div className="h-3 w-3 animate-pulse rounded-full bg-green-500" />
                 <span className="text-sm font-medium">Light Glass Surface</span>
               </div>
             </Glass>
-            
-            <Glass variant="heavy" className="p-4 rounded-xl" shimmer>
+
+            <Glass variant="heavy" className="rounded-xl p-4" shimmer>
               <div className="flex items-center gap-2">
                 <div className="h-3 w-3 rounded-full bg-blue-500" />
                 <span className="text-sm font-medium">Heavy Glass with Shimmer</span>
               </div>
             </Glass>
-            
-            <Glass variant="frosted" className="p-4 rounded-xl" gradient>
+
+            <Glass variant="frosted" className="rounded-xl p-4" gradient>
               <div className="flex items-center gap-2">
                 <div className="h-3 w-3 rounded-full bg-purple-500" />
                 <span className="text-sm font-medium">Frosted Glass with Gradient</span>
@@ -223,30 +227,30 @@ export function UIShowcase({ className }: UIShowcaseProps) {
       {/* Loading States */}
       <div className="space-y-6">
         <h2 className="text-2xl font-semibold">Enhanced Loading States</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           <div className="space-y-4">
             <h3 className="font-medium">Skeleton Animations</h3>
             <SkeletonCard />
           </div>
-          
+
           <div className="space-y-4">
             <h3 className="font-medium">Chat Message Loading</h3>
             <SkeletonChatMessage />
             <SkeletonChatMessage isUser />
           </div>
-          
+
           <div className="space-y-4">
             <h3 className="font-medium">Code Block Loading</h3>
             <SkeletonCodeBlock />
           </div>
         </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div className="space-y-4">
             <h3 className="font-medium">Chart Loading</h3>
             <SkeletonChart type="bar" />
           </div>
-          
+
           <div className="space-y-4">
             <h3 className="font-medium">Different Animations</h3>
             <div className="space-y-2">
@@ -269,7 +273,7 @@ export function UIShowcase({ className }: UIShowcaseProps) {
         <GlassCard variant="medium">
           <div className="space-y-4">
             <h3 className="font-medium">Toast Variants</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
               <Button variant="outline" size="sm" onClick={() => showToastDemo('success')}>
                 Success
               </Button>
@@ -295,7 +299,7 @@ export function UIShowcase({ className }: UIShowcaseProps) {
                 Loading
               </Button>
             </div>
-            
+
             {isLoading && (
               <div className="space-y-2">
                 <div className="text-sm font-medium">Progress Demo</div>
@@ -309,40 +313,38 @@ export function UIShowcase({ className }: UIShowcaseProps) {
       {/* Interactive Elements */}
       <div className="space-y-6">
         <h2 className="text-2xl font-semibold">Micro-Interactions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           <GlassCard variant="light" className="hover-lift">
-            <div className="text-center space-y-2">
-              <div className="h-12 w-12 rounded-full bg-gradient-accent mx-auto flex items-center justify-center">
+            <div className="space-y-2 text-center">
+              <div className="bg-gradient-accent mx-auto flex h-12 w-12 items-center justify-center rounded-full">
                 <Star className="h-6 w-6 text-white" />
               </div>
               <h3 className="font-medium">Hover Lift</h3>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 Subtle elevation on hover with smooth transitions
               </p>
             </div>
           </GlassCard>
-          
+
           <GlassCard variant="medium" className="hover-scale">
-            <div className="text-center space-y-2">
-              <div className="h-12 w-12 rounded-full bg-gradient-primary mx-auto flex items-center justify-center">
+            <div className="space-y-2 text-center">
+              <div className="bg-gradient-primary mx-auto flex h-12 w-12 items-center justify-center rounded-full">
                 <Zap className="h-6 w-6 text-white" />
               </div>
               <h3 className="font-medium">Hover Scale</h3>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 Gentle scaling effect with spring animation
               </p>
             </div>
           </GlassCard>
-          
+
           <GlassCard variant="heavy" className="interactive-lift">
-            <div className="text-center space-y-2">
-              <div className="h-12 w-12 rounded-full bg-gradient-secondary mx-auto flex items-center justify-center">
+            <div className="space-y-2 text-center">
+              <div className="bg-gradient-secondary mx-auto flex h-12 w-12 items-center justify-center rounded-full">
                 <Heart className="h-6 w-6 text-white" />
               </div>
               <h3 className="font-medium">Interactive Lift</h3>
-              <p className="text-sm text-muted-foreground">
-                Enhanced hover with dynamic shadows
-              </p>
+              <p className="text-muted-foreground text-sm">Enhanced hover with dynamic shadows</p>
             </div>
           </GlassCard>
         </div>

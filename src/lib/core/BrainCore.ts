@@ -1,47 +1,47 @@
-import { EventEmitter } from 'events';
-import { PersonalityCore } from './PersonalityCore';
-import { ActivityMonitor } from './ActivityMonitor';
-import { NeuralProcessor } from './NeuralProcessor';
-import { memoryManager } from '../memory';
-import { logger } from '../../utils/logger';
-import { captureException } from '../../utils/sentry';
+import { EventEmitter } from 'events'
+import { PersonalityCore } from './PersonalityCore'
+import { ActivityMonitor } from './ActivityMonitor'
+import { NeuralProcessor } from './NeuralProcessor'
+import { memoryManager } from '../memory'
+import { logger } from '../../utils/logger'
+import { captureException } from '../../utils/sentry'
 
 /**
  * BrainCore is the central processing unit of the AI system.
  * It coordinates between different specialized components like the PersonalityCore,
  * ActivityMonitor, and NeuralProcessor to process inputs and generate responses.
- * 
+ *
  * @extends EventEmitter
  */
 interface BrainState {
-  isLearning: boolean;
-  activeRegions: string[];
+  isLearning: boolean
+  activeRegions: string[]
 }
 
 export class BrainCore extends EventEmitter {
   private state: BrainState = {
     isLearning: false,
-    activeRegions: []
-  };
+    activeRegions: [],
+  }
 
-  private personalityCore: PersonalityCore;
-  private activityMonitor: ActivityMonitor;
-  private neuralProcessor: NeuralProcessor;
+  private personalityCore: PersonalityCore
+  private activityMonitor: ActivityMonitor
+  private neuralProcessor: NeuralProcessor
 
   /**
    * Creates a new instance of BrainCore.
    * Initializes all core components and starts the brain initialization process.
    */
   constructor() {
-    super();
-    this.personalityCore = new PersonalityCore();
-    this.activityMonitor = new ActivityMonitor();
-    this.neuralProcessor = new NeuralProcessor();
-    
+    super()
+    this.personalityCore = new PersonalityCore()
+    this.activityMonitor = new ActivityMonitor()
+    this.neuralProcessor = new NeuralProcessor()
+
     this.initializeBrain().catch(error => {
-      logger.error('Failed to initialize brain:', error);
-      captureException(error);
-    });
+      logger.error('Failed to initialize brain:', error)
+      captureException(error)
+    })
   }
 
   /**
@@ -50,13 +50,13 @@ export class BrainCore extends EventEmitter {
    */
   public async initializeBrain(): Promise<void> {
     try {
-      await this.neuralProcessor.initialize();
-      this.registerEventHandlers();
-      logger.info('Brain initialized successfully');
+      await this.neuralProcessor.initialize()
+      this.registerEventHandlers()
+      logger.info('Brain initialized successfully')
     } catch (error) {
-      logger.error('Brain initialization failed:', error);
-      captureException(error as Error);
-      throw error;
+      logger.error('Brain initialization failed:', error)
+      captureException(error as Error)
+      throw error
     }
   }
 
@@ -67,10 +67,10 @@ export class BrainCore extends EventEmitter {
   private registerEventHandlers(): void {
     this.activityMonitor.on('idle', () => {
       this.performBackgroundLearning().catch(error => {
-        logger.error('Background learning failed:', error);
-        captureException(error);
-      });
-    });
+        logger.error('Background learning failed:', error)
+        captureException(error)
+      })
+    })
   }
 
   /**
@@ -78,68 +78,71 @@ export class BrainCore extends EventEmitter {
    * This helps improve system performance over time.
    */
   public async learn(): Promise<void> {
-    await this.performBackgroundLearning();
+    await this.performBackgroundLearning()
   }
 
   public getWeights(): unknown {
-    return {};
+    return {}
   }
 
   public isInitialized(): boolean {
-    return true;
+    return true
   }
 
   private async performBackgroundLearning(): Promise<void> {
     if (!this.activityMonitor.getState().isLearning) {
-      this.activityMonitor.recordActivity('learning');
-      await this.neuralProcessor.process('background_learning');
-      this.emit('learningComplete');
+      this.activityMonitor.recordActivity('learning')
+      await this.neuralProcessor.process('background_learning')
+      this.emit('learningComplete')
     }
   }
 
   /**
    * Processes an input through the brain's components.
-   * 
+   *
    * @param input - The input string to process
    * @param userId - Optional user identifier for personalization
    * @returns Promise resolving to the processed response with emotional context and neural metrics
    * @throws {Error} If processing fails
    */
-  public async process(input: string, userId?: string): Promise<{
-    response: string;
-    emotionalContext: unknown;
-    neuralMetrics: unknown;
+  public async process(
+    input: string,
+    userId?: string
+  ): Promise<{
+    response: string
+    emotionalContext: unknown
+    neuralMetrics: unknown
   }> {
     try {
-      this.activityMonitor.recordActivity('processing');
-      logger.debug('Processing input:', { input, userId });
+      this.activityMonitor.recordActivity('processing')
+      logger.debug('Processing input:', { input, userId })
 
       const personalityResponse = await this.personalityCore.processInteraction(
         input,
         userId || 'anonymous'
-      );
+      )
 
-      const { prediction, metrics } = await this.neuralProcessor.process(input);
+      const { prediction, metrics } = await this.neuralProcessor.process(input)
 
-      await this.storeInteraction(input, personalityResponse, metrics);
+      await this.storeInteraction(input, personalityResponse, metrics)
 
-      logger.debug('Processing complete', { userId });
+      logger.debug('Processing complete', { userId })
 
       return {
         response: personalityResponse.response,
         emotionalContext: personalityResponse.emotionalContext,
-        neuralMetrics: metrics
-      };
+        neuralMetrics: metrics,
+      }
     } catch (error) {
-      logger.error('Error in brain processing:', error);
-      captureException(error as Error, { input, userId });
-      throw error;
+      logger.error('Error in brain processing:', error)
+      captureException(error as Error, { input, userId })
+      throw error
     }
   }
 
   /**
    * Stores an interaction in the memory system for future reference.
-   * 
+   *
    * @param input - The original input
    * @param personalityResponse - The response from personality processing
    * @param neuralMetrics - Metrics from neural processing
@@ -156,13 +159,13 @@ export class BrainCore extends EventEmitter {
           input,
           response: personalityResponse,
           metrics: neuralMetrics,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         }),
-        tags: ['brain', 'interaction', 'learning']
-      });
+        tags: ['brain', 'interaction', 'learning'],
+      })
     } catch (error) {
-      logger.error('Failed to store interaction:', error);
-      captureException(error as Error);
+      logger.error('Failed to store interaction:', error)
+      captureException(error as Error)
     }
   }
 
@@ -171,7 +174,7 @@ export class BrainCore extends EventEmitter {
    * @returns The current activity state
    */
   public getState(): ReturnType<typeof ActivityMonitor.prototype.getState> {
-    return this.activityMonitor.getState();
+    return this.activityMonitor.getState()
   }
 
   /**
@@ -179,13 +182,13 @@ export class BrainCore extends EventEmitter {
    * Should be called when shutting down the system.
    */
   public dispose(): void {
-    this.cleanup();
+    this.cleanup()
   }
 
   public cleanup(): void {
-    this.activityMonitor.cleanup();
-    this.neuralProcessor.cleanup();
-    this.removeAllListeners();
-    logger.info('Brain cleanup complete');
+    this.activityMonitor.cleanup()
+    this.neuralProcessor.cleanup()
+    this.removeAllListeners()
+    logger.info('Brain cleanup complete')
   }
-}
+}

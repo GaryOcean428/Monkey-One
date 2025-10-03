@@ -154,7 +154,7 @@ export function getComponentByName(componentName: string): React.LazyExoticCompo
       })
     )
   }
-  
+
   // Wrap the component with error handling to catch import failures
   return React.lazy(async () => {
     try {
@@ -174,7 +174,7 @@ export function getComponentByName(componentName: string): React.LazyExoticCompo
               </p>
               <button
                 onClick={() => window.location.reload()}
-                className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                className="mt-4 rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
               >
                 Reload Page
               </button>

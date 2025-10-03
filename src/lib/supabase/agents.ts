@@ -1,36 +1,25 @@
-import { supabase } from './client';
-import type { Agent, AgentTask, AgentThought, AgentMemory } from '../types';
+import { supabase } from './client'
+import type { Agent, AgentTask, AgentThought, AgentMemory } from '../types'
 
 export const agentQueries = {
   async createAgent(agent: Omit<Agent, 'id'>) {
-    const { data, error } = await supabase
-      .from('agents')
-      .insert([agent])
-      .select()
-      .single();
-    
-    if (error) throw error;
-    return data;
+    const { data, error } = await supabase.from('agents').insert([agent]).select().single()
+
+    if (error) throw error
+    return data
   },
 
   async getAgentById(id: string) {
-    const { data, error } = await supabase
-      .from('agents')
-      .select('*')
-      .eq('id', id)
-      .single();
-    
-    if (error) throw error;
-    return data;
+    const { data, error } = await supabase.from('agents').select('*').eq('id', id).single()
+
+    if (error) throw error
+    return data
   },
 
   async updateAgentStatus(id: string, status: string) {
-    const { error } = await supabase
-      .from('agents')
-      .update({ status })
-      .eq('id', id);
-    
-    if (error) throw error;
+    const { error } = await supabase.from('agents').update({ status }).eq('id', id)
+
+    if (error) throw error
   },
 
   async storeAgentThought(thought: Omit<AgentThought, 'id'>) {
@@ -38,55 +27,46 @@ export const agentQueries = {
       .from('agent_thoughts')
       .insert([thought])
       .select()
-      .single();
-    
-    if (error) throw error;
-    return data;
+      .single()
+
+    if (error) throw error
+    return data
   },
 
   async storeAgentMemory(memory: Omit<AgentMemory, 'id'>) {
-    const { data, error } = await supabase
-      .from('agent_memory')
-      .insert([memory])
-      .select()
-      .single();
-    
-    if (error) throw error;
-    return data;
+    const { data, error } = await supabase.from('agent_memory').insert([memory]).select().single()
+
+    if (error) throw error
+    return data
   },
 
   async searchAgentMemory(agentId: string, query: string) {
-    const { data, error } = await supabase
-      .rpc('search_agent_memory', {
-        agent_id_param: agentId,
-        query_text: query
-      });
-    
-    if (error) throw error;
-    return data;
+    const { data, error } = await supabase.rpc('search_agent_memory', {
+      agent_id_param: agentId,
+      query_text: query,
+    })
+
+    if (error) throw error
+    return data
   },
 
   async createTask(task: Omit<AgentTask, 'id'>) {
-    const { data, error } = await supabase
-      .from('agent_tasks')
-      .insert([task])
-      .select()
-      .single();
-    
-    if (error) throw error;
-    return data;
+    const { data, error } = await supabase.from('agent_tasks').insert([task]).select().single()
+
+    if (error) throw error
+    return data
   },
 
   async updateTaskStatus(id: string, status: string, result?: any) {
     const { error } = await supabase
       .from('agent_tasks')
-      .update({ 
+      .update({
         status,
         result,
-        completed_at: status === 'completed' ? new Date().toISOString() : null
+        completed_at: status === 'completed' ? new Date().toISOString() : null,
       })
-      .eq('id', id);
-    
-    if (error) throw error;
-  }
-};
+      .eq('id', id)
+
+    if (error) throw error
+  },
+}

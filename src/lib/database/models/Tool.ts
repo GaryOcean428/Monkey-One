@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod'
 
 export const ToolSchema = z.object({
   id: z.string().uuid(),
@@ -12,14 +12,14 @@ export const ToolSchema = z.object({
   status: z.enum(['active', 'inactive', 'deprecated']),
   created_at: z.string().datetime(),
   updated_at: z.string().datetime(),
-});
+})
 
-export type Tool = z.infer<typeof ToolSchema>;
+export type Tool = z.infer<typeof ToolSchema>
 
 export const CreateToolSchema = ToolSchema.omit({
   id: true,
   created_at: true,
   updated_at: true,
-});
+})
 
-export type CreateTool = z.infer<typeof CreateToolSchema>;
+export type CreateTool = z.infer<typeof CreateToolSchema>

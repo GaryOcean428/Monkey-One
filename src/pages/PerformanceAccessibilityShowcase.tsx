@@ -5,10 +5,10 @@ import { Input } from '../components/ui/input'
 import { Badge } from '../components/ui/badge'
 import { Separator } from '../components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
-import { 
-  ContentVisibility, 
-  VirtualizedList, 
-  LazyImage, 
+import {
+  ContentVisibility,
+  VirtualizedList,
+  LazyImage,
   BelowFold,
   PerformanceDashboard,
   AnimatedElement,
@@ -22,14 +22,14 @@ import {
   AccessibleField,
   AccessibleList,
   AccessibleTabs,
-  LiveRegion
+  LiveRegion,
 } from '../components/performance-accessibility'
 import { cn } from '../lib/utils'
-import { 
-  Zap, 
-  Eye, 
-  Gauge, 
-  Accessibility, 
+import {
+  Zap,
+  Eye,
+  Gauge,
+  Accessibility,
   MousePointer,
   Keyboard,
   MonitorSpeaker,
@@ -38,7 +38,7 @@ import {
   Layers,
   Image,
   List,
-  Layout
+  Layout,
 } from 'lucide-react'
 
 export default function PerformanceAccessibilityShowcase() {
@@ -49,56 +49,52 @@ export default function PerformanceAccessibilityShowcase() {
   const listItems = Array.from({ length: 1000 }, (_, i) => ({
     id: i,
     name: `Item ${i + 1}`,
-    description: `This is the description for item ${i + 1}`
+    description: `This is the description for item ${i + 1}`,
   }))
 
   const demoTabs = [
     {
       id: 'performance',
       label: 'Performance',
-      content: <PerformanceSection />
+      content: <PerformanceSection />,
     },
     {
       id: 'accessibility',
       label: 'Accessibility',
-      content: <AccessibilitySection />
+      content: <AccessibilitySection />,
     },
     {
       id: 'animations',
       label: 'Animations',
-      content: <AnimationsSection />
+      content: <AnimationsSection />,
     },
     {
       id: 'monitoring',
       label: 'Monitoring',
-      content: <MonitoringSection />
-    }
+      content: <MonitoringSection />,
+    },
   ]
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-background min-h-screen">
       {/* Skip Links for Accessibility */}
-      <SkipLink href="#main-content">
-        Skip to main content
-      </SkipLink>
-      <SkipLink href="#navigation">
-        Skip to navigation
-      </SkipLink>
+      <SkipLink href="#main-content">Skip to main content</SkipLink>
+      <SkipLink href="#navigation">Skip to navigation</SkipLink>
 
       {/* Header */}
-      <header className="border-b bg-card">
+      <header className="bg-card border-b">
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold flex items-center gap-3">
-                <Zap className="h-8 w-8 text-primary" />
+              <h1 className="flex items-center gap-3 text-3xl font-bold">
+                <Zap className="text-primary h-8 w-8" />
                 Phase 7: Performance & Accessibility
               </h1>
               <p className="text-muted-foreground mt-2">
                 Advanced optimizations and enhanced user experience
               </p>
             </div>
-            <Badge variant="secondary" className="text-lg px-4 py-2">
+            <Badge variant="secondary" className="px-4 py-2 text-lg">
               Phase 7 Complete
             </Badge>
           </div>
@@ -140,34 +136,34 @@ export default function PerformanceAccessibilityShowcase() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid gap-6 md:grid-cols-2">
                   <div>
-                    <h4 className="font-medium mb-3">Standard Rendering</h4>
+                    <h4 className="mb-3 font-medium">Standard Rendering</h4>
                     <div className="space-y-4">
                       {Array.from({ length: 10 }, (_, i) => (
                         <Card key={i} className="p-4">
                           <h5 className="font-medium">Card {i + 1}</h5>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-muted-foreground text-sm">
                             This content is always rendered regardless of visibility.
                           </p>
                         </Card>
                       ))}
                     </div>
                   </div>
-                  
+
                   <div>
-                    <h4 className="font-medium mb-3">Optimized with Content Visibility</h4>
+                    <h4 className="mb-3 font-medium">Optimized with Content Visibility</h4>
                     <div className="space-y-4">
                       {Array.from({ length: 10 }, (_, i) => (
-                        <ContentVisibility 
-                          key={i} 
+                        <ContentVisibility
+                          key={i}
                           height="80px"
                           useContentVisibility={true}
                           lazy={i > 3} // Lazy load items after the first 4
                         >
                           <Card className="p-4">
                             <h5 className="font-medium">Optimized Card {i + 1}</h5>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-muted-foreground text-sm">
                               This content uses content-visibility for better performance.
                             </p>
                           </Card>
@@ -188,38 +184,36 @@ export default function PerformanceAccessibilityShowcase() {
                   <List className="h-5 w-5" />
                   Virtualized List Performance
                 </CardTitle>
-                <CardDescription>
-                  Efficient rendering for large datasets
-                </CardDescription>
+                <CardDescription>Efficient rendering for large datasets</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid gap-6 md:grid-cols-2">
                   <div>
-                    <h4 className="font-medium mb-3">1,000 Items - Virtualized</h4>
+                    <h4 className="mb-3 font-medium">1,000 Items - Virtualized</h4>
                     <VirtualizedList
                       items={listItems}
                       itemHeight={60}
                       containerHeight={300}
                       renderItem={(item, index, isSelected) => (
-                        <div className={cn(
-                          "p-3 border-b flex items-center justify-between",
-                          isSelected && "bg-primary/10"
-                        )}>
+                        <div
+                          className={cn(
+                            'flex items-center justify-between border-b p-3',
+                            isSelected && 'bg-primary/10'
+                          )}
+                        >
                           <div>
                             <div className="font-medium">{item.name}</div>
-                            <div className="text-sm text-muted-foreground">
-                              {item.description}
-                            </div>
+                            <div className="text-muted-foreground text-sm">{item.description}</div>
                           </div>
                           <Badge variant="outline">#{index + 1}</Badge>
                         </div>
                       )}
-                      className="border rounded-lg"
+                      className="rounded-lg border"
                     />
                   </div>
-                  
+
                   <div>
-                    <h4 className="font-medium mb-3">Performance Benefits</h4>
+                    <h4 className="mb-3 font-medium">Performance Benefits</h4>
                     <div className="space-y-3">
                       <div className="flex items-center gap-3">
                         <Timer className="h-4 w-4 text-green-500" />
@@ -257,7 +251,7 @@ export default function PerformanceAccessibilityShowcase() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <AccessibilityDemo 
+                <AccessibilityDemo
                   onOpenModal={() => setIsModalOpen(true)}
                   selectedItem={selectedItem}
                   onSelectItem={setSelectedItem}
@@ -292,12 +286,10 @@ export default function PerformanceAccessibilityShowcase() {
                   <Image className="h-5 w-5" />
                   Lazy Loading & Performance
                 </CardTitle>
-                <CardDescription>
-                  Images and content loaded only when needed
-                </CardDescription>
+                <CardDescription>Images and content loaded only when needed</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid md:grid-cols-3 gap-4">
+                <div className="grid gap-4 md:grid-cols-3">
                   {Array.from({ length: 6 }, (_, i) => (
                     <LazyImage
                       key={i}
@@ -305,8 +297,8 @@ export default function PerformanceAccessibilityShowcase() {
                       alt={`Demo image ${i + 1}`}
                       className="rounded-lg"
                       placeholder={
-                        <div className="flex items-center justify-center h-full bg-muted">
-                          <Image className="h-8 w-8 text-muted-foreground" />
+                        <div className="bg-muted flex h-full items-center justify-center">
+                          <Image className="text-muted-foreground h-8 w-8" />
                         </div>
                       }
                     />
@@ -328,8 +320,8 @@ export default function PerformanceAccessibilityShowcase() {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">
-                This section demonstrates below-the-fold optimization. The content is only
-                rendered when it comes into view, improving initial page load performance.
+                This section demonstrates below-the-fold optimization. The content is only rendered
+                when it comes into view, improving initial page load performance.
               </p>
             </CardContent>
           </Card>
@@ -352,7 +344,7 @@ export default function PerformanceAccessibilityShowcase() {
           >
             <Input placeholder="John Doe" />
           </AccessibleField>
-          
+
           <AccessibleField
             label="Email Address"
             fieldName="email"
@@ -361,22 +353,18 @@ export default function PerformanceAccessibilityShowcase() {
           >
             <Input type="email" placeholder="john@example.com" />
           </AccessibleField>
-          
+
           <div className="flex justify-end gap-2 pt-4">
             <Button variant="outline" onClick={() => setIsModalOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={() => setIsModalOpen(false)}>
-              Submit
-            </Button>
+            <Button onClick={() => setIsModalOpen(false)}>Submit</Button>
           </div>
         </div>
       </AccessibleModal>
 
       {/* Live Region for Screen Reader Announcements */}
-      <LiveRegion priority="polite">
-        {selectedItem && `Selected: ${selectedItem}`}
-      </LiveRegion>
+      <LiveRegion priority="polite">{selectedItem && `Selected: ${selectedItem}`}</LiveRegion>
     </div>
   )
 }
@@ -392,7 +380,7 @@ function PerformanceSection() {
 function AccessibilitySection() {
   return (
     <div className="space-y-6">
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -401,7 +389,7 @@ function AccessibilitySection() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground mb-4">
+            <p className="text-muted-foreground mb-4 text-sm">
               Use Tab, Shift+Tab, Enter, and arrow keys to navigate.
             </p>
             <div className="space-y-2">
@@ -430,20 +418,17 @@ function AccessibilitySection() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground mb-4">
+            <p className="text-muted-foreground mb-4 text-sm">
               Proper ARIA labels and semantic markup for screen readers.
             </p>
             <div className="space-y-3">
               <div role="status" aria-live="polite">
                 Status: Content loaded successfully
               </div>
-              <Button 
-                aria-describedby="button-help"
-                className="w-full"
-              >
+              <Button aria-describedby="button-help" className="w-full">
                 Submit Form
               </Button>
-              <p id="button-help" className="text-xs text-muted-foreground">
+              <p id="button-help" className="text-muted-foreground text-xs">
                 This will submit your form data to the server
               </p>
             </div>
@@ -470,10 +455,10 @@ function MonitoringSection() {
   )
 }
 
-function AccessibilityDemo({ 
-  onOpenModal, 
-  selectedItem, 
-  onSelectItem 
+function AccessibilityDemo({
+  onOpenModal,
+  selectedItem,
+  onSelectItem,
 }: {
   onOpenModal: () => void
   selectedItem: string | null
@@ -482,21 +467,19 @@ function AccessibilityDemo({
   const listItems = ['Apple', 'Banana', 'Cherry', 'Date', 'Elderberry']
 
   return (
-    <div className="grid md:grid-cols-2 gap-6">
+    <div className="grid gap-6 md:grid-cols-2">
       <div>
-        <h4 className="font-medium mb-3">Focus Management</h4>
+        <h4 className="mb-3 font-medium">Focus Management</h4>
         <div className="space-y-3">
-          <Button onClick={onOpenModal}>
-            Open Accessible Modal
-          </Button>
-          <p className="text-sm text-muted-foreground">
+          <Button onClick={onOpenModal}>Open Accessible Modal</Button>
+          <p className="text-muted-foreground text-sm">
             The modal will trap focus and restore it when closed.
           </p>
         </div>
       </div>
-      
+
       <div>
-        <h4 className="font-medium mb-3">Keyboard Navigation</h4>
+        <h4 className="mb-3 font-medium">Keyboard Navigation</h4>
         <AccessibleList
           items={listItems}
           renderItem={(item, index, isSelected) => (
@@ -505,12 +488,12 @@ function AccessibilityDemo({
               {isSelected && <Badge>Selected</Badge>}
             </div>
           )}
-          onSelect={(item) => onSelectItem(item)}
+          onSelect={item => onSelectItem(item)}
           selectedIndex={listItems.findIndex(item => item === selectedItem)}
           ariaLabel="Fruit selection list"
-          className="border rounded-lg p-2 max-h-48 overflow-auto"
+          className="max-h-48 overflow-auto rounded-lg border p-2"
         />
-        <p className="text-sm text-muted-foreground mt-2">
+        <p className="text-muted-foreground mt-2 text-sm">
           Use arrow keys and Enter to navigate and select.
         </p>
       </div>
@@ -523,12 +506,12 @@ function AnimationsDemo() {
     <div className="space-y-8">
       {/* Stagger Animation */}
       <div>
-        <h4 className="font-medium mb-4">Staggered Animations</h4>
+        <h4 className="mb-4 font-medium">Staggered Animations</h4>
         <StaggerContainer staggerDelay={0.1}>
           {Array.from({ length: 5 }, (_, i) => (
-            <Card key={i} className="p-4 mb-3">
+            <Card key={i} className="mb-3 p-4">
               <h5 className="font-medium">Staggered Item {i + 1}</h5>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 This item animates with a {i * 100}ms delay
               </p>
             </Card>
@@ -538,40 +521,36 @@ function AnimationsDemo() {
 
       {/* Count Up Animation */}
       <div>
-        <h4 className="font-medium mb-4">Count Up Animations</h4>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <h4 className="mb-4 font-medium">Count Up Animations</h4>
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           <Card className="p-4 text-center">
             <CountUp end={1000} duration={2} className="text-2xl font-bold" />
-            <p className="text-sm text-muted-foreground mt-1">Users</p>
+            <p className="text-muted-foreground mt-1 text-sm">Users</p>
           </Card>
           <Card className="p-4 text-center">
             <CountUp end={95} suffix="%" duration={2.5} className="text-2xl font-bold" />
-            <p className="text-sm text-muted-foreground mt-1">Performance</p>
+            <p className="text-muted-foreground mt-1 text-sm">Performance</p>
           </Card>
           <Card className="p-4 text-center">
             <CountUp end={50} prefix="$" decimals={2} duration={3} className="text-2xl font-bold" />
-            <p className="text-sm text-muted-foreground mt-1">Revenue</p>
+            <p className="text-muted-foreground mt-1 text-sm">Revenue</p>
           </Card>
           <Card className="p-4 text-center">
             <CountUp end={24} suffix="/7" duration={1.5} className="text-2xl font-bold" />
-            <p className="text-sm text-muted-foreground mt-1">Support</p>
+            <p className="text-muted-foreground mt-1 text-sm">Support</p>
           </Card>
         </div>
       </div>
 
       {/* Scroll Reveal */}
       <div>
-        <h4 className="font-medium mb-4">Scroll Reveal Animations</h4>
+        <h4 className="mb-4 font-medium">Scroll Reveal Animations</h4>
         <div className="space-y-6">
           {['up', 'down', 'left', 'right'].map((direction, i) => (
-            <ScrollReveal 
-              key={direction} 
-              direction={direction as any}
-              delay={i * 0.1}
-            >
+            <ScrollReveal key={direction} direction={direction as any} delay={i * 0.1}>
               <Card className="p-6">
                 <h5 className="font-medium">Reveal from {direction}</h5>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   This content reveals from the {direction} when scrolled into view.
                 </p>
               </Card>
@@ -582,11 +561,11 @@ function AnimationsDemo() {
 
       {/* Parallax Effect */}
       <div>
-        <h4 className="font-medium mb-4">Parallax Effect</h4>
+        <h4 className="mb-4 font-medium">Parallax Effect</h4>
         <div className="relative h-64 overflow-hidden rounded-lg bg-gradient-to-r from-purple-400 to-pink-400">
           <Parallax speed={0.5} className="absolute inset-0 flex items-center justify-center">
-            <div className="text-white text-center">
-              <h3 className="text-2xl font-bold mb-2">Parallax Content</h3>
+            <div className="text-center text-white">
+              <h3 className="mb-2 text-2xl font-bold">Parallax Content</h3>
               <p className="text-white/80">This moves slower than the scroll</p>
             </div>
           </Parallax>

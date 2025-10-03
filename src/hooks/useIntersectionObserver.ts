@@ -7,15 +7,13 @@ export interface UseIntersectionObserverOptions extends IntersectionObserverInit
   enabled?: boolean
 }
 
-export function useIntersectionObserver(
-  options: UseIntersectionObserverOptions = {}
-) {
+export function useIntersectionObserver(options: UseIntersectionObserverOptions = {}) {
   const {
     root = null,
     rootMargin = '0px',
     threshold = 0.1,
     triggerOnce = false,
-    enabled = true
+    enabled = true,
   } = options
 
   const [isIntersecting, setIsIntersecting] = React.useState(false)
@@ -27,7 +25,7 @@ export function useIntersectionObserver(
     if (!enabled || !targetRef.current) return
 
     const observer = new IntersectionObserver(
-      (entries) => {
+      entries => {
         const [entry] = entries
         const isVisible = entry.isIntersecting
 
@@ -35,7 +33,7 @@ export function useIntersectionObserver(
 
         if (isVisible && !hasIntersected) {
           setHasIntersected(true)
-          
+
           if (triggerOnce) {
             observer.disconnect()
           }
@@ -44,7 +42,7 @@ export function useIntersectionObserver(
       {
         root,
         rootMargin,
-        threshold
+        threshold,
       }
     )
 
@@ -66,7 +64,7 @@ export function useIntersectionObserver(
     ref: targetRef,
     isIntersecting,
     hasIntersected,
-    disconnect
+    disconnect,
   }
 }
 
@@ -75,7 +73,7 @@ export function useAnimateOnIntersect(options: UseIntersectionObserverOptions = 
   const { isIntersecting, hasIntersected, ref } = useIntersectionObserver({
     threshold: 0.1,
     triggerOnce: true,
-    ...options
+    ...options,
   })
 
   const shouldAnimate = hasIntersected || isIntersecting
@@ -84,9 +82,9 @@ export function useAnimateOnIntersect(options: UseIntersectionObserverOptions = 
     ref,
     shouldAnimate,
     isVisible: isIntersecting,
-    className: shouldAnimate 
-      ? 'animate-fade-in-up opacity-100 translate-y-0' 
-      : 'opacity-0 translate-y-4'
+    className: shouldAnimate
+      ? 'animate-fade-in-up opacity-100 translate-y-0'
+      : 'opacity-0 translate-y-4',
   }
 }
 
@@ -98,18 +96,18 @@ export function useLazyLoad<T>(
   const [data, setData] = React.useState<T | null>(null)
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState<Error | null>(null)
-  
+
   const { isIntersecting, ref } = useIntersectionObserver({
     threshold: 0.1,
     triggerOnce: true,
-    ...options
+    ...options,
   })
 
   React.useEffect(() => {
     if (isIntersecting && !data && !loading) {
       setLoading(true)
       setError(null)
-      
+
       loadFn()
         .then(setData)
         .catch(setError)
@@ -122,6 +120,6 @@ export function useLazyLoad<T>(
     data,
     loading,
     error,
-    isIntersecting
+    isIntersecting,
   }
 }

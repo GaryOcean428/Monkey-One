@@ -29,12 +29,12 @@ const Settings: React.FC<SettingsProps> = ({ className = '' }) => {
   }
 
   return (
-    <div className={`p-6 space-y-6 ${className}`}>
+    <div className={`space-y-6 p-6 ${className}`}>
       <h1 className="text-2xl font-bold">Settings</h1>
 
-      <Card className="p-4 space-y-6">
+      <Card className="space-y-6 p-4">
         <div>
-          <h2 className="text-lg font-semibold mb-4">Appearance</h2>
+          <h2 className="mb-4 text-lg font-semibold">Appearance</h2>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <span>Theme</span>
@@ -44,7 +44,7 @@ const Settings: React.FC<SettingsProps> = ({ className = '' }) => {
                 options={[
                   { label: 'Light', value: 'light' },
                   { label: 'Dark', value: 'dark' },
-                  { label: 'System', value: 'system' }
+                  { label: 'System', value: 'system' },
                 ]}
               />
             </div>
@@ -56,7 +56,7 @@ const Settings: React.FC<SettingsProps> = ({ className = '' }) => {
                 options={[
                   { label: 'English', value: 'en' },
                   { label: 'Spanish', value: 'es' },
-                  { label: 'French', value: 'fr' }
+                  { label: 'French', value: 'fr' },
                 ]}
               />
             </div>
@@ -64,7 +64,7 @@ const Settings: React.FC<SettingsProps> = ({ className = '' }) => {
         </div>
 
         <div>
-          <h2 className="text-lg font-semibold mb-4">Notifications</h2>
+          <h2 className="mb-4 text-lg font-semibold">Notifications</h2>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <span>Enable Notifications</span>
@@ -77,26 +77,20 @@ const Settings: React.FC<SettingsProps> = ({ className = '' }) => {
         </div>
 
         <div>
-          <h2 className="text-lg font-semibold mb-4">Privacy</h2>
+          <h2 className="mb-4 text-lg font-semibold">Privacy</h2>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <span>Data Collection</span>
               <Switch
                 checked={settings.dataCollection}
-                onCheckedChange={(enabled) =>
-                  updateSettings({ dataCollection: enabled })
-                }
+                onCheckedChange={enabled => updateSettings({ dataCollection: enabled })}
               />
             </div>
           </div>
         </div>
 
-        <div className="pt-4 border-t">
-          <Button
-            onClick={() => updateSettings(settings)}
-            variant="primary"
-            className="w-full"
-          >
+        <div className="border-t pt-4">
+          <Button onClick={() => updateSettings(settings)} variant="primary" className="w-full">
             Save Changes
           </Button>
         </div>

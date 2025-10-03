@@ -167,7 +167,7 @@ function SettingsContent() {
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <Label>Temperature</Label>
-                  <span className="text-sm text-muted-foreground">{settings.llm.temperature}</span>
+                  <span className="text-muted-foreground text-sm">{settings.llm.temperature}</span>
                 </div>
                 <Slider
                   min={0}
@@ -181,7 +181,7 @@ function SettingsContent() {
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <Label>Top P</Label>
-                  <span className="text-sm text-muted-foreground">{settings.llm.topP}</span>
+                  <span className="text-muted-foreground text-sm">{settings.llm.topP}</span>
                 </div>
                 <Slider
                   min={0}
@@ -195,7 +195,7 @@ function SettingsContent() {
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <Label>Max Tokens</Label>
-                  <span className="text-sm text-muted-foreground">{settings.llm.maxTokens}</span>
+                  <span className="text-muted-foreground text-sm">{settings.llm.maxTokens}</span>
                 </div>
                 <Slider
                   min={256}
@@ -209,7 +209,7 @@ function SettingsContent() {
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <Label>Context Length</Label>
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-muted-foreground text-sm">
                     {settings.llm.contextLength}
                   </span>
                 </div>
@@ -225,7 +225,7 @@ function SettingsContent() {
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <Label>Frequency Penalty</Label>
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-muted-foreground text-sm">
                     {settings.llm.frequencyPenalty}
                   </span>
                 </div>
@@ -241,7 +241,7 @@ function SettingsContent() {
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <Label>Presence Penalty</Label>
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-muted-foreground text-sm">
                     {settings.llm.presencePenalty}
                   </span>
                 </div>
@@ -396,7 +396,7 @@ function SettingsContent() {
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <Label>Similarity Threshold</Label>
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-muted-foreground text-sm">
                     {settings.memory.similarityThreshold}
                   </span>
                 </div>

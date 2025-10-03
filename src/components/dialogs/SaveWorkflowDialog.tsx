@@ -1,27 +1,27 @@
-import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
-import { Input } from '../ui/input';
-import { Textarea } from '../ui/textarea';
-import { Button } from '../ui/button';
-import { useWorkflow } from '../../hooks/useWorkflow';
-import type { WorkflowDefinition } from '../../types';
+import React, { useState } from 'react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog'
+import { Input } from '../ui/input'
+import { Textarea } from '../ui/textarea'
+import { Button } from '../ui/button'
+import { useWorkflow } from '../../hooks/useWorkflow'
+import type { WorkflowDefinition } from '../../types'
 
 interface SaveWorkflowDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  workflow: WorkflowDefinition | null;
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  workflow: WorkflowDefinition | null
 }
 
 export function SaveWorkflowDialog({ open, onOpenChange, workflow }: SaveWorkflowDialogProps) {
-  const [name, setName] = useState(workflow?.name || '');
-  const [description, setDescription] = useState(workflow?.description || '');
-  const { saveWorkflow, isSaving } = useWorkflow();
+  const [name, setName] = useState(workflow?.name || '')
+  const [description, setDescription] = useState(workflow?.description || '')
+  const { saveWorkflow, isSaving } = useWorkflow()
 
   const handleSave = async () => {
-    if (!workflow) return;
-    await saveWorkflow(workflow.id, name, description);
-    onOpenChange(false);
-  };
+    if (!workflow) return
+    await saveWorkflow(workflow.id, name, description)
+    onOpenChange(false)
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -36,7 +36,7 @@ export function SaveWorkflowDialog({ open, onOpenChange, workflow }: SaveWorkflo
             <Input
               placeholder="Enter workflow name"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={e => setName(e.target.value)}
             />
           </div>
 
@@ -45,7 +45,7 @@ export function SaveWorkflowDialog({ open, onOpenChange, workflow }: SaveWorkflo
             <Textarea
               placeholder="Describe what this workflow does"
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={e => setDescription(e.target.value)}
               rows={4}
             />
           </div>
@@ -61,5 +61,5 @@ export function SaveWorkflowDialog({ open, onOpenChange, workflow }: SaveWorkflo
         </div>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

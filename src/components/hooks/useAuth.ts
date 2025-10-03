@@ -67,6 +67,6 @@ export function useAuth() {
     signIn,
     signUp,
     signOut,
-    resetPassword
+    resetPassword,
   }
 }

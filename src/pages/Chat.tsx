@@ -6,7 +6,7 @@ import { usePanelStore } from '@/stores/panel-store'
 const PANEL_ID = 'chat'
 
 export function Chat() {
-  const { loading, error } = usePanelStore((state) => ({
+  const { loading, error } = usePanelStore(state => ({
     loading: state.loading[PANEL_ID] || false,
     error: state.error[PANEL_ID],
   }))

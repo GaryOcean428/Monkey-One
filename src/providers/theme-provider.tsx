@@ -28,7 +28,7 @@ export function ThemeProvider({
   if (!mounted) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        <div className="border-primary h-8 w-8 animate-spin rounded-full border-4 border-t-transparent" />
       </div>
     )
   }
@@ -42,9 +42,7 @@ export function ThemeProvider({
       enableSystem={enableSystem}
       disableTransitionOnChange={disableTransitionOnChange}
     >
-      <div className="transition-smooth min-h-screen bg-background text-foreground">
-        {children}
-      </div>
+      <div className="transition-smooth bg-background text-foreground min-h-screen">{children}</div>
     </NextThemesProvider>
   )
 }

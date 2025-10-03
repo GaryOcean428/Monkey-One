@@ -11,15 +11,12 @@ export interface LoadingState {
 
 export const useLoadingStore = create<LoadingState>()(
   devtools(
-    (set) => ({
+    set => ({
       isLoading: false,
       loadingText: null,
-      setLoading: (isLoading, text = null) =>
-        set({ isLoading, loadingText: text }),
-      startLoading: (text = null) =>
-        set({ isLoading: true, loadingText: text }),
-      stopLoading: () =>
-        set({ isLoading: false, loadingText: null }),
+      setLoading: (isLoading, text = null) => set({ isLoading, loadingText: text }),
+      startLoading: (text = null) => set({ isLoading: true, loadingText: text }),
+      stopLoading: () => set({ isLoading: false, loadingText: null }),
     }),
     { name: 'loading-store' }
   )

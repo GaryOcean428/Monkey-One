@@ -1,8 +1,8 @@
-import { BaseRuntime } from './BaseRuntime';
+import { BaseRuntime } from './BaseRuntime'
 
 export class WorkerAgentRuntime extends BaseRuntime {
   constructor(hostAddress: string) {
-    super();
+    super()
     // ...initialization logic...
   }
 
@@ -13,4 +13,4 @@ export class WorkerAgentRuntime extends BaseRuntime {
   // ...additional runtime methods...
 }
 
-export { WorkerAgentRuntime };
+export { WorkerAgentRuntime }

@@ -32,68 +32,74 @@ export function AccessibilityProvider({ children }: AccessibilityProviderProps) 
   const reducedMotion = usePrefersReducedMotion()
   const previousActiveElement = React.useRef<HTMLElement | null>(null)
 
-  const announceMessage = React.useCallback((message: string, priority: 'polite' | 'assertive' = 'polite') => {
-    setAnnouncements(prev => [...prev, message])
-    
-    // Clean up old announcements
-    setTimeout(() => {
-      setAnnouncements(prev => prev.filter(announcement => announcement !== message))
-    }, 1000)
-  }, [])
+  const announceMessage = React.useCallback(
+    (message: string, priority: 'polite' | 'assertive' = 'polite') => {
+      setAnnouncements(prev => [...prev, message])
 
-  const focusManagement = React.useMemo(() => ({
-    trapFocus: (element: HTMLElement) => {
-      const focusableElements = element.querySelectorAll(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-      )
-      const firstFocusable = focusableElements[0] as HTMLElement
-      const lastFocusable = focusableElements[focusableElements.length - 1] as HTMLElement
+      // Clean up old announcements
+      setTimeout(() => {
+        setAnnouncements(prev => prev.filter(announcement => announcement !== message))
+      }, 1000)
+    },
+    []
+  )
 
-      const handleTabKey = (e: KeyboardEvent) => {
-        if (e.key !== 'Tab') return
+  const focusManagement = React.useMemo(
+    () => ({
+      trapFocus: (element: HTMLElement) => {
+        const focusableElements = element.querySelectorAll(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        )
+        const firstFocusable = focusableElements[0] as HTMLElement
+        const lastFocusable = focusableElements[focusableElements.length - 1] as HTMLElement
 
-        if (e.shiftKey) {
-          if (document.activeElement === firstFocusable) {
-            lastFocusable?.focus()
-            e.preventDefault()
-          }
-        } else {
-          if (document.activeElement === lastFocusable) {
-            firstFocusable?.focus()
-            e.preventDefault()
+        const handleTabKey = (e: KeyboardEvent) => {
+          if (e.key !== 'Tab') return
+
+          if (e.shiftKey) {
+            if (document.activeElement === firstFocusable) {
+              lastFocusable?.focus()
+              e.preventDefault()
+            }
+          } else {
+            if (document.activeElement === lastFocusable) {
+              firstFocusable?.focus()
+              e.preventDefault()
+            }
           }
         }
-      }
 
-      element.addEventListener('keydown', handleTabKey)
-      firstFocusable?.focus()
+        element.addEventListener('keydown', handleTabKey)
+        firstFocusable?.focus()
 
-      return () => {
-        element.removeEventListener('keydown', handleTabKey)
-      }
-    },
-
-    restoreFocus: (element: HTMLElement | null) => {
-      if (element) {
-        element.focus()
-      }
-    },
-
-    manageFocusReturn: () => {
-      previousActiveElement.current = document.activeElement as HTMLElement
-      return () => {
-        if (previousActiveElement.current) {
-          previousActiveElement.current.focus()
+        return () => {
+          element.removeEventListener('keydown', handleTabKey)
         }
-      }
-    }
-  }), [])
+      },
+
+      restoreFocus: (element: HTMLElement | null) => {
+        if (element) {
+          element.focus()
+        }
+      },
+
+      manageFocusReturn: () => {
+        previousActiveElement.current = document.activeElement as HTMLElement
+        return () => {
+          if (previousActiveElement.current) {
+            previousActiveElement.current.focus()
+          }
+        }
+      },
+    }),
+    []
+  )
 
   const value: AccessibilityContextValue = {
     announceMessage,
     focusManagement,
     reducedMotion,
-    announcements
+    announcements,
   }
 
   return (
@@ -121,9 +127,9 @@ export function SkipLink({ href, children, className }: SkipLinkProps) {
       href={href}
       className={cn(
         'skip-link sr-only focus:not-sr-only',
-        'fixed top-4 left-4 z-[9999] bg-primary text-primary-foreground',
-        'px-4 py-2 rounded-md font-medium transition-all',
-        'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+        'bg-primary text-primary-foreground fixed top-4 left-4 z-[9999]',
+        'rounded-md px-4 py-2 font-medium transition-all',
+        'focus:ring-ring focus:ring-2 focus:ring-offset-2 focus:outline-none',
         className
       )}
     >
@@ -179,7 +185,11 @@ interface AnnouncementProps {
   condition?: boolean
 }
 
-export function Announcement({ children, priority = 'polite', condition = true }: AnnouncementProps) {
+export function Announcement({
+  children,
+  priority = 'polite',
+  condition = true,
+}: AnnouncementProps) {
   const { announceMessage } = useAccessibility()
 
   React.useEffect(() => {
@@ -198,7 +208,7 @@ interface ReducedMotionProps {
 
 export function ReducedMotionProvider({ children, fallback }: ReducedMotionProps) {
   const { reducedMotion } = useAccessibility()
-  
+
   return reducedMotion && fallback ? <>{fallback}</> : <>{children}</>
 }
 
@@ -208,19 +218,15 @@ interface LandmarkProps extends React.HTMLAttributes<HTMLElement> {
   label?: string
 }
 
-export function Landmark({ 
-  children, 
-  as: Component = 'section', 
-  label, 
+export function Landmark({
+  children,
+  as: Component = 'section',
+  label,
   className,
-  ...props 
+  ...props
 }: LandmarkProps) {
   return (
-    <Component
-      className={className}
-      aria-label={label}
-      {...props}
-    >
+    <Component className={className} aria-label={label} {...props}>
       {children}
     </Component>
   )
@@ -239,44 +245,43 @@ export function KeyboardNavigation({
   onEscape,
   onEnter,
   onSpace,
-  onArrowKeys
+  onArrowKeys,
 }: KeyboardNavigationProps) {
-  const handleKeyDown = React.useCallback((e: React.KeyboardEvent) => {
-    switch (e.key) {
-      case 'Escape':
-        onEscape?.()
-        break
-      case 'Enter':
-        onEnter?.()
-        break
-      case ' ':
-        e.preventDefault()
-        onSpace?.()
-        break
-      case 'ArrowUp':
-        e.preventDefault()
-        onArrowKeys?.('up')
-        break
-      case 'ArrowDown':
-        e.preventDefault()
-        onArrowKeys?.('down')
-        break
-      case 'ArrowLeft':
-        e.preventDefault()
-        onArrowKeys?.('left')
-        break
-      case 'ArrowRight':
-        e.preventDefault()
-        onArrowKeys?.('right')
-        break
-    }
-  }, [onEscape, onEnter, onSpace, onArrowKeys])
-
-  return (
-    <div onKeyDown={handleKeyDown}>
-      {children}
-    </div>
+  const handleKeyDown = React.useCallback(
+    (e: React.KeyboardEvent) => {
+      switch (e.key) {
+        case 'Escape':
+          onEscape?.()
+          break
+        case 'Enter':
+          onEnter?.()
+          break
+        case ' ':
+          e.preventDefault()
+          onSpace?.()
+          break
+        case 'ArrowUp':
+          e.preventDefault()
+          onArrowKeys?.('up')
+          break
+        case 'ArrowDown':
+          e.preventDefault()
+          onArrowKeys?.('down')
+          break
+        case 'ArrowLeft':
+          e.preventDefault()
+          onArrowKeys?.('left')
+          break
+        case 'ArrowRight':
+          e.preventDefault()
+          onArrowKeys?.('right')
+          break
+      }
+    },
+    [onEscape, onEnter, onSpace, onArrowKeys]
   )
+
+  return <div onKeyDown={handleKeyDown}>{children}</div>
 }
 
 interface AccessibleIconProps {
@@ -287,11 +292,7 @@ interface AccessibleIconProps {
 
 export function AccessibleIcon({ children, label, decorative = false }: AccessibleIconProps) {
   if (decorative) {
-    return (
-      <span aria-hidden="true">
-        {children}
-      </span>
-    )
+    return <span aria-hidden="true">{children}</span>
   }
 
   return (
@@ -309,42 +310,51 @@ export function useAccessibleForm() {
   const { announceMessage } = useAccessibility()
   const [errors, setErrors] = React.useState<Record<string, string>>({})
 
-  const validateField = React.useCallback((fieldName: string, value: string, validator: (value: string) => string | null) => {
-    const error = validator(value)
-    
-    setErrors(prev => {
-      const newErrors = { ...prev }
+  const validateField = React.useCallback(
+    (fieldName: string, value: string, validator: (value: string) => string | null) => {
+      const error = validator(value)
+
+      setErrors(prev => {
+        const newErrors = { ...prev }
+        if (error) {
+          newErrors[fieldName] = error
+        } else {
+          delete newErrors[fieldName]
+        }
+        return newErrors
+      })
+
       if (error) {
-        newErrors[fieldName] = error
-      } else {
-        delete newErrors[fieldName]
+        announceMessage(`${fieldName}: ${error}`, 'assertive')
       }
-      return newErrors
-    })
 
-    if (error) {
-      announceMessage(`${fieldName}: ${error}`, 'assertive')
-    }
+      return !error
+    },
+    [announceMessage]
+  )
 
-    return !error
-  }, [announceMessage])
+  const getFieldProps = React.useCallback(
+    (fieldName: string) => ({
+      'aria-invalid': !!errors[fieldName],
+      'aria-describedby': errors[fieldName] ? `${fieldName}-error` : undefined,
+    }),
+    [errors]
+  )
 
-  const getFieldProps = React.useCallback((fieldName: string) => ({
-    'aria-invalid': !!errors[fieldName],
-    'aria-describedby': errors[fieldName] ? `${fieldName}-error` : undefined
-  }), [errors])
-
-  const getErrorProps = React.useCallback((fieldName: string) => ({
-    id: `${fieldName}-error`,
-    role: 'alert',
-    'aria-live': 'polite' as const
-  }), [])
+  const getErrorProps = React.useCallback(
+    (fieldName: string) => ({
+      id: `${fieldName}-error`,
+      role: 'alert',
+      'aria-live': 'polite' as const,
+    }),
+    []
+  )
 
   return {
     errors,
     validateField,
     getFieldProps,
     getErrorProps,
-    hasErrors: Object.keys(errors).length > 0
+    hasErrors: Object.keys(errors).length > 0,
   }
 }

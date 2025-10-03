@@ -1,53 +1,65 @@
-import React, { useState } from 'react';
-import { Marked } from 'marked';
-import { markedHighlight } from 'marked-highlight';
-import hljs from 'highlight.js';
-import { Button } from '../ui/button';
-import { RefreshCw, Filter, SortAsc, SortDesc } from 'lucide-react';
+import React, { useState } from 'react'
+import { Marked } from 'marked'
+import { markedHighlight } from 'marked-highlight'
+import hljs from 'highlight.js'
+import { Button } from '../ui/button'
+import { RefreshCw, Filter, SortAsc, SortDesc } from 'lucide-react'
 
 // Initialize marked with syntax highlighting
 const marked = new Marked(
   markedHighlight({
     langPrefix: 'hljs language-',
     highlight(code, lang) {
-      const language = hljs.getLanguage(lang) ? lang : 'plaintext';
-      return hljs.highlight(code, { language }).value;
-    }
+      const language = hljs.getLanguage(lang) ? lang : 'plaintext'
+      return hljs.highlight(code, { language }).value
+    },
   })
-);
+)
 
 interface MarkdownRendererProps {
-  content: string;
-  className?: string;
+  content: string
+  className?: string
 }
 
 export function MarkdownRenderer({ content, className = '' }: MarkdownRendererProps) {
-  const [filterType, setFilterType] = useState<string | null>(null);
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [filterType, setFilterType] = useState<string | null>(null)
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
 
   // Parse markdown to HTML
-  const html = marked.parse(content);
+  const html = marked.parse(content)
 
   return (
     <div>
       <div className="mb-4 flex justify-between">
         <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
-          <RefreshCw className="w-4 h-4 mr-2" />
+          <RefreshCw className="mr-2 h-4 w-4" />
           Refresh Markdown
         </Button>
-        <Button variant="outline" size="sm" onClick={() => setFilterType(filterType ? null : 'type')}>
-          <Filter className="w-4 h-4 mr-2" />
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setFilterType(filterType ? null : 'type')}
+        >
+          <Filter className="mr-2 h-4 w-4" />
           {filterType ? 'Clear Filter' : 'Filter by Type'}
         </Button>
-        <Button variant="outline" size="sm" onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}>
-          {sortOrder === 'asc' ? <SortAsc className="w-4 h-4 mr-2" /> : <SortDesc className="w-4 h-4 mr-2" />}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+        >
+          {sortOrder === 'asc' ? (
+            <SortAsc className="mr-2 h-4 w-4" />
+          ) : (
+            <SortDesc className="mr-2 h-4 w-4" />
+          )}
           Sort by Name
         </Button>
       </div>
-      <div 
+      <div
         className={`prose dark:prose-invert max-w-none ${className}`}
         dangerouslySetInnerHTML={{ __html: html }}
       />
     </div>
-  );
+  )
 }

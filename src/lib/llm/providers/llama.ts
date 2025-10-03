@@ -1,31 +1,31 @@
-import { LLMProvider } from './base';
+import { LLMProvider } from './base'
 
 export class LlamaProvider extends LLMProvider {
   constructor(apiKey?: string) {
-    super(apiKey);
+    super(apiKey)
   }
 
   getName(): string {
-    return 'Llama';
+    return 'Llama'
   }
 
   getModelName(): string {
-    return 'llama-2-70b';
+    return 'llama-2-70b'
   }
 
   getCostPerToken(): number {
-    return 0.0001;
+    return 0.0001
   }
 
   isAvailable(): boolean {
-    return !!this.apiKey;
+    return !!this.apiKey
   }
 
   async generateResponse(prompt: string) {
-    throw new Error('Not implemented');
+    throw new Error('Not implemented')
   }
 
   async generateStreamingResponse(prompt: string) {
-    throw new Error('Not implemented');
+    throw new Error('Not implemented')
   }
 }

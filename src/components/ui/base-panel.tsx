@@ -36,7 +36,7 @@ export function BasePanel({
       <Card className={cn('flex-1 overflow-hidden', contentClassName)}>
         {loading ? (
           <div className="flex h-full items-center justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+            <div className="border-primary h-8 w-8 animate-spin rounded-full border-4 border-t-transparent" />
           </div>
         ) : error ? (
           <div className="flex h-full flex-col items-center justify-center p-6 text-center">

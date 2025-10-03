@@ -1,39 +1,39 @@
-import { Agent, Message } from '../../types';
-import { memoryManager } from '../memory';
+import { Agent, Message } from '../../types'
+import { memoryManager } from '../memory'
 
 interface ScoringPoint {
-  id: string;
-  description: string;
-  weight: number;
-  criteria: string;
-  evaluationCode?: string;
+  id: string
+  description: string
+  weight: number
+  criteria: string
+  evaluationCode?: string
 }
 
 interface EvaluationResult {
-  score: number;
-  maxScore: number;
+  score: number
+  maxScore: number
   details: {
-    pointId: string;
-    score: number;
-    reason: string;
-  }[];
+    pointId: string
+    score: number
+    reason: string
+  }[]
 }
 
 export class AutoEvaluator {
-  private static instance: AutoEvaluator;
-  private scoringPoints: Map<string, ScoringPoint> = new Map();
+  private static instance: AutoEvaluator
+  private scoringPoints: Map<string, ScoringPoint> = new Map()
 
   private constructor() {}
 
   static getInstance(): AutoEvaluator {
     if (!AutoEvaluator.instance) {
-      AutoEvaluator.instance = new AutoEvaluator();
+      AutoEvaluator.instance = new AutoEvaluator()
     }
-    return AutoEvaluator.instance;
+    return AutoEvaluator.instance
   }
 
   registerScoringPoint(point: ScoringPoint): void {
-    this.scoringPoints.set(point.id, point);
+    this.scoringPoints.set(point.id, point)
   }
 
   async evaluateAgent(
@@ -44,22 +44,22 @@ export class AutoEvaluator {
     const results = {
       score: 0,
       maxScore: 0,
-      details: []
-    };
+      details: [],
+    }
 
     for (const point of this.scoringPoints.values()) {
       const isMatch = point.evaluationCode
         ? await this.evaluateWithCode(point.evaluationCode, messages, context)
-        : await this.evaluateWithCriteria(point.criteria, messages, context);
+        : await this.evaluateWithCriteria(point.criteria, messages, context)
 
-      const pointScore = isMatch ? point.weight : 0;
-      results.score += pointScore;
-      results.maxScore += point.weight;
+      const pointScore = isMatch ? point.weight : 0
+      results.score += pointScore
+      results.maxScore += point.weight
       results.details.push({
         pointId: point.id,
         score: pointScore,
-        reason: isMatch ? 'Criteria met' : 'Criteria not met'
-      });
+        reason: isMatch ? 'Criteria met' : 'Criteria not met',
+      })
     }
 
     // Store evaluation result
@@ -68,12 +68,12 @@ export class AutoEvaluator {
       content: JSON.stringify({
         agentId: agent.id,
         timestamp: Date.now(),
-        results
+        results,
       }),
-      tags: ['evaluation', agent.id]
-    });
+      tags: ['evaluation', agent.id],
+    })
 
-    return results;
+    return results
   }
 
   private async evaluateWithCode(
@@ -84,11 +84,11 @@ export class AutoEvaluator {
     try {
       // In a real implementation, we would use a sandboxed environment
       // to execute the evaluation code safely
-      const fn = new Function('messages', 'context', code);
-      return fn(messages, context);
+      const fn = new Function('messages', 'context', code)
+      return fn(messages, context)
     } catch (error) {
-      console.error('Error evaluating with code:', error);
-      return false;
+      console.error('Error evaluating with code:', error)
+      return false
     }
   }
 
@@ -99,6 +99,6 @@ export class AutoEvaluator {
   ): Promise<boolean> {
     // In a real implementation, we would use an LLM to evaluate
     // the criteria against the messages and context
-    return false;
+    return false
   }
 }

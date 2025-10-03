@@ -11,23 +11,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../co
 import { Button } from '../components/ui/button'
 
 export function AuthTest(): JSX.Element {
-  const { 
-    user, 
-    isAuthenticated, 
-    supabaseProfile, 
-    oidcToken, 
-    gcpCredentials,
-    refreshCredentials 
-  } = useAuth()
+  const { user, isAuthenticated, supabaseProfile, oidcToken, gcpCredentials, refreshCredentials } =
+    useAuth()
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Authentication Test</h1>
-          <p className="text-muted-foreground">
-            Test and verify authentication functionality
-          </p>
+          <p className="text-muted-foreground">Test and verify authentication functionality</p>
         </div>
         {isAuthenticated && <UserProfile />}
       </div>
@@ -40,9 +32,7 @@ export function AuthTest(): JSX.Element {
         <Card>
           <CardHeader>
             <CardTitle>Sign In Required</CardTitle>
-            <CardDescription>
-              Please sign in to test the authentication system
-            </CardDescription>
+            <CardDescription>Please sign in to test the authentication system</CardDescription>
           </CardHeader>
           <CardContent>
             <LoginButton className="w-full" />
@@ -55,27 +45,25 @@ export function AuthTest(): JSX.Element {
         <Card>
           <CardHeader>
             <CardTitle>Google OAuth User Data</CardTitle>
-            <CardDescription>
-              Information retrieved from Google OAuth
-            </CardDescription>
+            <CardDescription>Information retrieved from Google OAuth</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
                 <label className="text-sm font-medium">User ID</label>
-                <p className="text-sm text-muted-foreground">{user.id}</p>
+                <p className="text-muted-foreground text-sm">{user.id}</p>
               </div>
               <div>
                 <label className="text-sm font-medium">Email</label>
-                <p className="text-sm text-muted-foreground">{user.email}</p>
+                <p className="text-muted-foreground text-sm">{user.email}</p>
               </div>
               <div>
                 <label className="text-sm font-medium">Name</label>
-                <p className="text-sm text-muted-foreground">{user.name}</p>
+                <p className="text-muted-foreground text-sm">{user.name}</p>
               </div>
               <div>
                 <label className="text-sm font-medium">Email Verified</label>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   {user.verified_email ? 'Yes' : 'No'}
                 </p>
               </div>
@@ -83,11 +71,7 @@ export function AuthTest(): JSX.Element {
                 <div className="md:col-span-2">
                   <label className="text-sm font-medium">Profile Picture</label>
                   <div className="mt-2">
-                    <img 
-                      src={user.picture} 
-                      alt={user.name}
-                      className="w-16 h-16 rounded-full"
-                    />
+                    <img src={user.picture} alt={user.name} className="h-16 w-16 rounded-full" />
                   </div>
                 </div>
               )}
@@ -101,40 +85,34 @@ export function AuthTest(): JSX.Element {
         <Card>
           <CardHeader>
             <CardTitle>Supabase Profile Data</CardTitle>
-            <CardDescription>
-              User profile synchronized to Supabase database
-            </CardDescription>
+            <CardDescription>User profile synchronized to Supabase database</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
                 <label className="text-sm font-medium">Profile ID</label>
-                <p className="text-sm text-muted-foreground font-mono">
-                  {supabaseProfile.id}
-                </p>
+                <p className="text-muted-foreground font-mono text-sm">{supabaseProfile.id}</p>
               </div>
               <div>
                 <label className="text-sm font-medium">Username</label>
-                <p className="text-sm text-muted-foreground">
-                  {supabaseProfile.username}
-                </p>
+                <p className="text-muted-foreground text-sm">{supabaseProfile.username}</p>
               </div>
               <div>
                 <label className="text-sm font-medium">Created At</label>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   {new Date(supabaseProfile.created_at).toLocaleString()}
                 </p>
               </div>
               <div>
                 <label className="text-sm font-medium">Updated At</label>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   {new Date(supabaseProfile.updated_at).toLocaleString()}
                 </p>
               </div>
               {supabaseProfile.preferences && (
                 <div className="md:col-span-2">
                   <label className="text-sm font-medium">Preferences</label>
-                  <pre className="text-sm text-muted-foreground bg-muted p-2 rounded mt-1">
+                  <pre className="text-muted-foreground bg-muted mt-1 rounded p-2 text-sm">
                     {JSON.stringify(supabaseProfile.preferences, null, 2)}
                   </pre>
                 </div>
@@ -149,25 +127,23 @@ export function AuthTest(): JSX.Element {
         <Card>
           <CardHeader>
             <CardTitle>Vercel OIDC Token</CardTitle>
-            <CardDescription>
-              Token for secure backend service access
-            </CardDescription>
+            <CardDescription>Token for secure backend service access</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
                 <label className="text-sm font-medium">Issuer</label>
-                <p className="text-sm text-muted-foreground">{oidcToken.issuer}</p>
+                <p className="text-muted-foreground text-sm">{oidcToken.issuer}</p>
               </div>
               <div>
                 <label className="text-sm font-medium">Expires At</label>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   {new Date(oidcToken.expiresAt).toLocaleString()}
                 </p>
               </div>
               <div className="md:col-span-2">
                 <label className="text-sm font-medium">Token (First 50 chars)</label>
-                <p className="text-sm text-muted-foreground font-mono bg-muted p-2 rounded">
+                <p className="text-muted-foreground bg-muted rounded p-2 font-mono text-sm">
                   {oidcToken.token.substring(0, 50)}...
                 </p>
               </div>
@@ -181,31 +157,27 @@ export function AuthTest(): JSX.Element {
         <Card>
           <CardHeader>
             <CardTitle>GCP Access Credentials</CardTitle>
-            <CardDescription>
-              Credentials for Google Cloud Platform access
-            </CardDescription>
+            <CardDescription>Credentials for Google Cloud Platform access</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
                 <label className="text-sm font-medium">Token Type</label>
-                <p className="text-sm text-muted-foreground">{gcpCredentials.tokenType}</p>
+                <p className="text-muted-foreground text-sm">{gcpCredentials.tokenType}</p>
               </div>
               <div>
                 <label className="text-sm font-medium">Expires At</label>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   {gcpCredentials.expiresAt.toLocaleString()}
                 </p>
               </div>
               <div>
                 <label className="text-sm font-medium">Expires In</label>
-                <p className="text-sm text-muted-foreground">
-                  {gcpCredentials.expiresIn} seconds
-                </p>
+                <p className="text-muted-foreground text-sm">{gcpCredentials.expiresIn} seconds</p>
               </div>
               <div>
                 <label className="text-sm font-medium">Access Token (First 50 chars)</label>
-                <p className="text-sm text-muted-foreground font-mono bg-muted p-2 rounded">
+                <p className="text-muted-foreground bg-muted rounded p-2 font-mono text-sm">
                   {gcpCredentials.accessToken.substring(0, 50)}...
                 </p>
               </div>
@@ -219,9 +191,7 @@ export function AuthTest(): JSX.Element {
         <Card>
           <CardHeader>
             <CardTitle>Actions</CardTitle>
-            <CardDescription>
-              Test authentication-related actions
-            </CardDescription>
+            <CardDescription>Test authentication-related actions</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <Button onClick={refreshCredentials} variant="outline">
@@ -235,12 +205,10 @@ export function AuthTest(): JSX.Element {
       <Card>
         <CardHeader>
           <CardTitle>Environment Information</CardTitle>
-          <CardDescription>
-            Current environment configuration
-          </CardDescription>
+          <CardDescription>Current environment configuration</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
             <div>
               <label className="font-medium">Environment</label>
               <p className="text-muted-foreground">
@@ -262,10 +230,9 @@ export function AuthTest(): JSX.Element {
             <div>
               <label className="font-medium">Google Client ID</label>
               <p className="text-muted-foreground">
-                {import.meta.env.VITE_GOOGLE_CLIENT_ID ? 
-                  `${import.meta.env.VITE_GOOGLE_CLIENT_ID.substring(0, 20)}...` : 
-                  'Not configured'
-                }
+                {import.meta.env.VITE_GOOGLE_CLIENT_ID
+                  ? `${import.meta.env.VITE_GOOGLE_CLIENT_ID.substring(0, 20)}...`
+                  : 'Not configured'}
               </p>
             </div>
           </div>

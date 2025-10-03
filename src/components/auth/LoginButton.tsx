@@ -15,10 +15,10 @@ interface LoginButtonProps {
   size?: 'default' | 'sm' | 'lg' | 'icon'
 }
 
-export function LoginButton({ 
-  className, 
-  variant = 'default', 
-  size = 'default' 
+export function LoginButton({
+  className,
+  variant = 'default',
+  size = 'default',
 }: LoginButtonProps): JSX.Element {
   const { signIn, isLoading, error } = useAuth()
 
@@ -68,12 +68,8 @@ export function LoginButton({
           </>
         )}
       </Button>
-      
-      {error && (
-        <p className="text-sm text-red-600 dark:text-red-400">
-          {error}
-        </p>
-      )}
+
+      {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
     </div>
   )
 }

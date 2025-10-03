@@ -9,7 +9,7 @@ export const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children
 
   if (!isAuthenticated) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
           <p className="text-gray-600">You must be logged in to view this page.</p>
           <div className="mt-4 space-x-2">

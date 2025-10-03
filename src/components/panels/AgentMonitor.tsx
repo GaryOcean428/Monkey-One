@@ -1,20 +1,20 @@
-import React, { useEffect } from 'react';
-import { Activity, AlertCircle, CheckCircle } from 'lucide-react';
-import { BasePanel } from './BasePanel';
-import { Card } from '../ui/card';
-import { Badge } from '../ui/badge';
-import { Progress } from '../ui/progress';
-import { useThoughtLogger } from '../../hooks/useThoughtLogger';
+import React, { useEffect } from 'react'
+import { Activity, AlertCircle, CheckCircle } from 'lucide-react'
+import { BasePanel } from './BasePanel'
+import { Card } from '../ui/card'
+import { Badge } from '../ui/badge'
+import { Progress } from '../ui/progress'
+import { useThoughtLogger } from '../../hooks/useThoughtLogger'
 
 interface Agent {
-  id: string;
-  name: string;
-  status: 'idle' | 'working' | 'error';
-  task?: string;
-  progress?: number;
-  lastActive?: number;
-  memory?: number;
-  cpu?: number;
+  id: string
+  name: string
+  status: 'idle' | 'working' | 'error'
+  task?: string
+  progress?: number
+  lastActive?: number
+  memory?: number
+  cpu?: number
 }
 
 const DEMO_AGENTS: Agent[] = [
@@ -45,73 +45,78 @@ const DEMO_AGENTS: Agent[] = [
     memory: 128,
     cpu: 0,
   },
-];
+]
 
 export function AgentMonitor() {
   const logger = useThoughtLogger({
     source: 'agent-monitor',
-  });
+  })
 
   // Log agent state changes and important events
   useEffect(() => {
     logger.observe('Agent monitor initialized', {
       agentCount: DEMO_AGENTS.length,
       activeAgents: DEMO_AGENTS.filter(a => a.status === 'working').length,
-    });
+    })
 
     // Example of logging different types of thoughts
     DEMO_AGENTS.forEach(agent => {
       if (agent.status === 'working') {
-        logger.agentState(`Agent ${agent.name} is working on ${agent.task}`, {
-          agentId: agent.id,
-          task: agent.task,
-          progress: agent.progress,
-        }, {
-          importance: 0.7,
-          tags: ['status-update', 'working'],
-        });
+        logger.agentState(
+          `Agent ${agent.name} is working on ${agent.task}`,
+          {
+            agentId: agent.id,
+            task: agent.task,
+            progress: agent.progress,
+          },
+          {
+            importance: 0.7,
+            tags: ['status-update', 'working'],
+          }
+        )
       } else if (agent.status === 'error') {
-        logger.error(`Agent ${agent.name} encountered an error`, {
-          agentId: agent.id,
-          task: agent.task,
-        }, {
-          importance: 0.9,
-          confidence: 1.0,
-          tags: ['error', 'needs-attention'],
-        });
+        logger.error(
+          `Agent ${agent.name} encountered an error`,
+          {
+            agentId: agent.id,
+            task: agent.task,
+          },
+          {
+            importance: 0.9,
+            confidence: 1.0,
+            tags: ['error', 'needs-attention'],
+          }
+        )
       }
-    });
-  }, [logger]);
+    })
+  }, [logger])
 
   const getStatusIcon = (status: Agent['status']) => {
     switch (status) {
       case 'working':
-        return <Activity className="w-4 h-4 text-blue-400" />;
+        return <Activity className="h-4 w-4 text-blue-400" />
       case 'error':
-        return <AlertCircle className="w-4 h-4 text-red-400" />;
+        return <AlertCircle className="h-4 w-4 text-red-400" />
       default:
-        return <CheckCircle className="w-4 h-4 text-green-400" />;
+        return <CheckCircle className="h-4 w-4 text-green-400" />
     }
-  };
+  }
 
   const getStatusColor = (status: Agent['status']) => {
     switch (status) {
       case 'working':
-        return 'text-blue-400 border-blue-400/20 bg-blue-400/10';
+        return 'text-blue-400 border-blue-400/20 bg-blue-400/10'
       case 'error':
-        return 'text-red-400 border-red-400/20 bg-red-400/10';
+        return 'text-red-400 border-red-400/20 bg-red-400/10'
       default:
-        return 'text-green-400 border-green-400/20 bg-green-400/10';
+        return 'text-green-400 border-green-400/20 bg-green-400/10'
     }
-  };
+  }
 
   return (
     <BasePanel title="Agent Monitor" className="flex flex-col space-y-4">
-      {DEMO_AGENTS.map((agent) => (
-        <Card
-          key={agent.id}
-          className={`p-4 border ${getStatusColor(agent.status)}`}
-        >
+      {DEMO_AGENTS.map(agent => (
+        <Card key={agent.id} className={`border p-4 ${getStatusColor(agent.status)}`}>
           <div className="flex items-start justify-between">
             <div>
               <div className="flex items-center gap-2">
@@ -121,28 +126,20 @@ export function AgentMonitor() {
                   {agent.status}
                 </Badge>
               </div>
-              
-              {agent.task && (
-                <p className="mt-1 text-sm opacity-80">{agent.task}</p>
-              )}
-              
+
+              {agent.task && <p className="mt-1 text-sm opacity-80">{agent.task}</p>}
+
               {agent.progress !== undefined && (
                 <div className="mt-2">
                   <Progress value={agent.progress} className="h-1" />
-                  <p className="mt-1 text-xs opacity-70">
-                    Progress: {agent.progress}%
-                  </p>
+                  <p className="mt-1 text-xs opacity-70">Progress: {agent.progress}%</p>
                 </div>
               )}
             </div>
 
             <div className="text-right text-sm">
-              <div className="opacity-70">
-                Memory: {agent.memory}MB
-              </div>
-              <div className="opacity-70">
-                CPU: {agent.cpu}%
-              </div>
+              <div className="opacity-70">Memory: {agent.memory}MB</div>
+              <div className="opacity-70">CPU: {agent.cpu}%</div>
               <div className="mt-1 text-xs opacity-60">
                 Last Active: {formatTimeAgo(agent.lastActive)}
               </div>
@@ -151,16 +148,16 @@ export function AgentMonitor() {
         </Card>
       ))}
     </BasePanel>
-  );
+  )
 }
 
 function formatTimeAgo(timestamp?: number): string {
-  if (!timestamp) return 'Never';
-  
-  const seconds = Math.floor((Date.now() - timestamp) / 1000);
-  
-  if (seconds < 60) return 'Just now';
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-  return `${Math.floor(seconds / 86400)}d ago`;
+  if (!timestamp) return 'Never'
+
+  const seconds = Math.floor((Date.now() - timestamp) / 1000)
+
+  if (seconds < 60) return 'Just now'
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`
+  return `${Math.floor(seconds / 86400)}d ago`
 }

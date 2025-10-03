@@ -1,142 +1,138 @@
-import React, { useEffect, useRef, useState } from 'react';
-import * as THREE from 'three';
-import { motion } from 'framer-motion';
-import { useBrainCore } from '../../hooks/useBrainCore';
-import { useThrottledCallback } from '../../hooks/useThrottledCallback';
-import { Button } from '../ui/button';
-import { RefreshCw, Filter, SortAsc, SortDesc } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react'
+import * as THREE from 'three'
+import { motion } from 'framer-motion'
+import { useBrainCore } from '../../hooks/useBrainCore'
+import { useThrottledCallback } from '../../hooks/useThrottledCallback'
+import { Button } from '../ui/button'
+import { RefreshCw, Filter, SortAsc, SortDesc } from 'lucide-react'
 
 export function BrainVisualizer() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
-  const sceneRef = useRef<THREE.Scene | null>(null);
-  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
-  const frameRef = useRef<number>(0);
-  const regionsRef = useRef<THREE.Mesh[]>([]);
-  
-  const { brainState, neuralMetrics } = useBrainCore();
-  const [isVisible, setIsVisible] = useState(false);
-  const [filterRegion, setFilterRegion] = useState<string | null>(null);
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const containerRef = useRef<HTMLDivElement>(null)
+  const rendererRef = useRef<THREE.WebGLRenderer | null>(null)
+  const sceneRef = useRef<THREE.Scene | null>(null)
+  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null)
+  const frameRef = useRef<number>(0)
+  const regionsRef = useRef<THREE.Mesh[]>([])
+
+  const { brainState, neuralMetrics } = useBrainCore()
+  const [isVisible, setIsVisible] = useState(false)
+  const [filterRegion, setFilterRegion] = useState<string | null>(null)
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
 
   // Throttle render updates for performance
   const updateRegions = useThrottledCallback((regions: THREE.Mesh[]) => {
     regions.forEach(region => {
-      region.rotation.x += 0.001;
-      region.rotation.y += 0.001;
-    });
-  }, 16); // ~60fps
+      region.rotation.x += 0.001
+      region.rotation.y += 0.001
+    })
+  }, 16) // ~60fps
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current) return
 
     // Initialize scene
-    sceneRef.current = new THREE.Scene();
-    
+    sceneRef.current = new THREE.Scene()
+
     // Initialize camera with frustum culling
     cameraRef.current = new THREE.PerspectiveCamera(
       75,
       containerRef.current.clientWidth / containerRef.current.clientHeight,
       0.1,
       1000
-    );
-    cameraRef.current.position.z = 5;
+    )
+    cameraRef.current.position.z = 5
 
     // Initialize renderer with performance optimizations
     rendererRef.current = new THREE.WebGLRenderer({
       antialias: false, // Disable for performance
       alpha: true,
       powerPreference: 'high-performance',
-      precision: 'mediump'
-    });
-    rendererRef.current.setSize(
-      containerRef.current.clientWidth,
-      containerRef.current.clientHeight
-    );
-    rendererRef.current.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    containerRef.current.appendChild(rendererRef.current.domElement);
+      precision: 'mediump',
+    })
+    rendererRef.current.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight)
+    rendererRef.current.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+    containerRef.current.appendChild(rendererRef.current.domElement)
 
     // Create brain regions with shared geometries and materials
-    const regions = createBrainRegions();
-    regions.forEach(region => sceneRef.current?.add(region));
-    regionsRef.current = regions;
+    const regions = createBrainRegions()
+    regions.forEach(region => sceneRef.current?.add(region))
+    regionsRef.current = regions
 
     // Add optimized lighting
-    const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
-    directionalLight.position.set(5, 5, 5);
-    sceneRef.current.add(ambientLight, directionalLight);
+    const ambientLight = new THREE.AmbientLight(0x404040, 0.5)
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5)
+    directionalLight.position.set(5, 5, 5)
+    sceneRef.current.add(ambientLight, directionalLight)
 
     // Start animation loop
     const animate = () => {
-      if (!sceneRef.current || !rendererRef.current || !cameraRef.current) return;
-      
-      frameRef.current = requestAnimationFrame(animate);
-      
+      if (!sceneRef.current || !rendererRef.current || !cameraRef.current) return
+
+      frameRef.current = requestAnimationFrame(animate)
+
       // Only update visible regions
       if (isVisible) {
-        updateRegions(regionsRef.current);
-        rendererRef.current.render(sceneRef.current, cameraRef.current);
+        updateRegions(regionsRef.current)
+        rendererRef.current.render(sceneRef.current, cameraRef.current)
       }
-    };
-    animate();
+    }
+    animate()
 
     // Intersection Observer for visibility
-    const observer = new IntersectionObserver(
-      ([entry]) => setIsVisible(entry.isIntersecting),
-      { threshold: 0.1 }
-    );
-    observer.observe(containerRef.current);
+    const observer = new IntersectionObserver(([entry]) => setIsVisible(entry.isIntersecting), {
+      threshold: 0.1,
+    })
+    observer.observe(containerRef.current)
 
     // Cleanup
     return () => {
-      cancelAnimationFrame(frameRef.current);
-      observer.disconnect();
-      
+      cancelAnimationFrame(frameRef.current)
+      observer.disconnect()
+
       // Dispose resources
       regions.forEach(region => {
-        region.geometry.dispose();
-        (region.material as THREE.Material).dispose();
-      });
-      
-      rendererRef.current?.dispose();
-      
+        region.geometry.dispose()
+        ;(region.material as THREE.Material).dispose()
+      })
+
+      rendererRef.current?.dispose()
+
       if (containerRef.current?.contains(rendererRef.current?.domElement)) {
-        containerRef.current.removeChild(rendererRef.current?.domElement);
+        containerRef.current.removeChild(rendererRef.current?.domElement)
       }
-    };
-  }, []);
+    }
+  }, [])
 
   // Handle resize
   useEffect(() => {
     const handleResize = () => {
       if (!containerRef.current || !rendererRef.current || !cameraRef.current) {
-        return;
+        return
       }
 
-      const width = containerRef.current.clientWidth;
-      const height = containerRef.current.clientHeight;
+      const width = containerRef.current.clientWidth
+      const height = containerRef.current.clientHeight
 
-      cameraRef.current.aspect = width / height;
-      cameraRef.current.updateProjectionMatrix();
-      rendererRef.current.setSize(width, height);
-    };
+      cameraRef.current.aspect = width / height
+      cameraRef.current.updateProjectionMatrix()
+      rendererRef.current.setSize(width, height)
+    }
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   return (
-    <div className="relative w-full h-[500px]">
+    <div className="relative h-[500px] w-full">
       <div ref={containerRef} className="absolute inset-0" />
-      
+
       {/* Neural activity indicators */}
-      <motion.div 
-        className="absolute top-4 right-4 bg-black/50 text-white p-4 rounded-lg"
+      <motion.div
+        className="absolute top-4 right-4 rounded-lg bg-black/50 p-4 text-white"
         initial={{ opacity: 0 }}
         animate={{ opacity: isVisible ? 1 : 0 }}
       >
-        <h3 className="text-sm font-medium mb-2">Neural Activity</h3>
+        <h3 className="mb-2 text-sm font-medium">Neural Activity</h3>
         <div className="space-y-2">
           <div className="flex justify-between">
             <span>Learning Rate:</span>
@@ -151,29 +147,41 @@ export function BrainVisualizer() {
 
       <div className="absolute bottom-4 left-4 flex space-x-2">
         <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
-          <RefreshCw className="w-4 h-4 mr-2" />
+          <RefreshCw className="mr-2 h-4 w-4" />
           Refresh Visualizer
         </Button>
-        <Button variant="outline" size="sm" onClick={() => setFilterRegion(filterRegion ? null : 'region')}>
-          <Filter className="w-4 h-4 mr-2" />
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setFilterRegion(filterRegion ? null : 'region')}
+        >
+          <Filter className="mr-2 h-4 w-4" />
           {filterRegion ? 'Clear Filter' : 'Filter by Region'}
         </Button>
-        <Button variant="outline" size="sm" onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}>
-          {sortOrder === 'asc' ? <SortAsc className="w-4 h-4 mr-2" /> : <SortDesc className="w-4 h-4 mr-2" />}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+        >
+          {sortOrder === 'asc' ? (
+            <SortAsc className="mr-2 h-4 w-4" />
+          ) : (
+            <SortDesc className="mr-2 h-4 w-4" />
+          )}
           Sort by Value
         </Button>
       </div>
     </div>
-  );
+  )
 }
 
 // Create optimized brain regions with shared resources
 function createBrainRegions(): THREE.Mesh[] {
-  const regions: THREE.Mesh[] = [];
-  
+  const regions: THREE.Mesh[] = []
+
   // Shared geometries
-  const cortexGeometry = new THREE.SphereGeometry(1, 32, 32);
-  
+  const cortexGeometry = new THREE.SphereGeometry(1, 32, 32)
+
   // Shared materials with optimized settings
   const materials = {
     active: new THREE.MeshPhongMaterial({
@@ -181,20 +189,20 @@ function createBrainRegions(): THREE.Mesh[] {
       opacity: 0.7,
       transparent: true,
       flatShading: true,
-      vertexColors: false
+      vertexColors: false,
     }),
     inactive: new THREE.MeshPhongMaterial({
       color: 0x666666,
       opacity: 0.3,
       transparent: true,
       flatShading: true,
-      vertexColors: false
-    })
-  };
+      vertexColors: false,
+    }),
+  }
 
   // Create cortex
-  const cortex = new THREE.Mesh(cortexGeometry, materials.active);
-  regions.push(cortex);
+  const cortex = new THREE.Mesh(cortexGeometry, materials.active)
+  regions.push(cortex)
 
-  return regions;
+  return regions
 }

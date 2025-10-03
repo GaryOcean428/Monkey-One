@@ -1,32 +1,32 @@
-import React, { useState } from 'react';
-import { Check, ChevronDown, RefreshCw, Filter, SortAsc, SortDesc } from 'lucide-react';
-import { Button } from '../ui/button';
-import { llmManager } from '../../lib/llm/providers';
-import { useLLM } from '../../hooks/useLLM';
+import React, { useState } from 'react'
+import { Check, ChevronDown, RefreshCw, Filter, SortAsc, SortDesc } from 'lucide-react'
+import { Button } from '../ui/button'
+import { llmManager } from '../../lib/llm/providers'
+import { useLLM } from '../../hooks/useLLM'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '../ui/dropdown-menu';
+} from '../ui/dropdown-menu'
 
 export function ProviderSelector() {
-  const { activeProvider, switchProvider } = useLLM();
-  const provider = llmManager.getActiveProvider();
-  const [filterType, setFilterType] = useState<string | null>(null);
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const { activeProvider, switchProvider } = useLLM()
+  const provider = llmManager.getActiveProvider()
+  const [filterType, setFilterType] = useState<string | null>(null)
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
 
   const filteredProviders = filterType
     ? Array.from(llmManager['providers'].values()).filter(p => p.type === filterType)
-    : Array.from(llmManager['providers'].values());
+    : Array.from(llmManager['providers'].values())
 
   const sortedProviders = filteredProviders.sort((a, b) => {
     if (sortOrder === 'asc') {
-      return a.name.localeCompare(b.name);
+      return a.name.localeCompare(b.name)
     } else {
-      return b.name.localeCompare(a.name);
+      return b.name.localeCompare(a.name)
     }
-  });
+  })
 
   return (
     <div className="flex items-center space-x-2">
@@ -38,7 +38,7 @@ export function ProviderSelector() {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">
-          {sortedProviders.map((p) => (
+          {sortedProviders.map(p => (
             <DropdownMenuItem
               key={p.id}
               onClick={() => switchProvider(p.id)}
@@ -51,17 +51,25 @@ export function ProviderSelector() {
         </DropdownMenuContent>
       </DropdownMenu>
       <Button variant="outline" size="sm" onClick={() => setFilterType(filterType ? null : 'type')}>
-        <Filter className="w-4 h-4 mr-2" />
+        <Filter className="mr-2 h-4 w-4" />
         {filterType ? 'Clear Filter' : 'Filter by Type'}
       </Button>
-      <Button variant="outline" size="sm" onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}>
-        {sortOrder === 'asc' ? <SortAsc className="w-4 h-4 mr-2" /> : <SortDesc className="w-4 h-4 mr-2" />}
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+      >
+        {sortOrder === 'asc' ? (
+          <SortAsc className="mr-2 h-4 w-4" />
+        ) : (
+          <SortDesc className="mr-2 h-4 w-4" />
+        )}
         Sort by Name
       </Button>
       <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
-        <RefreshCw className="w-4 h-4 mr-2" />
+        <RefreshCw className="mr-2 h-4 w-4" />
         Refresh Providers
       </Button>
     </div>
-  );
+  )
 }

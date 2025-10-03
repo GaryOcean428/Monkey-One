@@ -1,60 +1,60 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
-import { Button } from '../ui/button';
-import { Filter, RefreshCw, SortAsc, SortDesc } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
+import { Button } from '../ui/button'
+import { Filter, RefreshCw, SortAsc, SortDesc } from 'lucide-react'
 
 interface NeuralEvent {
-  id: string;
-  from: string;
-  to: string;
-  type: string;
-  timestamp: string;
+  id: string
+  from: string
+  to: string
+  type: string
+  timestamp: string
 }
 
 interface NeuralPathwayProps {
-  activity: NeuralEvent[];
+  activity: NeuralEvent[]
 }
 
 export function NeuralPathway({ activity }: NeuralPathwayProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [filterRegion, setFilterRegion] = useState<string | null>(null);
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [filterRegion, setFilterRegion] = useState<string | null>(null)
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
 
   useEffect(() => {
-    const canvas = canvasRef.current;
+    const canvas = canvasRef.current
     if (!canvas) {
-      return;
+      return
     }
 
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d')
     if (!ctx) {
-      return;
+      return
     }
 
     // Set canvas size
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
+    canvas.width = canvas.offsetWidth
+    canvas.height = canvas.offsetHeight
 
     // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
 
     // Draw neural pathways
     const filteredActivity = filterRegion
       ? activity.filter(event => event.from === filterRegion || event.to === filterRegion)
-      : activity;
+      : activity
 
     const sortedActivity = filteredActivity.sort((a, b) => {
       if (sortOrder === 'asc') {
-        return a.timestamp.localeCompare(b.timestamp);
+        return a.timestamp.localeCompare(b.timestamp)
       } else {
-        return b.timestamp.localeCompare(a.timestamp);
+        return b.timestamp.localeCompare(a.timestamp)
       }
-    });
+    })
 
     sortedActivity.forEach((event, index) => {
-      drawPathway(ctx, event, index, sortedActivity.length);
-    });
-  }, [activity, filterRegion, sortOrder]);
+      drawPathway(ctx, event, index, sortedActivity.length)
+    })
+  }, [activity, filterRegion, sortOrder])
 
   const drawPathway = (
     ctx: CanvasRenderingContext2D,
@@ -62,31 +62,31 @@ export function NeuralPathway({ activity }: NeuralPathwayProps) {
     index: number,
     total: number
   ) => {
-    const width = ctx.canvas.width;
-    const height = ctx.canvas.height;
+    const width = ctx.canvas.width
+    const height = ctx.canvas.height
 
     // Calculate positions
-    const startX = width * 0.1;
-    const endX = width * 0.9;
-    const y = height * ((index + 1) / (total + 1));
+    const startX = width * 0.1
+    const endX = width * 0.9
+    const y = height * ((index + 1) / (total + 1))
 
     // Draw pathway
-    ctx.beginPath();
-    ctx.moveTo(startX, y);
-    
+    ctx.beginPath()
+    ctx.moveTo(startX, y)
+
     // Create curve
-    const controlX1 = width * 0.4;
-    const controlX2 = width * 0.6;
-    ctx.bezierCurveTo(controlX1, y, controlX2, y, endX, y);
+    const controlX1 = width * 0.4
+    const controlX2 = width * 0.6
+    ctx.bezierCurveTo(controlX1, y, controlX2, y, endX, y)
 
     // Style based on event type
-    ctx.strokeStyle = getEventColor(event.type);
-    ctx.lineWidth = 2;
-    ctx.stroke();
+    ctx.strokeStyle = getEventColor(event.type)
+    ctx.lineWidth = 2
+    ctx.stroke()
 
     // Add pulse effect
-    drawPulse(ctx, startX, y, endX, y, event.type);
-  };
+    drawPulse(ctx, startX, y, endX, y, event.type)
+  }
 
   const drawPulse = (
     ctx: CanvasRenderingContext2D,
@@ -96,55 +96,64 @@ export function NeuralPathway({ activity }: NeuralPathwayProps) {
     endY: number,
     type: string
   ) => {
-    const gradient = ctx.createLinearGradient(startX, startY, endX, endY);
-    const color = getEventColor(type);
-    
-    gradient.addColorStop(0, `${color}00`);
-    gradient.addColorStop(0.5, color);
-    gradient.addColorStop(1, `${color}00`);
+    const gradient = ctx.createLinearGradient(startX, startY, endX, endY)
+    const color = getEventColor(type)
 
-    ctx.strokeStyle = gradient;
-    ctx.lineWidth = 4;
-    ctx.stroke();
-  };
+    gradient.addColorStop(0, `${color}00`)
+    gradient.addColorStop(0.5, color)
+    gradient.addColorStop(1, `${color}00`)
+
+    ctx.strokeStyle = gradient
+    ctx.lineWidth = 4
+    ctx.stroke()
+  }
 
   const getEventColor = (type: string): string => {
     switch (type) {
       case 'learning':
-        return '#3B82F6'; // blue
+        return '#3B82F6' // blue
       case 'memory':
-        return '#8B5CF6'; // purple
+        return '#8B5CF6' // purple
       case 'emotion':
-        return '#EF4444'; // red
+        return '#EF4444' // red
       default:
-        return '#6B7280'; // gray
+        return '#6B7280' // gray
     }
-  };
+  }
 
   return (
-    <div className="relative w-full h-full">
-      <div className="flex justify-between mb-4">
+    <div className="relative h-full w-full">
+      <div className="mb-4 flex justify-between">
         <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
-          <RefreshCw className="w-4 h-4 mr-2" />
+          <RefreshCw className="mr-2 h-4 w-4" />
           Refresh Pathways
         </Button>
-        <Button variant="outline" size="sm" onClick={() => setFilterRegion(filterRegion ? null : 'region')}>
-          <Filter className="w-4 h-4 mr-2" />
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setFilterRegion(filterRegion ? null : 'region')}
+        >
+          <Filter className="mr-2 h-4 w-4" />
           {filterRegion ? 'Clear Filter' : 'Filter by Region'}
         </Button>
-        <Button variant="outline" size="sm" onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}>
-          {sortOrder === 'asc' ? <SortAsc className="w-4 h-4 mr-2" /> : <SortDesc className="w-4 h-4 mr-2" />}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+        >
+          {sortOrder === 'asc' ? (
+            <SortAsc className="mr-2 h-4 w-4" />
+          ) : (
+            <SortDesc className="mr-2 h-4 w-4" />
+          )}
           Sort by Value
         </Button>
       </div>
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0 w-full h-full"
-      />
+      <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
       {activity.map((event, index) => (
         <motion.div
           key={event.id}
-          className="absolute left-0 top-0"
+          className="absolute top-0 left-0"
           initial={{ opacity: 0, scale: 0 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: index * 0.1 }}
@@ -152,10 +161,10 @@ export function NeuralPathway({ activity }: NeuralPathwayProps) {
             backgroundColor: getEventColor(event.type),
             width: '8px',
             height: '8px',
-            borderRadius: '50%'
+            borderRadius: '50%',
           }}
         />
       ))}
     </div>
-  );
+  )
 }

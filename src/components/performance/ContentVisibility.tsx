@@ -28,14 +28,14 @@ export function ContentVisibility({
   useContentVisibility = true,
   observerOptions = {},
   lazy = false,
-  fallback = null
+  fallback = null,
 }: ContentVisibilityProps) {
   const [shouldRender, setShouldRender] = React.useState(!lazy)
-  
+
   const { ref, isIntersecting, hasIntersected } = useIntersectionObserver({
     threshold: 0,
     rootMargin: '50px',
-    ...observerOptions
+    ...observerOptions,
   })
 
   // For lazy loading, only render content after it has intersected
@@ -45,18 +45,17 @@ export function ContentVisibility({
     }
   }, [lazy, hasIntersected, shouldRender])
 
-  const contentVisibilityStyle: React.CSSProperties = useContentVisibility ? {
-    contentVisibility: isIntersecting ? 'visible' : 'auto',
-    containIntrinsicSize: typeof height === 'number' ? `${height}px` : height
-  } : {}
+  const contentVisibilityStyle: React.CSSProperties = useContentVisibility
+    ? {
+        contentVisibility: isIntersecting ? 'visible' : 'auto',
+        containIntrinsicSize: typeof height === 'number' ? `${height}px` : height,
+      }
+    : {}
 
   return (
     <div
       ref={ref}
-      className={cn(
-        'content-visibility-container',
-        className
-      )}
+      className={cn('content-visibility-container', className)}
       style={contentVisibilityStyle}
     >
       {shouldRender ? children : fallback}
@@ -82,7 +81,7 @@ export function VirtualizedList<T>({
   itemHeight = 50,
   containerHeight = 400,
   overscan = 5,
-  className
+  className,
 }: VirtualizedListProps<T>) {
   const [scrollTop, setScrollTop] = React.useState(0)
   const scrollElementRef = React.useRef<HTMLDivElement>(null)
@@ -102,10 +101,7 @@ export function VirtualizedList<T>({
   return (
     <div
       ref={scrollElementRef}
-      className={cn(
-        'virtualized-list overflow-auto',
-        className
-      )}
+      className={cn('virtualized-list overflow-auto', className)}
       style={{ height: containerHeight }}
       onScroll={handleScroll}
     >
@@ -117,7 +113,7 @@ export function VirtualizedList<T>({
               position: 'absolute',
               top: (startIndex + index) * itemHeight,
               width: '100%',
-              height: itemHeight
+              height: itemHeight,
             }}
           >
             {renderItem(item, startIndex + index)}
@@ -155,7 +151,7 @@ export function LazyImage({
   const { ref, isIntersecting } = useIntersectionObserver({
     threshold: 0.1,
     triggerOnce: true,
-    ...observerOptions
+    ...observerOptions,
   })
 
   React.useEffect(() => {
@@ -176,19 +172,13 @@ export function LazyImage({
   }, [fallbackSrc])
 
   return (
-    <div
-      ref={ref}
-      className={cn(
-        'lazy-image-container relative overflow-hidden',
-        className
-      )}
-    >
+    <div ref={ref} className={cn('lazy-image-container relative overflow-hidden', className)}>
       {!imageLoaded && placeholder && (
-        <div className="absolute inset-0 flex items-center justify-center bg-muted">
+        <div className="bg-muted absolute inset-0 flex items-center justify-center">
           {placeholder}
         </div>
       )}
-      
+
       {imageSrc && (
         <img
           {...props}
@@ -207,7 +197,7 @@ export function LazyImage({
       )}
 
       {imageError && !fallbackSrc && (
-        <div className="absolute inset-0 flex items-center justify-center bg-muted text-muted-foreground">
+        <div className="bg-muted text-muted-foreground absolute inset-0 flex items-center justify-center">
           <span className="text-sm">Failed to load image</span>
         </div>
       )}
@@ -233,11 +223,11 @@ export function BelowFold({ children, className, minHeight = '100vh' }: BelowFol
       lazy={true}
       observerOptions={{
         rootMargin: '100px',
-        threshold: 0
+        threshold: 0,
       }}
       fallback={
-        <div 
-          className="below-fold-placeholder bg-muted/20" 
+        <div
+          className="below-fold-placeholder bg-muted/20"
           style={{ height: typeof minHeight === 'number' ? `${minHeight}px` : minHeight }}
         />
       }

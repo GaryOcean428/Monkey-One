@@ -1,34 +1,34 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { Agent, AgentType, AgentStatus, Message, MessageType, AgentCapability } from '../../types';
-import { logger } from '../../utils/logger';
-import { RuntimeError } from '../../lib/errors/AgentErrors';
-import { AgentMonitor } from '../../lib/monitoring/AgentMonitor';
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { Agent, AgentType, AgentStatus, Message, MessageType, AgentCapability } from '../../types'
+import { logger } from '../../utils/logger'
+import { RuntimeError } from '../../lib/errors/AgentErrors'
+import { AgentMonitor } from '../../lib/monitoring/AgentMonitor'
 
 // Use imported logger
 
-vi.mock('../../lib/memory');
+vi.mock('../../lib/memory')
 
 class MockAgent implements Agent {
-  id: string;
-  name: string;
-  type: AgentType;
-  status: AgentStatus;
-  capabilities: AgentCapability[];
+  id: string
+  name: string
+  type: AgentType
+  status: AgentStatus
+  capabilities: AgentCapability[]
 
   constructor() {
-    this.id = 'mock-agent';
-    this.name = 'Mock Agent';
-    this.type = AgentType.ORCHESTRATOR;
-    this.status = AgentStatus.IDLE;
-    this.capabilities = [{ name: 'test', description: 'Test capability' }];
+    this.id = 'mock-agent'
+    this.name = 'Mock Agent'
+    this.type = AgentType.ORCHESTRATOR
+    this.status = AgentStatus.IDLE
+    this.capabilities = [{ name: 'test', description: 'Test capability' }]
   }
 
   getCapabilities(): AgentCapability[] {
-    return this.capabilities;
+    return this.capabilities
   }
 
   registerCapability(capability: AgentCapability): void {
-    this.capabilities.push(capability);
+    this.capabilities.push(capability)
   }
 
   async initialize(): Promise<void> {
@@ -43,7 +43,7 @@ class MockAgent implements Agent {
       sender: this.id,
       recipient: message.sender,
       content: 'mock response',
-      timestamp: Date.now()
+      timestamp: Date.now(),
     }
   }
 }
@@ -62,7 +62,7 @@ describe('AgentMonitor', () => {
       sender: 'test-agent',
       recipient: 'other-agent',
       content: 'test content',
-      timestamp: Date.now()
+      timestamp: Date.now(),
     }
   })
 
@@ -70,12 +70,12 @@ describe('AgentMonitor', () => {
     it('should register new agent', () => {
       monitor.registerAgent(mockAgent)
       const metrics = monitor.getAgentMetrics(mockAgent.id)
-      
+
       expect(metrics).toEqual({
         messageCount: 0,
         errorCount: 0,
         averageResponseTime: 0,
-        status: AgentStatus.IDLE
+        status: AgentStatus.IDLE,
       })
     })
 
@@ -99,12 +99,12 @@ describe('AgentMonitor', () => {
     it('should track command message', () => {
       monitor.trackMessage(mockMessage)
       const metrics = monitor.getAgentMetrics(mockAgent.id)
-      
+
       expect(metrics).toEqual({
         messageCount: 1,
         errorCount: 0,
         averageResponseTime: 0,
-        status: AgentStatus.IDLE
+        status: AgentStatus.IDLE,
       })
     })
 
@@ -112,7 +112,7 @@ describe('AgentMonitor', () => {
       const errorMessage = { ...mockMessage, type: MessageType.ERROR }
       monitor.trackMessage(errorMessage)
       const metrics = monitor.getAgentMetrics(mockAgent.id)
-      
+
       expect(metrics.messageCount).toBe(1)
       expect(metrics.errorCount).toBe(1)
     })
@@ -133,8 +133,8 @@ describe('AgentMonitor', () => {
         content: 'response',
         timestamp: Date.now(),
         metadata: {
-          originalMessageId: mockMessage.id
-        }
+          originalMessageId: mockMessage.id,
+        },
       }
       monitor.trackMessage(responseMessage)
 
@@ -160,9 +160,9 @@ describe('AgentMonitor', () => {
     })
 
     it('should throw error when updating status of unregistered agent', () => {
-      expect(() => 
-        monitor.updateAgentStatus('unknown-agent', AgentStatus.BUSY)
-      ).toThrow(RuntimeError)
+      expect(() => monitor.updateAgentStatus('unknown-agent', AgentStatus.BUSY)).toThrow(
+        RuntimeError
+      )
     })
   })
 
@@ -174,7 +174,7 @@ describe('AgentMonitor', () => {
 
     it('should provide monitoring stats', () => {
       const stats = monitor.getMonitoringStats()
-      
+
       expect(stats.totalMessages).toBe(1)
       expect(stats.totalErrors).toBe(0)
       expect(stats.agentMetrics[mockAgent.id]).toBeDefined()
@@ -183,7 +183,7 @@ describe('AgentMonitor', () => {
     it('should get active agents', () => {
       monitor.updateAgentStatus(mockAgent.id, AgentStatus.BUSY)
       const activeAgents = monitor.getActiveAgents()
-      
+
       expect(activeAgents).toHaveLength(1)
       expect(activeAgents[0].id).toBe(mockAgent.id)
     })
@@ -197,7 +197,7 @@ describe('AgentMonitor', () => {
     it('should get errored agents', () => {
       monitor.updateAgentStatus(mockAgent.id, AgentStatus.ERROR)
       const erroredAgents = monitor.getErroredAgents()
-      
+
       expect(erroredAgents).toHaveLength(1)
       expect(erroredAgents[0].id).toBe(mockAgent.id)
     })
@@ -212,7 +212,7 @@ describe('AgentMonitor', () => {
     it('should clear metrics for specific agent', () => {
       monitor.clearMetrics(mockAgent.id)
       const metrics = monitor.getAgentMetrics(mockAgent.id)
-      
+
       expect(metrics.messageCount).toBe(0)
       expect(metrics.errorCount).toBe(0)
       expect(metrics.averageResponseTime).toBe(0)
@@ -221,7 +221,7 @@ describe('AgentMonitor', () => {
     it('should clear all metrics', () => {
       monitor.clearAllMetrics()
       const stats = monitor.getMonitoringStats()
-      
+
       expect(stats.totalMessages).toBe(0)
       expect(stats.totalErrors).toBe(0)
     })

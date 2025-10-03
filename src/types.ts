@@ -13,10 +13,20 @@ export type WorkerStatus = {
 }
 
 // Import primary types from core
-import { AgentType as CoreAgentType, AgentStatus as CoreAgentStatus, MessageType as CoreMessageType, Message as CoreMessage } from './lib/types/core';
+import {
+  AgentType as CoreAgentType,
+  AgentStatus as CoreAgentStatus,
+  MessageType as CoreMessageType,
+  Message as CoreMessage,
+} from './lib/types/core'
 
 // Re-export core types
-export { AgentType as CoreAgentType, AgentStatus as CoreAgentStatus, MessageType as CoreMessageType, Message as CoreMessage } from './lib/types/core';
+export {
+  AgentType as CoreAgentType,
+  AgentStatus as CoreAgentStatus,
+  MessageType as CoreMessageType,
+  Message as CoreMessage,
+} from './lib/types/core'
 
 // Local AgentType for this module (backwards compatibility)
 export enum AgentType {
