@@ -176,6 +176,13 @@ export const routeConfigs: RouteConfig[] = [
     component: 'AuthTest',
     showInSidebar: false,
   },
+  {
+    id: 'auth-debug',
+    path: '/auth-debug',
+    label: 'Auth Debug',
+    component: 'AuthDebug',
+    showInSidebar: false,
+  },
   // Panel routes
   {
     id: 'chat-container',

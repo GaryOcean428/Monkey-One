@@ -65,6 +65,11 @@ export const lazyComponents = {
       default: module.AuthTest,
     }))
   ),
+  AuthDebug: React.lazy(() =>
+    import('../routes/auth-debug').then(module => ({
+      default: module.default,
+    }))
+  ),
   PasswordReset: React.lazy(() =>
     import('../pages/Auth/PasswordReset').then(module => ({
       default: module.default || module.PasswordReset || module,
