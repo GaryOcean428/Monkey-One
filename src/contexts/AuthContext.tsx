@@ -121,8 +121,10 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
               setGcpCredentials(gcp)
               setSupabaseProfile(profile)
 
-              // Clean up URL after all state updates to prevent hydration issues
-              // Use setTimeout to ensure this happens after React has reconciled
+              // Clean up URL after all state updates to prevent hydration issues.
+              // Use setTimeout with 0 delay to schedule the URL cleanup after the current execution stack completes.
+              // This ensures that all React state updates and reconciliation are finished before modifying the URL,
+              // preventing potential hydration or rendering issues.
               setTimeout(() => {
                 window.history.replaceState({}, document.title, window.location.pathname)
               }, 0)
