@@ -204,3 +204,4 @@ playwright/.cache/
 
 # Debug reports
 auth-debug-report.json
+stats.html

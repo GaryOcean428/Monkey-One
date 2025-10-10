@@ -1,7 +1,8 @@
 import React from 'react'
+import { DashboardPanel } from '../components/panels/DashboardPanel'
 
 const Dashboard: React.FC = () => {
-  return <div>Dashboard Component</div>
+  return <DashboardPanel />
 }
 
 export default Dashboard
