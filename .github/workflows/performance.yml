@@ -15,7 +15,7 @@ on:
     - cron: '0 3 * * 0'
 
 env:
-  NODE_VERSION: '20.11.0'
+  NODE_VERSION: '22.14.0'
   PNPM_VERSION: '10.6.5'
 
 jobs:
@@ -27,17 +27,17 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-- name: Install pnpm
+
+      - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
           run_install: false
 
-- name: Setup Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -66,17 +66,17 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-- name: Install pnpm
+
+      - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
           run_install: false
 
-- name: Setup Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -107,17 +107,17 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-- name: Install pnpm
+
+      - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
           run_install: false
 
-- name: Setup Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
