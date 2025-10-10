@@ -92,12 +92,11 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
         if (hasCode) {
           console.log('OAuth callback detected, processing...')
 
-          // Clean up URL IMMEDIATELY to prevent hydration issues
-          window.history.replaceState({}, document.title, window.location.pathname)
-
           const config = createGoogleAuthConfig()
           if (config) {
+            // The callback needs to read the code parameter from the URL
             const user = await handleOAuthCallback(config)
+
             if (user) {
               console.log('OAuth callback processed successfully:', user)
               // Sync user to Supabase
@@ -121,6 +120,22 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
               setOidcToken(oidc)
               setGcpCredentials(gcp)
               setSupabaseProfile(profile)
+
+              // Clean up URL after all state updates to prevent hydration issues.
+              // Use setTimeout with 0 delay to schedule the URL cleanup after the current execution stack completes.
+              // This ensures that all React state updates and reconciliation are finished before modifying the URL,
+              // preventing potential hydration or rendering issues.
+              setTimeout(() => {
+                window.history.replaceState({}, document.title, window.location.pathname)
+              }, 0)
+              return
+            } else {
+              setAuthState({
+                user: null,
+                isAuthenticated: false,
+                isLoading: false,
+                error: 'OAuth authentication failed. Please try again.',
+              })
               return
             }
           }

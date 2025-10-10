@@ -55,8 +55,8 @@ function createSupabaseClient(): SupabaseClient<Database> {
         persistSession: true,
         autoRefreshToken: true,
         storageKey: 'monkey-one-auth-token', // Use a unique storage key
-        detectSessionInUrl: true,
-        flowType: 'pkce', // Use PKCE flow for better security
+        detectSessionInUrl: false, // Disable URL detection since we use custom Google OAuth
+        flowType: 'pkce', // Use PKCE flow for better security when using Supabase auth
       },
       global: {
         headers: {
