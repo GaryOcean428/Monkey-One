@@ -209,7 +209,7 @@ class RouteOptimizer {
       '/settings': () => import('../pages/Settings'),
       '/ui-showcase': () => import('../pages/UIShowcase'),
       '/performance-accessibility': () => import('../pages/PerformanceAccessibilityShowcase'),
-      '/auth/callback': () => import('../pages/Auth/AuthCallback'),
+      '/auth/callback': () => import('../pages/AuthCallback'),
       '/reset-password': () => import('../pages/Auth/PasswordReset'),
       '/ai': () => import('../pages/AI'),
       '/notes': () => import('../pages/Notes'),
