@@ -17,8 +17,9 @@ const pinecone = new Pinecone({
 
 const index = pinecone.index(pineconeIndexName)
 
+// Metadata type excludes undefined as Pinecone doesn't accept undefined values
 export interface VectorMetadata {
-  [key: string]: string | number | boolean | null | undefined
+  [key: string]: string | number | boolean | string[] | null
 }
 
 export async function queryVectors(vector: number[], topK: number = 5) {
@@ -39,9 +40,18 @@ export async function upsertVectors(
   vectors: { id: string; values: number[]; metadata?: VectorMetadata }[]
 ) {
   try {
-    return await index.upsert(
-      vectors.map(vector => ({ ...vector, metadata: vector.metadata as VectorMetadata }))
-    )
+    // Sanitize metadata by filtering out undefined values
+    const sanitizedVectors = vectors.map(v => ({
+      id: v.id,
+      values: v.values,
+      metadata: v.metadata
+        ? (Object.fromEntries(
+            Object.entries(v.metadata).filter(([_, value]) => value !== undefined)
+          ) as VectorMetadata)
+        : undefined,
+    }))
+
+    return await index.upsert(sanitizedVectors)
   } catch (error) {
     console.error('Error upserting vectors:', error)
     throw error
