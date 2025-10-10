@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Bug Fixes
+
+* **ci:** fix Dependabot auto-merge not working - enable auto-merge immediately and let GitHub handle check waiting
+
 ## 1.0.0 (2025-10-10)
 
 
