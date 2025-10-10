@@ -99,18 +99,18 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
 
             if (user) {
               console.log('OAuth callback processed successfully:', user)
-              // Sync user to Supabase
-              const profile = await syncGoogleUserToSupabase(user)
 
-              // Get OIDC token
-              const oidc = getValidOIDCToken()
+              // BATCH ALL ASYNC OPERATIONS to prevent multiple re-renders
+              const [profile, oidc, gcp] = await Promise.all([
+                syncGoogleUserToSupabase(user),
+                Promise.resolve(getValidOIDCToken()),
+                (async () => {
+                  const token = getValidOIDCToken()
+                  return token ? await getGCPCredentials() : null
+                })(),
+              ])
 
-              // Get GCP credentials
-              let gcp: GCPCredentials | null = null
-              if (oidc) {
-                gcp = await getGCPCredentials()
-              }
-
+              // SINGLE STATE UPDATE - prevents multiple re-renders
               setAuthState({
                 user,
                 isAuthenticated: !!(user && profile),
@@ -121,13 +121,18 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
               setGcpCredentials(gcp)
               setSupabaseProfile(profile)
 
-              // Clean up URL after all state updates to prevent hydration issues.
-              // Use setTimeout with 0 delay to schedule the URL cleanup after the current execution stack completes.
-              // This ensures that all React state updates and reconciliation are finished before modifying the URL,
-              // preventing potential hydration or rendering issues.
-              setTimeout(() => {
-                window.history.replaceState({}, document.title, window.location.pathname)
-              }, 0)
+              // CRITICAL: Defer URL cleanup to AFTER React finishes rendering
+              // Use requestIdleCallback to ensure all state updates and DOM updates complete
+              if ('requestIdleCallback' in window) {
+                requestIdleCallback(() => {
+                  window.history.replaceState({}, document.title, window.location.pathname)
+                })
+              } else {
+                // Fallback for browsers without requestIdleCallback (Safari)
+                setTimeout(() => {
+                  window.history.replaceState({}, document.title, window.location.pathname)
+                }, 100) // Increased delay for safety
+              }
               return
             } else {
               setAuthState({
