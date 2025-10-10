@@ -97,9 +97,6 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
             // The callback needs to read the code parameter from the URL
             const user = await handleOAuthCallback(config)
 
-            // Clean up URL after processing to prevent hydration issues
-            window.history.replaceState({}, document.title, window.location.pathname)
-
             if (user) {
               console.log('OAuth callback processed successfully:', user)
               // Sync user to Supabase
@@ -123,6 +120,12 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
               setOidcToken(oidc)
               setGcpCredentials(gcp)
               setSupabaseProfile(profile)
+
+              // Clean up URL after all state updates to prevent hydration issues
+              // Use setTimeout to ensure this happens after React has reconciled
+              setTimeout(() => {
+                window.history.replaceState({}, document.title, window.location.pathname)
+              }, 0)
               return
             } else {
               setAuthState({
