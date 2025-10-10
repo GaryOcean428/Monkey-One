@@ -36,6 +36,7 @@ jobs:
           echo "- Dependency type: ${{ steps.metadata.outputs.dependency-type }}"
           echo "- Package ecosystem: ${{ steps.metadata.outputs.package-ecosystem }}"
           echo "- Dependency names: ${{ steps.metadata.outputs.dependency-names }}"
+          echo "- PR has automerge label: ${{ contains(github.event.pull_request.labels.*.name, 'automerge') }}"
           
           # Initialize variables
           SHOULD_AUTOMERGE="false"
@@ -94,29 +95,110 @@ jobs:
           echo "should-automerge=$SHOULD_AUTOMERGE" >> $GITHUB_OUTPUT
           echo "merge-method=$MERGE_METHOD" >> $GITHUB_OUTPUT
 
-      - name: Wait for CI checks
+      # Enable auto-merge immediately - GitHub will wait for required checks
+      # This is more reliable than manually waiting for checks
+      - name: Enable auto-merge (immediate)
         if: steps.automerge-check.outputs.should-automerge == 'true'
-        uses: fountainhead/action-wait-for-check@v1.2.0
-        id: wait-for-ci
+        id: enable-automerge
+        continue-on-error: true
+        uses: peter-evans/enable-pull-request-automerge@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          checkName: "Quality Gate"  # Wait for our main CI check
-          ref: ${{ github.event.pull_request.head.sha }}
-          timeoutSeconds: 1800  # 30 minutes max wait
-          intervalSeconds: 30
+          pull-request-number: ${{ github.event.pull_request.number }}
+          merge-method: ${{ steps.automerge-check.outputs.merge-method }}
 
-      - name: Wait for additional checks
-        if: steps.automerge-check.outputs.should-automerge == 'true' && steps.wait-for-ci.outputs.conclusion == 'success'
-        uses: fountainhead/action-wait-for-check@v1.2.0
+      # Wait for checks only if immediate enable failed (fallback method)
+      - name: Wait for all required checks (fallback)
+        if: steps.automerge-check.outputs.should-automerge == 'true' && steps.enable-automerge.outcome == 'failure'
+        id: wait-for-checks
+        uses: actions/github-script@v7
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          checkName: "Security Summary"  # Wait for security checks
-          ref: ${{ github.event.pull_request.head.sha }}
-          timeoutSeconds: 900  # 15 minutes max wait
-          intervalSeconds: 30
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const maxAttempts = 60; // 30 minutes with 30 second intervals
+            const intervalMs = 30000; // 30 seconds
+            let attempts = 0;
+            
+            async function checkAllChecks() {
+              const { data: checkRuns } = await github.rest.checks.listForRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: context.payload.pull_request.head.sha,
+              });
+              
+              const { data: statuses } = await github.rest.repos.getCombinedStatusForRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: context.payload.pull_request.head.sha,
+              });
+              
+              console.log(`Check runs: ${checkRuns.check_runs.length}`);
+              console.log(`Statuses: ${statuses.statuses.length}`);
+              
+              // Check if any checks are still pending or in progress
+              const pendingChecks = checkRuns.check_runs.filter(check => 
+                check.status !== 'completed' && 
+                check.name !== 'Auto-merge Dependabot PRs' &&
+                check.name !== 'Auto-approve safe Dependabot updates' &&
+                check.name !== 'Fast-track Security Updates'
+              );
+              
+              const failedChecks = checkRuns.check_runs.filter(check => 
+                check.status === 'completed' && 
+                check.conclusion !== 'success' && 
+                check.conclusion !== 'skipped' &&
+                check.conclusion !== 'neutral' &&
+                check.name !== 'Auto-merge Dependabot PRs' &&
+                check.name !== 'Auto-approve safe Dependabot updates' &&
+                check.name !== 'Fast-track Security Updates'
+              );
+              
+              const failedStatuses = statuses.statuses.filter(status => 
+                status.state !== 'success' && 
+                status.state !== 'pending'
+              );
+              
+              console.log(`Pending checks: ${pendingChecks.length}`);
+              console.log(`Failed checks: ${failedChecks.length}`);
+              console.log(`Failed statuses: ${failedStatuses.length}`);
+              
+              if (failedChecks.length > 0 || failedStatuses.length > 0) {
+                console.log('Some checks failed');
+                return 'failure';
+              }
+              
+              if (pendingChecks.length > 0 || statuses.state === 'pending') {
+                console.log('Some checks are still pending');
+                return 'pending';
+              }
+              
+              console.log('All checks passed');
+              return 'success';
+            }
+            
+            while (attempts < maxAttempts) {
+              const result = await checkAllChecks();
+              
+              if (result === 'success') {
+                core.setOutput('conclusion', 'success');
+                return;
+              } else if (result === 'failure') {
+                core.setOutput('conclusion', 'failure');
+                core.setFailed('One or more required checks failed');
+                return;
+              }
+              
+              attempts++;
+              console.log(`Attempt ${attempts}/${maxAttempts} - waiting for checks...`);
+              await new Promise(resolve => setTimeout(resolve, intervalMs));
+            }
+            
+            core.setOutput('conclusion', 'timeout');
+            core.setFailed('Timeout waiting for checks to complete');
 
-      - name: Enable auto-merge
-        if: steps.automerge-check.outputs.should-automerge == 'true' && steps.wait-for-ci.outputs.conclusion == 'success'
+      # Enable auto-merge after waiting for checks (fallback method)
+      - name: Enable auto-merge (after checks)
+        if: steps.automerge-check.outputs.should-automerge == 'true' && steps.enable-automerge.outcome == 'failure' && steps.wait-for-checks.outputs.conclusion == 'success'
         uses: peter-evans/enable-pull-request-automerge@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -124,7 +206,7 @@ jobs:
           merge-method: ${{ steps.automerge-check.outputs.merge-method }}
 
       - name: Add auto-merge comment
-        if: steps.automerge-check.outputs.should-automerge == 'true' && steps.wait-for-ci.outputs.conclusion == 'success'
+        if: steps.automerge-check.outputs.should-automerge == 'true' && (steps.enable-automerge.outcome == 'success' || steps.wait-for-checks.outputs.conclusion == 'success')
         uses: actions/github-script@v7
         with:
           script: |
@@ -180,7 +262,7 @@ jobs:
             });
 
       - name: Handle CI failure
-        if: steps.automerge-check.outputs.should-automerge == 'true' && steps.wait-for-ci.outputs.conclusion != 'success'
+        if: steps.automerge-check.outputs.should-automerge == 'true' && steps.enable-automerge.outcome == 'failure' && steps.wait-for-checks.outputs.conclusion != 'success'
         uses: actions/github-script@v7
         with:
           script: |
@@ -190,8 +272,8 @@ jobs:
               issue_number: context.issue.number,
               body: `❌ **Auto-merge cancelled**
               
-              This Dependabot PR was eligible for auto-merge but CI checks failed:
-              - CI Status: \`${{ steps.wait-for-ci.outputs.conclusion }}\`
+              This Dependabot PR was eligible for auto-merge but CI checks failed or timed out:
+              - CI Status: \`${{ steps.wait-for-checks.outputs.conclusion }}\`
               
               Please review the failing checks and fix any issues before merging.
               
