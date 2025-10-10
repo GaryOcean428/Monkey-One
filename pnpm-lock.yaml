@@ -205,8 +205,8 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
       openai:
-        specifier: ^4.89.0
-        version: 4.89.0(encoding@0.1.13)(ws@8.18.3)(zod@3.25.76)
+        specifier: ^6.3.0
+        version: 6.3.0(ws@8.18.3)(zod@3.25.76)
       path-to-regexp:
         specifier: ^8.0.0
         version: 8.2.0
@@ -5483,12 +5483,24 @@ packages:
     resolution: {integrity: sha512-7x81NCL719oNbsq/3mh+hVrAWmFuEYUqrq/Iw3kUzH8ReypT9QQ0BLoJS7/G9k6N81XjW4qHWtjWwe/9eLy1EQ==}
     engines: {node: '>=12'}
 
-  openai@4.89.0:
-    resolution: {integrity: sha512-XNI0q2l8/Os6jmojxaID5EhyQjxZgzR2gWcpEjYWK5hGKwE7AcifxEY7UNwFDDHJQXqeiosQ0CJwQN+rvnwdjA==}
+  openai@4.104.0:
+    resolution: {integrity: sha512-p99EFNsA/yX6UhVO93f5kJsDRLAg+CTA2RBqdHK4RtK8u5IJw32Hyb2dTGKbnnFmnuoBv5r7Z2CURI9sGZpSuA==}
     hasBin: true
     peerDependencies:
       ws: ^8.18.0
       zod: ^3.23.8
+    peerDependenciesMeta:
+      ws:
+        optional: true
+      zod:
+        optional: true
+
+  openai@6.3.0:
+    resolution: {integrity: sha512-E6vOGtZvdcb4yXQ5jXvDlUG599OhIkb/GjBLZXS+qk0HF+PJReIldEc9hM8Ft81vn+N6dRdFRb7BZNK8bbvXrw==}
+    hasBin: true
+    peerDependencies:
+      ws: ^8.18.0
+      zod: ^3.25 || ^4.0
     peerDependenciesMeta:
       ws:
         optional: true
@@ -8990,8 +9002,8 @@ snapshots:
   '@toolhouseai/sdk@1.1.7(encoding@0.1.13)(react@19.1.1)(sswr@2.2.0(svelte@5.16.0))(svelte@5.16.0)(vue@3.5.13(typescript@5.9.2))(ws@8.18.3)':
     dependencies:
       '@anthropic-ai/sdk': 0.27.3(encoding@0.1.13)
-      ai: 3.4.33(openai@4.89.0(encoding@0.1.13)(ws@8.18.3)(zod@3.25.76))(react@19.1.1)(sswr@2.2.0(svelte@5.16.0))(svelte@5.16.0)(vue@3.5.13(typescript@5.9.2))(zod@3.25.76)
-      openai: 4.89.0(encoding@0.1.13)(ws@8.18.3)(zod@3.25.76)
+      ai: 3.4.33(openai@4.104.0(encoding@0.1.13)(ws@8.18.3)(zod@3.25.76))(react@19.1.1)(sswr@2.2.0(svelte@5.16.0))(svelte@5.16.0)(vue@3.5.13(typescript@5.9.2))(zod@3.25.76)
+      openai: 4.104.0(encoding@0.1.13)(ws@8.18.3)(zod@3.25.76)
       zod: 3.25.76
     transitivePeerDependencies:
       - encoding
@@ -9781,7 +9793,7 @@ snapshots:
     dependencies:
       humanize-ms: 1.2.1
 
-  ai@3.4.33(openai@4.89.0(encoding@0.1.13)(ws@8.18.3)(zod@3.25.76))(react@19.1.1)(sswr@2.2.0(svelte@5.16.0))(svelte@5.16.0)(vue@3.5.13(typescript@5.9.2))(zod@3.25.76):
+  ai@3.4.33(openai@4.104.0(encoding@0.1.13)(ws@8.18.3)(zod@3.25.76))(react@19.1.1)(sswr@2.2.0(svelte@5.16.0))(svelte@5.16.0)(vue@3.5.13(typescript@5.9.2))(zod@3.25.76):
     dependencies:
       '@ai-sdk/provider': 0.0.26
       '@ai-sdk/provider-utils': 1.0.22(zod@3.25.76)
@@ -9797,7 +9809,7 @@ snapshots:
       secure-json-parse: 2.7.0
       zod-to-json-schema: 3.24.5(zod@3.25.76)
     optionalDependencies:
-      openai: 4.89.0(encoding@0.1.13)(ws@8.18.3)(zod@3.25.76)
+      openai: 4.104.0(encoding@0.1.13)(ws@8.18.3)(zod@3.25.76)
       react: 19.1.1
       sswr: 2.2.0(svelte@5.16.0)
       svelte: 5.16.0
@@ -12416,7 +12428,7 @@ snapshots:
       is-docker: 2.2.1
       is-wsl: 2.2.0
 
-  openai@4.89.0(encoding@0.1.13)(ws@8.18.3)(zod@3.25.76):
+  openai@4.104.0(encoding@0.1.13)(ws@8.18.3)(zod@3.25.76):
     dependencies:
       '@types/node': 18.19.120
       '@types/node-fetch': 2.6.13
@@ -12430,6 +12442,11 @@ snapshots:
       zod: 3.25.76
     transitivePeerDependencies:
       - encoding
+
+  openai@6.3.0(ws@8.18.3)(zod@3.25.76):
+    optionalDependencies:
+      ws: 8.18.3
+      zod: 3.25.76
 
   optionator@0.9.4:
     dependencies:
