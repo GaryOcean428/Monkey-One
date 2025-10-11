@@ -12,11 +12,10 @@ export type WorkerStatus = {
   lastHeartbeat?: Date
 }
 
-// Import primary types from core
-import { AgentType as CoreAgentType, AgentStatus as CoreAgentStatus, MessageType as CoreMessageType, Message as CoreMessage } from './lib/types/core';
-
 // Re-export core types
-export { AgentType as CoreAgentType, AgentStatus as CoreAgentStatus, MessageType as CoreMessageType, Message as CoreMessage } from './lib/types/core';
+export type {
+  AgentStatus as CoreAgentStatus, AgentType as CoreAgentType, Message as CoreMessage, MessageType as CoreMessageType
+} from './lib/types/core'
 
 // Local AgentType for this module (backwards compatibility)
 export enum AgentType {
@@ -44,6 +43,12 @@ export interface Tool {
   name: string
   description: string
   execute(args: Record<string, unknown>): Promise<unknown>
+}
+
+export interface ToolResult {
+  status: 'success' | 'error'
+  result?: unknown
+  error?: string
 }
 
 // Local AgentStatus for this module (backwards compatibility)

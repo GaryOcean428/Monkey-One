@@ -1,73 +1,73 @@
-import { DataType, Model } from 'sequelize';
+import { DataTypes } from 'sequelize';
 import { sequelize } from '../MLManager';
 
 export const MLModel = sequelize.define('ml_models', {
   id: {
-    type: DataType.INTEGER,
+    type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true
   },
   name: {
-    type: DataType.STRING,
+    type: DataTypes.STRING,
     allowNull: false
   },
   version: {
-    type: DataType.STRING,
+    type: DataTypes.STRING,
     allowNull: false
   },
   architecture: {
-    type: DataType.JSONB,
+    type: DataTypes.JSONB,
     allowNull: true
   },
   metrics: {
-    type: DataType.JSONB,
+    type: DataTypes.JSONB,
     allowNull: true
   }
 });
 
 export const TrainingMetric = sequelize.define('training_metrics', {
   id: {
-    type: DataType.INTEGER,
+    type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true
   },
   model_id: {
-    type: DataType.INTEGER,
+    type: DataTypes.INTEGER,
     references: {
       model: MLModel,
       key: 'id'
     }
   },
   epoch: {
-    type: DataType.INTEGER,
+    type: DataTypes.INTEGER,
     allowNull: false
   },
   loss: {
-    type: DataType.FLOAT,
+    type: DataTypes.FLOAT,
     allowNull: false
   },
   accuracy: {
-    type: DataType.FLOAT,
+    type: DataTypes.FLOAT,
     allowNull: false
   },
   metrics: {
-    type: DataType.JSONB,
+    type: DataTypes.JSONB,
     allowNull: true
   }
 });
 
 export const Embedding = sequelize.define('embeddings', {
   id: {
-    type: DataType.INTEGER,
+    type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true
   },
   vector: {
-    type: DataType.ARRAY(DataType.FLOAT),
+    type: DataTypes.ARRAY(DataTypes.FLOAT),
     allowNull: false
   },
   metadata: {
-    type: DataType.JSONB,
+    type: DataTypes.JSONB,
     allowNull: true
   }
 });

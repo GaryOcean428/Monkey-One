@@ -1,10 +1,8 @@
 import { EventEmitter } from 'events';
 import { ModelClient } from '../clients/ModelClient';
 import { TaskManager } from '../task/TaskManager';
-import { WorkflowManager } from '../workflow/WorkflowManager';
-import { memoryManager } from '../memory';
 import { logger } from '../utils/logger';
-import { VectorStore } from '../../memory/vector/VectorStore';
+import { WorkflowManager } from '../workflow/WorkflowManager';
 
 interface AgentCapability {
   id: string;
@@ -86,8 +84,7 @@ export class OrchestrationManager extends EventEmitter {
   private modelClient: ModelClient;
   private taskManager: TaskManager;
   private workflowManager: WorkflowManager;
-  private vectorStore: VectorStore;
-  
+
   private capabilities: Map<string, AgentCapability>;
   private roles: Map<string, AgentRole>;
   private team: Map<string, TeamMember>;
@@ -99,8 +96,7 @@ export class OrchestrationManager extends EventEmitter {
     this.modelClient = new ModelClient();
     this.taskManager = TaskManager.getInstance();
     this.workflowManager = new WorkflowManager();
-    this.vectorStore = new VectorStore();
-    
+
     this.capabilities = new Map();
     this.roles = new Map();
     this.team = new Map();
@@ -139,10 +135,11 @@ export class OrchestrationManager extends EventEmitter {
     };
 
     // Initial analysis by planning agent
-    const analysis = await this.modelClient.complete(
+    const analysisResponse = await this.modelClient.generate(
       `Analyze project requirements and suggest needed capabilities:\n${initialRequirements}`,
-      'o1'
+      'completion'
     );
+    const analysis = analysisResponse.content;
 
     // Add initial message
     thread.messages.push({
@@ -182,10 +179,11 @@ export class OrchestrationManager extends EventEmitter {
     // If message is from user, generate agent response
     if (sender !== 'planning_agent') {
       const context = thread.messages.map(m => `${m.sender}: ${m.content}`).join('\n');
-      const response = await this.modelClient.complete(
+      const responseResult = await this.modelClient.generate(
         `Based on the discussion context, provide a relevant response:\n${context}`,
-        'o1'
+        'completion'
       );
+      const response = responseResult.content;
 
       thread.messages.push({
         id: crypto.randomUUID(),
@@ -202,14 +200,14 @@ export class OrchestrationManager extends EventEmitter {
 
   private async evaluateDiscussionProgress(thread: DiscussionThread): Promise<void> {
     const context = thread.messages.map(m => `${m.sender}: ${m.content}`).join('\n');
-    
+
     // Analyze if we have enough information to make decisions
-    const analysis = await this.modelClient.complete(
+    const analysisResult = await this.modelClient.generate(
       `Analyze discussion progress and determine if we can make decisions:\n${context}`,
-      'o1'
+      'completion'
     );
 
-    const canMakeDecisions = JSON.parse(analysis).canProceed;
+    const canMakeDecisions = JSON.parse(analysisResult.content).canProceed;
     if (canMakeDecisions) {
       await this.generateRequirements(thread);
     }
@@ -217,15 +215,15 @@ export class OrchestrationManager extends EventEmitter {
 
   private async generateRequirements(thread: DiscussionThread): Promise<void> {
     const context = thread.messages.map(m => `${m.sender}: ${m.content}`).join('\n');
-    
+
     // Generate requirements based on discussion
-    const requirements = await this.modelClient.complete(
+    const requirementsResponse = await this.modelClient.generate(
       `Generate project requirements based on discussion:\n${context}`,
-      'o1'
+      'completion'
     );
 
-    const parsedReqs: ProjectRequirement[] = JSON.parse(requirements);
-    
+    const parsedReqs: ProjectRequirement[] = JSON.parse(requirementsResponse.content);
+
     // Store requirements
     for (const req of parsedReqs) {
       this.requirements.set(req.id, req);
@@ -246,20 +244,20 @@ export class OrchestrationManager extends EventEmitter {
 
   private async assembleTeam(requirements: ProjectRequirement[]): Promise<void> {
     // Analyze requirements to determine needed roles
-    const roleAnalysis = await this.modelClient.complete(
+    const roleAnalysisResponse = await this.modelClient.generate(
       `Analyze requirements and determine needed team roles:\n${JSON.stringify(requirements)}`,
-      'o1'
+      'completion'
     );
 
-    const roles: AgentRole[] = JSON.parse(roleAnalysis);
+    const roles: AgentRole[] = JSON.parse(roleAnalysisResponse.content);
 
     // Create roles and assign capabilities
     for (const role of roles) {
       this.roles.set(role.id, role);
-      
+
       // Find or create agent with required capabilities
       const agent = await this.findOrCreateAgent(role);
-      
+
       // Add to team
       this.team.set(agent.id, agent);
     }
@@ -278,7 +276,7 @@ export class OrchestrationManager extends EventEmitter {
 
     // Create new agent with required capabilities
     const capabilities = await this.generateCapabilities(role);
-    
+
     return {
       id: crypto.randomUUID(),
       role,
@@ -294,12 +292,12 @@ export class OrchestrationManager extends EventEmitter {
   }
 
   private async generateCapabilities(role: AgentRole): Promise<AgentCapability[]> {
-    const capabilityAnalysis = await this.modelClient.complete(
+    const capabilityAnalysisResponse = await this.modelClient.generate(
       `Generate detailed capabilities for role:\n${JSON.stringify(role)}`,
-      'o1'
+      'completion'
     );
 
-    return JSON.parse(capabilityAnalysis);
+    return JSON.parse(capabilityAnalysisResponse.content);
   }
 
   private async initializeWorkflows(requirements: ProjectRequirement[]): Promise<void> {

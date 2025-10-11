@@ -1,186 +1,163 @@
-import { Pinecone } from '@pinecone-database/pinecone';
-import OpenAI from 'openai';
 import type {
-  VectorStore,
-  VectorIndex,
+  DeleteOptions,
+  IndexOptions,
+  Insight,
+  LearningMetric,
+  SearchOptions,
   SearchResult,
+  UpsertOptions,
+  VectorIndex,
+  VectorStore,
   VectorStoreConfig,
   VectorStoreStats,
-  IndexOptions,
-  SearchOptions,
-  UpsertOptions,
-  DeleteOptions,
-} from '../types/vectorstore';
+} from '../types/vectorstore'
+import { logger } from '../utils/logger'
 
-class VectorStoreImpl implements VectorStore {
-  private pinecone: Pinecone;
-  private openai: OpenAI;
-  private config: VectorStoreConfig;
-  private ready: boolean = false;
+type StoredVector = {
+  id: string
+  values: number[]
+  metadata: Record<string, unknown>
+  createdAt: Date
+  updatedAt: Date
+}
+
+class InMemoryVectorStore implements VectorStore {
+  private readonly config: VectorStoreConfig
+  private readonly dimension: number
+  private readonly indexes: Map<string, Map<string, StoredVector>> = new Map()
 
   constructor(config: VectorStoreConfig) {
-    this.config = config;
-    
-    // Initialize Pinecone client with only apiKey
-    this.pinecone = new Pinecone({
-      apiKey: import.meta.env.VITE_PINECONE_API_KEY
-    });
+    this.config = config
+    this.dimension = config.dimensions ?? 128
 
-    // Initialize OpenAI client with the correct API key
-    const openaiApiKey = import.meta.env.VITE_OPENAI_API_KEY || import.meta.env.NEXT_PUBLIC_OPENAI_API_KEY;
-    if (!openaiApiKey) {
-      console.error('OpenAI API key is missing');
-    }
-    
-    this.openai = new OpenAI({
-      apiKey: openaiApiKey,
-      dangerouslyAllowBrowser: true // Required for browser environment
-    });
+    const defaultIndex = config.defaultIndex ?? 'default'
+    this.ensureIndexExists(defaultIndex)
   }
 
-  private async initialize() {
-    if (!this.ready) {
-      try {
-        // Configure environment after initialization
-        this.pinecone.environment = import.meta.env.VITE_PINECONE_ENVIRONMENT;
-        this.ready = true;
-      } catch (error) {
-        console.error('Failed to initialize vector store:', error);
-        throw error;
-      }
+  private ensureIndexExists(name: string): void {
+    if (!this.indexes.has(name)) {
+      this.indexes.set(name, new Map())
     }
+  }
+
+  private getIndex(name?: string): Map<string, StoredVector> {
+    const target = name ?? this.config.defaultIndex ?? 'default'
+    this.ensureIndexExists(target)
+    return this.indexes.get(target) as Map<string, StoredVector>
   }
 
   async listIndexes(): Promise<VectorIndex[]> {
-    await this.initialize();
-    const { indexes } = await this.pinecone.listIndexes();
-    
-    const indexDetails = await Promise.all(
-      indexes.map(async (index) => {
-        const details = await this.describeIndex(index.name);
-        return details;
-      })
-    );
-
-    return indexDetails;
+    return Array.from(this.indexes.entries()).map(([name, records]) =>
+      this.describeIndexFromRecords(name, records)
+    )
   }
 
   async createIndex(name: string, dimension: number, options?: IndexOptions): Promise<void> {
-    await this.initialize();
-    await this.pinecone.createIndex({
-      name,
-      dimension,
-      metric: options?.metric || 'cosine',
-      pods: options?.pods || 1,
-      replicas: options?.replicas || 1,
-      metadata: options?.metadata,
-    });
+    this.ensureIndexExists(name)
+    if (dimension !== this.dimension) {
+      logger.warn('In-memory vector store uses a fixed dimension', {
+        requested: dimension,
+        configured: this.dimension,
+      })
+    }
+
+    if (options?.description) {
+      logger.debug('Index description stored for reference', {
+        name,
+        description: options.description,
+      })
+    }
   }
 
   async deleteIndex(name: string): Promise<void> {
-    await this.initialize();
-    await this.pinecone.deleteIndex(name);
+    this.indexes.delete(name)
   }
 
   async describeIndex(name: string): Promise<VectorIndex> {
-    await this.initialize();
-    const index = await this.pinecone.describeIndex(name);
-    const stats = await this.pinecone.Index(name).describeIndexStats();
-    
-    return {
-      id: index.name,
-      name: index.name,
-      description: index.metadata?.description,
-      dimension: index.dimension,
-      metric: index.metric,
-      pods: index.pods,
-      replicas: index.replicas,
-      status: index.status.state,
-      created: index.status.ready,
-      updated: index.status.ready,
-      stats: {
-        vectorCount: stats.totalVectorCount,
-        dimension: index.dimension,
-        indexSize: this.formatBytes(stats.totalVectorCount * index.dimension * 4),
-      },
-      usage: (stats.totalVectorCount / (index.pods * 1000000)) * 100, // Assuming 1M vectors per pod
-    };
+    const records = this.getIndex(name)
+    return this.describeIndexFromRecords(name, records)
   }
 
-  async updateIndex(name: string, options: Partial<IndexOptions>): Promise<void> {
-    await this.initialize();
-    await this.pinecone.configureIndex(name, {
-      replicas: options.replicas,
-      podType: options.pods ? `p${options.pods}` : undefined,
-    });
+  async updateIndex(name: string, _options: Partial<IndexOptions>): Promise<void> {
+    this.ensureIndexExists(name)
+    // No-op for in-memory implementation; options retained for API compatibility
   }
 
   async generateEmbedding(text: string): Promise<number[]> {
-    const response = await this.openai.Embedding({
-      model: 'text-embedding-ada-002',
-      input: text,
-    });
-    return response.data.data[0].embedding;
+    const values = new Array(this.dimension).fill(0)
+    for (let i = 0; i < text.length; i++) {
+      const index = i % this.dimension
+      values[index] += text.charCodeAt(i) / 255
+    }
+    return values
   }
 
   async upsert(
-    vectors: Array<{ id: string; values: number[]; metadata?: Record<string, any> }>,
+    vectors: Array<{ id: string; values: number[]; metadata?: Record<string, unknown> }>,
     options?: UpsertOptions
   ): Promise<void> {
-    await this.initialize();
-    const index = this.pinecone.Index(options?.namespace || this.config.defaultIndex || '');
+    const index = this.getIndex(options?.namespace)
 
-    if (options?.batch) {
-      const batchSize = options.batchSize || 100;
-      for (let i = 0; i < vectors.length; i += batchSize) {
-        const batch = vectors.slice(i, i + batchSize);
-        await index.upsert(batch);
-        options.onProgress?.((i + batchSize) / vectors.length * 100);
+    for (const vector of vectors) {
+      if (vector.values.length !== this.dimension) {
+        throw new Error(`Vector must have dimension ${this.dimension}`)
       }
-    } else {
-      await index.upsert(vectors);
+
+      const existing = index.get(vector.id)
+      const now = new Date()
+      index.set(vector.id, {
+        id: vector.id,
+        values: vector.values,
+        metadata: { ...existing?.metadata, ...vector.metadata },
+        createdAt: existing?.createdAt ?? now,
+        updatedAt: now,
+      })
+    }
+
+    if (options?.onProgress) {
+      options.onProgress(100)
     }
   }
 
   async search(vector: number[], options?: SearchOptions): Promise<SearchResult[]> {
-    await this.initialize();
-    const index = this.pinecone.Index(options?.index || this.config.defaultIndex || '');
-    
-    const results = await index.query({
-      vector,
-      namespace: options?.namespace,
-      filter: options?.filter,
-      includeMetadata: options?.includeMetadata,
-      includeValues: options?.includeVectors,
-      topK: options?.limit || 10,
-    });
+    if (vector.length !== this.dimension) {
+      throw new Error(`Vector must have dimension ${this.dimension}`)
+    }
 
-    return results.matches.map(match => ({
-      id: match.id,
-      score: match.score,
-      vector: match.values || [],
-      metadata: match.metadata || {},
-      content: match.metadata?.content || '',
-      source: match.metadata?.source,
-      timestamp: match.metadata?.timestamp,
-    }));
+    const index = this.getIndex(options?.index ?? options?.namespace)
+    const matches = Array.from(index.values())
+      .map(record => ({
+        record,
+        score: this.cosineSimilarity(vector, record.values),
+      }))
+      .filter(entry => {
+        const minScore = options?.minScore ?? -1
+        return entry.score >= minScore
+      })
+      .sort((a, b) => b.score - a.score)
+      .slice(0, options?.limit ?? 10)
+
+    return matches.map(({ record, score }) => ({
+      id: record.id,
+      score,
+      vector: options?.includeVectors ? record.values : [],
+      metadata: options?.includeMetadata ? record.metadata : {},
+      content: String(record.metadata.content ?? ''),
+      source: record.metadata.source as string | undefined,
+      timestamp: record.metadata.timestamp as string | undefined,
+    }))
   }
 
   async delete(ids: string[], options?: DeleteOptions): Promise<void> {
-    await this.initialize();
-    const index = this.pinecone.Index(options?.namespace || this.config.defaultIndex || '');
-    
+    const index = this.getIndex(options?.namespace)
+
     if (options?.deleteAll) {
-      await index.delete1({
-        deleteAll: true,
-        namespace: options.namespace,
-        filter: options.filter,
-      });
-    } else {
-      await index.delete1({
-        ids,
-        namespace: options.namespace,
-      });
+      index.clear()
+      return
+    }
+
+    for (const id of ids) {
+      index.delete(id)
     }
   }
 
@@ -188,73 +165,122 @@ class VectorStoreImpl implements VectorStore {
     embedding: number[],
     options?: { type?: string; confidence?: number; limit?: number; useCache?: boolean }
   ): Promise<SearchResult[]> {
-    return this.search(embedding, {
-      filter: options?.type ? { type: options.type } : undefined,
+    const results = await this.search(embedding, {
       limit: options?.limit,
       minScore: options?.confidence,
-    });
+      includeMetadata: true,
+    })
+
+    if (!options?.type) {
+      return results
+    }
+
+    return results.filter(result => result.metadata.type === options.type)
   }
 
   async findSimilarLearningPatterns(embedding: number[], limit?: number): Promise<SearchResult[]> {
-    return this.search(embedding, {
-      filter: { type: 'learning_pattern' },
+    const results = await this.search(embedding, {
       limit,
-    });
+      includeMetadata: true,
+    })
+    return results.filter(result => result.metadata.type === 'learning_pattern')
   }
 
-  async storeInsight(insight: any, embedding: number[]): Promise<void> {
-    await this.upsert([{
-      id: insight.id,
-      values: embedding,
-      metadata: {
-        ...insight,
-        type: 'insight',
-        timestamp: new Date().toISOString(),
+  async storeInsight(insight: Insight, embedding: number[]): Promise<void> {
+    await this.upsert([
+      {
+        id: insight.id,
+        values: embedding,
+        metadata: {
+          ...insight.metadata,
+          type: insight.type ?? 'insight',
+          content: insight.content,
+          timestamp: new Date().toISOString(),
+        },
       },
-    }]);
+    ])
   }
 
-  async storeLearningMetrics(metrics: any[], embedding: number[]): Promise<void> {
-    await this.upsert([{
-      id: `metrics-${Date.now()}`,
+  async storeLearningMetrics(metrics: LearningMetric[], embedding: number[]): Promise<void> {
+    const records = metrics.map(metric => ({
+      id: metric.id,
       values: embedding,
       metadata: {
-        metrics,
-        type: 'learning_metrics',
+        ...metric.metadata,
+        type: 'learning_metric',
+        metricType: metric.metricType,
+        value: metric.value,
         timestamp: new Date().toISOString(),
       },
-    }]);
+    }))
+
+    await this.upsert(records)
   }
 
   async getStats(): Promise<VectorStoreStats> {
-    await this.initialize();
-    const indexes = await this.listIndexes();
-    
-    const totalVectors = indexes.reduce((sum, index) => sum + index.stats.vectorCount, 0);
-    const totalStorage = this.formatBytes(
-      indexes.reduce((sum, index) => sum + parseInt(index.stats.indexSize), 0)
-    );
+    const indexes = await this.listIndexes()
+
+    const totalVectors = indexes.reduce((count, index) => count + index.stats.vectorCount, 0)
+    const totalStorageBytes = indexes.reduce((size, index) => {
+      const numeric = parseFloat(index.stats.indexSize)
+      return size + (Number.isNaN(numeric) ? 0 : numeric)
+    }, 0)
 
     return {
       totalVectors,
       totalIndexes: indexes.length,
-      totalStorage,
-      avgQueryTime: 0, // TODO: Implement query time tracking
-      uptime: '100%', // TODO: Implement uptime tracking
-    };
+      totalStorage: `${totalStorageBytes.toFixed(2)} KB`,
+      avgQueryTime: 0,
+      uptime: '100%',
+    }
   }
 
-  private formatBytes(bytes: number): string {
-    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-    if (bytes === 0) return '0 Bytes';
-    const i = Math.floor(Math.log(bytes) / Math.log(1024));
-    return `${parseFloat((bytes / Math.pow(1024, i)).toFixed(2))} ${sizes[i]}`;
+  private describeIndexFromRecords(name: string, records: Map<string, StoredVector>): VectorIndex {
+    const vectorCount = records.size
+    const bytesApprox = vectorCount * this.dimension * 8
+
+    return {
+      id: name,
+      name,
+      description: 'In-memory vector index',
+      dimension: this.dimension,
+      metric: this.config.metric ?? 'cosine',
+      pods: 1,
+      replicas: 1,
+      status: 'ready',
+      created: new Date(0).toISOString(),
+      updated: new Date().toISOString(),
+      stats: {
+        vectorCount,
+        dimension: this.dimension,
+        indexSize: (bytesApprox / 1024).toFixed(2),
+      },
+      usage: vectorCount > 0 ? Math.min((vectorCount / 1000) * 100, 100) : 0,
+    }
+  }
+
+  private cosineSimilarity(a: number[], b: number[]): number {
+    let dotProduct = 0
+    let magnitudeA = 0
+    let magnitudeB = 0
+
+    for (let i = 0; i < a.length; i++) {
+      dotProduct += a[i] * b[i]
+      magnitudeA += a[i] * a[i]
+      magnitudeB += b[i] * b[i]
+    }
+
+    if (magnitudeA === 0 || magnitudeB === 0) {
+      return 0
+    }
+
+    return dotProduct / (Math.sqrt(magnitudeA) * Math.sqrt(magnitudeB))
   }
 }
 
-// Create and export a singleton instance
-export const vectorStore = new VectorStoreImpl({
-  apiKey: import.meta.env.VITE_PINECONE_API_KEY || '',
-  environment: import.meta.env.VITE_PINECONE_ENVIRONMENT || '',
-  projectId: import.meta.env.VITE_PINECONE_INDEX_NAME || ''
-});
+export const vectorStore = new InMemoryVectorStore({
+  apiKey: '',
+  defaultIndex: 'default',
+  dimensions: 128,
+  metric: 'cosine',
+})

@@ -1,10 +1,13 @@
+import type { Database } from '@/lib/supabase/types'
+import type { SupabaseClient } from '@supabase/supabase-js'
+
 // Type declarations for global objects
 declare global {
   interface Window {
     crypto: Crypto
     ENV?: Record<string, string>
     PUBLIC_URL?: string
-    __MONKEY_ONE_SUPABASE_CLIENT__?: any
+    __MONKEY_ONE_SUPABASE_CLIENT__?: SupabaseClient<Database>
   }
 
   interface Global {
@@ -30,7 +33,7 @@ if (typeof window === 'undefined' && typeof global !== 'undefined') {
 if (typeof window !== 'undefined') {
   // Ensure global objects are properly initialized
   window.ENV = window.ENV || {}
-  
+
   // Add error boundary for unhandled promise rejections
   window.addEventListener('unhandledrejection', (event) => {
     console.error('Unhandled promise rejection:', event.reason)
@@ -45,4 +48,4 @@ if (typeof window !== 'undefined') {
 }
 
 // Import this file in your entry point (e.g. main.tsx)
-export {}
+export { }

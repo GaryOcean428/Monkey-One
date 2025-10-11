@@ -138,11 +138,22 @@ export function withAWSCredentials<T extends (...args: unknown[]) => unknown>(
   return (async (...args: Parameters<T>) => {
     const credentials = await assumeRoleWithOIDC(config)
 
-    if (credentials) {
-      // Inject AWS credentials into the context
-      const context = args[args.length - 1] || {}
-      context.aws = credentials
-      args[args.length - 1] = context
+    if (!credentials) {
+      return handler(...args)
+    }
+
+    const nextArgs = [...args] as Parameters<T>
+    const contextIndex = nextArgs.length - 1
+    const maybeContext = contextIndex >= 0 ? nextArgs[contextIndex] : undefined
+
+    if (maybeContext && typeof maybeContext === 'object') {
+      const context = {
+        ...(maybeContext as Record<string, unknown>),
+        aws: credentials,
+      }
+
+      nextArgs[contextIndex] = context as Parameters<T>[number]
+      return handler(...nextArgs)
     }
 
     return handler(...args)

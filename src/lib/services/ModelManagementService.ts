@@ -1,13 +1,13 @@
 import { EventEmitter } from 'events'
-import {
-  ModelProvider,
-  ModelResponse,
-  ModelOptions,
-  TaskType,
-  StreamChunk,
-} from '../types/models'
 import { ModelPerformanceTracker } from '../llm/ModelPerformanceTracker'
 import { LocalProvider } from '../providers/LocalProvider'
+import {
+  ModelOptions,
+  ModelProvider,
+  ModelResponse,
+  StreamChunk,
+  TaskType,
+} from '../types/models'
 import { logger } from '../utils/logger'
 
 interface ModelConfig {
@@ -116,9 +116,10 @@ export class ModelManagementService extends EventEmitter {
     const primaryHealth = await this.checkProviderHealth(this.primaryProvider)
     if (primaryHealth) {
       const metrics = this.performanceTracker.getModelPerformance(this.primaryProvider)
+      const qualityScore = this.getQualityScore(taskType, metrics)
       if (
         metrics.successRate > this.config.fallbackThreshold &&
-        metrics.qualityScores[taskType] > this.config.qualityThreshold
+        qualityScore > this.config.qualityThreshold
       ) {
         return this.primaryProvider
       }
@@ -133,9 +134,10 @@ export class ModelManagementService extends EventEmitter {
       if (!isHealthy) continue
 
       const metrics = this.performanceTracker.getModelPerformance(provider)
+      const qualityScore = this.getQualityScore(taskType, metrics)
       const score =
         metrics.successRate * 0.4 +
-        (metrics.qualityScores[taskType] || 0) * 0.4 +
+        qualityScore * 0.4 +
         (1 - metrics.averageLatency / 1000) * 0.2
 
       if (score > bestScore) {
@@ -161,7 +163,7 @@ export class ModelManagementService extends EventEmitter {
 
       try {
         const response = await providerInstance.generate(prompt, options)
-        
+
         // Record success metrics
         const latency = Date.now() - startTime
         this.performanceTracker.recordLatency(provider, latency)
@@ -189,7 +191,7 @@ export class ModelManagementService extends EventEmitter {
     throw lastError
   }
 
-  public async generateStream(
+  public async *generateStream(
     prompt: string,
     taskType: TaskType,
     options: ModelOptions = {}
@@ -234,5 +236,15 @@ export class ModelManagementService extends EventEmitter {
 
   public getAllProviderHealth(): Map<ModelProvider, ProviderHealth> {
     return new Map(this.providerHealth)
+  }
+
+  private getQualityScore(taskType: TaskType, metrics: ReturnType<ModelPerformanceTracker['getModelPerformance']>): number {
+    const scores = metrics.qualityScores[taskType]
+    if (!scores || scores.length === 0) {
+      return 0
+    }
+
+    const sum = scores.reduce((total, value) => total + value, 0)
+    return sum / scores.length
   }
 }

@@ -1,7 +1,7 @@
-import { BaseProvider } from './BaseProvider';
 import { logger } from '../../utils/logger';
-import type { ModelResponse, StreamChunk, ModelOptions } from '../types/models';
 import { performanceMonitor } from '../monitoring/performance';
+import type { ModelOptions, ModelResponse, StreamChunk } from '../types/models';
+import { BaseProvider } from './BaseProvider';
 
 export class LocalProvider extends BaseProvider {
   private modelConfig = {
@@ -38,7 +38,7 @@ export class LocalProvider extends BaseProvider {
 
   async generate(prompt: string, options: ModelOptions = {}): Promise<ModelResponse> {
     const startTime = performance.now();
-    
+
     try {
       // Implement actual model inference here
       // const result = await this.modelInstance.run({
@@ -48,22 +48,18 @@ export class LocalProvider extends BaseProvider {
       // });
 
       // Temporary mock response
-      const response = {
-        text: `[Local Provider Mock] Response to: ${prompt}`,
+      const latency = performance.now() - startTime;
+      const response: ModelResponse = {
+        content: `[Local Provider Mock] Response to: ${prompt}`,
+        model: this.modelConfig.apiName,
         usage: {
-          promptTokens: prompt.length / 4,
+          promptTokens: Math.floor(prompt.length / 4),
           completionTokens: 50,
-          totalTokens: (prompt.length / 4) + 50
+          totalTokens: Math.floor(prompt.length / 4) + 50
         },
-        metadata: {
-          model: this.modelConfig.apiName,
-          latency: performance.now() - startTime,
-          temperature: options.temperature,
-          maxTokens: options.maxTokens
-        }
       };
 
-      performanceMonitor.recordLatency('local', response.metadata.latency);
+      performanceMonitor.recordLatency('local', latency);
       return response;
     } catch (error) {
       logger.error('Error generating response:', error);
@@ -73,15 +69,15 @@ export class LocalProvider extends BaseProvider {
 
   async* generateStream(prompt: string, options: ModelOptions = {}): AsyncGenerator<StreamChunk> {
     const startTime = performance.now();
-    const delay = options.streamDelay ?? 50;
+    const delay = 50;
 
     try {
       // Mock streaming response
       const words = `[Local Provider Stream] Response to: ${prompt}`.split(' ');
-      
+
       for (let i = 0; i < words.length; i++) {
         await new Promise(resolve => setTimeout(resolve, delay));
-        
+
         yield {
           text: words[i] + ' ',
           isComplete: i === words.length - 1,

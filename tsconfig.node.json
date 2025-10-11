@@ -8,14 +8,16 @@
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    "types": ["node"]
+    "types": ["node", "vite/client"]
   },
   "include": [
     "vite.config.ts",
     "vitest.config.ts",
     "stackbit.config.ts",
-    "vite.env.d.ts",
+    "src/vite-env.d.ts",
     "api/**/*.ts",
-    "src/lib/auth/**/*.ts"
+    "src/lib/auth/**/*.ts",
+    "src/lib/supabase/**/*.ts",
+    "src/utils/errorHandler.ts"
   ]
 }

@@ -1,12 +1,33 @@
-import { Tool, TestSuite, TestResult } from '../types';
-import { TestUtils } from './TestUtils';
 import { monitoring } from '../monitoring/MonitoringSystem';
+import {
+  TestUtils,
+  type ToolDefinition,
+  type ToolValidationResult,
+} from './TestUtils';
+
+export interface TestResult {
+  name: string;
+  passed: boolean;
+  errors: string[];
+  warnings: string[];
+  performance: {
+    executionTime: number;
+    memoryUsage: number;
+    successRate?: number;
+  };
+}
+
+export interface TestSuite {
+  name: string;
+  shouldRun: (tool: ToolDefinition) => boolean;
+  runTests: (tool: ToolDefinition) => Promise<TestResult[]>;
+}
 
 export class ToolTestRunner {
   private static instance: ToolTestRunner;
   private testSuites: Map<string, TestSuite> = new Map();
 
-  private constructor() {}
+  private constructor() { }
 
   static getInstance(): ToolTestRunner {
     if (!ToolTestRunner.instance) {
@@ -19,13 +40,13 @@ export class ToolTestRunner {
     this.testSuites.set(suite.name, suite);
   }
 
-  async runTests(tool: Tool): Promise<TestResult[]> {
+  async runTests(tool: ToolDefinition): Promise<TestResult[]> {
     const results: TestResult[] = [];
     const startTime = Date.now();
 
     try {
       // Run validation tests
-      const validationResult = await TestUtils.validateTool(tool);
+      const validationResult: ToolValidationResult = await TestUtils.validateTool(tool);
       results.push({
         name: 'Validation Test',
         passed: validationResult.valid,
@@ -65,10 +86,11 @@ export class ToolTestRunner {
               }
             });
           } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
             results.push({
               name: suite.name,
               passed: false,
-              errors: [`Test suite failed: ${error.message}`],
+              errors: [`Test suite failed: ${message}`],
               warnings: [],
               performance: {
                 executionTime: Date.now() - suiteStartTime,
@@ -82,12 +104,14 @@ export class ToolTestRunner {
       // Record metrics
       const duration = Date.now() - startTime;
       const passed = results.every(r => r.passed);
-      monitoring.recordToolCreation(passed, duration);
+      monitoring.recordMetric('tool_test_duration_ms', duration);
+      monitoring.recordMetric('tool_test_success', passed ? 1 : 0);
 
       return results;
     } catch (error) {
       const duration = Date.now() - startTime;
-      monitoring.recordToolCreation(false, duration);
+      monitoring.recordMetric('tool_test_duration_ms', duration);
+      monitoring.recordMetric('tool_test_success', 0);
       throw error;
     }
   }

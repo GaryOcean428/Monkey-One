@@ -1,4 +1,4 @@
-import { LogLevel } from '../types/core'
+import { LogLevel as LogLevelValues, type LogLevel } from '../../constants/enums'
 
 interface LoggerOptions {
   level: LogLevel
@@ -21,7 +21,7 @@ class Logger {
   public static getInstance(options: Partial<LoggerOptions> = {}): Logger {
     if (!Logger.instance) {
       Logger.instance = new Logger({
-        level: options.level || 'info',
+        level: options.level || LogLevelValues.INFO,
         prefix: options.prefix,
         metadata: options.metadata,
       })
@@ -37,31 +37,36 @@ class Logger {
   }
 
   private shouldLog(level: LogLevel): boolean {
-    const levels: LogLevel[] = ['debug', 'info', 'warn', 'error']
+    const levels: LogLevel[] = [
+      LogLevelValues.DEBUG,
+      LogLevelValues.INFO,
+      LogLevelValues.WARN,
+      LogLevelValues.ERROR
+    ]
     return levels.indexOf(level) >= levels.indexOf(this.level)
   }
 
   public debug(message: string, ...args: unknown[]): void {
-    if (this.shouldLog('debug')) {
-      console.debug(this.formatMessage('debug', message, args), ...args)
+    if (this.shouldLog(LogLevelValues.DEBUG)) {
+      console.debug(this.formatMessage(LogLevelValues.DEBUG, message, args), ...args)
     }
   }
 
   public info(message: string, ...args: unknown[]): void {
-    if (this.shouldLog('info')) {
-      console.info(this.formatMessage('info', message, args), ...args)
+    if (this.shouldLog(LogLevelValues.INFO)) {
+      console.info(this.formatMessage(LogLevelValues.INFO, message, args), ...args)
     }
   }
 
   public warn(message: string, ...args: unknown[]): void {
-    if (this.shouldLog('warn')) {
-      console.warn(this.formatMessage('warn', message, args), ...args)
+    if (this.shouldLog(LogLevelValues.WARN)) {
+      console.warn(this.formatMessage(LogLevelValues.WARN, message, args), ...args)
     }
   }
 
   public error(message: string, ...args: unknown[]): void {
-    if (this.shouldLog('error')) {
-      console.error(this.formatMessage('error', message, args), ...args)
+    if (this.shouldLog(LogLevelValues.ERROR)) {
+      console.error(this.formatMessage(LogLevelValues.ERROR, message, args), ...args)
     }
   }
 

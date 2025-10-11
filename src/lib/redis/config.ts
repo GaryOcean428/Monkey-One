@@ -23,34 +23,27 @@ export const createRedisClient = async () => {
     username: redisUsername || 'default',
     password: redisPassword,
     pingInterval: 1000,
-    maxRetriesPerRequest: 3,
     enableOfflineQueue: false,
   })
 
   client.on('error', err => {
     console.error('Redis Client Error:', err)
-    // Emit event for monitoring
-    process.emit('redisError', err)
   })
 
   client.on('connect', () => {
     console.log('Redis Client Connected')
-    process.emit('redisConnected')
   })
 
   client.on('ready', () => {
     console.log('Redis Client Ready')
-    process.emit('redisReady')
   })
 
   client.on('reconnecting', () => {
     console.log('Redis Client Reconnecting')
-    process.emit('redisReconnecting')
   })
 
   client.on('end', () => {
     console.log('Redis Client Connection Ended')
-    process.emit('redisEnded')
     redisClient = null // Clear the cached client
   })
 

@@ -1,5 +1,5 @@
+import { LLMProvider } from '../../lib/llm/providers/base'
 import { Tool, ToolParams, ToolResult } from '../registry/Tool'
-import { LLMProvider } from '../../services/llm/LLMProvider'
 
 interface CodeAnalysisParams extends ToolParams {
   code: string
@@ -65,9 +65,11 @@ export class CodeAnalysisTool extends Tool {
       const prompt = this.buildPrompt(params)
       const analysis = await this.llmProvider.analyze(prompt)
 
-      return this.processAnalysis(analysis, params)
+      return this.processAnalysis(analysis as LLMAnalysisResponse, params)
     } catch (error) {
-      return this.createErrorResult(error)
+      const normalizedError =
+        error instanceof Error ? error : new Error('Code analysis failed unexpectedly')
+      return this.createErrorResult(normalizedError)
     }
   }
 
@@ -80,7 +82,7 @@ export class CodeAnalysisTool extends Tool {
         prompt = `Analyze the following code and provide insights:
                  Include: architecture, patterns, potential issues
                  ${options?.includeExamples ? 'Include example improvements' : ''}
-                 
+
                  Code:
                  ${code}`
         break
@@ -89,7 +91,7 @@ export class CodeAnalysisTool extends Tool {
         prompt = `Suggest refactoring improvements for the following code:
                  Focus on: readability, maintainability, best practices
                  Max suggestions: ${options?.maxSuggestions || 3}
-                 
+
                  Code:
                  ${code}`
         break
@@ -98,7 +100,7 @@ export class CodeAnalysisTool extends Tool {
         prompt = `Analyze performance optimization opportunities:
                  Focus on: efficiency, resource usage, algorithmic improvements
                  Include concrete examples and benchmarks
-                 
+
                  Code:
                  ${code}`
         break
@@ -107,7 +109,7 @@ export class CodeAnalysisTool extends Tool {
         prompt = `Perform a security review of the following code:
                  Check for: vulnerabilities, best practices, security patterns
                  Include specific recommendations
-                 
+
                  Code:
                  ${code}`
         break
@@ -116,7 +118,7 @@ export class CodeAnalysisTool extends Tool {
         prompt = `Generate comprehensive documentation for the code:
                  Include: overview, parameters, return values, examples
                  Format in markdown
-                 
+
                  Code:
                  ${code}`
         break

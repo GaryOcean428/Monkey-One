@@ -1,54 +1,60 @@
-import { TestSuite, Tool, TestResult } from '../../types';
-import { monitoring } from '../../monitoring/MonitoringSystem';
+import type { ToolDefinition } from '../TestUtils';
+import type { TestResult, TestSuite } from '../ToolTestRunner';
 
 export class ToolCreationTestSuite implements TestSuite {
   name = 'Tool Creation Tests';
 
-  shouldRun(tool: Tool): boolean {
+  shouldRun(_tool: ToolDefinition): boolean {
     return true; // Run for all tools
   }
 
-  async runTests(tool: Tool): Promise<TestResult[]> {
+  async runTests(tool: ToolDefinition): Promise<TestResult[]> {
     const results: TestResult[] = [];
-    
+
     // Test 1: Parameter Validation
     results.push(await this.testParameterValidation(tool));
-    
+
     // Test 2: Error Handling
     results.push(await this.testErrorHandling(tool));
-    
+
     // Test 3: Performance Under Load
     results.push(await this.testPerformanceUnderLoad(tool));
-    
+
     // Test 4: Memory Management
     results.push(await this.testMemoryManagement(tool));
-    
+
     // Test 5: Concurrent Execution
     results.push(await this.testConcurrentExecution(tool));
 
     return results;
   }
 
-  private async testParameterValidation(tool: Tool): Promise<TestResult> {
+  private async testParameterValidation(tool: ToolDefinition): Promise<TestResult> {
     const startTime = Date.now();
     const errors: string[] = [];
     const warnings: string[] = [];
 
     try {
+      if (typeof tool.execute !== 'function') {
+        throw new Error('Tool does not implement execute');
+      }
+
       // Test required parameters
       if (tool.parameters) {
         const requiredParams = Object.entries(tool.parameters)
-          .filter(([_, param]) => param.required);
+          .filter(([_, param]) => param?.required);
 
         // Test missing required parameters
         const missingParams = requiredParams.map(([name]) => name);
         if (missingParams.length > 0) {
-          const result = await tool.execute({});
           errors.push(`Tool should fail when required parameters are missing: ${missingParams.join(', ')}`);
         }
 
         // Test invalid parameter types
         for (const [name, param] of Object.entries(tool.parameters)) {
+          if (!param?.type) {
+            continue;
+          }
           const invalidValue = this.getInvalidValueForType(param.type);
           const testInput = { [name]: invalidValue };
           try {
@@ -60,7 +66,8 @@ export class ToolCreationTestSuite implements TestSuite {
         }
       }
     } catch (error) {
-      errors.push(`Parameter validation test failed: ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error);
+      errors.push(`Parameter validation test failed: ${message}`);
     }
 
     return {
@@ -75,12 +82,16 @@ export class ToolCreationTestSuite implements TestSuite {
     };
   }
 
-  private async testErrorHandling(tool: Tool): Promise<TestResult> {
+  private async testErrorHandling(tool: ToolDefinition): Promise<TestResult> {
     const startTime = Date.now();
     const errors: string[] = [];
     const warnings: string[] = [];
 
     try {
+      if (typeof tool.execute !== 'function') {
+        throw new Error('Tool does not implement execute');
+      }
+
       // Test error cases
       const errorCases = [
         { case: 'null input', input: null },
@@ -95,13 +106,15 @@ export class ToolCreationTestSuite implements TestSuite {
           await tool.execute(errorCase.input);
           errors.push(`Tool should handle ${errorCase.case} gracefully`);
         } catch (error) {
-          if (!error.message) {
+          const message = error instanceof Error ? error.message : '';
+          if (!message) {
             errors.push(`Tool should provide error message for ${errorCase.case}`);
           }
         }
       }
     } catch (error) {
-      errors.push(`Error handling test failed: ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error);
+      errors.push(`Error handling test failed: ${message}`);
     }
 
     return {
@@ -116,12 +129,16 @@ export class ToolCreationTestSuite implements TestSuite {
     };
   }
 
-  private async testPerformanceUnderLoad(tool: Tool): Promise<TestResult> {
+  private async testPerformanceUnderLoad(tool: ToolDefinition): Promise<TestResult> {
     const startTime = Date.now();
     const errors: string[] = [];
     const warnings: string[] = [];
 
     try {
+      if (typeof tool.execute !== 'function') {
+        throw new Error('Tool does not implement execute');
+      }
+
       const iterations = 100;
       const maxExecutionTime = 1000; // 1 second
       const times: number[] = [];
@@ -143,7 +160,8 @@ export class ToolCreationTestSuite implements TestSuite {
         warnings.push(`Maximum execution time (${maxTime}ms) is more than twice the limit`);
       }
     } catch (error) {
-      errors.push(`Performance test failed: ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error);
+      errors.push(`Performance test failed: ${message}`);
     }
 
     return {
@@ -158,21 +176,25 @@ export class ToolCreationTestSuite implements TestSuite {
     };
   }
 
-  private async testMemoryManagement(tool: Tool): Promise<TestResult> {
+  private async testMemoryManagement(tool: ToolDefinition): Promise<TestResult> {
     const startTime = Date.now();
     const errors: string[] = [];
     const warnings: string[] = [];
 
     try {
+      if (typeof tool.execute !== 'function') {
+        throw new Error('Tool does not implement execute');
+      }
+
       const iterations = 50;
       const maxMemoryIncrease = 50; // MB
       const initialMemory = process.memoryUsage().heapUsed / 1024 / 1024;
 
       for (let i = 0; i < iterations; i++) {
         await tool.execute(tool.testInput);
-        
+
         // Force garbage collection if available
-        if (global.gc) {
+        if (typeof global !== 'undefined' && typeof global.gc === 'function') {
           global.gc();
         }
       }
@@ -184,7 +206,8 @@ export class ToolCreationTestSuite implements TestSuite {
         warnings.push(`Memory usage increased by ${memoryIncrease.toFixed(2)}MB after ${iterations} iterations`);
       }
     } catch (error) {
-      errors.push(`Memory management test failed: ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error);
+      errors.push(`Memory management test failed: ${message}`);
     }
 
     return {
@@ -199,14 +222,18 @@ export class ToolCreationTestSuite implements TestSuite {
     };
   }
 
-  private async testConcurrentExecution(tool: Tool): Promise<TestResult> {
+  private async testConcurrentExecution(tool: ToolDefinition): Promise<TestResult> {
     const startTime = Date.now();
     const errors: string[] = [];
     const warnings: string[] = [];
 
     try {
+      if (typeof tool.execute !== 'function') {
+        throw new Error('Tool does not implement execute');
+      }
+
       const concurrentExecutions = 10;
-      const executions = Array(concurrentExecutions).fill(null).map(() => 
+      const executions = Array(concurrentExecutions).fill(null).map(() =>
         tool.execute(tool.testInput)
       );
 
@@ -217,7 +244,8 @@ export class ToolCreationTestSuite implements TestSuite {
         errors.push(`${failures.length} out of ${concurrentExecutions} concurrent executions failed`);
       }
     } catch (error) {
-      errors.push(`Concurrent execution test failed: ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error);
+      errors.push(`Concurrent execution test failed: ${message}`);
     }
 
     return {
@@ -232,7 +260,7 @@ export class ToolCreationTestSuite implements TestSuite {
     };
   }
 
-  private getInvalidValueForType(type: string): any {
+  private getInvalidValueForType(type?: string): any {
     switch (type) {
       case 'string':
         return 123;

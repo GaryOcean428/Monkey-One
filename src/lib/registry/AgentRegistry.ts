@@ -1,8 +1,19 @@
-import { Agent, AgentType } from '../types/core'
-import { RuntimeError } from '../errors/AgentErrors'
+import { v4 as uuidv4 } from 'uuid'
+import type { Message } from '../../types'
 import { logger } from '../../utils/logger'
 import { BaseAgent } from '../agents/base'
-import { v4 as uuidv4 } from 'uuid'
+import { RuntimeError } from '../errors/AgentErrors'
+import { Agent, AgentType } from '../types/core'
+
+class DefaultAgent extends BaseAgent {
+  constructor(id: string) {
+    super(id, 'Base Agent', AgentType.BASE)
+  }
+
+  async processMessage(message: Message): Promise<Message> {
+    return this.createResponse(message.content)
+  }
+}
 
 export class AgentRegistry {
   private static instance: AgentRegistry
@@ -16,7 +27,7 @@ export class AgentRegistry {
   private registerBaseAgent() {
     this.agents.set('BASE', async () => {
       try {
-        const agent = new BaseAgent(uuidv4(), 'Base Agent', AgentType.BASE)
+        const agent = new DefaultAgent(uuidv4())
         await agent.initialize()
         return agent
       } catch (error) {

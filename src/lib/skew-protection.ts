@@ -120,14 +120,12 @@ export function useSkewProtection(): SkewProtectionConfig {
 /**
  * Higher-order function to wrap API calls with skew protection
  */
-export function withSkewProtection<T extends (...args: unknown[]) => Promise<Response>>(
-  _apiCall: T
-): T {
-  return (async (...args: Parameters<T>) => {
-    // Assume first argument is URL and second is options
-    const [url, options] = args as [string, RequestInit?]
-
-    return fetchWithSkewProtection(url, options)
+export function withSkewProtection<
+  T extends (input: string | URL, init?: RequestInit) => Promise<Response>
+>(_apiCall: T): T {
+  return (async (input: string | URL, init?: RequestInit) => {
+    const url = typeof input === 'string' ? input : input.toString()
+    return fetchWithSkewProtection(url, init)
   }) as T
 }
 

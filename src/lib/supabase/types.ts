@@ -73,3 +73,38 @@ export interface Database {
     }
   }
 }
+
+export interface AgentRecord {
+  id: string
+  name: string
+  status: string
+  config?: Json
+  description?: string | null
+  created_at?: string
+  updated_at?: string
+}
+
+export interface AgentTaskRecord {
+  id: string
+  agent_id: string
+  status: string
+  result?: Json
+  created_at?: string
+  completed_at?: string | null
+}
+
+export interface AgentThoughtRecord {
+  id: string
+  agent_id: string
+  content: string
+  metadata?: Json
+  created_at?: string
+}
+
+export interface AgentMemoryRecord {
+  id: string
+  agent_id: string
+  content: string
+  metadata?: Json
+  created_at?: string
+}

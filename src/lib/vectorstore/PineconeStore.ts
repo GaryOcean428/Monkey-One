@@ -1,86 +1,63 @@
-import { Pinecone } from '@pinecone-database/pinecone'
 import type { CodeInsight, LearningMetric } from '../../types'
-
-export interface VectorMetadata {
-  id: string
-  text: string
-  [key: string]: unknown
-}
+import { vectorStore } from '../vectorstore'
 
 export class PineconeStore {
-  private client: Pinecone
-  private index: Pinecone.Index<VectorMetadata>
-  private dimensions: number
-  private metric: string
-  private indexName: string
-
-  constructor() {
-    this.client = new Pinecone({
-      apiKey: import.meta.env.VITE_PINECONE_API_KEY,
-      environment: import.meta.env.VITE_PINECONE_ENVIRONMENT,
-    })
-
-    this.indexName = import.meta.env.VITE_PINECONE_INDEX_NAME || 'agent-one'
-    this.dimensions = parseInt(import.meta.env.VITE_PINECONE_DIMENSIONS || '3072')
-    this.metric = import.meta.env.VITE_PINECONE_METRIC || 'cosine'
-    this.index = this.client.index<VectorMetadata>(this.indexName)
+  async initialize(): Promise<void> {
+    // No-op for in-memory implementation, preserved for compatibility
   }
 
-  async storeCodeInsight(insight: CodeInsight, embedding: number[]) {
-    await this.index.upsert({
-      vectors: [
-        {
-          id: insight.id,
-          values: embedding,
-          metadata: {
-            type: 'code-insight',
-            ...insight,
-            timestamp: Date.now(),
-          },
-        },
-      ],
-    })
+  async storeCodeInsight(insight: CodeInsight, embedding: number[]): Promise<void> {
+    await vectorStore.storeInsight(
+      {
+        id: insight.id,
+        type: insight.type ?? 'code-insight',
+        content: insight.content,
+        metadata: insight.metadata ?? {},
+        timestamp: new Date(
+          typeof insight.timestamp === 'number' ? insight.timestamp : Date.now()
+        ).toISOString(),
+      },
+      embedding
+    )
   }
 
-  async storeLearningMetric(metric: LearningMetric, embedding: number[]) {
-    await this.index.upsert({
-      vectors: [
+  async storeLearningMetric(metric: LearningMetric, embedding: number[]): Promise<void> {
+    await vectorStore.storeLearningMetrics(
+      [
         {
           id: metric.id,
-          values: embedding,
-          metadata: {
-            type: 'learning-metric',
-            ...metric,
-            timestamp: Date.now(),
-          },
+          metricType: metric.type ?? metric.category ?? 'learning_metric',
+          value: metric.value,
+          metadata: metric.metadata ?? {},
+          timestamp: new Date(
+            typeof metric.timestamp === 'number' ? metric.timestamp : Date.now()
+          ).toISOString(),
         },
       ],
-    })
+      embedding
+    )
   }
 
-  async queryCodeInsights(embedding: number[], topK: number = 5) {
-    const results = await this.index.query({
-      vector: embedding,
-      topK,
-      filter: {
-        type: 'code-insight',
-      },
-      includeMetadata: true,
-    })
-
-    return results.matches || []
+  async storeLearningMetrics(metrics: LearningMetric[], embedding: number[]): Promise<void> {
+    for (const metric of metrics) {
+      await this.storeLearningMetric(metric, embedding)
+    }
   }
 
-  async queryLearningMetrics(embedding: number[], topK: number = 5) {
-    const results = await this.index.query({
-      vector: embedding,
-      topK,
-      filter: {
-        type: 'learning-metric',
-      },
-      includeMetadata: true,
+  async findSimilarInsights(embedding: number[], options?: { type?: string; limit?: number }) {
+    const results = await vectorStore.findSimilarInsights(embedding, {
+      type: options?.type ?? 'code-insight',
+      limit: options?.limit,
     })
+    return results
+  }
 
-    return results.matches || []
+  async findSimilarLearningPatterns(embedding: number[], limit?: number) {
+    const results = await vectorStore.findSimilarLearningPatterns(embedding, limit)
+    return results
+  }
+
+  async deleteOldInsights(_cutoffDate: Date): Promise<void> {
+    // In-memory implementation does not persist historical data separately
   }
 }

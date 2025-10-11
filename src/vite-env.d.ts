@@ -38,3 +38,12 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv
 }
+
+declare global {
+  interface Window {
+    PUBLIC_URL?: string
+    ENV?: Record<string, string>
+  }
+}
+
+export { }

@@ -1,7 +1,7 @@
-import { EventEmitter } from '../utils/EventEmitter'
-import { llmManager } from './providers'
 import type { Message } from '../../types'
+import { EventEmitter } from '../utils/EventEmitter'
 import { adaptMessagesForLLM } from './messageAdapter'
+import { llmManager } from './providers'
 
 interface ProcessedResponse {
   content: string
@@ -22,7 +22,11 @@ interface ProcessedResponse {
   }
 }
 
-export class ResponseProcessor extends EventEmitter {
+interface ResponseProcessorEvents {
+  chunk: [string]
+}
+
+export class ResponseProcessor extends EventEmitter<ResponseProcessorEvents> {
   private static readonly MAX_RETRIES = 3
   private static readonly RETRY_DELAY = 1000 // ms
 

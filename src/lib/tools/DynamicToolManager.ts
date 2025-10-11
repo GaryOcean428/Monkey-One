@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events';
+import { logger } from '../../utils/logger';
 import { ModelClient } from '../clients/ModelClient';
 import { MemoryManager } from '../memory/MemoryManager';
-import { logger } from '../../utils/logger';
 
 export interface DynamicTool {
   id: string;
@@ -76,7 +76,7 @@ export class DynamicToolManager extends EventEmitter {
       await this.validateToolSchemas(newTool);
       this.tools.set(toolId, newTool);
       this.emit('toolRegistered', newTool);
-      
+
       await this.memoryManager.add({
         type: 'tool_registration',
         content: JSON.stringify(newTool),
@@ -98,14 +98,15 @@ export class DynamicToolManager extends EventEmitter {
     `;
 
     try {
-      const analysis = await this.modelClient.complete(validationPrompt, 'o1');
-      const validation = JSON.parse(analysis);
+      const analysis = await this.modelClient.generate(validationPrompt, 'completion');
+      const validation = JSON.parse(analysis.content);
 
       if (!validation.isValid) {
         throw new Error(`Invalid tool schemas: ${validation.errors.join(', ')}`);
       }
     } catch (error) {
-      throw new Error(`Schema validation failed: ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`Schema validation failed: ${message}`);
     }
   }
 
@@ -125,7 +126,7 @@ export class DynamicToolManager extends EventEmitter {
 
       // Execute tool logic
       const result = await this.executeToolLogic(tool, input);
-      
+
       // Validate output against schema
       const outputValidation = await this.validateOutput(tool, result);
       if (!outputValidation.isValid) {
@@ -173,8 +174,8 @@ export class DynamicToolManager extends EventEmitter {
       Input: ${JSON.stringify(input)}
     `;
 
-    const analysis = await this.modelClient.complete(validationPrompt, 'o1');
-    return JSON.parse(analysis);
+    const analysis = await this.modelClient.generate(validationPrompt, 'completion');
+    return JSON.parse(analysis.content);
   }
 
   private async validateOutput(tool: DynamicTool, output: any): Promise<{ isValid: boolean; errors: string[] }> {
@@ -184,8 +185,8 @@ export class DynamicToolManager extends EventEmitter {
       Output: ${JSON.stringify(output)}
     `;
 
-    const analysis = await this.modelClient.complete(validationPrompt, 'o1');
-    return JSON.parse(analysis);
+    const analysis = await this.modelClient.generate(validationPrompt, 'completion');
+    return JSON.parse(analysis.content);
   }
 
   private async executeToolLogic(tool: DynamicTool, input: any): Promise<any> {
@@ -198,8 +199,8 @@ export class DynamicToolManager extends EventEmitter {
       Capabilities: ${tool.capabilities.join(', ')}
     `;
 
-    const result = await this.modelClient.complete(executionPrompt, 'o1');
-    return JSON.parse(result);
+    const result = await this.modelClient.generate(executionPrompt, 'completion');
+    return JSON.parse(result.content);
   }
 
   private async handleToolRegistration(tool: DynamicTool): Promise<void> {
@@ -236,7 +237,7 @@ export class DynamicToolManager extends EventEmitter {
 
   private async handleToolError(data: { tool: DynamicTool; error: Error; result: ToolExecutionResult }): Promise<void> {
     const { tool, error, result } = data;
-    
+
     await this.memoryManager.add({
       type: 'tool_error',
       content: JSON.stringify({

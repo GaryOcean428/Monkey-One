@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom'
-import { expect, afterEach, beforeAll, afterAll, vi } from 'vitest'
-import { cleanup } from '@testing-library/react'
 import * as matchers from '@testing-library/jest-dom/matchers'
+import { cleanup } from '@testing-library/react'
+import { afterAll, afterEach, beforeAll, expect, vi } from 'vitest'
 import { server } from './test/mocks/server'
 
 // Extend Vitest's expect
@@ -78,25 +78,27 @@ global.TextEncoder = vi.fn().mockImplementation(() => ({
 }))
 
 // Mock WebGL context
-HTMLCanvasElement.prototype.getContext = vi.fn(contextType => {
-  if (contextType === 'webgl' || contextType === 'webgl2') {
-    return {
-      getExtension: vi.fn(),
-      getParameter: vi.fn(),
-      getShaderPrecisionFormat: vi.fn(() => ({
-        precision: 23,
-        rangeMin: 127,
-        rangeMax: 127,
-      })),
+Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
+  configurable: true,
+  value: vi.fn(function getContext(contextType: string) {
+    if (contextType === 'webgl' || contextType === 'webgl2') {
+      return {
+        getExtension: vi.fn(),
+        getParameter: vi.fn(),
+        getShaderPrecisionFormat: vi.fn(() => ({
+          precision: 23,
+          rangeMin: 127,
+          rangeMax: 127,
+        })),
+      } as unknown as WebGLRenderingContext
     }
-  }
-  return null
+
+    return null
+  }) as typeof HTMLCanvasElement.prototype.getContext,
 })
 
 // Mock Fetch API
 global.fetch = vi.fn()
-global.Request = vi.fn()
-global.Response = vi.fn()
 
 // Mock localStorage
 const localStorageMock = {

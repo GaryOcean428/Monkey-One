@@ -1,7 +1,7 @@
-import './polyfills'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import './index.css'
+import './polyfills'
 
 // Set public URL - prioritize environment variable over current origin
 const publicUrl = import.meta.env.VITE_PUBLIC_URL || 'https://monkey-one.dev'
@@ -43,7 +43,7 @@ async function renderApp() {
 
     // Dynamically import components to catch import errors
     let AppRoutes: React.ComponentType
-    let SimpleErrorBoundary: React.ComponentType<{ children: React.ReactNode }>
+    let SimpleErrorBoundary: React.ComponentType<{ children?: React.ReactNode }>
 
     try {
       const routesModule = await import('./routes')

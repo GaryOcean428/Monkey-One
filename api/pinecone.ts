@@ -1,3 +1,4 @@
+import type { RecordMetadata, RecordMetadataValue } from '@pinecone-database/pinecone'
 import { Pinecone } from '@pinecone-database/pinecone'
 
 // Server-side only
@@ -17,8 +18,32 @@ const pinecone = new Pinecone({
 
 const index = pinecone.index(pineconeIndexName)
 
-export interface VectorMetadata {
-  [key: string]: string | number | boolean | null | undefined
+export type VectorMetadata = Record<string, unknown>
+
+function isSupportedMetadataValue(value: unknown): value is RecordMetadataValue {
+  if (value === null || value === undefined) {
+    return false
+  }
+
+  if (Array.isArray(value)) {
+    return value.every(item => typeof item === 'string')
+  }
+
+  return typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean'
+}
+
+export function sanitizeMetadata(metadata?: VectorMetadata | null): RecordMetadata | undefined {
+  if (!metadata) {
+    return undefined
+  }
+
+  const entries = Object.entries(metadata).filter(([, value]) => isSupportedMetadataValue(value))
+
+  if (entries.length === 0) {
+    return undefined
+  }
+
+  return Object.fromEntries(entries) as RecordMetadata
 }
 
 export async function queryVectors(vector: number[], topK: number = 5) {
@@ -39,9 +64,12 @@ export async function upsertVectors(
   vectors: { id: string; values: number[]; metadata?: VectorMetadata }[]
 ) {
   try {
-    return await index.upsert(
-      vectors.map(vector => ({ ...vector, metadata: vector.metadata as VectorMetadata }))
-    )
+    const sanitizedVectors = vectors.map(vector => ({
+      ...vector,
+      metadata: sanitizeMetadata(vector.metadata ?? null),
+    }))
+
+    return await index.upsert(sanitizedVectors)
   } catch (error) {
     console.error('Error upserting vectors:', error)
     throw error

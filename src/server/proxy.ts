@@ -1,5 +1,6 @@
 import { createServer, IncomingMessage, ServerResponse } from 'http'
 import { createProxyMiddleware } from 'http-proxy-middleware'
+import type { Socket } from 'net'
 
 // Create proxy server for Ollama
 const ollamaProxy = createProxyMiddleware({
@@ -9,12 +10,15 @@ const ollamaProxy = createProxyMiddleware({
     '^/api/ollama': '/api', // Remove /ollama from path
   },
   on: {
-    error: (err: Error, _req: IncomingMessage, res: ServerResponse) => {
+    error: (err: Error, _req: IncomingMessage, res: ServerResponse | Socket) => {
       console.error('Proxy Error:', err)
-      res.writeHead(500, {
-        'Content-Type': 'application/json',
-      })
-      res.end(JSON.stringify({ error: 'Proxy Error', message: err.message }))
+
+      if ('writeHead' in res && 'end' in res) {
+        res.writeHead(500, {
+          'Content-Type': 'application/json',
+        })
+        res.end(JSON.stringify({ error: 'Proxy Error', message: err.message }))
+      }
     },
   },
 })

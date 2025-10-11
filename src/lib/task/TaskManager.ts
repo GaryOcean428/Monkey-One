@@ -2,15 +2,14 @@ import { EventEmitter } from 'events';
 import { ModelClient } from '../clients/ModelClient';
 import { memoryManager } from '../memory';
 import { logger } from '../utils/logger';
-import { VectorStore } from '../../memory/vector/VectorStore';
 
-type TaskType = 
+type TaskType =
   | 'one-off'        // Single execution tasks
   | 'continuous'     // Continuously running tasks
   | 'scheduled'      // Tasks that run on a schedule
   | 'event-driven';  // Tasks triggered by events
 
-type TaskStatus = 
+type TaskStatus =
   | 'created'
   | 'running'
   | 'paused'
@@ -65,7 +64,6 @@ export class TaskManager extends EventEmitter {
   private runningTasks: Set<string>;
   private tools: Map<string, DynamicTool>;
   private modelClient: ModelClient;
-  private vectorStore: VectorStore;
 
   private constructor() {
     super();
@@ -73,7 +71,6 @@ export class TaskManager extends EventEmitter {
     this.runningTasks = new Set();
     this.tools = new Map();
     this.modelClient = new ModelClient();
-    this.vectorStore = new VectorStore();
     this.initializeEventListeners();
   }
 
@@ -105,16 +102,6 @@ export class TaskManager extends EventEmitter {
     this.emit('taskCreated', task);
 
     // Store in vector store for semantic search
-    await this.vectorStore.add({
-      id,
-      type: 'task',
-      content: JSON.stringify(task),
-      metadata: {
-        type: task.type,
-        name: task.name,
-        tools: task.tools
-      }
-    });
 
     return id;
   }
@@ -127,10 +114,11 @@ export class TaskManager extends EventEmitter {
     outputSchema: Record<string, any>
   ): Promise<string> {
     // Use model to validate and optimize the tool code
-    const validatedCode = await this.modelClient.complete(
+    const response = await this.modelClient.generate(
       `Validate and optimize this tool code:\n${code}`,
-      'o1'
-    );
+      'code-generation'
+    )
+    const validatedCode = response.content
 
     const id = crypto.randomUUID();
     const tool: DynamicTool = {
@@ -208,7 +196,7 @@ export class TaskManager extends EventEmitter {
       };
 
       // Execute task code
-      const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
+      const AsyncFunction = Object.getPrototypeOf(async function () { }).constructor;
       const executor = new AsyncFunction('context', task.code);
       await executor(context);
 
@@ -229,7 +217,7 @@ export class TaskManager extends EventEmitter {
     }
 
     tool.metadata.usageCount++;
-    const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
+    const AsyncFunction = Object.getPrototypeOf(async function () { }).constructor;
     return new AsyncFunction('inputs', tool.code);
   }
 
@@ -294,10 +282,9 @@ export class TaskManager extends EventEmitter {
   }
 
   async findSimilarTasks(description: string): Promise<TaskDefinition[]> {
-    const results = await this.vectorStore.search(description, 5);
-    return results
-      .filter(result => result.type === 'task')
-      .map(result => JSON.parse(result.content));
+    // TODO: integrate vector search once the new vector store API is finalized.
+    void description
+    return []
   }
 
   private handleTaskCreated(task: TaskDefinition): void {

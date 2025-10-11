@@ -1,59 +1,78 @@
 import { VectorMetadata } from './types'
 
-interface JsonValue {
-  [key: string]: string | number | boolean | null | JsonValue | JsonValue[]
-}
+type JsonPrimitive = string | number | boolean | null
+type JsonValue = JsonPrimitive | JsonValue[] | { [key: string]: JsonValue }
 
 /**
- * Sanitizes metadata to prevent injection attacks and ensure data consistency
+ * Sanitizes metadata to prevent injection attacks and ensure data consistency.
  */
 export function sanitizeMetadata(metadata: VectorMetadata): VectorMetadata {
   return {
+    ...metadata,
     id: sanitizeString(metadata.id),
-    timestamp: metadata.timestamp,
-    source: metadata.source ? sanitizeString(metadata.source) : undefined,
-    tags: metadata.tags ? metadata.tags.map(sanitizeString) : undefined,
-    context: metadata.context ? sanitizeObject(metadata.context) : undefined,
+    type: sanitizeString(metadata.type),
+    source: sanitizeString(metadata.source),
+    tags: metadata.tags?.map(sanitizeString),
+    context: sanitizeContext(metadata.context),
   }
 }
 
-function sanitizeString(str: string): string {
-  // Remove any control characters and normalize whitespace
-  return str
-    .replace(/[\x00-\x1F\x7F-\x9F]/g, '')
+function sanitizeString(value: string): string {
+  return value
+    .replace(/[^\x20-\x7E]+/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
 }
 
-function sanitizeObject(obj: unknown): JsonValue | null {
-  if (obj === null || obj === undefined) {
-    return null
+function sanitizeContext(context: unknown): Record<string, JsonValue> | undefined {
+  if (!context || typeof context !== 'object' || Array.isArray(context)) {
+    return undefined
   }
 
-  if (typeof obj !== 'object') {
-    if (typeof obj === 'string') return sanitizeString(obj)
-    if (typeof obj === 'number' || typeof obj === 'boolean') return obj
-    return null
-  }
+  const sanitizedEntries: Array<[string, JsonValue]> = []
 
-  if (Array.isArray(obj)) {
-    return obj.map(item => sanitizeObject(item)).filter((item): item is JsonValue => item !== null)
-  }
-
-  const sanitized: JsonValue = {}
-  for (const [key, value] of Object.entries(obj)) {
-    // Skip functions and symbols
-    if (typeof value === 'function' || typeof value === 'symbol') {
-      continue
-    }
-
-    // Sanitize key and value
-    const sanitizedKey = sanitizeString(key)
-    const sanitizedValue = sanitizeObject(value)
-    if (sanitizedValue !== null) {
-      sanitized[sanitizedKey] = sanitizedValue
+  for (const [rawKey, rawValue] of Object.entries(context)) {
+    const key = sanitizeString(rawKey)
+    const value = sanitizeValue(rawValue)
+    if (value !== undefined) {
+      sanitizedEntries.push([key, value])
     }
   }
 
-  return sanitized
+  if (!sanitizedEntries.length) {
+    return undefined
+  }
+
+  return Object.fromEntries(sanitizedEntries)
+}
+
+function sanitizeValue(value: unknown): JsonValue | undefined {
+  if (value === null) return null
+  if (value === undefined) return undefined
+
+  if (typeof value === 'string') {
+    return sanitizeString(value)
+  }
+
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value : undefined
+  }
+
+  if (typeof value === 'boolean') {
+    return value
+  }
+
+  if (Array.isArray(value)) {
+    const sanitizedArray = value
+      .map(item => sanitizeValue(item))
+      .filter((item): item is JsonValue => item !== undefined)
+
+    return sanitizedArray.length ? sanitizedArray : undefined
+  }
+
+  if (typeof value === 'object') {
+    return sanitizeContext(value as Record<string, unknown>)
+  }
+
+  return undefined
 }

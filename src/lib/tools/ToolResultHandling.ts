@@ -17,7 +17,7 @@ export class ToolResultHandling {
       execute: async (args: Record<string, unknown>) => {
         try {
           const result = await tool.execute(args);
-          
+
           if (!handler.validate(result)) {
             throw new ToolExecutionError(`Invalid result type from tool ${tool.name}`, {
               toolName: tool.name,
@@ -88,9 +88,15 @@ export class ToolResultHandling {
           });
         }
 
-        const invalidProps = Object.entries(validator).filter(
-          ([key, validateFn]) => !validateFn((result as any)[key])
-        );
+        const validators = Object.entries(validator) as Array<[
+          keyof T,
+          (value: unknown) => boolean
+        ]>;
+
+        const invalidProps = validators.filter(([key, validateFn]) => {
+          const value = (result as Record<keyof T, unknown>)[key];
+          return !validateFn(value);
+        });
 
         if (invalidProps.length > 0) {
           throw new ToolExecutionError('Invalid object properties', {
@@ -140,7 +146,7 @@ export class ToolResultHandling {
           return await tool.execute(args);
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error);
-          
+
           for (const [pattern, replacement] of Object.entries(errorMap)) {
             if (typeof replacement === 'string' && message.includes(pattern)) {
               throw new ToolExecutionError(replacement, {
@@ -154,7 +160,7 @@ export class ToolResultHandling {
               });
             }
           }
-          
+
           throw new ToolExecutionError(message, {
             toolName: tool.name,
             originalError: message

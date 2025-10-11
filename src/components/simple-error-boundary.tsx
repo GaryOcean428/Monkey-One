@@ -6,7 +6,7 @@ interface ErrorBoundaryState {
 }
 
 interface ErrorBoundaryProps {
-  children: React.ReactNode
+  children?: React.ReactNode
   fallback?: React.ReactNode
 }
 
@@ -76,6 +76,6 @@ export class SimpleErrorBoundary extends React.Component<ErrorBoundaryProps, Err
       )
     }
 
-    return this.props.children
+    return this.props.children ?? null
   }
 }

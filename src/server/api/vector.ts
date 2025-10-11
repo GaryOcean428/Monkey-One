@@ -1,6 +1,7 @@
 import { Pinecone } from '@pinecone-database/pinecone'
-import { VectorMetadata } from './pinecone'
-import { searchAll } from '../../lib/api/search' // Import the searchAll function
+import type { VectorMetadata } from '../../../api/pinecone'
+import { sanitizeMetadata } from '../../../api/pinecone'
+import { searchAll } from '../../lib/api/search'
 
 const pineconeApiKey = process.env.VITE_PINECONE_API_KEY
 const pineconeEnvironment = process.env.VITE_PINECONE_ENVIRONMENT
@@ -29,9 +30,12 @@ export async function query(vector: number[], topK: number = 5) {
 export async function upsert(
   vectors: { id: string; values: number[]; metadata?: VectorMetadata }[]
 ) {
-  return await index.upsert(
-    vectors.map(vector => ({ ...vector, metadata: vector.metadata as VectorMetadata }))
-  )
+  const sanitizedVectors = vectors.map(vector => ({
+    ...vector,
+    metadata: sanitizeMetadata(vector.metadata ?? null),
+  }))
+
+  return await index.upsert(sanitizedVectors)
 }
 
 export async function deleteVectors(ids: string[]) {

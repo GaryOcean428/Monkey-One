@@ -1,6 +1,5 @@
-import type { Tool, ToolSpec } from '../types';
+import type { Tool as BaseTool, ToolSpec } from '../types/tool';
 import { memoryManager } from './memory';
-import { defaultModel, generateText } from './models';
 
 interface ToolValidation {
   parameters: Record<string, {
@@ -14,11 +13,21 @@ interface ToolValidation {
   };
 }
 
+type ManagedTool = BaseTool & {
+  parameters?: Record<string, {
+    type?: string;
+    description?: string;
+    required?: boolean;
+  }>;
+  testInput?: unknown;
+  permissions?: string[];
+};
+
 class ToolManager {
-  private tools: Map<string, Tool> = new Map();
+  private tools: Map<string, ManagedTool> = new Map();
   private toolSpecs: Map<string, ToolSpec> = new Map();
 
-  register(tool: Tool): void {
+  register(tool: ManagedTool): void {
     this.tools.set(tool.name, tool);
   }
 
@@ -37,11 +46,11 @@ class ToolManager {
     return tool.execute(args);
   }
 
-  listTools(): Tool[] {
+  listTools(): BaseTool[] {
     return Array.from(this.tools.values());
   }
 
-  async generateTool(spec: ToolSpec): Promise<Tool> {
+  async generateTool(spec: ToolSpec): Promise<BaseTool> {
     try {
       // Validate the tool specification
       this.validateToolSpec(spec);
@@ -50,7 +59,7 @@ class ToolManager {
       const implementation = await this.generateImplementation(spec);
 
       // Create and register the tool
-      const tool: Tool = {
+      const tool: BaseTool = {
         name: spec.name,
         description: spec.description,
         execute: implementation,
@@ -61,7 +70,8 @@ class ToolManager {
 
       return tool;
     } catch (error) {
-      throw new Error(`Failed to generate tool: ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to generate tool: ${message}`);
     }
   }
 
@@ -109,33 +119,14 @@ class ToolManager {
   }
 
   private async generateImplementation(spec: ToolSpec): Promise<(args: Record<string, unknown>) => Promise<unknown>> {
-    const prompt = `
-Generate a JavaScript async function implementation for a tool with the following specification:
-
-Name: ${spec.name}
-Description: ${spec.description}
-Parameters: ${JSON.stringify(spec.validation.parameters, null, 2)}
-Returns: ${JSON.stringify(spec.validation.returns, null, 2)}
-
-Requirements:
-1. The function should be async and accept a single object parameter containing the tool arguments
-2. It should validate all inputs according to the parameter specifications
-3. It should handle errors appropriately
-4. It should return data matching the specified return type
-5. It should be secure and not execute any dangerous operations
-
-Please provide only the function implementation without any wrapper code.
-`;
-
-    const implementation = await generateText(defaultModel, prompt);
-    
-    // Create a safe function from the generated code
-    try {
-      // eslint-disable-next-line no-new-func
-      return new Function('args', `return (async () => { ${implementation} })(args)`) as (args: Record<string, unknown>) => Promise<unknown>;
-    } catch (error) {
-      throw new Error(`Failed to create function from generated code: ${error.message}`);
-    }
+    return async (args: Record<string, unknown>) => {
+      this.validateArgs(args, spec.validation);
+      return {
+        status: 'not-implemented',
+        name: spec.name,
+        description: spec.description,
+      };
+    };
   }
 }
 

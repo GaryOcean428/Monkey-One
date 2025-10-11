@@ -36,15 +36,7 @@
       "@/*": ["src/*"]
     }
   },
-  "include": ["src"],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "build",
-    "**/*.js.map",
-    "coverage",
-    ".vercel",
-    ".next"
-  ],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": ["src", "api/**/*.ts", "vite.config.ts", "vitest.config.ts", "stackbit.config.ts"],
+  "exclude": ["node_modules", "dist", "build", "**/*.js.map", "coverage", ".vercel", ".next"],
+  "references": []
 }

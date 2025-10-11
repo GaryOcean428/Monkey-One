@@ -1,4 +1,4 @@
-import { Agent, Message, MemoryItem, MemoryType } from '../../types/core';
+import type { Agent, MemoryItem, MemoryType, Message } from '../../types';
 import { RuntimeError } from '../errors/AgentErrors';
 
 export interface SessionOptions {
@@ -23,11 +23,11 @@ export class AgentSession {
   private context: Record<string, any> = {};
   private status: string = 'AVAILABLE';
   private metadata: Record<string, any> = {};
-  private cleanupInterval?: NodeJS.Timer;
+  private cleanupInterval?: ReturnType<typeof setInterval>;
 
   constructor(agent: Agent, options: SessionOptions = {}) {
     this.agent = agent;
-    this.options = { 
+    this.options = {
       maxHistorySize: options.maxHistorySize ?? defaultOptions.maxHistorySize,
       maxMemorySize: options.maxMemorySize ?? defaultOptions.maxMemorySize,
       persistenceEnabled: options.persistenceEnabled ?? defaultOptions.persistenceEnabled,

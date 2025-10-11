@@ -1,7 +1,6 @@
 import { randomUUID } from 'crypto'
-import { Agent } from '../types/agent'
+import type { Agent, Message } from '../types/agent'
 import { AgentStatus } from '../types/agent'
-import { Message } from '../types/messages'
 
 export class AgentCommunicationService {
   private agents: Map<string, Agent>
@@ -35,18 +34,19 @@ export class AgentCommunicationService {
   }
 
   getAvailableAgents(): Agent[] {
-    return this.getAllAgents().filter(agent => agent.getStatus() === AgentStatus.AVAILABLE)
+    return this.getAllAgents().filter(agent => agent.getStatus() === AgentStatus.IDLE)
   }
 
   async sendMessage(message: Message): Promise<void> {
-    const targetAgent = this.agents.get(message.metadata?.recipient || '')
-    
+    const recipient = typeof message.metadata?.recipient === 'string' ? message.metadata.recipient : ''
+    const targetAgent = this.agents.get(recipient)
+
     if (!targetAgent) {
-      throw new Error(`Target agent not found: ${message.metadata?.recipient}`)
+      throw new Error(`Target agent not found: ${recipient}`)
     }
 
-    if (targetAgent.getStatus() !== AgentStatus.AVAILABLE) {
-      throw new Error(`Target agent is not available: ${message.metadata?.recipient}`)
+    if (targetAgent.getStatus() !== AgentStatus.IDLE) {
+      throw new Error(`Target agent is not available: ${recipient}`)
     }
 
     message.id = randomUUID()
@@ -61,7 +61,8 @@ export class AgentCommunicationService {
       const message = this.messageQueue.shift()
       if (!message) continue
 
-      const targetAgent = this.agents.get(message.metadata?.recipient || '')
+      const recipient = typeof message.metadata?.recipient === 'string' ? message.metadata.recipient : ''
+      const targetAgent = this.agents.get(recipient)
       if (!targetAgent) continue
 
       try {

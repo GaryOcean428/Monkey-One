@@ -1,5 +1,12 @@
-import { Agent, AgentStatus, Message } from '../../types/core';
+import type { Message } from '../../types';
+import { AgentStatus } from '../../types';
 import { RuntimeError } from '../errors/AgentErrors';
+
+interface ManagedAgent {
+  id: string;
+  status: AgentStatus;
+  handleMessage(message: Message): Promise<void>;
+}
 
 export interface StateContext {
   [key: string]: any;
@@ -28,12 +35,12 @@ interface TransitionHistoryEntry {
 }
 
 export class AgentState {
-  private agent: Agent;
+  private agent: ManagedAgent;
   private states: Map<AgentStatus, StateConfig> = new Map();
   private transitionHistory: TransitionHistoryEntry[] = [];
   private timeoutHandle?: NodeJS.Timeout;
 
-  constructor(agent: Agent) {
+  constructor(agent: ManagedAgent) {
     this.agent = agent;
   }
 
@@ -45,7 +52,7 @@ export class AgentState {
     this.states.set(status, config);
   }
 
-  async transition(to: AgentStatus, context: StateConfig = {}): Promise<void> {
+  async transition(to: AgentStatus, context: Partial<StateConfig> = {}): Promise<void> {
     const fromStatus = this.agent.status;
     const currentState = this.states.get(fromStatus);
     const targetState = this.states.get(to);
@@ -93,10 +100,10 @@ export class AgentState {
     }
   }
 
-  private async executeTransition(from: AgentStatus, to: AgentStatus, context: StateConfig): Promise<void> {
+  private async executeTransition(from: AgentStatus, to: AgentStatus, context: Partial<StateConfig>): Promise<void> {
     const currentState = this.states.get(from);
     const targetState = this.states.get(to);
-    
+
     if (!currentState || !targetState) {
       throw new RuntimeError('Invalid state configuration');
     }
@@ -177,4 +184,4 @@ export class AgentState {
       }, timeout);
     }
   }
-}
+}

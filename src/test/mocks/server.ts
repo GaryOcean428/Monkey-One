@@ -5,8 +5,8 @@ import { handlers } from './handlers'
 export const server = setupServer(...handlers)
 
 // Make sure any unhandled requests are logged as errors
-server.events.on('unhandledRequest', (req, print) => {
-  if (req.url.href.includes('/api/') || req.url.href.includes('/redis/')) {
+server.events.on('request:unhandled', ({ request, print }) => {
+  if (request.url.includes('/api/') || request.url.includes('/redis/')) {
     print.error()
   }
 })

@@ -1,14 +1,14 @@
 import { supabase } from './client';
-import type { Agent, AgentTask, AgentThought, AgentMemory } from '../types';
+import type { AgentMemoryRecord, AgentRecord, AgentTaskRecord, AgentThoughtRecord } from './types';
 
 export const agentQueries = {
-  async createAgent(agent: Omit<Agent, 'id'>) {
+  async createAgent(agent: Omit<AgentRecord, 'id'>) {
     const { data, error } = await supabase
       .from('agents')
       .insert([agent])
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   },
@@ -19,7 +19,7 @@ export const agentQueries = {
       .select('*')
       .eq('id', id)
       .single();
-    
+
     if (error) throw error;
     return data;
   },
@@ -29,28 +29,28 @@ export const agentQueries = {
       .from('agents')
       .update({ status })
       .eq('id', id);
-    
+
     if (error) throw error;
   },
 
-  async storeAgentThought(thought: Omit<AgentThought, 'id'>) {
+  async storeAgentThought(thought: Omit<AgentThoughtRecord, 'id'>) {
     const { data, error } = await supabase
       .from('agent_thoughts')
       .insert([thought])
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   },
 
-  async storeAgentMemory(memory: Omit<AgentMemory, 'id'>) {
+  async storeAgentMemory(memory: Omit<AgentMemoryRecord, 'id'>) {
     const { data, error } = await supabase
       .from('agent_memory')
       .insert([memory])
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   },
@@ -61,18 +61,18 @@ export const agentQueries = {
         agent_id_param: agentId,
         query_text: query
       });
-    
+
     if (error) throw error;
     return data;
   },
 
-  async createTask(task: Omit<AgentTask, 'id'>) {
+  async createTask(task: Omit<AgentTaskRecord, 'id'>) {
     const { data, error } = await supabase
       .from('agent_tasks')
       .insert([task])
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   },
@@ -80,13 +80,13 @@ export const agentQueries = {
   async updateTaskStatus(id: string, status: string, result?: any) {
     const { error } = await supabase
       .from('agent_tasks')
-      .update({ 
+      .update({
         status,
         result,
         completed_at: status === 'completed' ? new Date().toISOString() : null
       })
       .eq('id', id);
-    
+
     if (error) throw error;
   }
 };

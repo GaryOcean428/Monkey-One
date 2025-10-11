@@ -1,8 +1,33 @@
-import { Tool, ToolValidationResult } from '../types';
 import { monitoring } from '../monitoring/MonitoringSystem';
 
+export interface ToolParameterDefinition {
+  type?: string;
+  description?: string;
+  required?: boolean;
+}
+
+export interface ToolDefinition {
+  name: string;
+  description: string;
+  execute?: (input: unknown) => Promise<unknown> | unknown;
+  testInput?: unknown;
+  parameters?: Record<string, ToolParameterDefinition>;
+  permissions?: string[];
+}
+
+export interface ToolValidationResult {
+  valid: boolean;
+  errors: string[];
+  warnings: string[];
+  performance: {
+    executionTime: number;
+    memoryUsage: number;
+    cpuUsage: number;
+  };
+}
+
 export class TestUtils {
-  static async validateTool(tool: Tool): Promise<ToolValidationResult> {
+  static async validateTool(tool: ToolDefinition): Promise<ToolValidationResult> {
     const startTime = Date.now();
     const results: ToolValidationResult = {
       valid: true,
@@ -30,24 +55,25 @@ export class TestUtils {
       // Validate parameters
       if (tool.parameters) {
         for (const [name, param] of Object.entries(tool.parameters)) {
-          if (!param.type) {
+          if (!param?.type) {
             results.errors.push(`Parameter ${name} must have a type`);
           }
-          if (param.required && !param.description) {
+          if (param?.required && !param.description) {
             results.errors.push(`Required parameter ${name} must have a description`);
           }
         }
       }
 
       // Test execution if possible
-      if (tool.execute && tool.testInput) {
+      if (typeof tool.execute === 'function' && tool.testInput !== undefined) {
         const execStartTime = process.hrtime();
         const execStartUsage = process.cpuUsage();
-        
+
         try {
           await tool.execute(tool.testInput);
         } catch (error) {
-          results.errors.push(`Execution failed: ${error.message}`);
+          const message = error instanceof Error ? error.message : String(error);
+          results.errors.push(`Execution failed: ${message}`);
         }
 
         const execEndUsage = process.cpuUsage(execStartUsage);
@@ -81,16 +107,17 @@ export class TestUtils {
       results.valid = results.errors.length === 0;
     } catch (error) {
       results.valid = false;
-      results.errors.push(`Validation failed: ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error);
+      results.errors.push(`Validation failed: ${message}`);
     }
 
     const duration = Date.now() - startTime;
-    monitoring.recordToolCreation(results.valid, duration);
+    monitoring.recordMetric('tool_validation_duration_ms', duration);
 
     return results;
   }
 
-  static async benchmarkTool(tool: Tool, iterations: number = 10): Promise<{
+  static async benchmarkTool(tool: ToolDefinition, iterations: number = 10): Promise<{
     averageExecutionTime: number;
     maxExecutionTime: number;
     minExecutionTime: number;
@@ -106,6 +133,9 @@ export class TestUtils {
       const startMemory = process.memoryUsage().heapUsed;
 
       try {
+        if (typeof tool.execute !== 'function') {
+          throw new Error('Tool does not implement execute');
+        }
         await tool.execute(tool.testInput);
         successCount++;
       } catch (error) {

@@ -3,7 +3,7 @@
  */
 
 // Imported models
-import type {} from './types/models'
+import type { } from './types/models'
 
 // Provider types
 export type Provider = 'openai' | 'anthropic' | 'groq' | 'qwen' | 'local' | 'perplexity'
@@ -37,7 +37,7 @@ export type ModelName =
 // Default model for fallback
 const _DEFAULT_MODEL: ModelName = 'granite3.1-dense:2b'
 
-interface ModelConfig {
+export interface ModelConfig {
   maxTokens: number
   costPerToken: number
   rateLimit: number // requests per minute

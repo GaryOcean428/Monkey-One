@@ -1,20 +1,20 @@
-import { BaseAgent } from '../agents/base';
-import { Task } from '../../types';
+import type { Message } from '../../types'
+import { BaseAgent } from '../agents/base'
+
+type Aggregator = (responses: Message[]) => Promise<Message>
 
 export class AgentMixture {
   constructor(
-    private layers: BaseAgent[][],
-    private aggregator: BaseAgent
-  ) {}
+    private readonly layers: BaseAgent[][],
+    private readonly aggregateResults: Aggregator = async responses => responses[responses.length - 1]
+  ) { }
 
-  async process(input: string): Promise<string> {
-    let currentInput = input;
+  async process(message: Message): Promise<Message> {
+    let currentMessage = message
     for (const layer of this.layers) {
-      const results = await Promise.all(layer.map(agent => agent.process(currentInput)));
-      currentInput = await this.aggregator.aggregate(results);
+      const responses = await Promise.all(layer.map(agent => agent.handleMessage(currentMessage)))
+      currentMessage = await this.aggregateResults(responses)
     }
-    return currentInput;
+    return currentMessage
   }
 }
-
-export { AgentMixture };

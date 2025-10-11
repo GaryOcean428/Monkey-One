@@ -3,7 +3,6 @@
  * Implements intelligent preloading, caching, and performance monitoring for routes
  */
 
-import { RouteConfig } from '@/config/routes'
 
 interface RouteMetrics {
   loadTime: number
@@ -33,7 +32,7 @@ class RouteOptimizer {
   private preloadQueue = new Set<string>()
   private loadingStates = new Map<string, Promise<any>>()
   private preloadStrategies = new Map<string, PreloadStrategy>()
-  
+
   // Cache settings
   private readonly CACHE_TTL = 30 * 60 * 1000 // 30 minutes
   private readonly MAX_CACHE_SIZE = 50
@@ -53,25 +52,25 @@ class RouteOptimizer {
       // Critical routes - preload immediately
       ['/dashboard', { type: 'immediate', priority: 10 }],
       ['/chat', { type: 'immediate', priority: 9 }],
-      
+
       // High-priority routes - preload on idle
       ['/agents', { type: 'idle', priority: 8 }],
       ['/workflow', { type: 'idle', priority: 7 }],
-      
+
       // Medium-priority routes - preload on interaction
       ['/memory-manager', { type: 'interaction', priority: 6 }],
       ['/documents', { type: 'interaction', priority: 5 }],
       ['/tools', { type: 'interaction', priority: 5 }],
       ['/github', { type: 'interaction', priority: 4 }],
       ['/analytics', { type: 'interaction', priority: 4 }],
-      
+
       // Low-priority routes - preload when in viewport
       ['/profile-manager', { type: 'viewport', priority: 3 }],
       ['/settings', { type: 'viewport', priority: 2 }],
-      
+
       // Utility routes - conditional preloading
-      ['/ui-showcase', { 
-        type: 'interaction', 
+      ['/ui-showcase', {
+        type: 'interaction',
         priority: 1,
         conditions: ['development']
       }],
@@ -87,7 +86,7 @@ class RouteOptimizer {
    */
   async preloadRoute(routePath: string, force = false): Promise<void> {
     if (this.preloadQueue.has(routePath) && !force) return
-    
+
     const strategy = this.preloadStrategies.get(routePath)
     if (!strategy && !force) return
 
@@ -104,7 +103,7 @@ class RouteOptimizer {
         case 'immediate':
           await this.loadRouteComponent(routePath)
           break
-          
+
         case 'idle':
           if ('requestIdleCallback' in window) {
             (window as any).requestIdleCallback(() => this.loadRouteComponent(routePath))
@@ -112,22 +111,22 @@ class RouteOptimizer {
             setTimeout(() => this.loadRouteComponent(routePath), this.PRELOAD_DELAY)
           }
           break
-          
+
         case 'interaction':
           // Preload after user shows intent (hover, focus on navigation)
           this.addInteractionListeners(routePath)
           break
-          
+
         case 'viewport':
           // Preload when navigation element is in viewport
           this.addViewportObserver(routePath)
           break
-          
+
         case 'critical':
           // High priority preload
           await this.loadRouteComponent(routePath, true)
           break
-          
+
         default:
           if (force) {
             await this.loadRouteComponent(routePath)
@@ -159,7 +158,7 @@ class RouteOptimizer {
     // Start loading
     const startTime = performance.now()
     const loadPromise = this.importRouteComponent(routePath)
-    
+
     this.loadingStates.set(routePath, loadPromise)
 
     try {
@@ -168,21 +167,21 @@ class RouteOptimizer {
 
       // Cache the component
       this.cacheComponent(routePath, loadPromise, loadTime)
-      
+
       // Update metrics
       this.updateRouteMetrics(routePath, { loadTime })
-      
+
       this.loadingStates.delete(routePath)
       this.preloadQueue.delete(routePath)
-      
+
       return component
     } catch (error) {
       this.loadingStates.delete(routePath)
       this.preloadQueue.delete(routePath)
-      
+
       // Update error metrics
       this.updateRouteMetrics(routePath, { errorRate: 1 })
-      
+
       throw error
     }
   }
@@ -197,7 +196,7 @@ class RouteOptimizer {
       '/chat': () => import('../pages/Chat'),
       '/agents': () => import('../pages/Agents'),
       '/workflow': () => import('../pages/Workflow'),
-      '/memory-manager': () => import('../pages/MemoryManager'),
+      '/memory-manager': () => import('../components/memory/MemoryManager'),
       '/documents': () => import('../pages/Documents'),
       '/tools': () => import('../pages/Tools'),
       '/github': () => import('../pages/Github'),
@@ -206,7 +205,7 @@ class RouteOptimizer {
       '/settings': () => import('../pages/Settings'),
       '/ui-showcase': () => import('../pages/UIShowcase'),
       '/performance-accessibility': () => import('../pages/PerformanceAccessibilityShowcase'),
-      '/auth/callback': () => import('../pages/Auth/AuthCallback'),
+      '/auth/callback': () => import('../pages/AuthCallback'),
       '/reset-password': () => import('../pages/Auth/PasswordReset'),
       '/ai': () => import('../pages/AI'),
       '/notes': () => import('../pages/Notes'),
@@ -268,7 +267,7 @@ class RouteOptimizer {
    */
   private addInteractionListeners(routePath: string) {
     const links = document.querySelectorAll(`[href="${routePath}"]`)
-    
+
     links.forEach(link => {
       const preloadHandler = () => {
         this.loadRouteComponent(routePath)
@@ -288,7 +287,7 @@ class RouteOptimizer {
     if (!('IntersectionObserver' in window)) return
 
     const links = document.querySelectorAll(`[href="${routePath}"]`)
-    
+
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -373,13 +372,13 @@ class RouteOptimizer {
   private observeUserBehavior() {
     // Track navigation patterns
     let navigationHistory: string[] = []
-    
+
     const trackNavigation = (path: string) => {
       navigationHistory.push(path)
       if (navigationHistory.length > 10) {
         navigationHistory = navigationHistory.slice(-10)
       }
-      
+
       // Predict next likely routes and preload them
       this.predictAndPreload(navigationHistory)
     }
@@ -419,11 +418,11 @@ class RouteOptimizer {
    */
   private trackUserEngagement() {
     const startTimes = new Map<string, number>()
-    
+
     const trackPageStart = (path: string) => {
       startTimes.set(path, Date.now())
     }
-    
+
     const trackPageEnd = (path: string) => {
       const startTime = startTimes.get(path)
       if (startTime) {
@@ -463,11 +462,11 @@ class RouteOptimizer {
       if (metrics.loadTime > 1000) { // 1 second
         slowRoutes.push({ path, metrics })
       }
-      
+
       if (metrics.errorRate > 0.05) { // 5% error rate
         recommendations.push(`Route ${path} has high error rate: ${(metrics.errorRate * 100).toFixed(1)}%`)
       }
-      
+
       if (metrics.memoryUsage > 50 * 1024 * 1024) { // 50MB
         recommendations.push(`Route ${path} uses excessive memory: ${Math.round(metrics.memoryUsage / 1024 / 1024)}MB`)
       }
@@ -476,12 +475,12 @@ class RouteOptimizer {
     // Calculate cache efficiency
     let totalHits = 0
     let totalRequests = 0
-    
+
     for (const cache of this.routeCache.values()) {
       totalHits += cache.hitCount
       totalRequests += cache.hitCount
     }
-    
+
     const cacheEfficiency = totalRequests > 0 ? totalHits / totalRequests : 0
 
     // Generate cache recommendations
@@ -501,7 +500,7 @@ class RouteOptimizer {
    */
   async warmupCriticalRoutes(): Promise<void> {
     const criticalRoutes = ['/dashboard', '/chat', '/agents']
-    
+
     await Promise.all(
       criticalRoutes.map(route => this.preloadRoute(route, true))
     )

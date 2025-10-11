@@ -60,15 +60,15 @@ export const metrics = {
   async recordUserActivity(userId: string, action: string, metadata: Record<string, any> = {}) {
     await monitoring.recordMetric(`user.activity.${action}`, 1, {
       userId,
-      ...metadata,
-      timestamp: Date.now()
+      ...Object.fromEntries(Object.entries(metadata).map(([key, value]) => [key, String(value)])),
+      timestamp: Date.now().toString()
     });
   },
 
   async recordUserSession(userId: string, durationMs: number) {
     await monitoring.recordMetric('user.session.duration', durationMs, {
       userId,
-      timestamp: Date.now()
+      timestamp: Date.now().toString()
     });
   },
 
@@ -77,9 +77,9 @@ export const metrics = {
     await monitoring.recordMetric('api.request', 1, {
       endpoint,
       method,
-      statusCode,
-      duration: durationMs,
-      timestamp: Date.now()
+      statusCode: statusCode.toString(),
+      duration: durationMs.toString(),
+      timestamp: Date.now().toString()
     });
   },
 
@@ -90,31 +90,31 @@ export const metrics = {
 
   async recordDiskUsage(path: string, usedBytes: number, totalBytes: number) {
     await monitoring.recordMetric(`system.disk.${path}`, usedBytes, {
-      total: totalBytes,
-      percentage: (usedBytes / totalBytes) * 100
+      total: totalBytes.toString(),
+      percentage: ((usedBytes / totalBytes) * 100).toString()
     });
   },
 
   // Business metrics
   async recordConversion(type: string, value: number = 1) {
     await monitoring.recordMetric(`business.conversion.${type}`, value, {
-      timestamp: Date.now()
+      timestamp: Date.now().toString()
     });
   },
 
   async recordRevenue(amount: number, currency: string, metadata: Record<string, any> = {}) {
     await monitoring.recordMetric('business.revenue', amount, {
       currency,
-      ...metadata,
-      timestamp: Date.now()
+      ...Object.fromEntries(Object.entries(metadata).map(([key, value]) => [key, String(value)])),
+      timestamp: Date.now().toString()
     });
   },
 
   // Custom metrics
   async recordCustomMetric(name: string, value: number, metadata: Record<string, any> = {}) {
     await monitoring.recordMetric(`custom.${name}`, value, {
-      ...metadata,
-      timestamp: Date.now()
+      ...Object.fromEntries(Object.entries(metadata).map(([key, value]) => [key, String(value)])),
+      timestamp: Date.now().toString()
     });
   },
 
@@ -127,8 +127,8 @@ export const metrics = {
     await Promise.all(
       metrics.map(({ name, value, metadata = {} }) =>
         monitoring.recordMetric(name, value, {
-          ...metadata,
-          timestamp: Date.now()
+          ...Object.fromEntries(Object.entries(metadata).map(([key, value]) => [key, String(value)])),
+          timestamp: Date.now().toString()
         })
       )
     );

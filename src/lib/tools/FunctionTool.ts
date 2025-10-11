@@ -1,5 +1,5 @@
+import { ToolExecutionError } from '../errors/AgentErrors';
 import { Tool, ToolArgs } from './types';
-import { AgentExecutionError } from '../errors/AgentErrors';
 
 type ToolFunction = (args: ToolArgs) => Promise<unknown>;
 
@@ -34,14 +34,14 @@ export class FunctionTool implements Tool {
 
       // Execute function
       const result = await this.fn(args);
-      
+
       // Return transformed result if transformer provided
       if (this.transform) {
         return this.transform(result);
       }
       return result;
     } catch (error) {
-      throw new AgentExecutionError(
+      throw new ToolExecutionError(
         `Error executing tool ${this.name}: ${error instanceof Error ? error.message : String(error)}`,
         {
           toolName: this.name,
@@ -80,9 +80,9 @@ export class FunctionTool implements Tool {
       if (options.required) {
         for (const param of options.required) {
           if (!(param in args)) {
-            throw new AgentExecutionError(
+            throw new ToolExecutionError(
               `Missing required parameter: ${param}`,
-              { 
+              {
                 toolName: options.name,
                 parameterName: param,
                 errorType: 'ValidationError'
@@ -96,7 +96,7 @@ export class FunctionTool implements Tool {
       if (options.types) {
         for (const [param, type] of Object.entries(options.types)) {
           if (param in args && typeof args[param] !== type) {
-            throw new AgentExecutionError(
+            throw new ToolExecutionError(
               `Invalid type for parameter ${param}: expected ${type}, got ${typeof args[param]}`,
               {
                 toolName: options.name,
@@ -115,7 +115,7 @@ export class FunctionTool implements Tool {
         try {
           await options.validate(args);
         } catch (error) {
-          throw new AgentExecutionError(
+          throw new ToolExecutionError(
             `Validation error: ${error instanceof Error ? error.message : String(error)}`,
             {
               toolName: options.name,

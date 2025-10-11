@@ -1,6 +1,6 @@
 /* eslint-env browser, node */
 // Server-side only metrics
-import type { Registry, Histogram, Counter, Gauge } from 'prom-client'
+import type { Counter, Gauge, Histogram, Registry } from 'prom-client'
 import { logger } from '../lib/logger'
 
 interface MetricsState {
@@ -122,46 +122,50 @@ if (typeof window === 'undefined') {
     })
 } else {
   // Browser environment - provide mock implementations
+  const histogramStub = {
+    observe: () => { },
+    startTimer: () => () => 0,
+    labels: () => histogramStub,
+    reset: () => { },
+    get: () => ({})
+  } as unknown as Histogram<string>
+
+  const counterStub = {
+    inc: () => { },
+    labels: () => counterStub,
+    reset: () => { },
+    get: () => ({})
+  } as unknown as Counter<string>
+
+  const gaugeStub = {
+    set: () => { },
+    inc: () => { },
+    dec: () => { },
+    labels: () => gaugeStub,
+    setToCurrentTime: () => { },
+    startTimer: () => () => { }
+  } as unknown as Gauge<string>
+
   metrics.register = {
-    metrics: () => '',
-    contentType: 'text/plain',
-  }
+    metrics: () => Promise.resolve(''),
+    getMetricsAsJSON: () => Promise.resolve([]),
+    getMetricsAsPrometheus: () => Promise.resolve(''),
+    registerMetric: () => { },
+    removeSingleMetric: () => { },
+    clear: () => { },
+    contentType: 'text/plain; version=0.0.4; charset=utf-8',
+    getSingleMetric: () => undefined,
+  } as unknown as Registry
 
-  metrics.httpRequestDurationMicroseconds = {
-    observe: () => {},
-  }
-
-  metrics.mlPredictionDuration = {
-    observe: () => {},
-  }
-
-  metrics.agentProcessingTime = {
-    observe: () => {},
-  }
-
-  metrics.memoryUsage = {
-    set: () => {},
-  }
-
-  metrics.cacheOperations = {
-    inc: () => {},
-  }
-
-  metrics.cacheSize = {
-    set: () => {},
-  }
-
-  metrics.errorCount = {
-    inc: () => {},
-  }
-
-  metrics.brainActivityGauge = {
-    set: () => {},
-  }
-
-  metrics.neuralNetworkMetrics = {
-    set: () => {},
-  }
+  metrics.httpRequestDurationMicroseconds = histogramStub
+  metrics.mlPredictionDuration = histogramStub
+  metrics.agentProcessingTime = histogramStub
+  metrics.memoryUsage = gaugeStub
+  metrics.cacheOperations = counterStub
+  metrics.cacheSize = gaugeStub
+  metrics.errorCount = counterStub
+  metrics.brainActivityGauge = gaugeStub
+  metrics.neuralNetworkMetrics = gaugeStub
 }
 
 // Export metrics with proper types

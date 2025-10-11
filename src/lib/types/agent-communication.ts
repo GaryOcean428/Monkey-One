@@ -1,3 +1,5 @@
+import type { AgentCapabilityType } from './agent'
+
 export enum AgentMessageType {
   CAPABILITY_REQUEST = 'CAPABILITY_REQUEST',
   CAPABILITY_RESPONSE = 'CAPABILITY_RESPONSE',

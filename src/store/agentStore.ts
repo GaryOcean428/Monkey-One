@@ -1,6 +1,12 @@
 import { create } from 'zustand'
-import type { Agent, AgentCapabilityType, MessageResponse, AgentMetrics } from '../lib/types/agent'
-import { AgentType, AgentStatus } from '../lib/types/agent'
+import type {
+  Agent,
+  AgentCapabilityType,
+  AgentMetrics,
+  Message,
+  MessageResponse,
+} from '../lib/types/agent'
+import { AgentStatus, AgentType } from '../lib/types/agent'
 
 interface AgentInput {
   id: string
@@ -40,8 +46,8 @@ const defaultAgent: Agent = {
   hasCapability() {
     return false
   },
-  addCapability() {},
-  removeCapability() {},
+  addCapability() { },
+  removeCapability() { },
   getMetrics(): AgentMetrics {
     return {
       lastExecutionTime: 0,
@@ -51,13 +57,16 @@ const defaultAgent: Agent = {
       averageResponseTime: 0,
     }
   },
-  async handleMessage() {
+  async handleMessage(_message: Message) {
     return { success: true }
+  },
+  async processMessage(_message: Message): Promise<void> {
+    return Promise.resolve()
   },
   async handleRequest(request: unknown) {
     return request
   },
-  async handleToolUse(): Promise<MessageResponse> {
+  async handleToolUse(_tool: unknown): Promise<MessageResponse> {
     return {
       status: 'success',
       data: null,
@@ -79,8 +88,8 @@ export const useAgentStore = create<AgentState>((set, get) => ({
           getStatus: () => agent.status || AgentStatus.IDLE,
           getCapabilities: () => agent.capabilities,
           hasCapability: cap => agent.capabilities.some(c => c.name === cap.name),
-          addCapability: () => {},
-          removeCapability: () => {},
+          addCapability: () => { },
+          removeCapability: () => { },
           getMetrics: () => ({
             lastExecutionTime: 0,
             totalRequests: 0,
@@ -88,9 +97,10 @@ export const useAgentStore = create<AgentState>((set, get) => ({
             failedRequests: 0,
             averageResponseTime: 0,
           }),
-          handleMessage: async () => ({ success: true }),
+          handleMessage: async (_message: Message) => ({ success: true }),
+          processMessage: async (_message: Message) => { },
           handleRequest: async req => req,
-          handleToolUse: async () => ({ status: 'success' as const, data: null }),
+          handleToolUse: async (_tool: unknown) => ({ status: 'success' as const, data: null }),
         } as Agent,
       ],
     })),
@@ -109,9 +119,9 @@ export const useAgentStore = create<AgentState>((set, get) => ({
       agents: state.agents.map(agent =>
         agent.getId() === agentId
           ? ({
-              ...agent,
-              getStatus: () => status,
-            } as Agent)
+            ...agent,
+            getStatus: () => status,
+          } as Agent)
           : agent
       ),
     })),

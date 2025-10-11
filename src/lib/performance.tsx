@@ -2,7 +2,7 @@
  * Performance optimization utilities for UI components
  */
 
-import React, { useEffect, useRef, useState, useCallback } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 
 /**
  * Hook to detect if user prefers reduced motion
@@ -31,7 +31,7 @@ export function usePrefersReducedMotion(): boolean {
  * Hook to detect if element is in viewport for lazy animations
  */
 export function useIntersectionObserver(
-  elementRef: React.RefObject<Element>,
+  elementRef: React.RefObject<Element | null>,
   threshold = 0.1,
   rootMargin = '0px'
 ): boolean {
@@ -58,14 +58,10 @@ export function useIntersectionObserver(
 /**
  * Hook for optimized animations that respect user preferences
  */
-export function useOptimizedAnimation(
-  animationClass: string,
-  trigger = true,
-  delay = 0
-) {
+export function useOptimizedAnimation(animationClass: string, trigger = true, delay = 0) {
   const [shouldAnimate, setShouldAnimate] = useState(false)
   const prefersReducedMotion = usePrefersReducedMotion()
-  const timeoutRef = useRef<NodeJS.Timeout>()
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     if (!trigger || prefersReducedMotion) {
@@ -91,18 +87,14 @@ export function useOptimizedAnimation(
   return {
     shouldAnimate: shouldAnimate && !prefersReducedMotion,
     animationClass: shouldAnimate && !prefersReducedMotion ? animationClass : '',
-    prefersReducedMotion
+    prefersReducedMotion,
   }
 }
 
 /**
  * Hook for lazy loading animations when element enters viewport
  */
-export function useLazyAnimation(
-  animationClass: string,
-  threshold = 0.1,
-  delay = 0
-) {
+export function useLazyAnimation(animationClass: string, threshold = 0.1, delay = 0) {
   const elementRef = useRef<HTMLDivElement>(null)
   const isInView = useIntersectionObserver(elementRef, threshold)
   const { shouldAnimate, animationClass: finalAnimationClass } = useOptimizedAnimation(
@@ -115,19 +107,16 @@ export function useLazyAnimation(
     ref: elementRef,
     shouldAnimate,
     animationClass: finalAnimationClass,
-    isInView
+    isInView,
   }
 }
 
 /**
  * Debounced callback hook for performance
  */
-export function useDebounce<T extends (...args: any[]) => any>(
-  callback: T,
-  delay: number
-): T {
+export function useDebounce<T extends (...args: any[]) => any>(callback: T, delay: number): T {
   const callbackRef = useRef(callback)
-  const timeoutRef = useRef<NodeJS.Timeout>()
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     callbackRef.current = callback
@@ -150,10 +139,7 @@ export function useDebounce<T extends (...args: any[]) => any>(
 /**
  * Throttled callback hook for performance
  */
-export function useThrottle<T extends (...args: any[]) => any>(
-  callback: T,
-  delay: number
-): T {
+export function useThrottle<T extends (...args: any[]) => any>(callback: T, delay: number): T {
   const callbackRef = useRef(callback)
   const lastCallRef = useRef<number>(0)
 
@@ -182,7 +168,7 @@ export function useTimeBasedPreference() {
   useEffect(() => {
     const updateTimeOfDay = () => {
       const hour = new Date().getHours()
-      
+
       if (hour >= 6 && hour < 12) {
         setTimeOfDay('morning')
       } else if (hour >= 12 && hour < 18) {
@@ -195,7 +181,7 @@ export function useTimeBasedPreference() {
     }
 
     updateTimeOfDay()
-    
+
     // Update every hour
     const interval = setInterval(updateTimeOfDay, 60 * 60 * 1000)
     return () => clearInterval(interval)
@@ -207,9 +193,7 @@ export function useTimeBasedPreference() {
 /**
  * Performance-optimized component wrapper
  */
-export function withPerformanceOptimization<P extends object>(
-  Component: React.ComponentType<P>
-) {
+export function withPerformanceOptimization<P extends object>(Component: React.ComponentType<P>) {
   return function OptimizedComponent(props: P) {
     // Only re-render if props actually changed
     return <Component {...props} />
@@ -230,10 +214,7 @@ export function getMotionClass(
 /**
  * Utility to create staggered animations
  */
-export function createStaggeredAnimation(
-  baseDelay = 100,
-  itemCount: number
-): number[] {
+export function createStaggeredAnimation(baseDelay = 100, itemCount: number): number[] {
   return Array.from({ length: itemCount }, (_, index) => index * baseDelay)
 }
 
@@ -259,7 +240,7 @@ export function usePreloadResources(resources: string[]) {
  * Hook for optimizing render cycles with RAF
  */
 export function useRafCallback(callback: () => void, deps: any[]) {
-  const rafRef = useRef<number>()
+  const rafRef = useRef<number | null>(null)
 
   useEffect(() => {
     if (rafRef.current) {

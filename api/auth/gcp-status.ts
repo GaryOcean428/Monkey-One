@@ -1,7 +1,18 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { Buffer } from 'node:buffer';
 import { verifyGCPCredentials } from '../../src/lib/auth/gcp-credentials-setup';
+import type { GCPCredentials } from '../../src/lib/auth/oidc-gcp';
 import { getGCPCredentials } from '../../src/lib/auth/oidc-gcp';
+
+interface OidcTokenInfo {
+  subject: string;
+  issuer: string;
+  audience?: string | string[];
+  expires: string;
+  teamSlug?: string;
+  deploymentId?: string;
+  projectId?: string;
+}
 
 /**
  * API endpoint to check GCP authentication status
@@ -25,8 +36,8 @@ export default async function handler(
     const verification = verifyGCPCredentials();
 
     // Try to get GCP credentials
-    let gcpCredentials = null;
-    let gcpError = null;
+    let gcpCredentials: GCPCredentials | null = null;
+    let gcpError: string | null = null;
 
     if (verification.configured) {
       try {
@@ -37,7 +48,7 @@ export default async function handler(
     }
 
     // Decode OIDC token to show subject (for debugging)
-    let oidcTokenInfo = null;
+    let oidcTokenInfo: OidcTokenInfo | null = null;
     if (hasOIDCToken && process.env.VERCEL_OIDC_TOKEN) {
       try {
         const token = process.env.VERCEL_OIDC_TOKEN;

@@ -28,10 +28,13 @@ export function getOIDCToken(): string | null {
 
   // In Vercel Functions (browser/edge runtime)
   if (typeof globalThis !== 'undefined' && 'Request' in globalThis) {
-    // This would be set by the function runtime
-    const headers = (globalThis as Record<string, unknown>).__VERCEL_HEADERS__
-    if (headers && typeof headers === 'object' && headers['x-vercel-oidc-token']) {
-      return headers['x-vercel-oidc-token'] as string
+    const headers = (globalThis as {
+      __VERCEL_HEADERS__?: Record<string, unknown>
+    }).__VERCEL_HEADERS__
+    const tokenHeader = headers?.['x-vercel-oidc-token']
+
+    if (typeof tokenHeader === 'string') {
+      return tokenHeader
     }
   }
 
@@ -129,11 +132,22 @@ export function withOIDC<T extends (...args: unknown[]) => unknown>(handler: T):
   return ((...args: Parameters<T>) => {
     const oidcToken = getValidOIDCToken()
 
-    if (oidcToken) {
-      // Inject OIDC token into the context
-      const context = args[args.length - 1] || {}
-      context.oidc = oidcToken
-      args[args.length - 1] = context
+    if (!oidcToken) {
+      return handler(...args)
+    }
+
+    const nextArgs = [...args] as Parameters<T>
+    const contextIndex = nextArgs.length - 1
+    const maybeContext = contextIndex >= 0 ? nextArgs[contextIndex] : undefined
+
+    if (maybeContext && typeof maybeContext === 'object') {
+      const context = {
+        ...(maybeContext as Record<string, unknown>),
+        oidc: oidcToken,
+      }
+
+      nextArgs[contextIndex] = context as Parameters<T>[number]
+      return handler(...nextArgs)
     }
 
     return handler(...args)

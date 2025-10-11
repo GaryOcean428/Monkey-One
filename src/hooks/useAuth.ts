@@ -1,6 +1,6 @@
-import { useState, useCallback, useEffect } from 'react'
 import { AuthError } from '@supabase/supabase-js'
-import { supabase } from '../lib/supabase/client' // Use the singleton client
+import { useCallback, useEffect, useState } from 'react'
+import { supabase } from '../lib/supabase/client'; // Use the singleton client
 
 interface User {
   id: string
@@ -140,6 +140,28 @@ export function useAuth() {
     }
   }, [])
 
+  const resetPassword = useCallback(async (email: string): Promise<AuthResponse> => {
+    try {
+      setLoading(true)
+      const { data, error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      })
+
+      if (resetError) {
+        setError(resetError)
+        return { user: null, error: resetError }
+      }
+
+      return { user: data?.user ?? null, error: null }
+    } catch (err) {
+      const resetError = err as AuthError
+      setError(resetError)
+      return { user: null, error: resetError }
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
   return {
     user,
     error,
@@ -147,5 +169,6 @@ export function useAuth() {
     signIn,
     signInWithGoogle,
     signOut,
+    resetPassword,
   }
 }

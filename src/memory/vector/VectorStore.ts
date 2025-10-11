@@ -1,18 +1,18 @@
+import axios, { AxiosResponse } from 'axios'
+import { retry } from '../../lib/utils/retry'
 import { logger } from '../../utils/logger'
 import { monitoring } from '../../utils/monitoring'
-import {
-  VectorMetadata,
-  SearchResult,
-  VectorStoreConfig,
-  MetricsCallback,
-  EnhancedSearchResult,
-} from './types'
 import { RelevanceScorer } from '../relevance/RelevanceScorer'
 import { VectorStoreOperationError, VectorStoreValidationError } from './errors'
-import axios, { AxiosResponse } from 'axios'
-import { validateVector } from './validation'
 import { sanitizeMetadata } from './sanitization'
-import { retry } from '../../lib/utils/retry'
+import {
+  EnhancedSearchResult,
+  MetricsCallback,
+  SearchResult,
+  VectorMetadata,
+  VectorStoreConfig,
+} from './types'
+import { validateVector } from './validation'
 
 const DEFAULT_CONFIG: Required<VectorStoreConfig> = {
   namespace: 'default',
@@ -214,7 +214,7 @@ export class VectorStore {
       }
 
       const startTime = Date.now()
-      const results = await retry(() => this.performSearch(queryVector, filter, k), 3, {
+      const results = await retry(() => this.performSearch(queryVector, k, filter), 3, {
         initialDelay: 100,
         maxDelay: 1000,
         retryableErrors: ['ERR_SEARCH_TIMEOUT', 'ERR_INDEX_CORRUPTED'],
@@ -238,8 +238,8 @@ export class VectorStore {
 
   private async performSearch(
     queryVector: number[],
-    filters?: Partial<VectorMetadata>,
-    limit: number
+    limit: number,
+    filters?: Partial<VectorMetadata>
   ): Promise<EnhancedSearchResult[]> {
     const searchResponse = await this.callVectorApi<SearchApiResponse>('search', {
       vector: queryVector,

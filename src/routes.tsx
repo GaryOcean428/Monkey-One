@@ -1,29 +1,28 @@
-import * as React from 'react'
-import { createBrowserRouter, Navigate } from 'react-router-dom'
-import { RouterProvider } from 'react-router-dom'
 import { SimpleErrorBoundary } from '@/components/simple-error-boundary'
-import { App } from './App'
-import { ProviderRegistry } from './providers/provider-registry'
 import { routeConfigs } from '@/config/routes'
 import { getComponentByName } from '@/utils/component-registry'
 import { createRouteElement, createSimpleRoute } from '@/utils/route-wrapper'
+import * as React from 'react'
+import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom'
+import { App } from './App'
+import { ProviderRegistry } from './providers/provider-registry'
 
 // Auth pages (outside main app layout)
-const Login = React.lazy(() =>
-  import('./pages/Login').then(module => ({
-    default: module.default || module.Login || module,
-  }))
-)
-const Register = React.lazy(() =>
-  import('./pages/Register').then(module => ({
-    default: module.default || module.Register || module,
-  }))
-)
-const AuthCallback = React.lazy(() =>
-  import('./pages/AuthCallback').then(module => ({
-    default: module.AuthCallback,
-  }))
-)
+const Login = React.lazy(async () => {
+  const module = await import('./pages/Login')
+  const resolved = (module as any).default ?? (module as any).Login ?? module
+  return { default: resolved }
+})
+const Register = React.lazy(async () => {
+  const module = await import('./pages/Register')
+  const resolved = (module as any).default ?? (module as any).Register ?? module
+  return { default: resolved }
+})
+const AuthCallback = React.lazy(async () => {
+  const module = await import('./pages/AuthCallback')
+  const resolved = (module as any).default ?? (module as any).AuthCallback ?? module
+  return { default: resolved }
+})
 
 // Generate routes dynamically from configuration
 function generateRoutes() {
@@ -41,7 +40,7 @@ const router = createBrowserRouter(
     {
       path: '/',
       element: <App />,
-      errorElement: <SimpleErrorBoundary />,
+      errorElement: <SimpleErrorBoundary>{null}</SimpleErrorBoundary>,
       children: [
         {
           index: true,
@@ -64,12 +63,7 @@ const router = createBrowserRouter(
       element: createSimpleRoute(AuthCallback),
     },
   ],
-  {
-    future: {
-      v7_relativeSplatPath: true,
-      v7_startTransition: true,
-    },
-  }
+  {}
 )
 
 export function AppRoutes() {

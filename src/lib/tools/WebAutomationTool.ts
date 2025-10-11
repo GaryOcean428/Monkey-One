@@ -1,11 +1,11 @@
+import puppeteer, { type Browser, type Page } from 'puppeteer';
 import type { Tool } from '../../types';
-import puppeteer from 'puppeteer';
 
 export class WebAutomationTool implements Tool {
   name = 'web-automation';
   description = 'Automates web interactions including form filling and data extraction';
 
-  private async createBrowser() {
+  private async createBrowser(): Promise<Browser> {
     return await puppeteer.launch({
       headless: true,
       args: ['--no-sandbox']
@@ -19,7 +19,7 @@ export class WebAutomationTool implements Tool {
     selectors?: Record<string, string>;
   }): Promise<unknown> {
     const browser = await this.createBrowser();
-    
+
     try {
       const page = await browser.newPage();
       await page.goto(args.url);
@@ -42,7 +42,7 @@ export class WebAutomationTool implements Tool {
   }
 
   private async handleLogin(
-    page: puppeteer.Page,
+    page: Page,
     credentials: Record<string, string>
   ) {
     await page.type('input[type="email"], input[name="email"], input[name="username"]', credentials.username);
@@ -52,7 +52,7 @@ export class WebAutomationTool implements Tool {
   }
 
   private async fillForm(
-    page: puppeteer.Page,
+    page: Page,
     data: Record<string, string>,
     selectors: Record<string, string>
   ) {
@@ -63,15 +63,15 @@ export class WebAutomationTool implements Tool {
   }
 
   private async extractData(
-    page: puppeteer.Page,
+    page: Page,
     selectors: Record<string, string>
   ): Promise<Record<string, string>> {
     const result: Record<string, string> = {};
-    
+
     for (const [key, selector] of Object.entries(selectors)) {
       result[key] = await page.$eval(selector, el => el.textContent || '');
     }
-    
+
     return result;
   }
 }

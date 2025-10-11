@@ -1,9 +1,14 @@
-import { BaseAgent } from '../agents/base';
+import type { AgentTask, WorkflowDefinition } from '../../types';
+import { ModelClient } from '../clients/ModelClient';
 import { memoryManager } from '../memory';
 import { TaskManager } from '../task/TaskManager';
-import { ModelClient } from '../clients/ModelClient';
 import { logger } from '../utils/logger';
-import type { WorkflowDefinition, AgentTask } from '../../types';
+
+interface WorkflowTeamMember {
+  id: string;
+  role: string;
+  status?: string;
+}
 
 interface WorkflowTrigger {
   type: 'manual' | 'scheduled' | 'event' | 'completion';
@@ -58,7 +63,7 @@ export class WorkflowManager {
 
   async createWorkflow(
     task: AgentTask,
-    team: BaseAgent[],
+    team: WorkflowTeamMember[],
     options?: {
       name?: string;
       description?: string;
@@ -73,7 +78,7 @@ export class WorkflowManager {
       team: team.map(agent => ({
         id: agent.id,
         role: agent.role,
-        status: 'standby'
+        status: agent.status ?? 'standby'
       })),
       steps: [],
       created: Date.now(),
@@ -96,7 +101,7 @@ export class WorkflowManager {
 
     // Store workflow
     this.workflows.set(workflow.id, workflow);
-    
+
     // Record in memory
     await memoryManager.add({
       type: 'workflow_creation',
@@ -107,15 +112,15 @@ export class WorkflowManager {
     return workflow;
   }
 
-  private async generateWorkflowSteps(task: AgentTask, team: BaseAgent[]): Promise<WorkflowStep[]> {
+  private async generateWorkflowSteps(task: AgentTask, team: WorkflowTeamMember[]): Promise<WorkflowStep[]> {
     // Use model to analyze task and generate optimal steps
-    const analysis = await this.modelClient.complete(
+    const analysisResponse = await this.modelClient.generate(
       `Analyze this task and generate optimal workflow steps:\n${JSON.stringify(task)}`,
-      'o1'
+      'completion'
     );
 
     // Parse and validate steps
-    const steps: WorkflowStep[] = JSON.parse(analysis).map((step: any) => ({
+    const steps: WorkflowStep[] = JSON.parse(analysisResponse.content).map((step: any) => ({
       id: crypto.randomUUID(),
       taskId: step.taskId,
       agentId: this.assignAgentToStep(step, team),
@@ -126,7 +131,7 @@ export class WorkflowManager {
     return steps;
   }
 
-  private assignAgentToStep(step: any, team: BaseAgent[]): string {
+  private assignAgentToStep(step: any, team: WorkflowTeamMember[]): string {
     // Implement agent assignment logic based on capabilities
     return team[0].id; // Placeholder
   }

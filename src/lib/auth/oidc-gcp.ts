@@ -46,9 +46,9 @@ export async function exchangeOIDCForGCPToken(
   try {
     // Step 1: Exchange OIDC token for GCP access token
     const stsEndpoint = 'https://sts.googleapis.com/v1/token'
-    
+
     const audience = `//iam.googleapis.com/projects/${projectNumber}/locations/global/workloadIdentityPools/${poolId}/providers/${providerId}`
-    
+
     const stsResponse = await globalThis.fetch(stsEndpoint, {
       method: 'POST',
       headers: {
@@ -79,7 +79,7 @@ export async function exchangeOIDCForGCPToken(
 
     // Return the federated token directly
     const expiresAt = new Date(Date.now() + stsData.expires_in * 1000)
-    
+
     return {
       accessToken: stsData.access_token,
       tokenType: stsData.token_type || 'Bearer',
@@ -166,7 +166,7 @@ export function createGCPConfigFromEnv(): GCPWorkloadIdentityConfig | null {
  */
 export async function getGCPCredentials(): Promise<GCPCredentials | null> {
   const config = createGCPConfigFromEnv()
-  
+
   if (!config) {
     return null
   }
@@ -184,11 +184,22 @@ export function withGCPCredentials<T extends (...args: unknown[]) => unknown>(
   return (async (...args: Parameters<T>) => {
     const credentials = await exchangeOIDCForGCPToken(config)
 
-    if (credentials) {
-      // Inject GCP credentials into the context
-      const context = args[args.length - 1] || {}
-      context.gcp = credentials
-      args[args.length - 1] = context
+    if (!credentials) {
+      return handler(...args)
+    }
+
+    const nextArgs = [...args] as Parameters<T>
+    const contextIndex = nextArgs.length - 1
+    const maybeContext = contextIndex >= 0 ? nextArgs[contextIndex] : undefined
+
+    if (maybeContext && typeof maybeContext === 'object') {
+      const context = {
+        ...(maybeContext as Record<string, unknown>),
+        gcp: credentials,
+      }
+
+      nextArgs[contextIndex] = context as Parameters<T>[number]
+      return handler(...nextArgs)
     }
 
     return handler(...args)
@@ -203,7 +214,7 @@ export function useGCPCredentials(config?: GCPWorkloadIdentityConfig): GCPCreden
 
   React.useEffect(() => {
     const configToUse = config || createGCPConfigFromEnv()
-    
+
     if (configToUse) {
       exchangeOIDCForGCPToken(configToUse).then(setCredentials)
     }
@@ -219,13 +230,13 @@ export async function createAuthenticatedFetch(
   config?: GCPWorkloadIdentityConfig
 ): Promise<typeof fetch | null> {
   const configToUse = config || createGCPConfigFromEnv()
-  
+
   if (!configToUse) {
     return null
   }
 
   const credentials = await exchangeOIDCForGCPToken(configToUse)
-  
+
   if (!credentials) {
     return null
   }
