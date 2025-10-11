@@ -79,6 +79,47 @@ function createSupabaseClient(): SupabaseClient<Database> {
     })
 
     // Create a more complete no-op client to prevent app crashes
+    // Helper to create chainable query builder
+    const createQueryBuilder = (): Record<string, unknown> => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const builder: any = {
+        select: () => builder,
+        insert: () => builder,
+        update: () => builder,
+        delete: () => builder,
+        eq: () => builder,
+        neq: () => builder,
+        gt: () => builder,
+        gte: () => builder,
+        lt: () => builder,
+        lte: () => builder,
+        like: () => builder,
+        ilike: () => builder,
+        is: () => builder,
+        in: () => builder,
+        contains: () => builder,
+        containedBy: () => builder,
+        rangeGt: () => builder,
+        rangeGte: () => builder,
+        rangeLt: () => builder,
+        rangeLte: () => builder,
+        rangeAdjacent: () => builder,
+        overlaps: () => builder,
+        textSearch: () => builder,
+        match: () => builder,
+        not: () => builder,
+        or: () => builder,
+        filter: () => builder,
+        order: () => builder,
+        limit: () => builder,
+        range: () => builder,
+        single: async () => ({ data: null, error: new Error('Supabase not initialized') }),
+        maybeSingle: async () => ({ data: null, error: new Error('Supabase not initialized') }),
+        then: async () => ({ data: null, error: new Error('Supabase not initialized') }),
+      }
+      return builder
+    }
+
     const noOpClient = {
       auth: {
         onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
@@ -95,16 +136,7 @@ function createSupabaseClient(): SupabaseClient<Database> {
         updateUser: async () => ({ data: null, error: new Error('Supabase not initialized') }),
         resetPasswordForEmail: async () => ({ error: null }),
       },
-      from: (_table: string) => ({
-        select: () => ({
-          eq: () => ({
-            single: async () => ({ data: null, error: new Error('Supabase not initialized') }),
-          }),
-        }),
-        insert: async () => ({ data: null, error: new Error('Supabase not initialized') }),
-        update: async () => ({ data: null, error: new Error('Supabase not initialized') }),
-        delete: async () => ({ data: null, error: new Error('Supabase not initialized') }),
-      }),
+      from: (_table: string) => createQueryBuilder(),
       storage: {
         from: () => ({
           upload: async () => ({ data: null, error: new Error('Supabase not initialized') }),
