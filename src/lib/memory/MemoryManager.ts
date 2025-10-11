@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events';
+import EventEmitter from 'eventemitter3';
 import { ModelClient } from '../clients/ModelClient';
 import { logger } from '../../utils/logger';
 

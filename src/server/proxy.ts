@@ -75,7 +75,7 @@ const server = createServer((req, res) => {
   }
 })
 
-const PORT = process.env.PROXY_PORT || 3004
+const PORT = process.env.PROXY_PORT || 3003
 server.listen(PORT, () => {
   console.log(`Proxy server running on port ${PORT}`)
 })
