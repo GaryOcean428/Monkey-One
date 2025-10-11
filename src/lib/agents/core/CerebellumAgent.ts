@@ -3,6 +3,7 @@ import { BaseAgent } from '../BaseAgent'
 import { AgentMessage, AgentStatus, AgentType, AgentCapability } from '../../../lib/types/agent'
 import { randomUUID } from 'crypto'
 import { EventEmitter } from 'events'
+import { memoryManager } from '../../memory'
 
 interface MotorPattern {
   id: string
@@ -204,6 +205,13 @@ export class CerebellumAgent extends BaseAgent {
   }
 
   public async processMessage(message: AgentMessage): Promise<{ content: string }> {
+    // Handle empty content as error
+    if (!message.content || message.content.trim() === '') {
+      return {
+        content: 'error: Cannot process empty motor pattern',
+      }
+    }
+
     const patternId = randomUUID()
     const pattern: MotorPattern = {
       id: patternId,
@@ -228,6 +236,17 @@ export class CerebellumAgent extends BaseAgent {
 
     this.motorPatterns.set(patternId, pattern)
     await this.executeMotorPattern(pattern)
+
+    // Store pattern in memory
+    await memoryManager.add({
+      id: patternId,
+      content: message.content,
+      metadata: {
+        type: 'motor_pattern',
+        patternId,
+        timestamp: Date.now(),
+      },
+    })
 
     return {
       content: `Executed motor pattern: ${message.content}`,
