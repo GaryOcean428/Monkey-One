@@ -18,6 +18,7 @@ export default defineConfig(({ mode }) => {
     plugins: [
       react({
         jsxRuntime: 'automatic',
+        fastRefresh: true,
       }),
       tsconfigPaths(),
       compression({
