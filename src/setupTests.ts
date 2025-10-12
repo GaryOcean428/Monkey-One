@@ -100,6 +100,31 @@ Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
 // Mock Fetch API
 global.fetch = vi.fn()
 
+// Mock Request and Response constructors for fetch API
+class RequestMock {
+  constructor(input: RequestInfo, init?: RequestInit) {
+    this.input = input
+    this.init = init
+  }
+  input: RequestInfo
+  init?: RequestInit
+}
+
+class ResponseMock {
+  constructor(body?: BodyInit | null, init?: ResponseInit) {
+    this.body = body
+    this.init = init
+  }
+  body?: BodyInit | null
+  init?: ResponseInit
+  json = vi.fn().mockResolvedValue({})
+  text = vi.fn().mockResolvedValue('')
+  ok = true
+  status = 200
+}
+
+global.Request = RequestMock as unknown as typeof Request
+global.Response = ResponseMock as unknown as typeof Response
 // Mock localStorage
 const localStorageMock = {
   getItem: vi.fn(),
