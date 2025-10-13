@@ -136,7 +136,6 @@ Please provide only the function implementation without any wrapper code.
 
     // Create a safe function from the generated code
     try {
-      // eslint-disable-next-line no-new-func
       return new Function('args', `return (async () => { ${implementation} })(args)`) as (
         args: Record<string, unknown>
       ) => Promise<unknown>

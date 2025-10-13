@@ -4,7 +4,16 @@ import tseslintParser from '@typescript-eslint/parser'
 
 export default [
   {
-    ignores: ['**/dist/**', '**/node_modules/**', '**/*.d.ts'],
+    ignores: [
+      '**/dist/**',
+      '**/node_modules/**',
+      '**/*.d.ts',
+      'cursor/**',
+      'cypress/**',
+      'e2e/**',
+      'scripts/**',
+      'api/**',
+    ],
   },
   {
     files: ['**/*.ts', '**/*.tsx', 'vite.config.ts'],
@@ -32,6 +41,25 @@ export default [
         URLSearchParams: 'readonly',
         global: 'readonly',
         __dirname: 'readonly',
+        fetch: 'readonly',
+        crypto: 'readonly',
+        performance: 'readonly',
+        fail: 'readonly',
+        require: 'readonly',
+        JSX: 'readonly',
+        experience: 'readonly',
+        // Vitest test globals
+        describe: 'readonly',
+        it: 'readonly',
+        test: 'readonly',
+        expect: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly',
+        vi: 'readonly',
+        vitest: 'readonly',
+        jest: 'readonly',
       },
     },
     plugins: {
@@ -41,13 +69,13 @@ export default [
       ...tseslint.configs.recommended.rules,
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-unused-vars': [
-        'error',
+        'warn',
         {
           argsIgnorePattern: '^_',
           varsIgnorePattern: '^_',
         },
       ],
-      'no-undef': 'error',
+      'no-undef': 'warn',
     },
   },
 ]

@@ -15,7 +15,6 @@
     "vitest.config.ts",
     "stackbit.config.ts",
     "vite.env.d.ts",
-    "api/**/*.ts",
-    "src/lib/auth/**/*.ts"
+    "api/**/*.ts"
   ]
 }
