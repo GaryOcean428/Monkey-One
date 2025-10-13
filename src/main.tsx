@@ -85,9 +85,7 @@ async function renderApp() {
       root.render(
         <SimpleErrorBoundary>
           <Suspense
-            fallback={
-              <div style={{ padding: '20px', textAlign: 'center' }}>Initializing...</div>
-            }
+            fallback={<div style={{ padding: '20px', textAlign: 'center' }}>Initializing...</div>}
           >
             {AppComponent}
           </Suspense>

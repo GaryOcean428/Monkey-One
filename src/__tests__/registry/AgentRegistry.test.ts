@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { AgentRegistry } from '../../lib/registry/AgentRegistry'
 import { BaseAgent } from '../../lib/agents/base'
+import { MessageType } from '../../types'
 
 class TestAgent extends BaseAgent {
   constructor() {

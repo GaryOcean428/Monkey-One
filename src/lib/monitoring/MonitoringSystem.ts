@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 import { logger } from '../../utils/logger'
 import { captureException } from '../../utils/sentry'
 import {
