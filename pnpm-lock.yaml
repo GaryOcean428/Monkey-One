@@ -401,8 +401,8 @@ importers:
         specifier: ^3.0.1
         version: 3.0.1
       happy-dom:
-        specifier: ^20.0.0
-        version: 20.0.0
+        specifier: ^20.0.7
+        version: 20.0.7
       husky:
         specifier: ^9.1.7
         version: 9.1.7
@@ -471,7 +471,7 @@ importers:
         version: 5.1.4(typescript@5.9.2)(vite@6.3.6(@types/node@24.1.0)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3)(yaml@2.7.0))
       vitest:
         specifier: ^3.0.9
-        version: 3.0.9(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@24.1.0)(@vitest/ui@3.0.9)(happy-dom@20.0.0)(jiti@2.4.2)(jsdom@26.0.0)(lightningcss@1.30.1)(msw@2.7.3(@types/node@24.1.0)(typescript@5.9.2))(tsx@4.20.3)(yaml@2.7.0)
+        version: 3.0.9(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@24.1.0)(@vitest/ui@3.0.9)(happy-dom@20.0.7)(jiti@2.4.2)(jsdom@26.0.0)(lightningcss@1.30.1)(msw@2.7.3(@types/node@24.1.0)(typescript@5.9.2))(tsx@4.20.3)(yaml@2.7.0)
 
 packages:
 
@@ -2504,8 +2504,8 @@ packages:
   '@types/node@18.19.130':
     resolution: {integrity: sha512-GRaXQx6jGfL8sKfaIDD6OupbIHBr9jv7Jnaml9tB7l4v068PAOXqfcujMMo5PhbIs6ggR1XODELqahT2R8v0fg==}
 
-  '@types/node@20.19.20':
-    resolution: {integrity: sha512-2Q7WS25j4pS1cS8yw3d6buNCVJukOTeQ39bAnwR6sOJbaxvyCGebzTMypDFN82CxBLnl+lSWVdCCWbRY6y9yZQ==}
+  '@types/node@20.19.22':
+    resolution: {integrity: sha512-hRnu+5qggKDSyWHlnmThnUqg62l29Aj/6vcYgUaSFL9oc7DVjeWEQN3PRgdSc6F8d9QRMWkf36CLMch1Do/+RQ==}
 
   '@types/node@24.1.0':
     resolution: {integrity: sha512-ut5FthK5moxFKH2T1CUOC6ctR67rQRvvHdFLCD2Ql6KXmMuCrjsSsRI9UsLCm9M18BMwClv4pn327UvB7eeO1w==}
@@ -4459,8 +4459,8 @@ packages:
   guid-typescript@1.0.9:
     resolution: {integrity: sha512-Y8T4vYhEfwJOTbouREvG+3XDsjr8E3kIr7uf+JZ0BYloFsttiHU0WfvANVsR7TxNUJa/WpCnw/Ino/p+DeBhBQ==}
 
-  happy-dom@20.0.0:
-    resolution: {integrity: sha512-GkWnwIFxVGCf2raNrxImLo397RdGhLapj5cT3R2PT7FwL62Ze1DROhzmYW7+J3p9105DYMVenEejEbnq5wA37w==}
+  happy-dom@20.0.7:
+    resolution: {integrity: sha512-CywLfzmYxP5OYpuAG0usFY0CpxJtwYR+w8Mms5J8W29Y2Pzf6rbfQS2M523tRZTb0oLA+URopPtnAQX2fupHZQ==}
     engines: {node: '>=20.0.0'}
 
   has-bigints@1.1.0:
@@ -9140,7 +9140,7 @@ snapshots:
     dependencies:
       undici-types: 5.26.5
 
-  '@types/node@20.19.20':
+  '@types/node@20.19.22':
     dependencies:
       undici-types: 6.21.0
 
@@ -9593,7 +9593,7 @@ snapshots:
       std-env: 3.8.1
       test-exclude: 7.0.1
       tinyrainbow: 2.0.0
-      vitest: 3.0.9(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@24.1.0)(@vitest/ui@3.0.9)(happy-dom@20.0.0)(jiti@2.4.2)(jsdom@26.0.0)(lightningcss@1.30.1)(msw@2.7.3(@types/node@24.1.0)(typescript@5.9.2))(tsx@4.20.3)(yaml@2.7.0)
+      vitest: 3.0.9(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@24.1.0)(@vitest/ui@3.0.9)(happy-dom@20.0.7)(jiti@2.4.2)(jsdom@26.0.0)(lightningcss@1.30.1)(msw@2.7.3(@types/node@24.1.0)(typescript@5.9.2))(tsx@4.20.3)(yaml@2.7.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -9603,7 +9603,7 @@ snapshots:
       eslint: 9.23.0(jiti@2.4.2)
     optionalDependencies:
       typescript: 5.9.2
-      vitest: 3.0.9(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@24.1.0)(@vitest/ui@3.0.9)(happy-dom@20.0.0)(jiti@2.4.2)(jsdom@26.0.0)(lightningcss@1.30.1)(msw@2.7.3(@types/node@24.1.0)(typescript@5.9.2))(tsx@4.20.3)(yaml@2.7.0)
+      vitest: 3.0.9(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@24.1.0)(@vitest/ui@3.0.9)(happy-dom@20.0.7)(jiti@2.4.2)(jsdom@26.0.0)(lightningcss@1.30.1)(msw@2.7.3(@types/node@24.1.0)(typescript@5.9.2))(tsx@4.20.3)(yaml@2.7.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -9651,7 +9651,7 @@ snapshots:
       sirv: 3.0.1
       tinyglobby: 0.2.12
       tinyrainbow: 2.0.0
-      vitest: 3.0.9(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@24.1.0)(@vitest/ui@3.0.9)(happy-dom@20.0.0)(jiti@2.4.2)(jsdom@26.0.0)(lightningcss@1.30.1)(msw@2.7.3(@types/node@24.1.0)(typescript@5.9.2))(tsx@4.20.3)(yaml@2.7.0)
+      vitest: 3.0.9(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@24.1.0)(@vitest/ui@3.0.9)(happy-dom@20.0.7)(jiti@2.4.2)(jsdom@26.0.0)(lightningcss@1.30.1)(msw@2.7.3(@types/node@24.1.0)(typescript@5.9.2))(tsx@4.20.3)(yaml@2.7.0)
 
   '@vitest/utils@3.0.9':
     dependencies:
@@ -10891,7 +10891,7 @@ snapshots:
       eslint: 9.23.0(jiti@2.4.2)
     optionalDependencies:
       '@typescript-eslint/eslint-plugin': 8.28.0(@typescript-eslint/parser@8.28.0(eslint@9.23.0(jiti@2.4.2))(typescript@5.9.2))(eslint@9.23.0(jiti@2.4.2))(typescript@5.9.2)
-      vitest: 3.0.9(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@24.1.0)(@vitest/ui@3.0.9)(happy-dom@20.0.0)(jiti@2.4.2)(jsdom@26.0.0)(lightningcss@1.30.1)(msw@2.7.3(@types/node@24.1.0)(typescript@5.9.2))(tsx@4.20.3)(yaml@2.7.0)
+      vitest: 3.0.9(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@24.1.0)(@vitest/ui@3.0.9)(happy-dom@20.0.7)(jiti@2.4.2)(jsdom@26.0.0)(lightningcss@1.30.1)(msw@2.7.3(@types/node@24.1.0)(typescript@5.9.2))(tsx@4.20.3)(yaml@2.7.0)
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -11402,9 +11402,9 @@ snapshots:
 
   guid-typescript@1.0.9: {}
 
-  happy-dom@20.0.0:
+  happy-dom@20.0.7:
     dependencies:
-      '@types/node': 20.19.20
+      '@types/node': 20.19.22
       '@types/whatwg-mimetype': 3.0.2
       whatwg-mimetype: 3.0.0
 
@@ -13881,7 +13881,7 @@ snapshots:
       tsx: 4.20.3
       yaml: 2.7.0
 
-  vitest@3.0.9(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@24.1.0)(@vitest/ui@3.0.9)(happy-dom@20.0.0)(jiti@2.4.2)(jsdom@26.0.0)(lightningcss@1.30.1)(msw@2.7.3(@types/node@24.1.0)(typescript@5.9.2))(tsx@4.20.3)(yaml@2.7.0):
+  vitest@3.0.9(@edge-runtime/vm@3.2.0)(@types/debug@4.1.12)(@types/node@24.1.0)(@vitest/ui@3.0.9)(happy-dom@20.0.7)(jiti@2.4.2)(jsdom@26.0.0)(lightningcss@1.30.1)(msw@2.7.3(@types/node@24.1.0)(typescript@5.9.2))(tsx@4.20.3)(yaml@2.7.0):
     dependencies:
       '@vitest/expect': 3.0.9
       '@vitest/mocker': 3.0.9(msw@2.7.3(@types/node@24.1.0)(typescript@5.9.2))(vite@6.3.6(@types/node@24.1.0)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.20.3)(yaml@2.7.0))
@@ -13908,7 +13908,7 @@ snapshots:
       '@types/debug': 4.1.12
       '@types/node': 24.1.0
       '@vitest/ui': 3.0.9(vitest@3.0.9)
-      happy-dom: 20.0.0
+      happy-dom: 20.0.7
       jsdom: 26.0.0
     transitivePeerDependencies:
       - jiti
