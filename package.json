@@ -173,7 +173,7 @@
     "eslint": "^9.23.0",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
-    "eslint-plugin-react-refresh": "^0.4.19",
+    "eslint-plugin-react-refresh": "^0.4.24",
     "eslint-plugin-vitest": "^0.5.4",
     "gpt-tokenizer": "^3.0.1",
     "happy-dom": "^20.0.0",
