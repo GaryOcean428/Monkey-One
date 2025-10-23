@@ -209,7 +209,24 @@ async function getUserInfo(accessToken: string): Promise<GoogleUser | null> {
       return null
     }
 
-    return await response.json()
+    const data = await response.json()
+
+    // Validate required fields and provide fallbacks
+    const user: GoogleUser = {
+      id: data.id || '',
+      email: data.email || '',
+      name: data.name || data.email || 'User',
+      picture: data.picture,
+      verified_email: data.verified_email ?? false,
+    }
+
+    // Extra validation - ensure required fields are not empty
+    if (!user.id || !user.email) {
+      console.error('User info missing required fields:', data)
+      return null
+    }
+
+    return user
   } catch (error) {
     console.error('Failed to get user info:', error)
     return null
@@ -263,7 +280,35 @@ export function getStoredGoogleUser(): GoogleUser | null {
 
   try {
     const stored = globalThis.localStorage.getItem('monkey-one-google-user')
-    return stored ? JSON.parse(stored) : null
+    if (!stored) {
+      return null
+    }
+
+    const data = JSON.parse(stored)
+
+    // Validate the stored user data
+    if (!data || typeof data !== 'object') {
+      console.warn('Invalid stored user data')
+      return null
+    }
+
+    // Ensure required fields exist with fallbacks
+    const user: GoogleUser = {
+      id: data.id || '',
+      email: data.email || '',
+      name: data.name || data.email || 'User',
+      picture: data.picture,
+      verified_email: data.verified_email ?? false,
+    }
+
+    // Validate required fields
+    if (!user.id || !user.email) {
+      console.warn('Stored user missing required fields')
+      clearStoredGoogleUser()
+      return null
+    }
+
+    return user
   } catch (error) {
     console.error('Failed to get stored Google user:', error)
     return null

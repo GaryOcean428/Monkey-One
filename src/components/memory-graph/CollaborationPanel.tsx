@@ -160,7 +160,7 @@ export function CollaborationPanel({
                                 className="text-xs"
                                 style={{ backgroundColor: user.color + '20', color: user.color }}
                               >
-                                {user.name
+                                {(user.name || 'U')
                                   .split(' ')
                                   .map(n => n[0])
                                   .join('')
@@ -176,7 +176,7 @@ export function CollaborationPanel({
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2">
                               <p className="truncate text-sm font-medium">
-                                {user.name}
+                                {user.name || 'User'}
                                 {isCurrentUser && (
                                   <span className="text-xs text-gray-500">(You)</span>
                                 )}
@@ -200,7 +200,7 @@ export function CollaborationPanel({
                       <TooltipContent>
                         <div className="text-xs">
                           <p>
-                            <strong>{user.name}</strong>
+                            <strong>{user.name || 'User'}</strong>
                           </p>
                           <p>Status: {getActivityStatus(user)}</p>
                           {presenceInfo?.selectedNodeId && (
@@ -241,7 +241,7 @@ export function CollaborationPanel({
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={user.avatar} />
                       <AvatarFallback className="bg-gray-100 text-xs">
-                        {user.name
+                        {(user.name || 'U')
                           .split(' ')
                           .map(n => n[0])
                           .join('')
@@ -251,7 +251,7 @@ export function CollaborationPanel({
 
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <p className="truncate text-sm font-medium">{user.name}</p>
+                        <p className="truncate text-sm font-medium">{user.name || 'User'}</p>
                         {getPermissionIcon(user.permissions)}
                       </div>
                       <p className="flex items-center gap-1 text-xs text-gray-400">

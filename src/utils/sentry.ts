@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 import * as Sentry from '@sentry/browser'
 
 export const initSentry = (): void => {
@@ -15,7 +14,6 @@ export const initSentry = (): void => {
 }
 
 export const captureException = (error: Error): void => {
-  // eslint-disable-next-line no-console
   console.error(error)
   if (import.meta.env.VITE_SENTRY_DSN) {
     Sentry.captureException(error)
@@ -23,7 +21,6 @@ export const captureException = (error: Error): void => {
 }
 
 export const captureMessage = (message: string): void => {
-  // eslint-disable-next-line no-console
   console.log(message)
   if (import.meta.env.VITE_SENTRY_DSN) {
     Sentry.captureMessage(message)

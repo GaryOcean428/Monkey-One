@@ -79,8 +79,8 @@ export function AuthStatus({ className, detailed = false }: AuthStatusProps): JS
             </div>
             {user && detailed && (
               <div className="text-muted-foreground space-y-1 text-xs">
-                <div>Email: {user.email}</div>
-                <div>Name: {user.name}</div>
+                <div>Email: {user.email || 'N/A'}</div>
+                <div>Name: {user.name || 'N/A'}</div>
                 <div>Verified: {user.verified_email ? 'Yes' : 'No'}</div>
               </div>
             )}
