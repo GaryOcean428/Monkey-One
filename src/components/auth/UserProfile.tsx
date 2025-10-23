@@ -75,7 +75,9 @@ export function UserProfile({ className }: UserProfileProps): JSX.Element | null
           <div className="border-b border-gray-200 px-3 py-2 dark:border-gray-700">
             <div className="flex flex-col space-y-1">
               <p className="text-sm leading-none font-medium">{user.name || 'User'}</p>
-              <p className="text-xs leading-none text-gray-500 dark:text-gray-400">{user.email || 'No email'}</p>
+              <p className="text-xs leading-none text-gray-500 dark:text-gray-400">
+                {user.email || 'No email'}
+              </p>
             </div>
           </div>
 
