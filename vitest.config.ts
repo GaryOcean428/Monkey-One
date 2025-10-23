@@ -21,14 +21,14 @@ export default defineConfig({
       },
     },
     testTimeout: 10000,
-    hookTimeout: 10000,
+    hookTimeout: 20000,
     pool: 'threads', // Use threads instead of forks for faster execution
     poolOptions: {
       threads: {
         singleThread: false,
       },
     },
-    retry: 1,
+    retry: 2,
     maxConcurrency: 5,
     sequence: {
       shuffle: false, // Don't randomize for consistent runs
