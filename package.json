@@ -226,7 +226,10 @@
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react-dom": "^19.1.1",
+    "esbuild": "^0.25.0",
+    "dompurify": "^3.2.4",
+    "jsondiffpatch": "^0.7.2"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
