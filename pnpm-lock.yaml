@@ -31,8 +31,8 @@ importers:
         specifier: ^4.1.3
         version: 4.1.3(react-hook-form@7.65.0(react@19.2.0))
       '@huggingface/inference':
-        specifier: ^3.6.1
-        version: 3.15.0
+        specifier: ^4.12.0
+        version: 4.12.0
       '@monaco-editor/react':
         specifier: ^4.7.0
         version: 4.7.0(monaco-editor@0.54.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -960,8 +960,8 @@ packages:
     peerDependencies:
       react-hook-form: ^7.0.0
 
-  '@huggingface/inference@3.15.0':
-    resolution: {integrity: sha512-C+Adt4fu4ztlq0Al9EOgEdK5Hl8ebV1eoDEWegJPdAJ97U8A1aqBbl1Sp4S4+wIy3nLApTrtcLuoizGZmLtDMA==}
+  '@huggingface/inference@4.12.0':
+    resolution: {integrity: sha512-a7ABA5mEwZbFMsJY4AyOxgax3086n+U9KLaqP1muINL7qg2DnPMKwmok8z+tci0MOur31E8aNmQk3fEx+uA3Aw==}
     engines: {node: '>=18'}
 
   '@huggingface/jinja@0.2.2':
@@ -4648,6 +4648,9 @@ packages:
   magic-string@0.30.19:
     resolution: {integrity: sha512-2N21sPY9Ws53PZvsEpVtNuSW+ScYbQdp4b9qUaL+9QkHUrGFKo56Lg9Emg5s9V/qrtNBmiR01sYhUOwu3H+VOw==}
 
+  magic-string@0.30.21:
+    resolution: {integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==}
+
   magicast@0.3.5:
     resolution: {integrity: sha512-L0WhttDl+2BOsybvEOLK7fW3UA0OQ0IQ2d6Zl2x/a6vVRs3bAY0ECOSHHeL5jD+SbOpOCUEi0y1DgHEn9Qn1AQ==}
 
@@ -7112,7 +7115,7 @@ snapshots:
       '@standard-schema/utils': 0.3.0
       react-hook-form: 7.65.0(react@19.2.0)
 
-  '@huggingface/inference@3.15.0':
+  '@huggingface/inference@4.12.0':
     dependencies:
       '@huggingface/jinja': 0.5.1
       '@huggingface/tasks': 0.19.58
@@ -11221,6 +11224,10 @@ snapshots:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.5
 
+  magic-string@0.30.21:
+    dependencies:
+      '@jridgewell/sourcemap-codec': 1.5.5
+
   magicast@0.3.5:
     dependencies:
       '@babel/parser': 7.28.4
@@ -12582,7 +12589,7 @@ snapshots:
       esrap: 2.1.0
       is-reference: 3.0.3
       locate-character: 3.0.0
-      magic-string: 0.30.19
+      magic-string: 0.30.21
       zimmerframe: 1.1.4
 
   swr@2.3.6(react@19.2.0):
