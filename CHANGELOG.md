@@ -6,6 +6,14 @@
 
 * **ci:** fix Dependabot auto-merge not working - enable auto-merge immediately and let GitHub handle check waiting
 
+## [1.0.1](https://github.com/GaryOcean428/Monkey-One/compare/v1.0.0...v1.0.1) (2025-10-24)
+
+
+### Bug Fixes
+
+* **auth:** add null/undefined guards to prevent React error [#306](https://github.com/GaryOcean428/Monkey-One/issues/306) ([70dc81b](https://github.com/GaryOcean428/Monkey-One/commit/70dc81b439abc86ed4bb050e8e380ae29c7d6402))
+* **ci:** revert hookTimeout to 20s, retry to 2, and fix dependency vulnerabilities ([88d1812](https://github.com/GaryOcean428/Monkey-One/commit/88d1812df79c8be7fa2feb65de25951374a19184))
+
 ## 1.0.0 (2025-10-10)
 
 
