@@ -51,15 +51,15 @@ export function AuthTest(): JSX.Element {
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
                 <label className="text-sm font-medium">User ID</label>
-                <p className="text-muted-foreground text-sm">{user.id}</p>
+                <p className="text-muted-foreground text-sm">{user.id || 'N/A'}</p>
               </div>
               <div>
                 <label className="text-sm font-medium">Email</label>
-                <p className="text-muted-foreground text-sm">{user.email}</p>
+                <p className="text-muted-foreground text-sm">{user.email || 'N/A'}</p>
               </div>
               <div>
                 <label className="text-sm font-medium">Name</label>
-                <p className="text-muted-foreground text-sm">{user.name}</p>
+                <p className="text-muted-foreground text-sm">{user.name || 'N/A'}</p>
               </div>
               <div>
                 <label className="text-sm font-medium">Email Verified</label>
@@ -71,7 +71,7 @@ export function AuthTest(): JSX.Element {
                 <div className="md:col-span-2">
                   <label className="text-sm font-medium">Profile Picture</label>
                   <div className="mt-2">
-                    <img src={user.picture} alt={user.name} className="h-16 w-16 rounded-full" />
+                    <img src={user.picture} alt={user.name || 'User'} className="h-16 w-16 rounded-full" />
                   </div>
                 </div>
               )}
@@ -91,11 +91,11 @@ export function AuthTest(): JSX.Element {
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
                 <label className="text-sm font-medium">Profile ID</label>
-                <p className="text-muted-foreground font-mono text-sm">{supabaseProfile.id}</p>
+                <p className="text-muted-foreground font-mono text-sm">{supabaseProfile.id || 'N/A'}</p>
               </div>
               <div>
                 <label className="text-sm font-medium">Username</label>
-                <p className="text-muted-foreground text-sm">{supabaseProfile.username}</p>
+                <p className="text-muted-foreground text-sm">{supabaseProfile.username || 'N/A'}</p>
               </div>
               <div>
                 <label className="text-sm font-medium">Created At</label>
@@ -133,7 +133,7 @@ export function AuthTest(): JSX.Element {
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
                 <label className="text-sm font-medium">Issuer</label>
-                <p className="text-muted-foreground text-sm">{oidcToken.issuer}</p>
+                <p className="text-muted-foreground text-sm">{oidcToken.issuer || 'N/A'}</p>
               </div>
               <div>
                 <label className="text-sm font-medium">Expires At</label>
@@ -144,7 +144,7 @@ export function AuthTest(): JSX.Element {
               <div className="md:col-span-2">
                 <label className="text-sm font-medium">Token (First 50 chars)</label>
                 <p className="text-muted-foreground bg-muted rounded p-2 font-mono text-sm">
-                  {oidcToken.token.substring(0, 50)}...
+                  {oidcToken.token?.substring(0, 50) || 'N/A'}...
                 </p>
               </div>
             </div>
@@ -163,7 +163,7 @@ export function AuthTest(): JSX.Element {
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
                 <label className="text-sm font-medium">Token Type</label>
-                <p className="text-muted-foreground text-sm">{gcpCredentials.tokenType}</p>
+                <p className="text-muted-foreground text-sm">{gcpCredentials.tokenType || 'N/A'}</p>
               </div>
               <div>
                 <label className="text-sm font-medium">Expires At</label>
@@ -173,12 +173,12 @@ export function AuthTest(): JSX.Element {
               </div>
               <div>
                 <label className="text-sm font-medium">Expires In</label>
-                <p className="text-muted-foreground text-sm">{gcpCredentials.expiresIn} seconds</p>
+                <p className="text-muted-foreground text-sm">{gcpCredentials.expiresIn || 0} seconds</p>
               </div>
               <div>
                 <label className="text-sm font-medium">Access Token (First 50 chars)</label>
                 <p className="text-muted-foreground bg-muted rounded p-2 font-mono text-sm">
-                  {gcpCredentials.accessToken.substring(0, 50)}...
+                  {gcpCredentials.accessToken?.substring(0, 50) || 'N/A'}...
                 </p>
               </div>
             </div>
