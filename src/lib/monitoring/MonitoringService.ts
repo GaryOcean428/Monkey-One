@@ -1,5 +1,5 @@
 import { getRedisClient } from '../redis/config'
-import { Prometheus, Registry } from 'prom-client'
+import { Registry, collectDefaultMetrics } from 'prom-client'
 import { logger } from '../../utils/logger'
 
 export class MonitoringService {
@@ -11,7 +11,7 @@ export class MonitoringService {
 
   private constructor() {
     this.registry = new Registry()
-    Prometheus.collectDefaultMetrics({ register: this.registry })
+    collectDefaultMetrics({ register: this.registry })
   }
 
   public static getInstance(): MonitoringService {
