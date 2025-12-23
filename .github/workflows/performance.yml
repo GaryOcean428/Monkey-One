@@ -16,7 +16,7 @@ on:
 
 env:
   NODE_VERSION: '22.20.0'
-  PNPM_VERSION: '10.6.5'
+  PNPM_VERSION: '10.17.1'
 
 jobs:
   lighthouse:
@@ -31,6 +31,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
+          version: ${{ env.PNPM_VERSION }}
           run_install: false
 
       - name: Setup Node.js
@@ -70,6 +71,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
+          version: ${{ env.PNPM_VERSION }}
           run_install: false
 
       - name: Setup Node.js
@@ -116,6 +118,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
+          version: ${{ env.PNPM_VERSION }}
           run_install: false
 
       - name: Setup Node.js
