@@ -97,6 +97,9 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
             // The callback needs to read the code parameter from the URL
             const user = await handleOAuthCallback(config)
 
+            // Clean up URL after processing to prevent hydration issues
+            window.history.replaceState({}, document.title, window.location.pathname)
+
             if (user) {
               console.log('OAuth callback processed successfully:', user)
 
@@ -129,6 +132,14 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
                   window.location.replace(`${window.location.origin}${window.location.pathname}`)
                 }
               }, 0)
+              return
+            } else {
+              setAuthState({
+                user: null,
+                isAuthenticated: false,
+                isLoading: false,
+                error: 'OAuth authentication failed. Please try again.',
+              })
               return
             } else {
               setAuthState({

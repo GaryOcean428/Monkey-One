@@ -6,6 +6,13 @@
 
 * **ci:** fix Dependabot auto-merge not working - enable auto-merge immediately and let GitHub handle check waiting
 
+## [1.1.1](https://github.com/GaryOcean428/Monkey-One/compare/v1.1.0...v1.1.1) (2025-12-23)
+
+
+### Bug Fixes
+
+* OAuth React [#306](https://github.com/GaryOcean428/Monkey-One/issues/306) error + fix corrupted favicon files ([6017070](https://github.com/GaryOcean428/Monkey-One/commit/6017070d00d52719c77fe2c66cc55cc8a9489f38))
+
 ## [1.1.0](https://github.com/GaryOcean428/Monkey-One/compare/v1.0.1...v1.1.0) (2025-12-23)
 
 
