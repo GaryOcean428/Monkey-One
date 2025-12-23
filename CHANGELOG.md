@@ -6,6 +6,22 @@
 
 * **ci:** fix Dependabot auto-merge not working - enable auto-merge immediately and let GitHub handle check waiting
 
+## [1.1.0](https://github.com/GaryOcean428/Monkey-One/compare/v1.0.1...v1.1.0) (2025-12-23)
+
+
+### Features
+
+* add database validation script and configuration guide ([642a67d](https://github.com/GaryOcean428/Monkey-One/commit/642a67d4c5aff193855aa0dbc59fd7d86cc8092c))
+
+
+### Bug Fixes
+
+* consolidate Message types and resolve import issues ([96c179b](https://github.com/GaryOcean428/Monkey-One/commit/96c179b8ef8a2d8a5de33e07c244c7843e45bbd8))
+* resolve Bundle Size Analysis workflow failure by removing broken action ([3e0a936](https://github.com/GaryOcean428/Monkey-One/commit/3e0a93620e59690320a40e69e98cfb9217a3b73a))
+* resolve critical test failures in multiple modules ([93ea845](https://github.com/GaryOcean428/Monkey-One/commit/93ea8457ce405e66418f5e181af4264590829474))
+* update all workflow files to use pnpm 10.17.1 matching package.json ([dec251e](https://github.com/GaryOcean428/Monkey-One/commit/dec251ea1ed11da1a0f359b05459d5298d2bbb99))
+* update test mocks and add backward compatibility methods ([35bba63](https://github.com/GaryOcean428/Monkey-One/commit/35bba63b78cabcaefa81300f07b82c1bba7eea09))
+
 ## [1.0.1](https://github.com/GaryOcean428/Monkey-One/compare/v1.0.0...v1.0.1) (2025-10-24)
 
 
