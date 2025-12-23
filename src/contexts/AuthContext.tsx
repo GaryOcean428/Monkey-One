@@ -121,17 +121,11 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
               setGcpCredentials(gcp)
               setSupabaseProfile(profile)
 
-              // CRITICAL: Defer URL cleanup to AFTER React finishes rendering
-              // Use requestIdleCallback to ensure all state updates and DOM updates complete
-              if ('requestIdleCallback' in window) {
-                requestIdleCallback(() => {
-                  window.history.replaceState({}, document.title, window.location.pathname)
-                })
-              } else {
-                // Fallback for browsers without requestIdleCallback (Safari)
-                setTimeout(() => {
-                  window.history.replaceState({}, document.title, window.location.pathname)
-                }, 100) // Increased delay for safety
+              // Clean URL and force reload to avoid React Router sync issues
+              // Auth state persists in localStorage, user stays authenticated
+              const cleanUrl = `${window.location.origin}${window.location.pathname}`
+              if (window.location.href !== cleanUrl) {
+                window.location.replace(cleanUrl)
               }
               return
             } else {
