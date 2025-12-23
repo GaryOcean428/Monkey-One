@@ -233,6 +233,7 @@ export class TaskManager extends EventEmitter {
   private scheduleTask(task: TaskDefinition): void {
     if (!task.trigger?.config.schedule) return
 
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const schedule = require('node-schedule')
     schedule.scheduleJob(task.trigger.config.schedule, () => {
       this.executeTask(task).catch(logger.error)

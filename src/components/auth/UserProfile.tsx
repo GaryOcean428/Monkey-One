@@ -64,8 +64,8 @@ export function UserProfile({ className }: UserProfileProps): JSX.Element | null
       >
         <Avatar
           src={user.picture}
-          alt={user.name}
-          fallback={getInitials(user.name)}
+          alt={user.name || 'User'}
+          fallback={getInitials(user.name || 'User')}
           className="h-8 w-8"
         />
       </Button>
@@ -74,8 +74,10 @@ export function UserProfile({ className }: UserProfileProps): JSX.Element | null
         <div className="absolute top-10 right-0 z-50 w-56 rounded-md border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">
           <div className="border-b border-gray-200 px-3 py-2 dark:border-gray-700">
             <div className="flex flex-col space-y-1">
-              <p className="text-sm leading-none font-medium">{user.name}</p>
-              <p className="text-xs leading-none text-gray-500 dark:text-gray-400">{user.email}</p>
+              <p className="text-sm leading-none font-medium">{user.name || 'User'}</p>
+              <p className="text-xs leading-none text-gray-500 dark:text-gray-400">
+                {user.email || 'No email'}
+              </p>
             </div>
           </div>
 

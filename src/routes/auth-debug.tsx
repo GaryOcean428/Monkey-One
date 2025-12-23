@@ -1,6 +1,6 @@
 /**
  * Authentication Debug Page
- * 
+ *
  * Comprehensive debugging interface for the authentication flow
  */
 
@@ -94,7 +94,7 @@ export default function AuthDebugPage() {
     // Supabase Status
     try {
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
-      
+
       info.push({
         category: 'Supabase',
         items: [
@@ -197,7 +197,10 @@ export default function AuthDebugPage() {
         },
         {
           label: 'User Agent',
-          value: (typeof window !== 'undefined' && window.navigator ? window.navigator.userAgent.substring(0, 50) + '...' : 'N/A'),
+          value:
+            typeof window !== 'undefined' && window.navigator
+              ? window.navigator.userAgent.substring(0, 50) + '...'
+              : 'N/A',
           status: 'info',
         },
         {
@@ -220,10 +223,7 @@ export default function AuthDebugPage() {
         try {
           const user = getStoredGoogleUser()
           if (user) {
-            setTestResults(prev => [
-              ...prev,
-              `✅ Google Auth: User ${user.email} is authenticated`,
-            ])
+            setTestResults(prev => [...prev, `✅ Google Auth: User ${user.email} is authenticated`])
           } else {
             setTestResults(prev => [
               ...prev,
@@ -239,15 +239,9 @@ export default function AuthDebugPage() {
         try {
           const { error } = await supabase.from('profiles').select('count').limit(1)
           if (error) {
-            setTestResults(prev => [
-              ...prev,
-              `❌ Supabase Connection Error: ${error.message}`,
-            ])
+            setTestResults(prev => [...prev, `❌ Supabase Connection Error: ${error.message}`])
           } else {
-            setTestResults(prev => [
-              ...prev,
-              `✅ Supabase Connection: Successfully connected`,
-            ])
+            setTestResults(prev => [...prev, `✅ Supabase Connection: Successfully connected`])
           }
         } catch (error) {
           setTestResults(prev => [...prev, `❌ Supabase Connection Error: ${error}`])
@@ -258,10 +252,7 @@ export default function AuthDebugPage() {
         try {
           const googleUser = getStoredGoogleUser()
           if (!googleUser) {
-            setTestResults(prev => [
-              ...prev,
-              `⚠️ Profile Sync: No Google user to sync`,
-            ])
+            setTestResults(prev => [...prev, `⚠️ Profile Sync: No Google user to sync`])
             break
           }
 
@@ -293,22 +284,13 @@ export default function AuthDebugPage() {
                   `❌ Profile Creation Error: ${insertError.message}`,
                 ])
               } else {
-                setTestResults(prev => [
-                  ...prev,
-                  `✅ Profile Sync: Profile created successfully`,
-                ])
+                setTestResults(prev => [...prev, `✅ Profile Sync: Profile created successfully`])
               }
             } else {
-              setTestResults(prev => [
-                ...prev,
-                `❌ Profile Sync Error: ${error.message}`,
-              ])
+              setTestResults(prev => [...prev, `❌ Profile Sync Error: ${error.message}`])
             }
           } else {
-            setTestResults(prev => [
-              ...prev,
-              `✅ Profile Sync: Profile found for ${profile.email}`,
-            ])
+            setTestResults(prev => [...prev, `✅ Profile Sync: Profile found for ${profile.email}`])
           }
         } catch (error) {
           setTestResults(prev => [...prev, `❌ Profile Sync Error: ${error}`])
@@ -319,10 +301,7 @@ export default function AuthDebugPage() {
         try {
           const token = getValidOIDCToken()
           if (token) {
-            setTestResults(prev => [
-              ...prev,
-              `✅ OIDC Token: Valid token from ${token.issuer}`,
-            ])
+            setTestResults(prev => [...prev, `✅ OIDC Token: Valid token from ${token.issuer}`])
           } else {
             setTestResults(prev => [
               ...prev,
@@ -379,9 +358,9 @@ export default function AuthDebugPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-b-2 border-gray-900"></div>
           <p className="mt-4">Loading debug information...</p>
         </div>
       </div>
@@ -389,39 +368,34 @@ export default function AuthDebugPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-6xl mx-auto">
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <h1 className="text-3xl font-bold mb-2">🔐 Authentication Debug Page</h1>
+    <div className="min-h-screen bg-gray-50 px-4 py-8">
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-6 rounded-lg bg-white p-6 shadow-lg">
+          <h1 className="mb-2 text-3xl font-bold">🔐 Authentication Debug Page</h1>
           <p className="text-gray-600">
             Comprehensive debugging interface for the authentication flow
           </p>
           <div className="mt-4 flex gap-4">
             <button
               onClick={refreshDebugInfo}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
             >
               🔄 Refresh
             </button>
-            <a
-              href="/"
-              className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-            >
+            <a href="/" className="rounded bg-gray-600 px-4 py-2 text-white hover:bg-gray-700">
               ← Back to App
             </a>
           </div>
         </div>
 
         {/* Debug Info Sections */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-2">
           {debugInfo.map((section, idx) => (
-            <div key={idx} className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold mb-4 border-b pb-2">
-                {section.category}
-              </h2>
+            <div key={idx} className="rounded-lg bg-white p-6 shadow">
+              <h2 className="mb-4 border-b pb-2 text-xl font-semibold">{section.category}</h2>
               <div className="space-y-3">
                 {section.items.map((item, itemIdx) => (
-                  <div key={itemIdx} className="flex justify-between items-start">
+                  <div key={itemIdx} className="flex items-start justify-between">
                     <span className="font-medium text-gray-700">{item.label}:</span>
                     <span className={`ml-2 text-right ${getStatusColor(item.status)}`}>
                       {getStatusIcon(item.status)} {String(item.value)}
@@ -434,37 +408,37 @@ export default function AuthDebugPage() {
         </div>
 
         {/* Test Section */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4">🧪 Run Tests</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+        <div className="mb-6 rounded-lg bg-white p-6 shadow">
+          <h2 className="mb-4 text-xl font-semibold">🧪 Run Tests</h2>
+          <div className="mb-4 grid grid-cols-2 gap-4 md:grid-cols-4">
             <button
               onClick={() => runTest('google-auth')}
-              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+              className="rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700"
             >
               Test Google Auth
             </button>
             <button
               onClick={() => runTest('supabase-connection')}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
             >
               Test Supabase
             </button>
             <button
               onClick={() => runTest('profile-sync')}
-              className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+              className="rounded bg-purple-600 px-4 py-2 text-white hover:bg-purple-700"
             >
               Test Profile Sync
             </button>
             <button
               onClick={() => runTest('oidc-token')}
-              className="px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700"
+              className="rounded bg-orange-600 px-4 py-2 text-white hover:bg-orange-700"
             >
               Test OIDC Token
             </button>
           </div>
           <button
             onClick={clearResults}
-            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+            className="rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700"
           >
             Clear Results
           </button>
@@ -472,9 +446,9 @@ export default function AuthDebugPage() {
 
         {/* Test Results */}
         {testResults.length > 0 && (
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold mb-4">📊 Test Results</h2>
-            <div className="bg-gray-900 text-green-400 p-4 rounded font-mono text-sm overflow-auto max-h-96">
+          <div className="rounded-lg bg-white p-6 shadow">
+            <h2 className="mb-4 text-xl font-semibold">📊 Test Results</h2>
+            <div className="max-h-96 overflow-auto rounded bg-gray-900 p-4 font-mono text-sm text-green-400">
               {testResults.map((result, idx) => (
                 <div key={idx}>{result}</div>
               ))}
@@ -483,19 +457,19 @@ export default function AuthDebugPage() {
         )}
 
         {/* Documentation */}
-        <div className="bg-white rounded-lg shadow p-6 mt-6">
-          <h2 className="text-xl font-semibold mb-4">📚 Quick Reference</h2>
+        <div className="mt-6 rounded-lg bg-white p-6 shadow">
+          <h2 className="mb-4 text-xl font-semibold">📚 Quick Reference</h2>
           <div className="space-y-4">
             <div>
-              <h3 className="font-semibold mb-2">CLI Commands:</h3>
-              <code className="block bg-gray-100 p-2 rounded">pnpm run debug:auth</code>
-              <code className="block bg-gray-100 p-2 rounded mt-1">pnpm run debug:supabase</code>
-              <code className="block bg-gray-100 p-2 rounded mt-1">pnpm run debug:vercel</code>
-              <code className="block bg-gray-100 p-2 rounded mt-1">pnpm run validate:env</code>
+              <h3 className="mb-2 font-semibold">CLI Commands:</h3>
+              <code className="block rounded bg-gray-100 p-2">pnpm run debug:auth</code>
+              <code className="mt-1 block rounded bg-gray-100 p-2">pnpm run debug:supabase</code>
+              <code className="mt-1 block rounded bg-gray-100 p-2">pnpm run debug:vercel</code>
+              <code className="mt-1 block rounded bg-gray-100 p-2">pnpm run validate:env</code>
             </div>
             <div>
-              <h3 className="font-semibold mb-2">Documentation:</h3>
-              <ul className="list-disc list-inside space-y-1 text-blue-600">
+              <h3 className="mb-2 font-semibold">Documentation:</h3>
+              <ul className="list-inside list-disc space-y-1 text-blue-600">
                 <li>
                   <a href="/README_AUTHENTICATION.md" className="hover:underline">
                     README_AUTHENTICATION.md

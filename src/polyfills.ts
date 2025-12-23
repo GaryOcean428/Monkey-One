@@ -16,6 +16,7 @@ declare global {
 if (typeof window === 'undefined' && typeof global !== 'undefined') {
   try {
     // Use a require statement which Vite can properly handle during build
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const nodeCrypto = require('crypto')
     ;(global as any).crypto = nodeCrypto.webcrypto
   } catch (error) {

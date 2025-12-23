@@ -15,7 +15,7 @@ export const Avatar: React.FC<AvatarProps> = ({
 
   const getFallback = () => {
     if (fallback) return fallback
-    if (!alt) return '?'
+    if (!alt || alt === '') return '?'
     return alt.charAt(0).toUpperCase()
   }
 
