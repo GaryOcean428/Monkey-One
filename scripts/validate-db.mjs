@@ -63,7 +63,7 @@ async function validateDatabase() {
     )
 
     // Test connection by querying a simple table
-    const { data, error } = await supabase.from('agents').select('count').limit(1)
+    const { error } = await supabase.from('agents').select('count').limit(1)
 
     if (error) {
       console.error('  ❌ Database connection failed:', error.message)
