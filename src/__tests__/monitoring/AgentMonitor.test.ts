@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { Agent, AgentType, AgentStatus, Message, MessageType, AgentCapability } from '../../types'
+import { Agent, AgentType, AgentStatus, SystemMessage as Message, MessageType, AgentCapability } from '../../types'
 import { logger } from '../../utils/logger'
 import { RuntimeError } from '../../lib/errors/AgentErrors'
 import { AgentMonitor } from '../../lib/monitoring/AgentMonitor'
@@ -20,31 +20,77 @@ class MockAgent implements Agent {
     this.name = 'Mock Agent'
     this.type = AgentType.ORCHESTRATOR
     this.status = AgentStatus.IDLE
-    this.capabilities = [{ name: 'test', description: 'Test capability' }]
+    this.capabilities = []
+  }
+
+  getId(): string {
+    return this.id
+  }
+
+  getName(): string {
+    return this.name
+  }
+
+  getType(): AgentType {
+    return this.type
+  }
+
+  getStatus(): AgentStatus {
+    return this.status
   }
 
   getCapabilities(): AgentCapability[] {
     return this.capabilities
   }
 
-  registerCapability(capability: AgentCapability): void {
+  hasCapability(capability: AgentCapability): boolean {
+    return this.capabilities.some(c => c.name === capability.name)
+  }
+
+  addCapability(capability: AgentCapability): void {
     this.capabilities.push(capability)
+  }
+
+  removeCapability(capability: AgentCapability): void {
+    this.capabilities = this.capabilities.filter(c => c.name !== capability.name)
+  }
+
+  getMetrics(): import('../../lib/types/agent').AgentMetrics {
+    return {
+      lastExecutionTime: 0,
+      totalRequests: 0,
+      successfulRequests: 0,
+      failedRequests: 0,
+      averageResponseTime: 0,
+    }
+  }
+
+  registerCapability(capability: AgentCapability): void {
+    this.addCapability(capability)
   }
 
   async initialize(): Promise<void> {
     // Mock implementation
   }
 
-  async handleMessage(message: Message): Promise<Message> {
+  async handleMessage(message: Message): Promise<{ success: boolean }> {
+    return { success: true }
+  }
+
+  async processMessage(message: Message): Promise<void> {
     // Mock implementation
-    return {
-      id: 'response-' + message.id,
-      type: MessageType.RESPONSE,
-      sender: this.id,
-      recipient: message.sender,
-      content: 'mock response',
-      timestamp: Date.now(),
-    }
+  }
+
+  async handleRequest(request: unknown): Promise<unknown> {
+    return { success: true }
+  }
+
+  async handleToolUse(tool: unknown): Promise<import('../../lib/types/agent').MessageResponse> {
+    return { status: 'success', data: {} }
+  }
+
+  async shutdown(): Promise<void> {
+    // Mock implementation
   }
 }
 
