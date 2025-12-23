@@ -20,6 +20,7 @@ export enum MessageType {
   TASK = 'TASK',
   RESPONSE = 'RESPONSE',
   BROADCAST = 'BROADCAST',
+  COMMAND = 'COMMAND',
 }
 
 export interface Message {

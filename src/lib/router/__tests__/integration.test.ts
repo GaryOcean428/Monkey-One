@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { AdvancedRouter } from '../router'
-import { TokenEstimator } from '../tokenEstimator'
+import { TokenEstimator } from '../../tokenEstimator'
 import { XAIMessage } from '../../types'
 import { TechStackAnalyzer } from '../analyzers/techStackAnalyzer'
 import { CodeAnalyzer } from '../analyzers/codeAnalyzer'
