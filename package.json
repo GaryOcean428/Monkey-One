@@ -44,7 +44,8 @@
     "debug:supabase": "tsx scripts/debug-supabase.ts",
     "debug:vercel": "tsx scripts/debug-vercel.ts",
     "debug:all": "tsx scripts/debug-auth.ts && tsx scripts/debug-supabase.ts && tsx scripts/debug-vercel.ts",
-    "validate:env": "tsx scripts/validate-env.ts"
+    "validate:env": "tsx scripts/validate-env.ts",
+    "validate:db": "node scripts/validate-db.mjs"
   },
   "dependencies": {
     "@ai-sdk/openai": "^2.0.54",

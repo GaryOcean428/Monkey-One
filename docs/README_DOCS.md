@@ -32,6 +32,7 @@ Guides for deploying and configuring the application.
 
 - [Deployment Checklist](deployment/deployment-checklist.md) - Pre-deployment checklist
 - [Supabase Setup](deployment/supabase-setup.md) - Supabase configuration
+- [Database Configuration](deployment/database-configuration.md) - **Database setup and validation guide**
 - [CI/CD Status Report](deployment/ci-cd-status-report.md) - CI/CD pipeline status
 
 Also see in root docs:
