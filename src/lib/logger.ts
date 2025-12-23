@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // Simple logger implementation with type-safe console access
 interface LoggerInterface {
   error(message: string, ...args: unknown[]): void
@@ -10,7 +9,6 @@ interface LoggerInterface {
 class Logger implements LoggerInterface {
   private log(level: 'error' | 'warn' | 'info' | 'debug', message: string, ...args: unknown[]) {
     try {
-      // eslint-disable-next-line no-console
       globalThis.console[level](message, ...args)
     } catch {
       // Fail silently if console is not available

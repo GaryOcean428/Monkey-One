@@ -15,8 +15,8 @@ on:
     - cron: '0 3 * * 0'
 
 env:
-  NODE_VERSION: '20.11.0'
-  PNPM_VERSION: '10.6.5'
+  NODE_VERSION: '22.20.0'
+  PNPM_VERSION: '10.17.1'
 
 jobs:
   lighthouse:
@@ -32,12 +32,17 @@ jobs:
         with:
           run_install: false
 
-- name: Setup Node.js
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          run_install: false
+
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -71,12 +76,17 @@ jobs:
         with:
           run_install: false
 
-- name: Setup Node.js
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          run_install: false
+
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -84,10 +94,15 @@ jobs:
       - name: Build and analyze bundle
         run: pnpm run build
 
-      - name: Analyze bundle size
-        uses: github/webpack-bundle-analyzer-action@v1
-        with:
-          bundle-stats-path: './stats.html'
+      - name: Verify bundle stats generated
+        run: |
+          if [ -f stats.html ]; then
+            echo "✅ Bundle stats generated successfully"
+            ls -lh stats.html
+          else
+            echo "❌ Bundle stats file not found"
+            exit 1
+          fi
 
       - name: Upload bundle analysis
         uses: actions/upload-artifact@v4
@@ -112,12 +127,17 @@ jobs:
         with:
           run_install: false
 
-- name: Setup Node.js
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          run_install: false
+
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile

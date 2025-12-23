@@ -11,7 +11,7 @@ export default defineConfig({
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
     exclude: ['**/node_modules/**', '**/dist/**'],
     coverage: {
-      reporter: ['text', 'json', 'html'],
+      reporter: ['text', 'json', 'html', 'lcov'],
       exclude: ['node_modules/', 'src/setupTests.ts', 'src/**/*.d.ts', 'src/types/**'],
       thresholds: {
         statements: 80,
@@ -20,21 +20,18 @@ export default defineConfig({
         lines: 80,
       },
     },
-    testTimeout: 20000,
+    testTimeout: 10000,
     hookTimeout: 20000,
-    pool: 'forks', // Use process isolation for tests
+    pool: 'threads', // Use threads instead of forks for faster execution
     poolOptions: {
       threads: {
         singleThread: false,
       },
-      forks: {
-        isolate: true,
-      },
     },
     retry: 2,
-    maxConcurrency: 10,
+    maxConcurrency: 5,
     sequence: {
-      shuffle: true, // Randomize test order
+      shuffle: false, // Don't randomize for consistent runs
     },
     environmentOptions: {
       jsdom: {

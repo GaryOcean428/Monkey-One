@@ -1,5 +1,5 @@
 import './polyfills'
-import React from 'react'
+import React, { Suspense } from 'react'
 import ReactDOM from 'react-dom/client'
 import './index.css'
 
@@ -82,7 +82,15 @@ async function renderApp() {
 
     // Wrap in error boundary with additional safety checks
     if (React.isValidElement(AppComponent)) {
-      root.render(<SimpleErrorBoundary>{AppComponent}</SimpleErrorBoundary>)
+      root.render(
+        <SimpleErrorBoundary>
+          <Suspense
+            fallback={<div style={{ padding: '20px', textAlign: 'center' }}>Initializing...</div>}
+          >
+            {AppComponent}
+          </Suspense>
+        </SimpleErrorBoundary>
+      )
     } else {
       console.error('AppComponent is not a valid React element')
       root.render(

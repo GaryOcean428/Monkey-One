@@ -27,7 +27,9 @@ export function SearchPanel({ loading = false, error }: SearchPanelProps) {
     } catch (err) {
       console.error('Search failed:', err)
       setResults([])
-      error && error('Search failed. Please try again.')
+      if (error) {
+        error('Search failed. Please try again.')
+      }
     }
   }
 

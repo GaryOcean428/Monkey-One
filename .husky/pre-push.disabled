@@ -1,0 +1,36 @@
+# Modern Husky v9+ format
+
+# Exit on any error
+set -e
+
+echo "🚀 Running pre-push checks..."
+
+# Get the current branch
+current_branch=$(git rev-parse --abbrev-ref HEAD)
+
+# Skip checks for main/master branch (assume CI will handle it)
+if [ "$current_branch" = "main" ] || [ "$current_branch" = "master" ]; then
+  echo "ℹ️  Skipping pre-push checks for main branch (CI will handle validation)"
+  exit 0
+fi
+
+# Run tests
+echo "🧪 Running tests..."
+pnpm run test:ci
+
+# Build check
+echo "🏗️  Build check..."
+pnpm run build
+
+# Dependency check
+echo "📦 Checking dependencies..."
+pnpm run audit-deps
+
+# Check for large files
+echo "📏 Checking for large files..."
+git diff --cached --name-only | xargs ls -la 2>/dev/null | awk '$5 > 1048576 { print "Large file: " $9 " (" $5 " bytes)" }' | grep -q "Large file" && {
+  echo "❌ Large files detected! Consider using Git LFS for files > 1MB"
+  exit 1
+} || true
+
+echo "✅ Pre-push checks passed!"

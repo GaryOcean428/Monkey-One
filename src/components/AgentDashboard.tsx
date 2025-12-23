@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { Component, ErrorInfo, useState } from 'react'
 import { AgentMonitor } from './AgentMonitor'
 import { AgentWorkflow } from './AgentWorkflow'
 import { PerformanceMetrics } from './PerformanceMetrics'

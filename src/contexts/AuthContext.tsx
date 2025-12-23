@@ -102,18 +102,18 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
 
             if (user) {
               console.log('OAuth callback processed successfully:', user)
-              // Sync user to Supabase
-              const profile = await syncGoogleUserToSupabase(user)
 
-              // Get OIDC token
-              const oidc = getValidOIDCToken()
+              // BATCH ALL ASYNC OPERATIONS to prevent multiple re-renders
+              const [profile, oidc, gcp] = await Promise.all([
+                syncGoogleUserToSupabase(user),
+                Promise.resolve(getValidOIDCToken()),
+                (async () => {
+                  const token = getValidOIDCToken()
+                  return token ? await getGCPCredentials() : null
+                })(),
+              ])
 
-              // Get GCP credentials
-              let gcp: GCPCredentials | null = null
-              if (oidc) {
-                gcp = await getGCPCredentials()
-              }
-
+              // SINGLE STATE UPDATE - prevents multiple re-renders
               setAuthState({
                 user,
                 isAuthenticated: !!(user && profile),
@@ -123,6 +123,20 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
               setOidcToken(oidc)
               setGcpCredentials(gcp)
               setSupabaseProfile(profile)
+
+              // Clean URL and force reload to avoid React Router sync issues
+              // Auth state persists in localStorage, user stays authenticated
+              if (window.location.search || window.location.hash) {
+                window.location.replace(`${window.location.origin}${window.location.pathname}`)
+              }
+              return
+            } else {
+              setAuthState({
+                user: null,
+                isAuthenticated: false,
+                isLoading: false,
+                error: 'OAuth authentication failed. Please try again.',
+              })
               return
             } else {
               setAuthState({

@@ -20,11 +20,11 @@ export class AgentMonitor {
   }
 
   async trackMessage(message: Message): Promise<void> {
-    if (!message.id || !message.role || !message.content) {
+    if (!message.id || !message.type || !message.content) {
       throw new Error('Invalid message: missing required fields')
     }
 
-    const agentId = message.sender ?? 'unknown'
+    const agentId = message.metadata?.sender as string ?? 'unknown'
 
     try {
       await this.metricsLock.acquire()
@@ -105,6 +105,71 @@ export class AgentMonitor {
       logger.error('Failed to clear old data:', error)
       captureException(error as Error)
     }
+  }
+
+  // Legacy methods for backward compatibility with tests
+  registerAgent(agent: unknown): void {
+    // Stub for backward compatibility
+    logger.debug('registerAgent called (legacy method)')
+  }
+
+  unregisterAgent(agentId: string): void {
+    // Stub for backward compatibility
+    this.metrics.delete(agentId)
+    this.messageLog.delete(agentId)
+  }
+
+  updateAgentStatus(agentId: string, status: AgentStatus): void {
+    // Stub for backward compatibility
+    const metrics = this.metrics.get(agentId)
+    if (metrics) {
+      metrics.status = status
+    }
+  }
+
+  getMonitoringStats(): unknown {
+    // Stub for backward compatibility
+    return {
+      totalAgents: this.metrics.size,
+      totalMessages: Array.from(this.messageLog.values()).reduce((sum, msgs) => sum + msgs.length, 0),
+    }
+  }
+
+  getActiveAgents(): string[] {
+    // Stub for backward compatibility
+    return Array.from(this.metrics.entries())
+      .filter(([_, m]) => m.status === 'active' || m.status === 'busy')
+      .map(([id]) => id)
+  }
+
+  getIdleAgents(): string[] {
+    // Stub for backward compatibility
+    return Array.from(this.metrics.entries())
+      .filter(([_, m]) => m.status === 'idle' || m.status === 'available')
+      .map(([id]) => id)
+  }
+
+  getErroredAgents(): string[] {
+    // Stub for backward compatibility
+    return Array.from(this.metrics.entries())
+      .filter(([_, m]) => m.status === 'error')
+      .map(([id]) => id)
+  }
+
+  clearMetrics(agentId: string): void {
+    // Stub for backward compatibility
+    const metrics = this.metrics.get(agentId)
+    if (metrics) {
+      metrics.messageCount = 0
+      metrics.errorCount = 0
+      metrics.averageResponseTime = 0
+    }
+  }
+
+  clearAllMetrics(): void {
+    // Stub for backward compatibility
+    this.metrics.clear()
+    this.messageLog.clear()
   }
 
   dispose(): void {

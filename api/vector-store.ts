@@ -14,8 +14,11 @@ const pinecone = new Pinecone({
 
 const index = pinecone.Index(process.env.PINECONE_INDEX_NAME)
 
+// Use Node.js runtime instead of edge for full Node.js API support
+// Pinecone SDK requires Node.js APIs (stream, fs, path) not available in Edge Runtime
 export const config = {
-  runtime: 'edge',
+  runtime: 'nodejs',
+  maxDuration: 60, // Increase timeout for vector operations
 }
 
 export default async function handler(req: Request) {

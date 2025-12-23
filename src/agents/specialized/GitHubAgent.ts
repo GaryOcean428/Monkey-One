@@ -252,8 +252,3 @@ export class GitHubAgent extends BaseAgent {
     })
   }
 }
-
-apiRouter.use((error: Error, _req: Request, res: Response, _next: NextFunction) => {
-  const githubAgent = new GitHubAgent({} as GitHubConfig)
-  githubAgent.handleError(error, res)
-})

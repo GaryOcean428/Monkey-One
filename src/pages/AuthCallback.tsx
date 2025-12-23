@@ -17,59 +17,41 @@ export function AuthCallback(): JSX.Element {
   const [status, setStatus] = React.useState<'loading' | 'success' | 'error'>('loading')
   const [message, setMessage] = React.useState('Processing authentication...')
 
+  // Primary effect: Handle authentication and redirect
   useEffect(() => {
-    const handleCallback = async () => {
-      try {
-        // Check for error parameters
-        const error = searchParams.get('error')
-        const errorDescription = searchParams.get('error_description')
+    // Check for OAuth errors first
+    const error = searchParams.get('error')
+    const errorDescription = searchParams.get('error_description')
 
-        if (error) {
-          setStatus('error')
-          setMessage(errorDescription || `Authentication error: ${error}`)
-          return
-        }
+    if (error) {
+      setStatus('error')
+      setMessage(errorDescription || `Authentication error: ${error}`)
+      return
+    }
 
-        // Check for authorization code
-        const code = searchParams.get('code')
-        const state = searchParams.get('state')
+    // If authentication is complete, redirect immediately
+    if (!isLoading && isAuthenticated) {
+      setStatus('success')
+      setMessage('Authentication successful! Redirecting...')
+      // Small delay for user feedback, then redirect
+      const timer = setTimeout(() => {
+        navigate('/dashboard', { replace: true })
+      }, 800)
+      return () => clearTimeout(timer)
+    }
 
-        if (code) {
-          setMessage('Exchanging authorization code...')
-          // The actual token exchange is handled by the Google Auth library
-          // We just need to wait for the auth context to update
-
-          // Wait a bit for the auth context to process
-          setTimeout(() => {
-            if (isAuthenticated) {
-              setStatus('success')
-              setMessage('Authentication successful! Redirecting...')
-              setTimeout(() => navigate('/dashboard'), 1500)
-            } else {
-              setStatus('error')
-              setMessage('Authentication failed. Please try again.')
-            }
-          }, 2000)
-        } else {
-          setStatus('error')
-          setMessage('No authorization code received')
-        }
-      } catch (error) {
-        console.error('Auth callback error:', error)
+    // If loading is complete but not authenticated
+    if (!isLoading && !isAuthenticated) {
+      const code = searchParams.get('code')
+      if (!code) {
         setStatus('error')
-        setMessage('An unexpected error occurred during authentication')
+        setMessage('No authorization code received. Please try signing in again.')
+      } else {
+        setStatus('error')
+        setMessage('Authentication failed. Please try again.')
       }
     }
-
-    handleCallback()
-  }, [searchParams, isAuthenticated, navigate])
-
-  // If already authenticated, redirect to dashboard
-  useEffect(() => {
-    if (isAuthenticated && status !== 'loading') {
-      navigate('/dashboard')
-    }
-  }, [isAuthenticated, navigate, status])
+  }, [isAuthenticated, isLoading, navigate, searchParams])
 
   const getIcon = () => {
     switch (status) {

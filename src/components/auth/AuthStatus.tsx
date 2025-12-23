@@ -79,8 +79,8 @@ export function AuthStatus({ className, detailed = false }: AuthStatusProps): JS
             </div>
             {user && detailed && (
               <div className="text-muted-foreground space-y-1 text-xs">
-                <div>Email: {user.email}</div>
-                <div>Name: {user.name}</div>
+                <div>Email: {user.email || 'N/A'}</div>
+                <div>Name: {user.name || 'N/A'}</div>
                 <div>Verified: {user.verified_email ? 'Yes' : 'No'}</div>
               </div>
             )}
@@ -94,8 +94,8 @@ export function AuthStatus({ className, detailed = false }: AuthStatusProps): JS
             </div>
             {supabaseProfile && detailed && (
               <div className="text-muted-foreground space-y-1 text-xs">
-                <div>Username: {supabaseProfile.username}</div>
-                <div>Profile ID: {supabaseProfile.id.substring(0, 8)}...</div>
+                <div>Username: {supabaseProfile.username || 'N/A'}</div>
+                <div>Profile ID: {supabaseProfile.id?.substring(0, 8) || 'N/A'}...</div>
                 <div>Created: {new Date(supabaseProfile.created_at).toLocaleDateString()}</div>
               </div>
             )}
@@ -109,7 +109,7 @@ export function AuthStatus({ className, detailed = false }: AuthStatusProps): JS
             </div>
             {oidcToken && detailed && (
               <div className="text-muted-foreground space-y-1 text-xs">
-                <div>Issuer: {oidcToken.issuer}</div>
+                <div>Issuer: {oidcToken.issuer || 'N/A'}</div>
                 <div>Expires: {new Date(oidcToken.expiresAt).toLocaleString()}</div>
               </div>
             )}
@@ -128,7 +128,7 @@ export function AuthStatus({ className, detailed = false }: AuthStatusProps): JS
             </div>
             {gcpCredentials && detailed && (
               <div className="text-muted-foreground space-y-1 text-xs">
-                <div>Token Type: {gcpCredentials.tokenType}</div>
+                <div>Token Type: {gcpCredentials.tokenType || 'N/A'}</div>
                 <div>Expires: {gcpCredentials.expiresAt.toLocaleString()}</div>
               </div>
             )}

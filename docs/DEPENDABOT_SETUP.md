@@ -63,6 +63,16 @@ jobs:
     # Smart logic to determine merge eligibility
 ```
 
+**How It Works:**
+1. **Immediate Enable**: Attempts to enable auto-merge as soon as PR is created
+   - GitHub's native auto-merge waits for required checks automatically
+   - Most reliable method - no need to manually poll for check status
+2. **Fallback Method**: If immediate enable fails (rare edge cases)
+   - Uses GitHub Script API to monitor check status
+   - Waits up to 30 minutes for all checks to complete
+   - Retries every 30 seconds
+3. **Smart Eligibility**: Determines if PR qualifies for auto-merge based on rules below
+
 **Auto-merge Rules:**
 - ✅ **Security updates** - Always auto-merge (fast-tracked)
 - ✅ **Patch updates** - Both production and development
@@ -192,10 +202,17 @@ groups:
 
 #### "Auto-merge not working"
 **Checklist**:
-1. ✅ PR has `automerge` label
-2. ✅ CI checks are passing
+1. ✅ PR has `automerge` label (automatically added by Dependabot config)
+2. ✅ CI checks are passing (workflow waits for all checks)
 3. ✅ Update type is eligible (patch/dev minor)
-4. ✅ Workflow has correct permissions
+4. ✅ Workflow has correct permissions (`contents: write`, `pull-requests: write`)
+5. ✅ Auto-merge is enabled in repository settings (Settings → General → Pull Requests → "Allow auto-merge")
+
+**Recent Fix (2025-10)**:
+- Updated workflow to enable auto-merge immediately upon PR creation
+- GitHub's native auto-merge now handles waiting for checks
+- Added fallback method for edge cases
+- Improved logging and error handling
 
 #### "Security updates not fast-tracking"
 **Solution**: Ensure security updates have `security` label
