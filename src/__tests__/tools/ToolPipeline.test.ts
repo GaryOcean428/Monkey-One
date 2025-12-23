@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { ToolPipeline } from '../../lib/tools/ToolPipeline'
 import { Tool } from '../../types'
 import { ToolExecutionError } from '../../lib/errors/AgentErrors'
@@ -5,10 +6,10 @@ import { AgentMonitor } from '../../lib/monitoring/AgentMonitor'
 
 // Mock Logger
 const mockLogger = {
-  info: jest.fn(),
-  error: jest.fn(),
-  warn: jest.fn(),
-  debug: jest.fn(),
+  info: vi.fn(),
+  error: vi.fn(),
+  warn: vi.fn(),
+  debug: vi.fn(),
 }
 
 // Type definitions
@@ -23,11 +24,11 @@ declare module '../../lib/tools/ToolPipeline' {
   }
 }
 
-jest.mock('../../lib/monitoring/AgentMonitor')
+vi.mock('../../lib/monitoring/AgentMonitor')
 
 describe('ToolPipeline', () => {
   let pipeline: ToolPipeline
-  let mockMonitor: jest.Mocked<AgentMonitor>
+  let mockMonitor: ReturnType<typeof vi.mocked<AgentMonitor>>
 
   const DEFAULT_TIMEOUT = 30000 // Add default timeout constant
 

@@ -206,3 +206,7 @@ playwright/.cache/
 auth-debug-report.json
 stats.html
 stats.html
+
+# Core dumps
+core
+core.*
