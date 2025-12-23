@@ -100,17 +100,17 @@ export function OIDCStatus() {
             </Badge>
           </div>
 
-          <p className="text-sm text-gray-600">{status.message}</p>
+          <p className="text-sm text-gray-600">{status.message || 'No status message'}</p>
 
           {status.environment && (
             <div className="text-sm">
-              <span className="font-medium">Environment:</span> {status.environment}
+              <span className="font-medium">Environment:</span> {status.environment || 'N/A'}
             </div>
           )}
 
           {status.issuer && (
             <div className="text-sm">
-              <span className="font-medium">Issuer:</span> {status.issuer}
+              <span className="font-medium">Issuer:</span> {status.issuer || 'N/A'}
             </div>
           )}
 
@@ -131,7 +131,7 @@ export function OIDCStatus() {
 
           {status.error && (
             <div className="rounded bg-red-50 p-2 text-sm text-red-600">
-              <span className="font-medium">Error:</span> {status.error}
+              <span className="font-medium">Error:</span> {status.error || 'Unknown error'}
             </div>
           )}
 
