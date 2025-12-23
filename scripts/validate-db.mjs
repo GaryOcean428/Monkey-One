@@ -58,8 +58,8 @@ console.log('\n🔌 Testing database connection...')
 async function validateDatabase() {
   try {
     const supabase = createClient(
-      requiredEnvVars.VITE_SUPABASE_URL!,
-      requiredEnvVars.VITE_SUPABASE_ANON_KEY!
+      requiredEnvVars.VITE_SUPABASE_URL,
+      requiredEnvVars.VITE_SUPABASE_ANON_KEY
     )
 
     // Test connection by querying a simple table
