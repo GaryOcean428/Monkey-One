@@ -2,6 +2,10 @@
 
 Welcome to the Monkey-One documentation. This directory contains comprehensive guides, architecture documentation, and references for the Monkey-One AI assistant platform.
 
+## 📚 Documentation Organization
+
+This documentation has been reorganized following ISO-aligned naming conventions and a clear structural hierarchy for improved navigation and maintainability.
+
 ## 📚 Documentation Structure
 
 ### Authentication (`authentication/`)
