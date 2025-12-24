@@ -17,11 +17,19 @@ export class SimpleErrorBoundary extends React.Component<ErrorBoundaryProps, Err
   }
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    // Log error details for debugging
+    console.error('SimpleErrorBoundary caught error:', error)
     return { hasError: true, error }
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    // Enhanced error logging
     console.error('Error caught by boundary:', error, errorInfo)
+    
+    // Log component stack for debugging
+    if (errorInfo.componentStack) {
+      console.error('Component stack:', errorInfo.componentStack)
+    }
   }
 
   render() {
