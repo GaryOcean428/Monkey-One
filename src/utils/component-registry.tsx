@@ -164,6 +164,10 @@ export function getComponentByName(componentName: string): React.LazyExoticCompo
   return React.lazy(async () => {
     try {
       const module = await component
+      // Defensive check: Ensure the module has a default export
+      if (!module || !module.default) {
+        throw new Error(`Component "${componentName}" has no default export`)
+      }
       return module
     } catch (error) {
       console.error(`Failed to load component "${componentName}":`, error)
