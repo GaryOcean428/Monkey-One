@@ -121,14 +121,12 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
               setGcpCredentials(gcp)
               setSupabaseProfile(profile)
 
-              // Clean URL and force reload to avoid React Router sync issues
-              // Auth state persists in localStorage, user stays authenticated
-              // Defer navigation using queueMicrotask for predictable timing relative to React's render cycle
-              queueMicrotask(() => {
-                if (window.location.search || window.location.hash) {
-                  window.location.replace(`${window.location.origin}${window.location.pathname}`)
-                }
-              })
+              // Clean URL without forcing a page reload to avoid React rendering issues
+              // Use replaceState instead of window.location.replace to prevent React error #306
+              if (window.location.search || window.location.hash) {
+                const cleanUrl = `${window.location.origin}${window.location.pathname}`
+                window.history.replaceState({}, document.title, cleanUrl)
+              }
               return
             } else {
               setAuthState({
