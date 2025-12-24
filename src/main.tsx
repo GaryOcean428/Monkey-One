@@ -2,6 +2,10 @@ import './polyfills'
 import React, { Suspense } from 'react'
 import ReactDOM from 'react-dom/client'
 import './index.css'
+import { initConsoleFilter } from './utils/console-filter'
+
+// Initialize console filtering to suppress known benign warnings
+initConsoleFilter()
 
 // Set public URL - prioritize environment variable over current origin
 const publicUrl = import.meta.env.VITE_PUBLIC_URL || 'https://monkey-one.dev'
