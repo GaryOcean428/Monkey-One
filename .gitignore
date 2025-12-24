@@ -210,3 +210,13 @@ stats.html
 # Core dumps
 core
 core.*
+-e 
+# Environment files
+*.env
+*.env.*
+
+# GitHub CLI config (contains tokens)
+.config/gh/
+
+# Emergent config
+.emergent/

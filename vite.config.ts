@@ -431,6 +431,11 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 4000,
       host: '0.0.0.0',
+      // Use polling to avoid file watcher limits in container environments
+      watch: {
+        usePolling: true,
+        interval: 1000,
+      },
       // Allow specific hosts for development
       allowedHosts: [
         'localhost',
