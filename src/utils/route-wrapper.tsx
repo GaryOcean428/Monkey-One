@@ -51,6 +51,10 @@ export function createRouteElement(config: RouteConfig, Component: React.LazyExo
 
   const SafeComponent = () => {
     try {
+      // Add defensive check for Component existence
+      if (!Component) {
+        throw new Error(`Component for route ${config.path} is undefined`)
+      }
       return <Component />
     } catch (error) {
       console.error(`Error rendering component for route ${config.path}:`, error)
