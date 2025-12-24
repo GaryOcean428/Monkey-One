@@ -59,6 +59,11 @@ export default defineConfig(({ mode }) => {
       assetsInlineLimit: 10000,
       // Improve code splitting efficiency
       chunkSizeWarningLimit: 1200,
+      // Configure esbuild to suppress deprecation warnings
+      esbuildOptions: {
+        logLevel: 'error', // Only show errors, not warnings
+        legalComments: 'none',
+      },
       rollupOptions: {
         input: {
           main: resolve(__dirname, 'index.html'),
