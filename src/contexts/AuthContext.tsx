@@ -123,7 +123,7 @@ export function AuthProvider({ children }: AuthProviderProps): React.ReactElemen
 
               // Clean URL and force reload to avoid React Router sync issues
               // Auth state persists in localStorage, user stays authenticated
-              // Defer navigation using queueMicrotask for more predictable timing after state updates
+              // Defer navigation using queueMicrotask for predictable timing relative to React's render cycle
               queueMicrotask(() => {
                 if (window.location.search || window.location.hash) {
                   window.location.replace(`${window.location.origin}${window.location.pathname}`)
