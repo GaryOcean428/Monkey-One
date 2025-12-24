@@ -93,12 +93,26 @@ async function renderApp() {
       )
     } else {
       console.error('AppComponent is not a valid React element')
+      // Render error state without AppComponent
       root.render(
         <SimpleErrorBoundary>
           <div style={{ padding: '20px', textAlign: 'center' }}>
             <h2>Application Error</h2>
             <p>Failed to load the main application component.</p>
-            <button onClick={() => window.location.reload()}>Reload Page</button>
+            <button
+              onClick={() => window.location.reload()}
+              style={{
+                marginTop: '10px',
+                padding: '8px 16px',
+                background: '#3b82f6',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+              }}
+            >
+              Reload Page
+            </button>
           </div>
         </SimpleErrorBoundary>
       )
