@@ -341,8 +341,8 @@ importers:
         specifier: ^0.174.0
         version: 0.174.0
       '@types/web':
-        specifier: ^0.0.213
-        version: 0.0.213
+        specifier: ^0.0.310
+        version: 0.0.310
       '@typescript-eslint/eslint-plugin':
         specifier: ^8.28.0
         version: 8.50.1(@typescript-eslint/parser@8.50.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
@@ -2482,8 +2482,8 @@ packages:
   '@types/validator@13.15.10':
     resolution: {integrity: sha512-T8L6i7wCuyoK8A/ZeLYt1+q0ty3Zb9+qbSSvrIVitzT3YjZqkTZ40IbRsPanlB4h1QB3JVL1SYCdR6ngtFYcuA==}
 
-  '@types/web@0.0.213':
-    resolution: {integrity: sha512-LuVykOBqlH+P9GI9Q2IWL3bwoV9oJqVGfjutUW0c1LJL4Jdceq5455cJHwcjyhip7+w9hmgv9IvaKXf+FWvRNg==}
+  '@types/web@0.0.310':
+    resolution: {integrity: sha512-XN++V7UZGEeRg8MXJBkzMqmcAWoCRN1UV/zpQxg9YnJQ9pIPSuzEG7oidC+nXi/J8pmfb3UgFv+TjEDzMiNnRg==}
 
   '@types/webxr@0.5.24':
     resolution: {integrity: sha512-h8fgEd/DpoS9CBrjEQXR+dIDraopAEfu4wYVNY2tEPwk60stPWhvZMf4Foo5FakuQ7HFZoa8WceaWFervK2Ovg==}
@@ -6684,6 +6684,7 @@ packages:
   whatwg-encoding@3.1.1:
     resolution: {integrity: sha512-6qN4hJdMwfYBtE3YBTTHhoeuUrDBPZmbQaxWAqSALV/MeEnR5z1xd8UKud2RAkFoPkmB+hli1TZSnyi84xz1vQ==}
     engines: {node: '>=18'}
+    deprecated: Use @exodus/bytes instead for a more spec-conformant and faster implementation
 
   whatwg-fetch@3.6.20:
     resolution: {integrity: sha512-EqhiFU6daOA8kpjOWTL0olhVOF3i7OrFzSYiGsEMB8GcXS+RrzauAERX65xMeNWVqxA6HXH2m69Z9LaKKdisfg==}
@@ -8906,7 +8907,7 @@ snapshots:
 
   '@types/validator@13.15.10': {}
 
-  '@types/web@0.0.213': {}
+  '@types/web@0.0.310': {}
 
   '@types/webxr@0.5.24': {}
 
