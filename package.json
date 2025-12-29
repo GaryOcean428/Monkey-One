@@ -96,7 +96,7 @@
     "date-fns": "^4.1.0",
     "debug": "^4.4.0",
     "express": "^5.1.0",
-    "express-rate-limit": "^7.5.0",
+    "express-rate-limit": "^8.2.1",
     "framer-motion": "^12.23.11",
     "helmet": "^8.1.0",
     "highlight.js": "^11.11.1",
